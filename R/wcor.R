@@ -59,8 +59,9 @@ wcor.ssa <- function(S, groups) {
   for (i in seq_along(F)) {
     X <- cbind(X, F[[i]]);
   }
-  # Finally, compute w-correlations and return
+  colnames(X) <- names(F);
 
+  # Finally, compute w-correlations and return
   wcor.default(X);
 }
 
