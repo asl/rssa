@@ -38,12 +38,41 @@ hankel <- function(X, L) {
 }
 
 ssa.decompose <- function(x,
-                          L = (length(x) + 1) %/% 2,
-                          method = c("hankel")) {
+                          L = (N + 1) %/% 2,
+                          method = c("hankel"),
+                          centering = c("none", "row", "both")) {
   method <- match.arg(method);
+  centering <- match.arg(centering);
+  N <- length(x); K <- N - L + 1;
   
   if (identical(method, "hankel")) {   
     X <- hankel(x, L = L);
+
+    # Perform extra centering, if needed
+    rmeans <- cmeans <- cl <- cU <- cV <- NULL;
+    .norm <- function(X) sqrt(sum(X^2));
+    if (identical(centering, "row") || identical(centering, "both")) {
+      rmeans <- rowMeans(X);
+      X <- sweep(X, 1, rmeans);
+    }
+    if (identical(centering, "both")) {
+      cmeans <- colMeans(X);
+      X <- sweep(X, 2, cmeans);
+    }
+
+    # Compute eigentriples for first and second means
+    if (!is.null(rmeans)) {
+      mnorm <- .norm(rmeans);
+      cl <- sqrt(mnorm * sqrt(K));
+      cU <- rmeans / mnorm;
+      cV <- rep(1, K) * mnorm / cl;
+    }
+    if (!is.null(cmeans)) {
+      mnorm <- .norm(cmeans);
+      cl <- c(cl, sqrt(mnorm * sqrt(L)));
+      cU <- cbind(cU, rep(1, L) / sqrt(L));
+      cV <- cbind(cV, sqrt(L) * cmeans / cl[2]);
+    }
   } else {
     stop("Unknown method in SSA")
   }
@@ -51,8 +80,16 @@ ssa.decompose <- function(x,
   S <- svd(X);
   names(S) <- c("lambda", "U", "V");
 
+  # Add centering eigentriples, if any
+  if (!is.null(cl)) {
+    S$lambda <- c(cl, S$lambda);
+    S$U <- cbind(cU, S$U);
+    S$V <- cbind(cV, S$V);
+  }
+
   S$call   <- match.call();
   S$method <- method;
+  S$centering <- centering;
   S$series <- deparse(substitute(x));
   S$window <- L;
   S$length <- length(x);
@@ -76,10 +113,13 @@ ssa.reconstruct <- function(S, groups) {
   return (out);
 }
 
-.F <- function(x) exp(-.01 * x)*cos(x/100);
-F <- .F(1:100);
+#.F <- function(x) exp(-.01 * x)*cos(x/100);
+#F <- .F(1:100);
+a = 1; b = 0; T = 10;
+.F <- function(x) a*x + b + 5*sin(2*pi*x/T);
+F <- .F(1:19);
 Rprof();
-SS <- ssa.decompose(F);
-L <- ssa.reconstruct(SS, 1:20);
+SS <- ssa.decompose(F, centering = "both");
+L <- ssa.reconstruct(SS, list(1:2));
 Rprof(NULL);
 summaryRprof();
