@@ -52,6 +52,8 @@ ssa.decompose <- function(x,
   S$call   <- match.call();
   S$method <- method;
   S$series <- deparse(substitute(x));
+  S$window <- L;
+  S$length <- length(x);
   class(S) <- "ssa";
 
   return (S);
@@ -73,7 +75,7 @@ ssa.reconstruct <- function(S, groups) {
 }
 
 .F <- function(x) exp(-.01 * x)*cos(x/100);
-F <- .F(1:1000);
+F <- .F(1:10);
 Rprof();
 SS <- ssa.decompose(F);
 L <- ssa.reconstruct(SS, 1:5);
