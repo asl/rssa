@@ -77,9 +77,9 @@ ssa.reconstruct <- function(S, groups) {
 }
 
 .F <- function(x) exp(-.01 * x)*cos(x/100);
-F <- .F(1:10);
+F <- .F(1:100);
 Rprof();
 SS <- ssa.decompose(F);
-L <- ssa.reconstruct(SS, 1:5);
+L <- ssa.reconstruct(SS, 1:20);
 Rprof(NULL);
 summaryRprof();

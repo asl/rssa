@@ -17,7 +17,6 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-# FIXME: more checks
 wcor.default <- function(X, L) {
   if (is.data.frame(X))
     X <- as.matrix(X)
@@ -67,6 +66,19 @@ wcor.ssa <- function(S, groups) {
 
 wcor <- function(X, ...) {
   UseMethod("wcor");
+}
+
+# FIXME: Add legend
+plot.wcor.matrix <- function(R, col = rev(gray(seq(0, 1, len = 20))),
+                             xlab = "", ylab = "",
+                             main = "W-correlation Matrix",
+                             ...) {
+  image(1:ncol(R), 1:nrow(R), R, col = col,
+        axes = FALSE, xlab = xlab, ylab = ylab, main = main,
+        ...);
+  axis(1, at = 1:ncol(R), labels = colnames(R));
+  axis(2, at = 1:nrow(R), labels = rownames(R), las = 2);
+  box();
 }
 
 #N = 399;
