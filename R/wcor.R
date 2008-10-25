@@ -17,7 +17,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-wcor.default <- function(X, L) {
+wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
   if (is.data.frame(X))
     X <- as.matrix(X)
   else if (!is.matrix(X))
@@ -25,8 +25,6 @@ wcor.default <- function(X, L) {
   if (!all(is.finite(X)))
     stop("'X' must contain finite values only")
 
-  if (missing(L))
-    L <- ncol(X);
   N <- nrow(X);
 
   K <- N - L + 1;
@@ -46,22 +44,22 @@ wcor.default <- function(X, L) {
   return (R);
 }
 
-wcor.ssa <- function(S, groups) {
-  L <- S$window;
+wcor.ssa <- function(X, groups, ...) {
+  L <- X$window; N <- X$length;
   if (missing(groups))
     groups <- as.list(1:L);
 
   # Compute reconstruction.
   # FIXME: Modify ssa.reconstruct to return matrix
-  F <- ssa.reconstruct(S, groups);
-  X <- matrix(nrow = S$length, ncol = 0);
+  F <- ssa.reconstruct(X, groups);
+  X <- matrix(nrow = N, ncol = 0);
   for (i in seq_along(F)) {
     X <- cbind(X, F[[i]]);
   }
   colnames(X) <- names(F);
 
   # Finally, compute w-correlations and return
-  wcor.default(X);
+  NextMethod("wcor", L = L)
 }
 
 wcor <- function(X, ...) {
@@ -69,15 +67,15 @@ wcor <- function(X, ...) {
 }
 
 # FIXME: Add legend
-plot.wcor.matrix <- function(R, col = rev(gray(seq(0, 1, len = 20))),
+plot.wcor.matrix <- function(x, col = rev(gray(seq(0, 1, len = 20))),
                              xlab = "", ylab = "",
                              main = "W-correlation Matrix",
                              ...) {
-  image(1:ncol(R), 1:nrow(R), R, col = col,
+  image(1:ncol(x), 1:nrow(x), x, col = col,
         axes = FALSE, xlab = xlab, ylab = ylab, main = main,
         ...);
-  axis(1, at = 1:ncol(R), labels = colnames(R));
-  axis(2, at = 1:nrow(R), labels = rownames(R), las = 2);
+  axis(1, at = 1:ncol(x), labels = colnames(x));
+  axis(2, at = 1:nrow(x), labels = rownames(x), las = 2);
   box();
 }
 

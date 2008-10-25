@@ -106,7 +106,7 @@ ssa.reconstruct <- function(S, groups) {
 
   for (i in seq_along(groups)) {
     group <- groups[[i]];
-    X <- S$U[, group] %*% diag(S$lambda[group], nrow = length(group)) %*% t(SS$V[,group])
+    X <- S$U[, group] %*% diag(S$lambda[group], nrow = length(group)) %*% t(S$V[,group])
     out[[i]] <- hankel(X);
   }
   names(out) <- paste("F", 1:length(groups), sep="");
@@ -115,11 +115,11 @@ ssa.reconstruct <- function(S, groups) {
 
 #.F <- function(x) exp(-.01 * x)*cos(x/100);
 #F <- .F(1:100);
-a = 1; b = 0; T = 10;
-.F <- function(x) a*x + b + 5*sin(2*pi*x/T);
-F <- .F(1:19);
-Rprof();
-SS <- ssa.decompose(F, centering = "both");
-L <- ssa.reconstruct(SS, list(1:2));
-Rprof(NULL);
-summaryRprof();
+#a = 1; b = 0; T = 10;
+#.F <- function(x) a*x + b + 5*sin(2*pi*x/T);
+#F <- .F(1:19);
+#Rprof();
+#SS <- ssa.decompose(F, centering = "both");
+#L <- ssa.reconstruct(SS, list(1:2));
+#Rprof(NULL);
+#summaryRprof();
