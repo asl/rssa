@@ -18,7 +18,7 @@
 #   MA 02139, USA.
 
 # FIXME: more checks
-.wcor <- function(X, L) {
+wcor.default <- function(X, L) {
   if (missing(L))
     L <- dim(X)[2];
   N <- dim(X)[1];
@@ -33,12 +33,36 @@
 
   # Convert to correlations
   Is <- 1/sqrt(diag(cov));
-  Is * cov * rep(Is, each = nrow(cov));
+  R <- Is * cov * rep(Is, each = nrow(cov));
+  class(R) <- "wcor.matrix";
+
+  return (R);
 }
 
-N = 399;
-a = 1.005;
-T = 200;
-F1 <- (1/a)^(1:N);
-F2 <- (a^(1:N))*cos(2*pi*(1:N)/T);
-.wcor(cbind(F1, F2));
+wcor.ssa <- function(S, groups) {
+  L <- S$window;
+  if (missing(groups))
+    groups <- as.list(1:L);
+
+  # Compute reconstruction.
+  # FIXME: Modify ssa.reconstruct to return matrix
+  F <- ssa.reconstruct(S, groups);
+  X <- matrix(nrow = S$length, ncol = 0);
+  for (i in seq_along(F)) {
+    X <- cbind(X, F[[i]]);
+  }
+  # Finally, compute w-correlations and return
+
+  wcor.default(X);
+}
+
+wcor <- function(X, ...) {
+  UseMethod("wcor");
+}
+
+#N = 399;
+#a = 1.005;
+#T = 200;
+#F1 <- (1/a)^(1:N);
+#F2 <- (a^(1:N))*cos(2*pi*(1:N)/T);
+#.wcor(cbind(F1, F2));
