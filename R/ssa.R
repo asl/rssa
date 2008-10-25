@@ -39,7 +39,9 @@ hankel <- function(X, L) {
 
 ssa.decompose <- function(x,
                           L = (length(x) + 1) %/% 2,
-                          method = "hankel") {
+                          method = c("hankel")) {
+  method <- match.arg(method);
+  
   if (identical(method, "hankel")) {   
     X <- hankel(x, L = L);
   } else {
