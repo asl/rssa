@@ -19,9 +19,17 @@
 
 # FIXME: more checks
 wcor.default <- function(X, L) {
+  if (is.data.frame(X))
+    X <- as.matrix(X)
+  else if (!is.matrix(X))
+    stop("'X' must be a matrix or a data frame")
+  if (!all(is.finite(X)))
+    stop("'X' must contain finite values only")
+
   if (missing(L))
-    L <- dim(X)[2];
-  N <- dim(X)[1];
+    L <- ncol(X);
+  N <- nrow(X);
+
   K <- N - L + 1;
   Ls <- min(L, K); Ks <- max(L, K);
 
