@@ -73,12 +73,14 @@ ssa.decompose <- function(x,
       cU <- cbind(cU, rep(1, L) / sqrt(L));
       cV <- cbind(cV, sqrt(L) * cmeans / cl[2]);
     }
+
+    # FIXME: Use special SVD for hankel matrixes
+    S <- svd(X);
+    names(S) <- c("lambda", "U", "V");
   } else {
     stop("Unknown method in SSA")
   }
 
-  S <- svd(X);
-  names(S) <- c("lambda", "U", "V");
 
   # Add centering eigentriples, if any
   if (!is.null(cl)) {
