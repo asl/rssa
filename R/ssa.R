@@ -52,13 +52,17 @@ ssa.decompose <- function(x,
   S$call   <- match.call();
   S$method <- method;
   S$series <- deparse(substitute(x));
-  S$class  <- "ssa";
+  class(S) <- "ssa";
 
   return (S);
 }
 
 ssa.reconstruct <- function(S, groups) {
   out <- list();
+
+  if (missing(groups))
+    groups <- as.list(1:length(S$lambda));
+
   for (i in seq_along(groups)) {
     group <- groups[[i]];
     X <- S$U[, group] %*% diag(S$lambda[group], nrow = length(group)) %*% t(SS$V[,group])
