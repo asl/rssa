@@ -1,4 +1,4 @@
-#   R package for Static Singular Analysis
+#   R package for Singular Spectrum Analysis
 #   Copyright (c) 2008 Anton Korobeynikov <asl@math.spbu.ru>
 #   
 #   This program is free software; you can redistribute it 

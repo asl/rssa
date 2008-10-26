@@ -1,10 +1,10 @@
 Package: Rssa
 Type: Package
-Title: A collection of methods for static singular analysis
-Version: 0.1-1
+Title: A collection of methods for singular spectrum analysis
+Version: 0.1-2
 Date: 2008-10-25
 Author: Anton Korobeynikov
 Maintainer: Anton Korobeynikov <asl@math.spbu.ru>
-Description: This package implements Singular System Analysis.
+Description: This package implements Singular Spectrum Analysis.
 License: GPL-2
 URL: 
