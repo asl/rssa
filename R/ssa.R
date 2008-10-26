@@ -39,18 +39,18 @@ hankel <- function(X, L) {
 
 ssa.decompose <- function(x,
                           L = (N + 1) %/% 2,
-                          method = c("hankel"),
+                          method = c("hankel", "toeplitz"),
                           centering = c("none", "row", "both")) {
   method <- match.arg(method);
   centering <- match.arg(centering);
   N <- length(x); K <- N - L + 1;
-  
-  if (identical(method, "hankel")) {   
-    X <- hankel(x, L = L);
+  .norm <- function(X) sqrt(sum(X^2));
 
+  X <- hankel(x, L = L);
+  cl <- cU <- cV <- NULL;
+  if (identical(method, "hankel")) {
     # Perform extra centering, if needed
-    rmeans <- cmeans <- cl <- cU <- cV <- NULL;
-    .norm <- function(X) sqrt(sum(X^2));
+    rmeans <- cmeans <- NULL;
     if (identical(centering, "row") || identical(centering, "both")) {
       rmeans <- rowMeans(X);
       X <- sweep(X, 1, rmeans);
@@ -77,6 +77,17 @@ ssa.decompose <- function(x,
     # FIXME: Use special SVD for hankel matrixes
     S <- svd(X);
     names(S) <- c("lambda", "U", "V");
+  } else if (identical(method, "toeplitz")) {
+    R <- acf(x, lag.max = L - 1, type = "covariance", plot = FALSE, demean = FALSE);
+    # FIXME: find a better way to construct toeplitz matrix
+    C <- toeplitz(as.vector(R$acf));
+    S <- eigen(C, symmetric = TRUE);
+    names(S) <- c("lambda", "U");
+    # This is pretty inefficient, find a better way
+    S$U <- S$U %*% diag(1/apply(S$U, 2, .norm));
+    S$Z <- t(X) %*% S$U;
+    S$lambda <- (apply(S$Z, 2, .norm))^2;
+    S$V <- S$Z %*% diag(1/S$lambda, nrow = L);
   } else {
     stop("Unknown method in SSA")
   }
