@@ -85,9 +85,9 @@ ssa.decompose <- function(x,
     names(S) <- c("lambda", "U");
     # This is pretty inefficient, find a better way
     S$U <- S$U %*% diag(1/apply(S$U, 2, .norm));
-    S$Z <- t(X) %*% S$U;
-    S$lambda <- (apply(S$Z, 2, .norm))^2;
-    S$V <- S$Z %*% diag(1/S$lambda, nrow = L);
+    Z <- t(X) %*% S$U;
+    S$lambda <- (apply(Z, 2, .norm))^2;
+    S$V <- Z %*% diag(1/S$lambda, nrow = L);
   } else {
     stop("Unknown method in SSA")
   }
