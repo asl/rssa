@@ -38,7 +38,7 @@ hankel <- function(X, L) {
 }
 
 ssa.decompose <- function(x,
-                          L = (N + 1) %/% 2,
+                          L = (N - 1) %/% 2,
                           method = c("hankel", "toeplitz"),
                           centering = c("none", "row", "both")) {
   method <- match.arg(method);
