@@ -39,7 +39,7 @@ new.ssa <- function(x,
   attr(this, ".env") <- new.env();
 
   # Save series
-  assign("F", x, envir = attr(this, ".env"), inherits = FALSE);
+  assign("F", x, envir = .storage(this), inherits = FALSE);
   
   # Make this S3 object
   class(this) <- "ssa";
@@ -75,7 +75,7 @@ hankel <- function(X, L) {
 .decompose.ssa.hankel <- function(this,
                                   nu = min(L, K), nv = min(L, K)) {
   N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- get("F", envir = attr(this, ".env"));
+  F <- get("F", envir = .storage(this));
 
   X <- hankel(F, L = L);
 
@@ -83,12 +83,12 @@ hankel <- function(X, L) {
   S <- svd(X, nu = nu, nv = nv);
 
   # Save results
-  assign("lambda", S$d, envir = attr(this, ".env"), inherits = FALSE);
+  assign("lambda", S$d, envir = .storage(this), inherits = FALSE);
   if (!is.null(S$u)) {
-    assign("U", S$u, envir = attr(this, ".env"), inherits = FALSE);
+    assign("U", S$u, envir = .storage(this), inherits = FALSE);
   }
   if (!is.null(S$v)) {
-    assign("V", S$v, envir = attr(this, ".env"), inherits = FALSE);
+    assign("V", S$v, envir = .storage(this), inherits = FALSE);
   }
 }
 
@@ -112,9 +112,9 @@ reconstruct.ssa <- function(this, groups, ...) {
     groups <- as.list(1:nlambda(this));
 
   # We're supporting only 'full' data for now
-  U <- get("U", envir = attr(this, ".env"));
-  V <- get("V", envir = attr(this, ".env"));
-  lambda <- get("lambda", envir = attr(this, ".env"));
+  U <- get("U", envir = .storage(this));
+  V <- get("V", envir = .storage(this));
+  lambda <- get("lambda", envir = .storage(this));
 
   for (i in seq_along(groups)) {
     group <- groups[[i]];
@@ -131,20 +131,20 @@ reconstruct.ssa <- function(this, groups, ...) {
 }
 
 nu.ssa <- function(this, ...) {
-  ifelse(exists("U", envir = attr(this, ".env"), inherits = FALSE),
-         dim(get("U", envir = attr(this, ".env")))[2],
+  ifelse(exists("U", envir = .storage(this), inherits = FALSE),
+         dim(get("U", envir = .storage(this)))[2],
          0);
 }
 
 nv.ssa <- function(this, ...) {
-  ifelse(exists("V", envir = attr(this, ".env"), inherits = FALSE),
-         dim(get("V", envir = attr(this, ".env")))[2],
+  ifelse(exists("V", envir = .storage(this), inherits = FALSE),
+         dim(get("V", envir = .storage(this)))[2],
          0);
 }
 
 nlambda.ssa <- function(this, ...) {
-  ifelse(exists("lambda", envir = attr(this, ".env"), inherits = FALSE),
-         dim(get("lambda", envir = attr(this, ".env")))[2],
+  ifelse(exists("lambda", envir = .storage(this), inherits = FALSE),
+         dim(get("lambda", envir = .storage(this)))[2],
          0);
 }
 
@@ -154,7 +154,7 @@ clone.ssa <- function(this, ...) {
 
   # Make new storage
   clone.env <- new.env();
-  this.env <- attr(this, ".env");
+  this.env <- .storage(this);
   attr(obj, ".env") <- clone.env;
 
   # Copy the contents of data storage
@@ -164,6 +164,20 @@ clone.ssa <- function(this, ...) {
   }
 
   obj;
+}
+
+.storage <- function(this) {
+  attr(this, ".env");
+}
+
+'$.ssa' <- function(this, name) {
+  if (ind <- charmatch(name, names(this), nomatch = 0))
+    return (this[[ind]]);
+
+  if (exists(name, envir = .storage(this), inherits = FALSE))
+    return (get(name, envir = .storage(this)));
+
+  NULL;
 }
 
 clone <- function(this, ...) {
