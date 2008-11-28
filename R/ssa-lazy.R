@@ -72,14 +72,15 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1]);
 }
 
-.decompose.ssa.hankel <- function(this) {
+.decompose.ssa.hankel <- function(this,
+                                  nu = min(L, K), nv = min(L, K)) {
   N <- this$length; L <- this$window; K <- N - L + 1;
   F <- get("F", envir = attr(this, ".env"));
 
   X <- hankel(F, L = L);
 
   # FIXME: Use special SVD for hankel matrixes
-  S <- svd(X);
+  S <- svd(X, nu = nu, nv = nv);
 
   # Save results
   assign("lambda", S$d, envir = attr(this, ".env"));
