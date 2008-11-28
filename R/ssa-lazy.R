@@ -96,6 +96,10 @@ decompose.ssa <- function(this, ...) {
 
   if (identical(method, "hankel")) {
     .decompose.ssa.hankel(this, ...);
+  } else if (identical(method, "toeplitz")) {
+    .decompose.ssa.toeplitz(this, ...);
+  } else {
+    stop("Unknown method in SSA")
   }
 }
 
