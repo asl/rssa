@@ -116,6 +116,12 @@ nv.ssa <- function(this, ...) {
          0);
 }
 
+nlambda.ssa <- function(this, ...) {
+  ifelse(exists("lambda", envir = attr(this, ".env"), inherits = FALSE),
+         dim(get("lambda", envir = attr(this, ".env")))[2],
+         0);
+}
+
 clone.ssa <- function(this, ...) {
   # Copy the information body
   obj <- this;
@@ -148,4 +154,8 @@ nu <- function(this, ...) {
 
 nv <- function(this, ...) {
   UseMethod("nv");
+}
+
+nlambda <- function(this, ...) {
+  UseMethod("nlambda");
 }
