@@ -93,6 +93,17 @@ decompose.ssa <- function(this, ...) {
   }
 }
 
+nu.ssa <- function(this, ...) {
+  ifelse(exists("U", envir = attr(this, ".env"), inherits = FALSE),
+         dim(get("U", envir = attr(this, ".env")))[2],
+         0);
+}
+
+nv.ssa <- function(this, ...) {
+  ifelse(exists("V", envir = attr(this, ".env"), inherits = FALSE),
+         dim(get("V", envir = attr(this, ".env")))[2],
+         0);
+}
 
 clone.ssa <- function(this, ...) {
   # Copy the information body
@@ -118,4 +129,12 @@ clone <- function(this, ...) {
 
 decompose <- function(this, ...) {
   UseMethod("decompose");
+}
+
+nu <- function(this, ...) {
+  UseMethod("nu");
+}
+
+nv <- function(this, ...) {
+  UseMethod("nv");
 }
