@@ -64,6 +64,6 @@ clone.ssa <- function(this, ...) {
   obj;
 }
 
-clone <- function(x, ...) {
+clone <- function(this, ...) {
   UseMethod("clone");
 }
