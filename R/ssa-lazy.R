@@ -34,13 +34,36 @@ new.ssa <- function(x,
                method = method,
                centering = centering);
 
-  # Create storage
+  # Create data storage
   attr(this, ".env") <- new.env();
 
   # Save series
   assign("F", x, envir = attr(this, ".env"));
   
   # Make this S3 object
-  class(this) <- "ssa"; 
+  class(this) <- "ssa";
+
   this;
+}
+
+clone.ssa <- function(this, ...) {
+  # Copy the information body
+  obj <- this;
+
+  # Make new storage
+  clone.env <- new.env();
+  this.env <- attr(this, ".env");
+  attr(obj, ".env") <- clone.env;
+
+  # Copy the contents of data storage
+  for (field in ls(envir = this.env, all.names = TRUE)) {
+    value <- get(field, envir = this.env, inherits = FALSE);
+    assign(field, value, envir = clone.env);
+  }
+
+  obj;
+}
+
+clone <- function(x, ...) {
+  UseMethod("clone");
 }
