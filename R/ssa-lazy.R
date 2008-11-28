@@ -21,7 +21,8 @@ new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ..., 
                     method = c("hankel", "toeplitz"),
-                    centering = c("none", "row", "both")) {
+                    centering = c("none", "row", "both"),
+                    force.decompose = TRUE) {
   method <- match.arg(method);
   centering <- match.arg(centering);
   N <- length(x);
@@ -42,6 +43,11 @@ new.ssa <- function(x,
   
   # Make this S3 object
   class(this) <- "ssa";
+
+  # Decompose, if necessary
+  if (force.decompose) {
+    decompose(this, ...);
+  }
 
   this;
 }
@@ -89,7 +95,7 @@ decompose.ssa <- function(this, ...) {
   method <- this$method;
 
   if (identical(method, "hankel")) {
-    .decompose.ssa.hankel(this);
+    .decompose.ssa.hankel(this, ...);
   }
 }
 
