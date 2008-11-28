@@ -39,7 +39,7 @@ new.ssa <- function(x,
   attr(this, ".env") <- new.env();
 
   # Save series
-  assign("F", x, envir = attr(this, ".env"));
+  assign("F", x, envir = attr(this, ".env"), inherits = FALSE);
   
   # Make this S3 object
   class(this) <- "ssa";
@@ -83,12 +83,12 @@ hankel <- function(X, L) {
   S <- svd(X, nu = nu, nv = nv);
 
   # Save results
-  assign("lambda", S$d, envir = attr(this, ".env"));
+  assign("lambda", S$d, envir = attr(this, ".env"), inherits = FALSE);
   if (!is.null(S$u)) {
-    assign("U", S$u, envir = attr(this, ".env"));
+    assign("U", S$u, envir = attr(this, ".env"), inherits = FALSE);
   }
   if (!is.null(S$v)) {
-    assign("V", S$v, envir = attr(this, ".env"));
+    assign("V", S$v, envir = attr(this, ".env"), inherits = FALSE);
   }
 }
 
@@ -160,7 +160,7 @@ clone.ssa <- function(this, ...) {
   # Copy the contents of data storage
   for (field in ls(envir = this.env, all.names = TRUE)) {
     value <- get(field, envir = this.env, inherits = FALSE);
-    assign(field, value, envir = clone.env);
+    assign(field, value, envir = clone.env, inherits = FALSE);
   }
 
   obj;
