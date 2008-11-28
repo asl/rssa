@@ -104,6 +104,32 @@ decompose.ssa <- function(this, ...) {
   }
 }
 
+reconstruct.ssa <- function(this, groups, ...) {
+  out <- list();
+  nu <- nu(this); nv <- nv(this);
+
+  if (missing(groups))
+    groups <- as.list(1:nlambda(this));
+
+  # We're supporting only 'full' data for now
+  U <- get("U", envir = attr(this, ".env"));
+  V <- get("V", envir = attr(this, ".env"));
+  lambda <- get("lambda", envir = attr(this, ".env"));
+
+  for (i in seq_along(groups)) {
+    group <- groups[[i]];
+
+    out[[i]] <- hankel(U[, group] %*%
+                       diag(lambda[group], nrow = length(group)) %*%
+                       t(V[,group]));
+  }
+
+  names(out) <- paste("F", 1:length(groups), sep="");
+
+  # Reconstructed series can be pretty huge...
+  invisible(out);
+}
+
 nu.ssa <- function(this, ...) {
   ifelse(exists("U", envir = attr(this, ".env"), inherits = FALSE),
          dim(get("U", envir = attr(this, ".env")))[2],
@@ -146,6 +172,10 @@ clone <- function(this, ...) {
 
 decompose <- function(this, ...) {
   UseMethod("decompose");
+}
+
+reconstruct <- function(this, ...) {
+  UseMethod("reconstruct");
 }
 
 nu <- function(this, ...) {
