@@ -39,7 +39,7 @@ new.ssa <- function(x,
   attr(this, ".env") <- new.env();
 
   # Save series
-  .set(this, "F", x);
+  .set.ssa(this, "F", x);
   
   # Make this S3 object
   class(this) <- "ssa";
@@ -75,7 +75,7 @@ hankel <- function(X, L) {
 .decompose.ssa.hankel <- function(this,
                                   nu = min(L, K), nv = min(L, K)) {
   N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- .get(this, "F");
+  F <- .get.ssa(this, "F");
 
   X <- hankel(F, L = L);
 
@@ -83,12 +83,12 @@ hankel <- function(X, L) {
   S <- svd(X, nu = nu, nv = nv);
 
   # Save results
-  .set(this, "lambda", S$d);
+  .set.ssa(this, "lambda", S$d);
   if (!is.null(S$u)) {
-    .set(this, "U", S$u);
+    .set.ssa(this, "U", S$u);
   }
   if (!is.null(S$v)) {
-    .set(this, "V", S$v);
+    .set.ssa(this, "V", S$v);
   }
 }
 
@@ -116,17 +116,17 @@ precache.ssa <- function(this, n, ...) {
   }
 
   # Calculate numbers of sub-series to be calculated
-  if (.exists(this, "cache:series")) {
-    info <- .get(this, "cache:series");
+  if (.exists.ssa(this, "cache:series")) {
+    info <- .get.ssa(this, "cache:series");
   } else {
     info <- numeric(0);
   }
   new <- setdiff(1:n, info);
 
   # We're supporting only 'full' data for now
-  U <- .get(this, "U");
-  V <- .get(this, "V");
-  lambda <- .get(this, "lambda");
+  U <- .get.ssa(this, "U");
+  V <- .get.ssa(this, "V");
+  lambda <- .get.ssa(this, "lambda");
 
   # FIXME: Stub for now. Use more efficient stuff here
   new <- sapply(new,
@@ -134,17 +134,17 @@ precache.ssa <- function(this, n, ...) {
                   .cache(this,
                          lambda[i] * hankel(outer(U[,i], V[,i])),
                          i)});
-  .set(this, "cache:series", union(info, new));
+  .set.ssa(this, "cache:series", union(info, new));
 }
 
 .cache <- function(this, F, index) {
   name <- paste("cache:", index, sep = "");
-  .set(this, name, F);
+  .set.ssa(this, name, F);
   index;
 }
 
 cleanup.ssa <- function(this, ...) {
-  .remove(this, ls(.storage(this), pattern = "cache:"));
+  .remove.ssa(this, ls(.storage.ssa(this), pattern = "cache:"));
   gc();
 }
 
@@ -156,9 +156,9 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
     groups <- as.list(1:nlambda(this));
 
   # We're supporting only 'full' data for now
-  U <- .get(this, "U");
-  V <- .get(this, "V");
-  lambda <- .get(this, "lambda");
+  U <- .get.ssa(this, "U");
+  V <- .get.ssa(this, "V");
+  lambda <- .get.ssa(this, "lambda");
 
   for (i in seq_along(groups)) {
     group <- groups[[i]];
@@ -175,15 +175,15 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 }
 
 nu.ssa <- function(this, ...) {
-  ifelse(.exists(this, "U"), dim(.get(this, "U"))[2], 0);
+  ifelse(.exists.ssa(this, "U"), dim(.get.ssa(this, "U"))[2], 0);
 }
 
 nv.ssa <- function(this, ...) {
-  ifelse(.exists(this, "V"), dim(.get(this, "V"))[2], 0);
+  ifelse(.exists.ssa(this, "V"), dim(.get.ssa(this, "V"))[2], 0);
 }
 
 nlambda.ssa <- function(this, ...) {
-  ifelse(.exists(this, "lambda"), length(.get(this, "lambda")), 0);
+  ifelse(.exists.ssa(this, "lambda"), length(.get.ssa(this, "lambda")), 0);
 }
 
 clone.ssa <- function(this, ...) {
@@ -192,7 +192,7 @@ clone.ssa <- function(this, ...) {
 
   # Make new storage
   clone.env <- new.env();
-  this.env <- .storage(this);
+  this.env <- .storage.ssa(this);
   attr(obj, ".env") <- clone.env;
 
   # Copy the contents of data storage
@@ -204,32 +204,32 @@ clone.ssa <- function(this, ...) {
   obj;
 }
 
-.storage <- function(this) {
+.storage.ssa <- function(this) {
   attr(this, ".env");
 }
 
-.get <- function(this, name) {
-  get(name, envir = .storage(this));
+.get.ssa <- function(this, name) {
+  get(name, envir = .storage.ssa(this));
 }
 
-.set <- function(this, name, value) {
-  assign(name, value, envir = .storage(this), inherits = FALSE);
+.set.ssa <- function(this, name, value) {
+  assign(name, value, envir = .storage.ssa(this), inherits = FALSE);
 }
 
-.exists <- function(this, name) {
-  exists(name, envir = .storage(this), inherits = FALSE);
+.exists.ssa <- function(this, name) {
+  exists(name, envir = .storage.ssa(this), inherits = FALSE);
 }
 
-.remove <- function(this, name) {
-  rm(list = name, envir = .storage(this), inherits = FALSE);
+.remove.ssa <- function(this, name) {
+  rm(list = name, envir = .storage.ssa(this), inherits = FALSE);
 }
 
 '$.ssa' <- function(this, name) {
   if (ind <- charmatch(name, names(this), nomatch = 0))
     return (this[[ind]]);
 
-  if (.exists(this, name))
-    return (.get(this, name));
+  if (.exists.ssa(this, name))
+    return (.get.ssa(this, name));
 
   NULL;
 }
