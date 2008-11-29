@@ -108,7 +108,47 @@ decompose.ssa <- function(this, ...) {
   }
 }
 
-reconstruct.ssa <- function(this, groups, ...) {
+precache.ssa <- function(this, n, ...) {
+  if (missing(n)) {
+    warning("Amount of sub-series missed, precaching EVERYTHING",
+            immediate. = TRUE);
+    n <- nlambda(this);
+  }
+
+  # Calculate numbers of sub-series to be calculated
+  if (.exists(this, "cache:series")) {
+    info <- .get(this, "cache:series");
+  } else {
+    info <- numeric(0);
+  }
+  new <- setdiff(1:n, info);
+
+  # We're supporting only 'full' data for now
+  U <- .get(this, "U");
+  V <- .get(this, "V");
+  lambda <- .get(this, "lambda");
+
+  # FIXME: Stub for now. Use more efficient stuff here
+  new <- sapply(new,
+                function(i) {
+                  .cache(this,
+                         lambda[i] * hankel(outer(U[,i], V[,i])),
+                         i)});
+  .set(this, "cache:series", union(info, new));
+}
+
+.cache <- function(this, F, index) {
+  name <- paste("cache:", index, sep = "");
+  .set(this, name, F);
+  index;
+}
+
+cleanup.ssa <- function(this, ...) {
+  .remove(this, ls(.storage(this), pattern = "cache:"));
+  gc();
+}
+
+reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   out <- list();
   nu <- nu(this); nv <- nv(this);
 
@@ -180,6 +220,10 @@ clone.ssa <- function(this, ...) {
   exists(name, envir = .storage(this), inherits = FALSE);
 }
 
+.remove <- function(this, name) {
+  rm(list = name, envir = .storage(this), inherits = FALSE);
+}
+
 '$.ssa' <- function(this, name) {
   if (ind <- charmatch(name, names(this), nomatch = 0))
     return (this[[ind]]);
@@ -212,4 +256,12 @@ nv <- function(this, ...) {
 
 nlambda <- function(this, ...) {
   UseMethod("nlambda");
+}
+
+precache <- function(this, ...) {
+  UseMethod("precache");
+}
+
+cleanup <- function(this, ...) {
+  UseMethod("cleanup");
 }
