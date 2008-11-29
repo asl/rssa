@@ -17,6 +17,8 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
+dyn.load("ssa-lazy.so")
+
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ..., 
@@ -105,6 +107,17 @@ decompose.ssa <- function(this, ...) {
   }
 }
 
+# C call hankelize_one() is equivalent to the following R code:
+# hankel(outer(U, V))
+.hankelize.one <- function(U, V) {
+  L <- length(U); K <- length(V); N <- K + L - 1;
+  F <- rep(0, N);
+  .C("hankelize_one",
+     as.double(F),
+     as.double(U), as.double(V),
+     as.integer(L), as.integer(K))[[1]];
+}
+
 precache.ssa <- function(this, n, ...) {
   if (missing(n)) {
     warning("Amount of sub-series missed, precaching EVERYTHING",
@@ -125,11 +138,10 @@ precache.ssa <- function(this, n, ...) {
   V <- .get.ssa(this, "V");
   lambda <- .get.ssa(this, "lambda");
 
-  # FIXME: Stub for now. Use more efficient stuff here
   new <- sapply(new,
                 function(i) {
                   .cache(this,
-                         lambda[i] * hankel(outer(U[,i], V[,i])),
+                         lambda[i] * .hankelize.one(U[,i], V[,i]),
                          i)});
   .set.ssa(this, "cache:series", union(info, new));
 }
@@ -262,3 +274,12 @@ precache <- function(this, ...) {
 cleanup <- function(this, ...) {
   UseMethod("cleanup");
 }
+
+.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
+ F <- .F(1:500);
+
+#Rprof(memory = "both");
+#s <- new.ssa(F);
+#precache(s);
+#Rprof(NULL);
+#summaryRprof(memory = "both");
