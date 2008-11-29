@@ -45,9 +45,8 @@ new.ssa <- function(x,
   class(this) <- "ssa";
 
   # Decompose, if necessary
-  if (force.decompose) {
+  if (force.decompose)
     decompose(this, ...);
-  }
 
   this;
 }
@@ -58,7 +57,7 @@ hankel <- function(X, L) {
      L <- dim(X)[1]; K <- dim(X)[2]; N <- K + L - 1;
      left  <- c(1:L, L*(2:K));
      right <- c(1+L*(0:(K-1)), ((K-1)*L+2):(K*L));
-     v <- sapply(1:N, function(i) mean(X[seq(left[i], right[i], by = L-1)]));
+     v <- sapply(1:N, function(i) mean(X[seq.int(left[i], right[i], by = L-1)]));
      return (v);
   }
 
@@ -84,12 +83,10 @@ hankel <- function(X, L) {
 
   # Save results
   .set.ssa(this, "lambda", S$d);
-  if (!is.null(S$u)) {
+  if (!is.null(S$u))
     .set.ssa(this, "U", S$u);
-  }
-  if (!is.null(S$v)) {
+  if (!is.null(S$v))
     .set.ssa(this, "V", S$v);
-  }
 }
 
 .decompose.ssa.toeplitz <- function(this, ...) {
