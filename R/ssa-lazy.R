@@ -39,7 +39,7 @@ new.ssa <- function(x,
   attr(this, ".env") <- new.env();
 
   # Save series
-  assign("F", x, envir = .storage(this), inherits = FALSE);
+  .set(this, "F", x);
   
   # Make this S3 object
   class(this) <- "ssa";
@@ -75,7 +75,7 @@ hankel <- function(X, L) {
 .decompose.ssa.hankel <- function(this,
                                   nu = min(L, K), nv = min(L, K)) {
   N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- get("F", envir = .storage(this));
+  F <- .get(this, "F");
 
   X <- hankel(F, L = L);
 
@@ -83,13 +83,17 @@ hankel <- function(X, L) {
   S <- svd(X, nu = nu, nv = nv);
 
   # Save results
-  assign("lambda", S$d, envir = .storage(this), inherits = FALSE);
+  .set(this, "lambda", S$d);
   if (!is.null(S$u)) {
-    assign("U", S$u, envir = .storage(this), inherits = FALSE);
+    .set(this, "U", S$u);
   }
   if (!is.null(S$v)) {
-    assign("V", S$v, envir = .storage(this), inherits = FALSE);
+    .set(this, "V", S$v);
   }
+}
+
+.decompose.ssa.toeplitz <- function(this, ...) {
+  stop("Unimplemented!")
 }
 
 decompose.ssa <- function(this, ...) {
@@ -112,9 +116,9 @@ reconstruct.ssa <- function(this, groups, ...) {
     groups <- as.list(1:nlambda(this));
 
   # We're supporting only 'full' data for now
-  U <- get("U", envir = .storage(this));
-  V <- get("V", envir = .storage(this));
-  lambda <- get("lambda", envir = .storage(this));
+  U <- .get(this, "U");
+  V <- .get(this, "V");
+  lambda <- .get(this, "lambda");
 
   for (i in seq_along(groups)) {
     group <- groups[[i]];
@@ -131,21 +135,15 @@ reconstruct.ssa <- function(this, groups, ...) {
 }
 
 nu.ssa <- function(this, ...) {
-  ifelse(exists("U", envir = .storage(this), inherits = FALSE),
-         dim(get("U", envir = .storage(this)))[2],
-         0);
+  ifelse(.exists(this, "U"), dim(.get(this, "U"))[2], 0);
 }
 
 nv.ssa <- function(this, ...) {
-  ifelse(exists("V", envir = .storage(this), inherits = FALSE),
-         dim(get("V", envir = .storage(this)))[2],
-         0);
+  ifelse(.exists(this, "V"), dim(.get(this, "V"))[2], 0);
 }
 
 nlambda.ssa <- function(this, ...) {
-  ifelse(exists("lambda", envir = .storage(this), inherits = FALSE),
-         dim(get("lambda", envir = .storage(this)))[2],
-         0);
+  ifelse(.exists(this, "lambda"), length(.get(this, "lambda")), 0);
 }
 
 clone.ssa <- function(this, ...) {
@@ -170,12 +168,24 @@ clone.ssa <- function(this, ...) {
   attr(this, ".env");
 }
 
+.get <- function(this, name) {
+  get(name, envir = .storage(this));
+}
+
+.set <- function(this, name, value) {
+  assign(name, value, envir = .storage(this), inherits = FALSE);
+}
+
+.exists <- function(this, name) {
+  exists(name, envir = .storage(this), inherits = FALSE);
+}
+
 '$.ssa' <- function(this, name) {
   if (ind <- charmatch(name, names(this), nomatch = 0))
     return (this[[ind]]);
 
-  if (exists(name, envir = .storage(this), inherits = FALSE))
-    return (get(name, envir = .storage(this)));
+  if (.exists(this, name))
+    return (.get(this, name));
 
   NULL;
 }
