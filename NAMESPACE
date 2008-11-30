@@ -1,5 +1,15 @@
 useDynLib(Rssa)
 
+export(clone,
+       decompose,
+       reconstruct,
+       nu,
+       nv,
+       nlambda,
+       precache,
+       cleanup,
+       new.ssa)
+
 S3method(clone, ssa)
 S3method(decompose, ssa)
 S3method(reconstruct, ssa)
