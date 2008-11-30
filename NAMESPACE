@@ -1,0 +1,11 @@
+useDynLib(Rssa)
+
+S3method(clone, ssa)
+S3method(decompose, ssa)
+S3method(reconstruct, ssa)
+S3method(nu, ssa)
+S3method(nv, ssa)
+S3method(nlambda, ssa)
+S3method(precache, ssa)
+S3method(cleanup, ssa)
+

@@ -17,8 +17,6 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-dyn.load("ssa-lazy.so")
-
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ..., 
