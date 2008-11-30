@@ -87,12 +87,10 @@ SEXP hankelize_multi(SEXP U, SEXP V) {
 
   /* Calculate length of inputs and output */
   dimu = INTEGER(getAttrib(U, R_DimSymbol));
-  dimv = INTEGER(getAttrib(U, R_DimSymbol));
+  dimv = INTEGER(getAttrib(V, R_DimSymbol));
   L = dimu[0]; K = dimv[0];
-  if (dimu[1] != dimv[1])
+  if ((count = dimu[1]) != dimv[1])
     error("Both 'U' and 'V' should have equal number of columns");
-
-  count = dimu[1];
   N = K + L - 1;
 
   /* Allocate buffer for output */
@@ -102,6 +100,7 @@ SEXP hankelize_multi(SEXP U, SEXP V) {
   /* Perform the actual hankelization */
   for (i = 0; i < count; ++i) {
     R_CheckUserInterrupt();
+    /* TODO: nice target for OpenMP stuff */
     hankelize(rF+i*N, rU+i*L, rV+i*K, L, K);
   }
 
