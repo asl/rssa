@@ -232,20 +232,10 @@ nlambda.ssa <- function(this, ...) {
   ifelse(.exists(this, "lambda"), length(.get(this, "lambda")), 0);
 }
 
-clone.ssa <- function(this, ...) {
-  # Copy the information body
-  obj <- this;
-
-  # Make new storage
-  obj <- .create.storage(obj);
-
-  # Copy the contents of data storage
-  clone.env <- .storage(obj);
-  this.env <- .storage(this);
-  for (field in ls(envir = this.env, all.names = TRUE)) {
-    value <- get(field, envir = this.env, inherits = FALSE);
-    assign(field, value, envir = clone.env, inherits = FALSE);
-  }
+clone.ssa <- function(this, copy.cache = TRUE, ...) {
+  obj <- .clone(this);
+  if (copy.cache == FALSE)
+    cleanup(obj);
 
   obj;
 }

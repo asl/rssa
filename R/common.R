@@ -39,6 +39,25 @@
 .remove <- function(this, name)
   rm(list = name, envir = .storage(this), inherits = FALSE);
 
+.clone <- function(this) {
+  # Copy the information body
+  obj <- this;
+
+  # Make new storage
+  obj <- .create.storage(obj);
+
+  # Copy the contents of data storage
+  clone.env <- .storage(obj);
+  this.env <- .storage(this);
+  for (field in ls(envir = this.env, all.names = TRUE)) {
+    value <- get(field, envir = this.env, inherits = FALSE);
+    attr(value, "..cloned") <- NULL;
+    assign(field, value, envir = clone.env, inherits = FALSE);
+  }
+
+  obj;
+}
+
 # Generics
 clone <- function(this, ...)
   UseMethod("clone");
