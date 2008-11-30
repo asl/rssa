@@ -108,12 +108,8 @@ decompose.ssa <- function(this, ...) {
 # C call hankelize_one() is equivalent to the following R code:
 # hankel(outer(U, V))
 .hankelize.one <- function(U, V) {
-  L <- length(U); K <- length(V); N <- K + L - 1;
-  F <- rep(0, N);
-  .C("hankelize_one",
-     as.double(F),
-     as.double(U), as.double(V),
-     as.integer(L), as.integer(K))[[1]];
+  storage.mode(U) <- storage.mode(V) <- "double";
+  .Call("hankelize_one", U, V);
 }
 
 precache.ssa <- function(this, n, ...) {
@@ -273,11 +269,5 @@ cleanup <- function(this, ...) {
   UseMethod("cleanup");
 }
 
-.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
- F <- .F(1:500);
-
-#Rprof(memory = "both");
-#s <- new.ssa(F);
-#precache(s);
-#Rprof(NULL);
-#summaryRprof(memory = "both");
+#.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
+# F <- .F(1:5000);

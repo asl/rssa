@@ -19,13 +19,24 @@
  *   MA 02139, USA.
  */
 
+#include <R.h>
+#include <Rinternals.h>
+
 /* This is just direct R-to-C translation and will need to be rethought in the
  * future */
-void hankelize_one(double *F, double *U, double *V, int *l, int *k) {
-  int L = *l, K = *k;
-  int N = K + L - 1;
-  int i;
+SEXP hankelize_one(SEXP U, SEXP V) {
+  double *rU = REAL(U), *rV = REAL(V), *rF;
+  R_len_t i, L, K, N;
+  SEXP F;
 
+  /* Calculate length of inputs and outputs */
+  L = length(U); K = length(V); N = K + L - 1;
+
+  /* Allocate buffer for output */
+  PROTECT(F = allocVector(REALSXP, N));
+  rF = REAL(F);
+
+  /* Perform the actual hankelization */
   for (i = 0; i < N; ++i) {
     int leftu, rightu, leftv, rightv, l, j;
     double s = 0;
@@ -48,9 +59,12 @@ void hankelize_one(double *F, double *U, double *V, int *l, int *k) {
     l = leftu - rightu + 1;
 
     for (j = 0; j < l; ++j) {
-      s += U[leftu - j] * V[leftv + j];
+      s += rU[leftu - j] * rV[leftv + j];
     }
 
-    F[i] = s / (double) l;
+    rF[i] = s / (double) l;
   }
+
+  UNPROTECT(1);
+  return F;
 }
