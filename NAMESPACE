@@ -1,7 +1,7 @@
 useDynLib(Rssa)
 
 export(clone,
-       decompose,
+       decompose, decompose.default,
        reconstruct,
        nu,
        nv,

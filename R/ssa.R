@@ -237,37 +237,18 @@ clone.ssa <- function(this, ...) {
   NULL;
 }
 
-clone <- function(this, ...) {
-  UseMethod("clone");
-}
+clone <- function(this, ...)       UseMethod("clone");
+reconstruct <- function(this, ...) UseMethod("reconstruct");
+nu <- function(this, ...)          UseMethod("nu");
+nv <- function(this, ...)          UseMethod("nv");
+nlambda <- function(this, ...)     UseMethod("nlambda");
+precache <- function(this, ...)    UseMethod("precache");
+cleanup <- function(this, ...)     UseMethod("cleanup");
 
-decompose <- function(this, ...) {
-  UseMethod("decompose");
-}
-
-reconstruct <- function(this, ...) {
-  UseMethod("reconstruct");
-}
-
-nu <- function(this, ...) {
-  UseMethod("nu");
-}
-
-nv <- function(this, ...) {
-  UseMethod("nv");
-}
-
-nlambda <- function(this, ...) {
-  UseMethod("nlambda");
-}
-
-precache <- function(this, ...) {
-  UseMethod("precache");
-}
-
-cleanup <- function(this, ...) {
-  UseMethod("cleanup");
-}
+# There is decompose() call in stats package, we need to take control over it
+decompose <- function(this, ...) UseMethod("decompose");
+decompose.default <- stats::decompose;
+formals(decompose.default) <- c(formals(decompose.default), alist(... = ));
 
 #.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
 # F <- .F(1:5000);
