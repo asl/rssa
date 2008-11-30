@@ -36,7 +36,7 @@ new.ssa <- function(x,
                centering = centering);
 
   # Create data storage
-  attr(this, ".env") <- new.env();
+  this <- .create.storage(this);
 
   # Save series
   .set(this, "F", x);
@@ -237,37 +237,17 @@ clone.ssa <- function(this, ...) {
   obj <- this;
 
   # Make new storage
-  clone.env <- new.env();
-  this.env <- .storage(this);
-  attr(obj, ".env") <- clone.env;
+  obj <- .create.storage(obj);
 
   # Copy the contents of data storage
+  clone.env <- .storage(obj);
+  this.env <- .storage(this);
   for (field in ls(envir = this.env, all.names = TRUE)) {
     value <- get(field, envir = this.env, inherits = FALSE);
     assign(field, value, envir = clone.env, inherits = FALSE);
   }
 
   obj;
-}
-
-.storage <- function(this) {
-  attr(this, ".env");
-}
-
-.get <- function(this, name) {
-  get(name, envir = .storage(this));
-}
-
-.set <- function(this, name, value) {
-  assign(name, value, envir = .storage(this), inherits = FALSE);
-}
-
-.exists <- function(this, name) {
-  exists(name, envir = .storage(this), inherits = FALSE);
-}
-
-.remove <- function(this, name) {
-  rm(list = name, envir = .storage(this), inherits = FALSE);
 }
 
 '$.ssa' <- function(this, name) {
@@ -279,27 +259,6 @@ clone.ssa <- function(this, ...) {
 
   NULL;
 }
-
-# Generics
-clone <- function(this, ...)
-  UseMethod("clone");
-reconstruct <- function(this, ...)
-  UseMethod("reconstruct");
-nu <- function(this, ...)
-  UseMethod("nu");
-nv <- function(this, ...)
-  UseMethod("nv");
-nlambda <- function(this, ...)
-  UseMethod("nlambda");
-precache <- function(this, ...)
-  UseMethod("precache");
-cleanup <- function(this, ...)
-  UseMethod("cleanup");
-
-# There is decompose() call in stats package, we need to take control over it
-decompose <- function(this, ...) UseMethod("decompose");
-decompose.default <- stats::decompose;
-formals(decompose.default) <- c(formals(decompose.default), alist(... = ));
 
 #.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
 # F <- .F(1:5000);
