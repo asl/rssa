@@ -112,6 +112,11 @@ decompose.ssa <- function(this, ...) {
   .Call("hankelize_one", U, V);
 }
 
+.hankelize.multi <- function(U, V) {
+  storage.mode(U) <- storage.mode(V) <- "double";
+  .Call("hankelize_multi", U, V);
+}
+
 precache.ssa <- function(this, n, ...) {
   if (missing(n)) {
     warning("Amount of sub-series missed, precaching EVERYTHING",
@@ -132,10 +137,12 @@ precache.ssa <- function(this, n, ...) {
   V <- .get.ssa(this, "V");
   lambda <- .get.ssa(this, "lambda");
 
+  F <- .hankelize.multi(U[,new], V[,new]);
+
   new <- sapply(new,
                 function(i) {
                   .cache(this,
-                         lambda[i] * .hankelize.one(U[,i], V[,i]),
+                         lambda[i] * F[,i],
                          i)});
   .set.ssa(this, "cache:series", union(info, new));
 }
@@ -237,13 +244,21 @@ clone.ssa <- function(this, ...) {
   NULL;
 }
 
-clone <- function(this, ...)       UseMethod("clone");
-reconstruct <- function(this, ...) UseMethod("reconstruct");
-nu <- function(this, ...)          UseMethod("nu");
-nv <- function(this, ...)          UseMethod("nv");
-nlambda <- function(this, ...)     UseMethod("nlambda");
-precache <- function(this, ...)    UseMethod("precache");
-cleanup <- function(this, ...)     UseMethod("cleanup");
+# Generics
+clone <- function(this, ...)
+  UseMethod("clone");
+reconstruct <- function(this, ...)
+  UseMethod("reconstruct");
+nu <- function(this, ...)
+  UseMethod("nu");
+nv <- function(this, ...)
+  UseMethod("nv");
+nlambda <- function(this, ...)
+  UseMethod("nlambda");
+precache <- function(this, ...)
+  UseMethod("precache");
+cleanup <- function(this, ...)
+  UseMethod("cleanup");
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(this, ...) UseMethod("decompose");

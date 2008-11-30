@@ -21,24 +21,18 @@
 
 #include <R.h>
 #include <Rinternals.h>
+#include <R_ext/Utils.h>
 
 /* This is just direct R-to-C translation and will need to be rethought in the
  * future */
-SEXP hankelize_one(SEXP U, SEXP V) {
-  double *rU = REAL(U), *rV = REAL(V), *rF;
-  R_len_t i, L, K, N;
-  SEXP F;
 
-  /* Calculate length of inputs and outputs */
-  L = length(U); K = length(V); N = K + L - 1;
+static R_INLINE void hankelize(double *F,
+                               double *U, double *V,
+                               R_len_t L, R_len_t K) {
+  R_len_t i, N = K + L - 1;
+  R_len_t leftu, rightu, leftv, rightv, l, j;
 
-  /* Allocate buffer for output */
-  PROTECT(F = allocVector(REALSXP, N));
-  rF = REAL(F);
-
-  /* Perform the actual hankelization */
   for (i = 0; i < N; ++i) {
-    int leftu, rightu, leftv, rightv, l, j;
     double s = 0;
 
     if (i < L) {
@@ -59,10 +53,56 @@ SEXP hankelize_one(SEXP U, SEXP V) {
     l = leftu - rightu + 1;
 
     for (j = 0; j < l; ++j) {
-      s += rU[leftu - j] * rV[leftv + j];
+      s += U[leftu - j] * V[leftv + j];
     }
 
-    rF[i] = s / (double) l;
+    F[i] = s / (double) l;
+  }
+}
+
+SEXP hankelize_one(SEXP U, SEXP V) {
+  double *rU = REAL(U), *rV = REAL(V), *rF;
+  R_len_t L, K;
+  SEXP F;
+
+  /* Calculate length of inputs */
+  L = length(U); K = length(V);
+
+  /* Allocate buffer for output */
+  PROTECT(F = allocVector(REALSXP, K + L - 1));
+  rF = REAL(F);
+
+  /* Perform the actual hankelization */
+  hankelize(rF, rU, rV, L, K);
+
+  UNPROTECT(1);
+  return F;
+}
+
+SEXP hankelize_multi(SEXP U, SEXP V) {
+  double *rU = REAL(U), *rV = REAL(V), *rF;
+  R_len_t L, K, N, i, count;
+  SEXP F;
+  int *dimu, *dimv;
+
+  /* Calculate length of inputs and output */
+  dimu = INTEGER(getAttrib(U, R_DimSymbol));
+  dimv = INTEGER(getAttrib(U, R_DimSymbol));
+  L = dimu[0]; K = dimv[0];
+  if (dimu[1] != dimv[1])
+    error("Both 'U' and 'V' should have equal number of columns");
+
+  count = dimu[1];
+  N = K + L - 1;
+
+  /* Allocate buffer for output */
+  PROTECT(F = allocMatrix(REALSXP, N, count));
+  rF = REAL(F);
+
+  /* Perform the actual hankelization */
+  for (i = 0; i < count; ++i) {
+    R_CheckUserInterrupt();
+    hankelize(rF+i*N, rU+i*L, rV+i*K, L, K);
   }
 
   UNPROTECT(1);
