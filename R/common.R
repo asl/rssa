@@ -73,6 +73,8 @@ precache <- function(this, ...)
   UseMethod("precache");
 cleanup <- function(this, ...)
   UseMethod("cleanup");
+eigenplot <- function(this, ...)
+  UseMethod("eigenplot");
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(this, ...) UseMethod("decompose");

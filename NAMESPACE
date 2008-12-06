@@ -1,5 +1,7 @@
 useDynLib(Rssa)
 
+import(lattice)
+
 export(clone,
        decompose, decompose.default,
        reconstruct,
@@ -8,6 +10,7 @@ export(clone,
        nlambda,
        precache,
        cleanup,
+       eigenplot,
        new.ssa)
 
 S3method("clone", ssa)
@@ -19,3 +22,4 @@ S3method("nlambda", ssa)
 S3method("precache", ssa)
 S3method("cleanup", ssa)
 S3method("$", ssa)
+S3method("eigenplot", ssa)
