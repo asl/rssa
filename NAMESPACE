@@ -11,7 +11,8 @@ export(clone,
        precache,
        cleanup,
        eigenplot,
-       new.ssa)
+       new.ssa,
+       propack_svd)
 
 S3method("clone", ssa)
 S3method("decompose", ssa)
