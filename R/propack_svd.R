@@ -19,12 +19,13 @@
 
 # Stubs to call PROPACK' SVD implementation
 
-propack_svd <- function(X, neig = min(n, m)) {
+propack_svd <- function(X, neig = min(n, m), opts = list()) {
   n <- dim(X)[1]; m <- dim(X)[2];
 
   storage.mode(X) <- "double";
   storage.mode(neig) <- "integer"
+  storage.mode(opts) <- "list"
   
-  .Call("propack_svd", X, neig);  
+  .Call("propack_svd", X, neig, opts);
 }
 

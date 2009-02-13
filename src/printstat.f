@@ -16,7 +16,7 @@ c
       tupdnu = 0
       tintv = 0
       tlanbpro = 0
-      treorth = 0      
+      treorth = 0
       treorthu = 0
       treorthv = 0
       telru = 0
@@ -31,30 +31,71 @@ c
       trestart = 0
       end
 
-      
+      subroutine printchar(label)
+      implicit none
+      character*(*) label
+      integer nc
+      external printchar0
+      nc = len(label)
+      call printchar0(label, nc)
+      end
+
+      subroutine printint(label, data)
+      implicit none
+      character*(*) label
+      integer nc, data
+      external printint0
+      nc = len(label)
+      call printint0(label, nc, data)
+      end
+
+      subroutine printdbl(label, data)
+      implicit none
+      character*(*) label
+      integer nc
+      real data
+      external printdbl0
+      nc = len(label)
+      call printdbl0(label, nc, data)
+      end
+
       subroutine printstat
       implicit none
+
       include 'stat.h'
 
-      print *,'+---------------------------------------------------',
-     c     '--------+'
-      print *,'Dimension of Lanczos basis                  = ',nlandim
-      print *,'Number of singular values requested         = ',nsing
-      print *,'Number of restarts                          = ',nrestart
-      print *,'Number of matrix-vector multiplications     = ',nopx
-      print *,'Number of reorthogonalizations              = ',nreorth
-      print *,'Number of inner products in reorth.         = ',ndot
+      call printchar(' +-------------------------------------------------
+     &-----------+', -1, 0, 0)
+      call printint(' Dimension of Lanczos basis                  = ',
+     &     nlandim)
+      call printint(' Number of singular values requested         = ',
+     &     nsing)
+      call printint(' Number of restarts                          = ',
+     &     nrestart)
+      call printint(' Number of matrix-vector multiplications     = ',
+     &     nopx)
+      call printint(' Number of reorthogonalizations              = ',
+     &     nreorth)
+      call printint(' Number of inner products in reorth.         = ',
+     &     ndot)
 c      print *,'Number of iterative refinement steps        = ',nitref
-      print *,'Number of bidiagonal SVDs calculated        = ',nbsvd
-      print *
+      call printint(' Number of bidiagonal SVDs calculated        = ',
+     &     nbsvd)
+      call printchar('')
+      call printchar('')
 
-      print *
-      print *,'  Time spent doing matrix-vector multiply   = ',tmvopx
-      print *,'  Time spent generating starting vectors    = ',tgetu0
-      print *,'    Time spent reorthogonalizing U_{j+1}    = ',treorthu
-      print *,'    Time spent reorthogonalizing V_{j}      = ',treorthv
-      print *,'  Time spent reorthogonalizing              = ',treorth
-      print *,'Total Time spent in LANBPRO                 = ',tlanbpro
+      call printdbl('  Time spent doing matrix-vector multiply    = ',
+     &     tmvopx)
+      call printdbl('  Time spent generating starting vectors     = ',
+     &     tgetu0)
+      call printdbl('    Time spent reorthogonalizing U_{j+1}     = ',
+     &     treorthu)
+      call printdbl('    Time spent reorthogonalizing V_{j}       = ',
+     &     treorthv)
+      call printdbl('  Time spent reorthogonalizing               = ',
+     &     treorth)
+      call printdbl(' Total Time spent in LANBPRO                 = ',
+     &     tlanbpro)
 
 c      print *
 c      print *,'Time spent updating mu-recurrence           = ',tupdmu
@@ -63,15 +104,18 @@ c      print *,'Time spent on local reorth. on U_{j+1}      = ',telru
 c      print *,'Time spent on local reorth. on V_{j+1}      = ',telrv
 c      print *,'Time spent in PDNORM2                       = ',tnorm2
 c      print *,'Time spent in PDDOT                         = ',tdot
-      print *
-      print *,'  Time spent in LANBPRO                     = ',tlanbpro
-      print *,'  Time spent computing bidiagonal SVDs      = ',tbsvd
-      print *,'  Time spent doing implicit restarts        = ',trestart
-      print *,'  Time spent computing Ritz vectors         = ',tritzvec
-      print *
-      print *,'Total Time spent in LANSVD                  = ',tlansvd
-      print *,'+----------------------------------------------------',
-     c     '-------+'
+      call printchar('')
+      call printdbl('  Time spent in LANBPRO                      = ',
+     &     tlanbpro)
+      call printdbl('  Time spent computing bidiagonal SVDs       = ',
+     &     tbsvd)
+      call printdbl('  Time spent doing implicit restarts         = ',
+     &     trestart)
+      call printdbl('  Time spent computing Ritz vectors          = ',
+     &     tritzvec)
+      call printchar('')
+      call printdbl(' Total Time spent in LANSVD                  = ',
+     &     tlansvd)
+      call printchar(' +-------------------------------------------------
+     &----------+')
       end
-
-      
