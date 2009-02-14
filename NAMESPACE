@@ -12,6 +12,8 @@ export(clone,
        cleanup,
        eigenplot,
        new.ssa,
+       new.hmat,
+       hmatmul,
        propack_svd)
 
 S3method("clone", ssa)

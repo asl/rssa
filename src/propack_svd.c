@@ -113,11 +113,11 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   double *rA = REAL(A);
   R_len_t m, n, kmax;
   int *dimA, neig = *INTEGER(ne);
-  int p, dim, maxiter, liwrk, lwrk, i, *iwork, info, verbose;
+  int p, dim, maxiter, liwrk, lwrk, *iwork, info, verbose;
   double *wU, *wV, *work, *sigma, *bnd, tol;
   double doption[4];
   int ioption[2];
-  SEXP F, U, V, res, tmp;
+  SEXP F, U, V, res;
 
   /* Get source dimensions */
   dimA = INTEGER(getAttrib(A, R_DimSymbol));
