@@ -67,7 +67,7 @@ c
       include 'stat.h'
 
       call printchar(' +-------------------------------------------------
-     &-----------+', -1, 0, 0)
+     &-----------+')
       call printint(' Dimension of Lanczos basis                  = ',
      &     nlandim)
       call printint(' Number of singular values requested         = ',
