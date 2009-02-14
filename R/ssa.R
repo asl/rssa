@@ -66,7 +66,7 @@ hankel <- function(X, L) {
     X <- as.vector(X);
   N <- length(X);
   if (missing(L))
-    L <- (N + 1) %/% 2;
+    L <- (N - 1) %/% 2;
   K <- N - L + 1;
   outer(1:L, 1:K, function(x,y) X[x+y-1]);
 }

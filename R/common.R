@@ -59,6 +59,8 @@
 }
 
 # Generics
+
+# 'ssa' object
 clone <- function(this, ...)
   UseMethod("clone");
 reconstruct <- function(this, ...)
@@ -80,3 +82,4 @@ eigenplot <- function(this, ...)
 decompose <- function(this, ...) UseMethod("decompose");
 decompose.default <- stats::decompose;
 formals(decompose.default) <- c(formals(decompose.default), alist(... = ));
+

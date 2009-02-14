@@ -19,10 +19,16 @@
 
 # Stubs to call PROPACK' SVD implementation
 
-propack_svd <- function(X, neig = min(n, m), opts = list()) {
-  n <- dim(X)[1]; m <- dim(X)[2];
+propack_svd <- function(X, neig = min(m, n), opts = list()) {
+  if (is.matrix(X)) {
+    m <- dim(X)[1]; n <- dim(X)[2];
+    storage.mode(X) <- "double";
+  } else if (is.hmat(X)) {
+    m <- hrows(X); n <- hcols(X);
+  } else {
+    stop('unsupported matrix type for SVD')
+  }
 
-  storage.mode(X) <- "double";
   storage.mode(neig) <- "integer"
   storage.mode(opts) <- "list"
   

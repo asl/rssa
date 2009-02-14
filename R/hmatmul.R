@@ -37,7 +37,19 @@ new.hmat <- function(F,
   N <- length(F);
   storage.mode(F) <- "double";
   storage.mode(L) <- "integer";
-  .Call("initialize_hmat", F, L);
+  h <- .Call("initialize_hmat", F, L);
+}
+
+hcols <- function(h) {
+  .Call("hankel_cols", h)
+}
+
+hrows <- function(h) {
+  .Call("hankel_rows", h)
+}
+
+is.hmat <- function(h) {
+  .Call("is_hmat", h)
 }
 
 hmatmul <- function(hmat, v, transposed = FALSE) {

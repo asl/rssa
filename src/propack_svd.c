@@ -25,6 +25,8 @@
 #include <R_ext/Utils.h>
 #include <R_ext/BLAS.h>
 
+#include "hankel.h"
+
 void F77_NAME(clearstat)(void);
 void F77_NAME(printstat)(void);
 
@@ -53,7 +55,8 @@ void F77_NAME(dlansvd_irl) (char *which, char *jobu, char *jobv,
 
 void F77_SUB(printint0)(char* label, int* nc, int* d) {
   int i;
-  for (i = 0; i< *nc; ++i)
+
+  for (i = 0; i < *nc; ++i)
     Rprintf("%c", label[i]);
 
   Rprintf("\t%d\n", *d);
@@ -61,21 +64,24 @@ void F77_SUB(printint0)(char* label, int* nc, int* d) {
 
 void F77_SUB(printdbl0)(char* label, int* nc, double* d) {
   int i;
-  for (i = 0; i< *nc; ++i)
+
+  for (i = 0; i < *nc; ++i)
     Rprintf("%c", label[i]);
 
-  Rprintf("\t%e\n", *d);
+  Rprintf("\t%lf\n", *d);
 }
 
 void F77_SUB(printchar0)(char* label, int* nc) {
   int i;
-  for (i = 0; i< *nc; ++i)
+  for (i = 0; i < *nc; ++i)
     Rprintf("%c", label[i]);
 
   Rprintf("\n");
 }
 
-/* Just ordinary dense matmul routine */
+#define UNUSED(x) (void)(x)
+
+/* Just ordinary dense matrix-vector product routine */
 void dense_matmul(char *transa,
                   int *m, int *n,
                   double *x, double *y,
@@ -83,11 +89,26 @@ void dense_matmul(char *transa,
   double one = 1.0, zero = 0.0; int i1 = 1;
 
   /* Silence an 'unused' warning */
-  iparm = iparm;
+  UNUSED(iparm);
 
   F77_CALL(dgemv)(transa, m, n, &one, dparm, m, x, &i1, &zero, y, &i1);
 }
 
+/* Hankel matrix-vector product routine */
+void hankel_matmul(char *transa,
+                   int *m, int *n,
+                   double *x, double *y,
+                   double *dparm, int *iparm) {
+  hankel_matrix *h = (hankel_matrix*)iparm;
+  Rboolean transposed;
+
+  UNUSED(dparm);
+
+  if (*transa == 'T' || *transa == 't')
+    _hmatmul2(y, x, *m, h, TRUE);
+  else
+    _hmatmul2(y, x, *n, h, FALSE);
+}
 
 /* Get the list element named str, or return NULL */
 static SEXP getListElement(SEXP list, const char *str) {
@@ -102,26 +123,42 @@ static SEXP getListElement(SEXP list, const char *str) {
   return elmt;
 }
 
-#define getScalarListElement(trg, list, str, type, def)   \
-  do {                                                    \
-    SEXP __tmp = getListElement(list, str);               \
-    trg = (__tmp != R_NilValue ? type(__tmp)[0] : (def)); \
+#define getScalarListElement(trg, list, str, coerce, def)         \
+  do {                                                            \
+    SEXP __tmp = getListElement(list, str);                       \
+    trg = (__tmp != R_NilValue ? coerce(__tmp) : (def));          \
   } while(0)
 
 /* Main driver routine for PROPACK */
 SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
-  double *rA = REAL(A);
   R_len_t m, n, kmax;
-  int *dimA, neig = *INTEGER(ne);
+  int neig = *INTEGER(ne);
   int p, dim, maxiter, liwrk, lwrk, *iwork, info, verbose;
   double *wU, *wV, *work, *sigma, *bnd, tol;
   double doption[4];
   int ioption[2];
   SEXP F, U, V, res;
+  mul_fn_t mulfn = NULL;
+  double* dparm = NULL;
+  int* iparm = NULL;
 
-  /* Get source dimensions */
-  dimA = INTEGER(getAttrib(A, R_DimSymbol));
-  m = dimA[0]; n = dimA[1];
+  /* Check source time and grab dimensions */
+  if (isMatrix(A)) {
+    /* Ordinary matrix case */
+    int *dimA = INTEGER(getAttrib(A, R_DimSymbol));
+    m = dimA[0]; n = dimA[1];
+    dparm = REAL(A); iparm = NULL;
+    mulfn = dense_matmul;
+  } else if (TYPEOF(A) == EXTPTRSXP &&
+          R_ExternalPtrTag(A) == install("hankel matrix")) {
+    /* Hankel matrix case */
+    hankel_matrix *h = R_ExternalPtrAddr(A);
+    m = _hankel_rows(h);
+    n = _hankel_cols(h);
+    dparm = NULL; iparm = (int*)h;
+    mulfn = hankel_matmul;
+  } else
+    error("unsupported input matrix 'A' type");
 
   /* Compute needed options */
 
@@ -130,24 +167,24 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   if (neig > n) neig = n;
 
   /* Maximum number of iterations */
-  getScalarListElement(kmax, opts, "kmax", INTEGER, 10*neig);
+  getScalarListElement(kmax, opts, "kmax", asInteger, 3*neig);
   kmax = imin2(kmax, n+1);
   kmax = imin2(kmax, m+1);
 
   /* Dimension of Krylov subspace */
-  getScalarListElement(dim, opts, "dim", INTEGER, kmax);
+  getScalarListElement(dim, opts, "dim", asInteger, kmax);
 
   /* Number of shift per restart. */
-  getScalarListElement(p, opts, "p", INTEGER, dim - neig);
+  getScalarListElement(p, opts, "p", asInteger, dim - neig);
 
   /* Maximum number of restarts */
-  getScalarListElement(maxiter, opts, "maxiter", INTEGER, 10);
+  getScalarListElement(maxiter, opts, "maxiter", asInteger, 10);
 
   /* Tolerance */
-  getScalarListElement(tol, opts, "tol", REAL, 1e-12);
+  getScalarListElement(tol, opts, "tol", asReal, 1e-12);
 
   /* Verboseness */
-  getScalarListElement(verbose, opts, "verbose", LOGICAL, 0);
+  getScalarListElement(verbose, opts, "verbose", asLogical, 0);
 
   /* Level of orthogonality to maintain among Lanczos vectors. */
   doption[0] = sqrt(DOUBLE_EPS);
@@ -186,7 +223,7 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   F77_CALL(dlansvd_irl)("L", "Y", "Y",
                         &m, &n,
                         &dim, &p, &neig, &maxiter,
-                        dense_matmul,
+                        mulfn,
                         wU, &m,
                         sigma, bnd,
                         wV, &n,
@@ -195,7 +232,7 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
                         iwork, &liwrk,
                         doption, ioption,
                         &info,
-                        rA, NULL);
+                        dparm, iparm);
 
   /* Cleanup */
   Free(work); Free(iwork); Free(bnd);
