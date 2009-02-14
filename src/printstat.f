@@ -54,9 +54,11 @@ c
       character*(*) label
       integer nc
       real data
+      double precision outd
       external printdbl0
       nc = len(label)
-      call printdbl0(label, nc, data)
+      outd = data
+      call printdbl0(label, nc, outd)
       end
 
       subroutine printstat
