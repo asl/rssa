@@ -12,6 +12,7 @@ export(clone,
        cleanup,
        eigenplot,
        new.ssa,
+       wcor, wcor.default,
 # Hankel matrix' routines
        new.hmat,
        hmatmul,
@@ -19,7 +20,6 @@ export(clone,
        hcols,
        hrows,
        is.hmat,
-
 # SVD
        propack_svd)
 
@@ -33,3 +33,5 @@ S3method("precache", ssa)
 S3method("cleanup", ssa)
 S3method("$", ssa)
 S3method("eigenplot", ssa)
+S3method("wcor", ssa)
+S3method("plot", wcor.matrix)

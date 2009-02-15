@@ -31,7 +31,7 @@ wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
   Ls <- min(L, K); Ks <- max(L, K);
 
   # Compute weights
-  w <- c(1:Ls, rep(Ls, Ks-Ls), seq(from = N-Ks, to = 1, by = -1));
+  w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), seq(from = Ls-1, to = 1, by = -1));
 
   # Compute w-covariation
   cov <- crossprod(sqrt(w) * X);
@@ -44,18 +44,14 @@ wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
   return (R);
 }
 
-wcor.ssa <- function(X, groups, ...) {
+wcor.ssa <- function(X, groups, ..., cache = TRUE) {
   L <- X$window; N <- X$length;
   if (missing(groups))
-    groups <- as.list(1:L);
+    groups <- as.list(1:nlambda(X));
 
   # Compute reconstruction.
-  # FIXME: Modify ssa.reconstruct to return matrix
-  F <- ssa.reconstruct(X, groups);
-  X <- matrix(nrow = N, ncol = 0);
-  for (i in seq_along(F)) {
-    X <- cbind(X, F[[i]]);
-  }
+  F <- reconstruct(X, groups, ..., cache = cache);
+  X <- matrix(unlist(F), nrow = N, ncol = length(groups));
   colnames(X) <- names(F);
 
   # Finally, compute w-correlations and return
