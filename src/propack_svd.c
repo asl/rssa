@@ -100,7 +100,6 @@ void hankel_matmul(char *transa,
                    double *x, double *y,
                    double *dparm, int *iparm) {
   hankel_matrix *h = (hankel_matrix*)iparm;
-  Rboolean transposed;
 
   UNUSED(dparm);
 
@@ -167,7 +166,7 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   if (neig > n) neig = n;
 
   /* Maximum number of iterations */
-  getScalarListElement(kmax, opts, "kmax", asInteger, 3*neig);
+  getScalarListElement(kmax, opts, "kmax", asInteger, 5*neig);
   kmax = imin2(kmax, n+1);
   kmax = imin2(kmax, m+1);
 
