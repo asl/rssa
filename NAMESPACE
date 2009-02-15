@@ -12,8 +12,15 @@ export(clone,
        cleanup,
        eigenplot,
        new.ssa,
+# Hankel matrix' routines
        new.hmat,
        hmatmul,
+       hankel,
+       hcols,
+       hrows,
+       is.hmat,
+
+# SVD
        propack_svd)
 
 S3method("clone", ssa)

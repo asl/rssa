@@ -51,54 +51,6 @@ new.ssa <- function(x,
   this;
 }
 
-# FIXME: add version, which accepts first column and last row
-hankel <- function(X, L) {
-  if (is.matrix(X) && nargs() == 1) {
-     L <- dim(X)[1]; K <- dim(X)[2]; N <- K + L - 1;
-     left  <- c(1:L, L*(2:K));
-     right <- c(1+L*(0:(K-1)), ((K-1)*L+2):(K*L));
-     v <- sapply(1:N, function(i) mean(X[seq.int(left[i], right[i], by = L-1)]));
-     return (v);
-  }
-
-  # Coerce output to vector, if necessary
-  if (!is.vector(X))
-    X <- as.vector(X);
-  N <- length(X);
-  if (missing(L))
-    L <- (N - 1) %/% 2;
-  K <- N - L + 1;
-  outer(1:L, 1:K, function(x,y) X[x+y-1]);
-}
-
-.hankelize.one <- function(U, V) {
-  storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_one", U, V);
-}
-
-.hankelize.multi <- function(U, V) {
-  storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_multi", U, V);
-}
-
-.decompose.ssa.hankel <- function(this,
-                                  nu = min(L, K), nv = min(L, K)) {
-  N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- .get(this, "F");
-
-  X <- hankel(F, L = L);
-
-  # FIXME: Use special SVD for hankel matrixes
-  S <- svd(X, nu = nu, nv = nv);
-
-  # Save results
-  .set(this, "lambda", S$d);
-  if (!is.null(S$u))
-    .set(this, "U", S$u);
-  if (!is.null(S$v))
-    .set(this, "V", S$v);
-}
-
 .decompose.ssa.toeplitz <- function(this, ...) {
   stop("Unimplemented!")
 }
