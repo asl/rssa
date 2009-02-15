@@ -173,11 +173,11 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 }
 
 nu.ssa <- function(this, ...) {
-  ifelse(.exists(this, "U"), dim(.get(this, "U"))[2], 0);
+  ifelse(.exists(this, "U"), ncol(.get(this, "U")), 0);
 }
 
 nv.ssa <- function(this, ...) {
-  ifelse(.exists(this, "V"), dim(.get(this, "V"))[2], 0);
+  ifelse(.exists(this, "V"), ncol(.get(this, "V")), 0);
 }
 
 nlambda.ssa <- function(this, ...) {

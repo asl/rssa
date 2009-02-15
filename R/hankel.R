@@ -34,7 +34,7 @@ hmatmul.old <- function(C, v) {
 
 hankel <- function(X, L) {
   if (is.matrix(X) && nargs() == 1) {
-     L <- dim(X)[1]; K <- dim(X)[2]; N <- K + L - 1;
+     L <- nrow(X); K <- ncol(X); N <- K + L - 1;
      left  <- c(1:L, L*(2:K));
      right <- c(1+L*(0:(K-1)), ((K-1)*L+2):(K*L));
      v <- sapply(1:N, function(i) mean(X[seq.int(left[i], right[i], by = L-1)]));
