@@ -88,16 +88,17 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
 }
 
 .decompose.ssa.hankel <- function(this,
-                                  nu = min(L, K), nv = min(L, K)) {
+                                  neig = min(50, L, K),
+                                  ...) {
   N <- this$length; L <- this$window; K <- N - L + 1;
   F <- .get(this, "F");
 
-  X <- hankel(F, L = L);
+  h <- new.hmat(F, L = L);
 
-  # FIXME: Use special SVD for hankel matrixes
-  S <- svd(X, nu = nu, nv = nv);
+  S <- propack_svd(h, neig = neig, ...);
 
   # Save results
+  .set(this, "hmat", h);
   .set(this, "lambda", S$d);
   if (!is.null(S$u))
     .set(this, "U", S$u);
