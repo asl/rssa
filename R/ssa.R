@@ -192,6 +192,24 @@ clone.ssa <- function(this, copy.cache = TRUE, ...) {
   obj;
 }
 
+clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
+                           ...,
+                           type = c("wcor"), cache = TRUE) {
+  type <- match.arg(type)
+
+  if (missing(groups))
+    groups <- as.list(1:nlambda(this));
+
+  if (identical(type, "wcor")) {
+    w <- wcor(this, groups = groups, ..., cache = cache);
+    g <- clusterify(w, nclust = nclust, ...);
+    out <- lapply(g, function(idx) unlist(groups[idx]));
+  } else {
+    stop("Unsupported clusterification method!");
+  }
+  out;
+}
+
 '$.ssa' <- function(this, name) {
   if (ind <- charmatch(name, names(this), nomatch = 0))
     return (this[[ind]]);

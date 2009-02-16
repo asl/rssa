@@ -77,9 +77,10 @@ cleanup <- function(this, ...)
   UseMethod("cleanup");
 eigenplot <- function(this, ...)
   UseMethod("eigenplot");
+clusterify <- function(this, ...)
+  UseMethod("clusterify");
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(this, ...) UseMethod("decompose");
 decompose.default <- stats::decompose;
 formals(decompose.default) <- c(formals(decompose.default), alist(... = ));
-

@@ -75,6 +75,15 @@ plot.wcor.matrix <- function(x, col = rev(gray(seq(0, 1, len = 20))),
   box();
 }
 
+clusterify.wcor.matrix <- function(this,
+                                   nclust = N,
+                                   ...,
+                                   dist = function(X) (1 - X) / 2) {
+  N <- nrow(this);
+  h <- cutree(hclust(as.dist(dist(this)), ...), k = nclust);
+  split(1:N, h);
+}
+
 #N = 399;
 #a = 1.005;
 #T = 200;
