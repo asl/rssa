@@ -101,12 +101,12 @@ void hankel_matmul(char *transa,
                    double *dparm, int *iparm) {
   hankel_matrix *h = (hankel_matrix*)iparm;
 
-  UNUSED(dparm);
+  UNUSED(dparm); UNUSED(m); UNUSED(n);
 
   if (*transa == 'T' || *transa == 't')
-    _hmatmul2(y, x, *m, h, TRUE);
+    _hmatmul2(y, x, h, TRUE);
   else
-    _hmatmul2(y, x, *n, h, FALSE);
+    _hmatmul2(y, x, h, FALSE);
 }
 
 /* Get the list element named str, or return NULL */

@@ -90,10 +90,10 @@ void _initialize_circulant(toeplitz_circulant *C,
 }
 
 void _hmatmul(double* out,
-              const double* v, R_len_t K,
+              const double* v,
               const toeplitz_circulant *C) {
-  R_len_t L = C->window;
-  R_len_t N = K + L - 1, i;
+  R_len_t L = C->window, N = C->length;
+  R_len_t K = N - L + 1, i;
   double *circ;
   fftw_complex *ocirc;
 
@@ -125,11 +125,11 @@ void _hmatmul(double* out,
 }
 
 void _hmatmul2(double* out,
-               const double* v, R_len_t K,
+               const double* v,
                const hankel_matrix *h,
                Rboolean t) {
   const toeplitz_circulant *C = (t ? &h->transposed : &h->normal);
-  _hmatmul(out, v, K, C);
+  _hmatmul(out, v, C);
 }
 
 static void hmatFinalizer(SEXP ptr) {
@@ -238,7 +238,7 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
   PROTECT(Y = allocVector(REALSXP, C->window));
 
   /* Calculate the product */
-  _hmatmul(REAL(Y), REAL(v), K, C);
+  _hmatmul(REAL(Y), REAL(v), C);
 
   UNPROTECT(1);
 

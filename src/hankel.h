@@ -28,6 +28,6 @@ int _hankel_rows(hankel_matrix*);
 int _hankel_cols(hankel_matrix*);
 
 void _hmatmul2(double* out,
-               const double* v, R_len_t K,
+               const double* v,
                const hankel_matrix *h,
                Rboolean t);
