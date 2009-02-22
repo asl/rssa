@@ -82,10 +82,10 @@ void F77_SUB(printchar0)(char* label, int* nc) {
 #define UNUSED(x) (void)(x)
 
 /* Just ordinary dense matrix-vector product routine */
-void dense_matmul(char *transa,
-                  int *m, int *n,
-                  double *x, double *y,
-                  double *dparm, int *iparm) {
+static void dense_matmul(char *transa,
+                         int *m, int *n,
+                         double *x, double *y,
+                         double *dparm, int *iparm) {
   double one = 1.0, zero = 0.0; int i1 = 1;
 
   /* Silence an 'unused' warning */
@@ -95,10 +95,10 @@ void dense_matmul(char *transa,
 }
 
 /* Hankel matrix-vector product routine */
-void hankel_matmul(char *transa,
-                   int *m, int *n,
-                   double *x, double *y,
-                   double *dparm, int *iparm) {
+static void hankel_matmul(char *transa,
+                          int *m, int *n,
+                          double *x, double *y,
+                          double *dparm, int *iparm) {
   hankel_matrix *h = (hankel_matrix*)iparm;
 
   UNUSED(dparm); UNUSED(m); UNUSED(n);
