@@ -351,9 +351,8 @@ void trlan(trl_matprod op,
   clk1 = clock();
   info->clk_tot = clk1;
   if (info->ned > mev) {
-    printf
-      ("info->ned (%d) is larger than mev (%d) reducing info->ned to %d\n",
-       info->ned, mev, mev);
+    warning("info->ned (%d) is larger than mev (%d) reducing info->ned to %d\n",
+            info->ned, mev, mev);
     info->ned = mev;
   }
   /* there is nothing to do if there is no more eigenvalue to compute */
