@@ -149,7 +149,7 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
     dparm = REAL(A); iparm = NULL;
     mulfn = dense_matmul;
   } else if (TYPEOF(A) == EXTPTRSXP &&
-          R_ExternalPtrTag(A) == install("hankel matrix")) {
+             R_ExternalPtrTag(A) == install("hankel matrix")) {
     /* Hankel matrix case */
     hankel_matrix *h = R_ExternalPtrAddr(A);
     m = _hankel_rows(h);

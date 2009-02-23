@@ -6,6 +6,11 @@ PKG_LIBS+=-lfftw3
 PROPACK_OBJS=dlansvd_irl.o printstat.o second.o propack_svd.o
 PROPACK_DIR=propack
 
+TRLAN_OBJS=dsort2.o dstqrb.o trlcore.o trlaux.o trlan.o trl_comm_none.o trlmap.o restart.o trlan_R.o
+TRLAN_DIR=trlan
+
 RSSA_OBJS=hankel.o ssa.o
 
-OBJECTS=$(RSSA_OBJS) $(addprefix $(PROPACK_DIR)/,$(PROPACK_OBJS))
+OBJECTS=$(RSSA_OBJS)                                 \
+        $(addprefix $(PROPACK_DIR)/,$(PROPACK_OBJS)) \
+        $(addprefix $(TRLAN_DIR)/,$(TRLAN_OBJS))
