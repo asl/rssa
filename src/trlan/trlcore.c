@@ -1038,8 +1038,7 @@ void trl_initial_guess(int nrow, double *evec, int lde, int mev,
   if (info->my_pe > 0) {
     ii = ii - (int) (info->my_pe * sqrt((double) ii));
   }
-  srand48((long) ii);
-  //
+
   j = info->nec;
   if (info->guess > 1) {
     // retrieve a check-point file
@@ -1078,9 +1077,10 @@ void trl_initial_guess(int nrow, double *evec, int lde, int mev,
       }
       nran = imin2(1 - info->guess, lwrk);
       nran = 2 * (nran / 2);
+      GetRNGstate();
       if (nran > 0 && nran < nrow) {
         for (k = 0; k < nran; k++) {
-          wrk[k] = drand48();
+          wrk[k] = unif_rand();
         }
         for (i = 0; i < nran - 1; i += 2) {
           ii = (int) (nrow * wrk[i]);
@@ -1089,11 +1089,12 @@ void trl_initial_guess(int nrow, double *evec, int lde, int mev,
         }
       } else if (nran >= nrow) {
         for (i = 0; i < nrow; i++) {
-          evec[j * lde + i] = drand48();
+          evec[j * lde + i] = unif_rand();
         }
         smoothrr(nrow, &evec[(info->nec) * lde]);
         info->nrand++;
       }
+      PutRNGstate();
     }
     *j1 = info->nec;
     *j2 = 0;
@@ -1106,9 +1107,11 @@ void trl_initial_guess(int nrow, double *evec, int lde, int mev,
     // set rnrm to let trl_CGS normalize evec(1:nrow, j)
     rnrm = sqrt(wrk[0]);
   } else {
+    GetRNGstate();
     for (i = 0; i < nrow; i++) {
-      evec[j * lde + i] = drand48();
+      evec[j * lde + i] = unif_rand();
     }
+    PutRNGstate();
     smoothrr(nrow, &evec[(info->nec) * lde]);
     info->nrand++;
   }
@@ -1923,43 +1926,45 @@ int trl_cgs(trl_info * info, int nrow, double *v1, int ld1, int m1,
         cnt = 0;
         irnd++;
         info->nrand++;
+        GetRNGstate();
         if (irnd == 1 && *rnrm > 0.0 &&
             *rnrm > DBL_EPSILON * old_rnrm) {
           /* old version:  modify only one element
              new version:  modify (nrow * epsilon * rnrm / old_rnrm ) elements */
-          tmp = drand48();
+          tmp = unif_rand();
           i = (int) (nrow * tmp);
           k = i +  (int) (fmax2(1.0,
                                 (nrow * DBL_EPSILON * old_rnrm / *rnrm)));
           for (j = i; j < k; j++) {
-            tmp = drand48();
+            tmp = unif_rand();
             while (fabs(tmp - 0.5) <= DBL_EPSILON) {
-              tmp = drand48();
+              tmp = unif_rand();
             }
             rr[j] += (*rnrm) * (tmp - 0.5);
           }
         } else {
           /* fill with random numbers produced by intrinsic function */
           for (i = 0; i <= myid; i++) {
-            tmp = drand48();
+            tmp = unif_rand();
           }
           i = (int) (nrow * tmp);
-          tmp = drand48();
+          tmp = unif_rand();
           j = (int) (nrow * tmp);
           if (i < j) {
             for (k = i; k <= j; k++) {
-              rr[k] = drand48();
+              rr[k] = unif_rand();
             }
           } else if (i > j) {
             for (k = j; k <= i; k++) {
-              rr[k] = drand48();
+              rr[k] = unif_rand();
             }
           } else {
             for (k = 0; k < nrow; k++) {
-              rr[k] = drand48();
+              rr[k] = unif_rand();
             }
           }
         }
+        PutRNGstate();
         /* rr = rr + rr + Cshift(rr, 1) + Cshift(rr, -1) */
         smoothrr(nrow, rr);
       }

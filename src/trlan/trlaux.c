@@ -6,9 +6,6 @@
 #include <R.h>
 #include <Rmath.h>
 
-#include <stdio.h>
-#include <string.h>
-
 #include "trlan.h"
 #include "trlan_i.h"
 #include "trlaux_i.h"
@@ -25,8 +22,7 @@ int close_file(FILE * fp, int err1, int err2) {
   return err1;
 }
 
-void trl_open_logfile(trl_info * info)
-{
+void trl_open_logfile(trl_info * info) {
   char filename[TRLAN_STRING_LEN];
 
   if (info->log_file != 0 && strlen(info->log_file) > 0) {
