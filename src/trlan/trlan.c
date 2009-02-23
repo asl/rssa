@@ -750,7 +750,6 @@ trl_check_ritz(trl_matprod op,
   gsumwrk -- workspace left over for trl_g_sum to use dimension of the input arrays
 */
   double *aq, *rq, *gsumwrk, *res, *err;
-  FILE *fp;
   int i, aqi, rqi, gsumwrki, icheck;
   double gapl, gapr;
 
@@ -830,53 +829,33 @@ trl_check_ritz(trl_matprod op,
   } else {
     err[ncol - 1] = res[ncol - 1] * res[ncol - 1] / gapl;
   }
+
   /* if writing to stdout, only PE 0 does it */
-  fp = info->log_fp;
-  if (fp == NULL) {
+  if (info->log_fp == NULL)
     trl_reopen_logfile(info);
-    fp = info->log_fp;
-  }
-  if (fp != stdout || info->my_pe <= 0) {
+
+  if (info->log_fp != stdout || info->my_pe <= 0) {
     if (info->stat != 0) {
-#ifdef __DEBUG_OUT
-      ferr = fopen("error.txt", "a");
-      fprintf(ferr, " ** exit error (%d) ** \n", info->stat);
-      fclose(ferr);
-#endif
       *check = -4;
     }
     /* print out the information */
-    fprintf(fp, "TRL_CHECK_RITZ: \n");
-    fprintf(fp,
+    fprintf(info->log_fp, "TRL_CHECK_RITZ: \n");
+    fprintf(info->log_fp,
             "           Ritz value       res norm   res diff  est error  diff w rq  act. error\n");
-#ifdef __DEBUG_OUT
-    ferr = fopen("error.txt", "a");
-#endif
     if (beta != NULL && eval != NULL) {
       for (i = 0; i < ncol; i++) {
         icheck = 0;
-        fprintf(fp,
+        fprintf(info->log_fp,
                 "%21.14f    %11.3e%11.3e%11.3e%11.3e %11.3e%11.3e\n",
                 alpha[i], res[i], beta[i] - res[i], err[i],
                 rq[i] - alpha[i], eval[i] - alpha[i], eval[i]);
         /* check the accuracy of results.. */
         if (fabs(beta[i] - res[i]) > 0.00001) {
-#ifdef __DEBUG_OUT
-          fprintf(ferr,
-                  " res diff[%d] = |beta-res| = %5.3e - %5.3e = %5.3e > 0.00001\n",
-                  i, beta[i], res[i], fabs(beta[i] - res[i]));
-#endif
           *check = *check - 1;
           icheck++;
         }
 
         if (fabs(rq[i] - alpha[i]) > nrow * nrow * info->tol) {
-#ifdef __DEBUG_OUT
-          fprintf(ferr,
-                  " diff rq[%d] = |rq-alpha| = %5.3e - %5.3e = %5.3e > nrow*nor*tau = %5.3e\n",
-                  i, rq[i], alpha[i], fabs(rq[i] - alpha[i]),
-                  nrow * nrow * info->tol);
-#endif
           *check = *check - 1;
           icheck++;
         }
@@ -884,12 +863,6 @@ trl_check_ritz(trl_matprod op,
         if ((fabs(eval[i] - alpha[i]) >
              10 * nrow * nrow * info->tol) ||
             (fabs(eval[i] - alpha[i]) > 10 * err[i])) {
-#ifdef __DEBUG_OUT
-          fprintf(ferr,
-                  " act. error[%d] = |exact-alpha| = %5.3e - %5.3e = %5.3e > 10*nrow*nrow*tau =%5.3e or 10*est err = %5.3e\n",
-                  i, eval[i], alpha[i], fabs(eval[i] - alpha[i]),
-                  10 * nrow * nrow * info->tol, 10 * err[i]);
-#endif
           *check = *check - 1;
           icheck++;
         }
@@ -897,59 +870,46 @@ trl_check_ritz(trl_matprod op,
 
     } else if (beta != NULL) {
       for (i = 0; i < ncol; i++) {
-        fprintf(fp, "%21.14f    %11.3e%11.3e%11.3e%11.3e\n",
+        fprintf(info->log_fp, "%21.14f    %11.3e%11.3e%11.3e%11.3e\n",
                 alpha[i], res[i], beta[i] - res[i], err[i],
                 rq[i] - alpha[i]);
         /* check the accuracy of results.. */
         if (fabs(beta[i] - res[i]) > 0.00001) {
-#ifdef __DEBUG_OUT
-          fprintf(ferr,
-                  " res diff[%d] = |beta-res| = %5.3e - %5.3e = %5.3e > 0.00001\n",
-                  i, beta[i], res[i], fabs(beta[i] - res[i]));
-#endif
           *check = *check - 1;
           icheck++;
         }
 
         if (fabs(rq[i] - alpha[i]) > nrow * nrow * info->tol) {
-#ifdef __DEBUG_OUT
-          fprintf(ferr,
-                  " diff rq[%d] = |rq-alpha| = %5.3e - %5.3e = %5.3e > nrow*nor*tau = %5.3e\n",
-                  i, rq[i], alpha[i], fabs(rq[i] - alpha[i]),
-                  nrow * nrow * info->tol);
-#endif
           *check = *check - 1;
           icheck++;
         }
       }
     } else if (eval != NULL) {
       for (i = 0; i < ncol; i++) {
-        fprintf(fp,
+        fprintf(info->log_fp,
                 "%21.14f     %11.3e           %11.3e%11.3e%11.3e%11.3e\n",
                 alpha[i], res[i], err[i], rq[i] - alpha[i],
                 eval[i] - alpha[i], eval[i]);
       }
     } else {
       for (i = 0; i < ncol; i++) {
-        fprintf(fp, "%21.14f    %11.5e           %11.3e%11.3e\n",
+        fprintf(info->log_fp, "%21.14f    %11.5e           %11.3e%11.3e\n",
                 alpha[i], res[i], err[i], rq[i] - alpha[i]);
       }
     }
-#ifdef __DEBUG_OUT
-    fclose(ferr);
-#endif
   }
   if (info->nec < info->ned)
     *check = 1;
-  if (rqi > 0) {
+
+  if (rqi > 0)
     Free(rq);
-  }
-  if (aqi > 0) {
+
+  if (aqi > 0)
     Free(aq);
-  }
-  if (gsumwrki > 0) {
+
+  if (gsumwrki > 0)
     Free(gsumwrk);
-  }
+
   trl_close_logfile(info);
 }
 
