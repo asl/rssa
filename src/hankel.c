@@ -30,21 +30,21 @@ struct toeplitz_circulant_tag {
   fftw_complex * circ_freq;
   fftw_plan r2c_plan;
   fftw_plan c2r_plan;
-  R_len_t window;
-  R_len_t length;
 };
 
 struct hankel_matrix_tag {
   toeplitz_circulant normal;
   toeplitz_circulant transposed;
-} ;
+  R_len_t window;
+  R_len_t length;
+};
 
 int _hankel_rows(hankel_matrix *h) {
-  return h->normal.window;
+  return h->window;
 }
 
 int _hankel_cols(hankel_matrix *h) {
-  return h->normal.length - h->normal.window + 1;
+  return h->length - h->window + 1;
 }
 
 void _free_circulant(toeplitz_circulant *C) {
@@ -85,14 +85,12 @@ void _initialize_circulant(toeplitz_circulant *C,
   C->circ_freq = ocirc;
   C->r2c_plan = p1;
   C->c2r_plan = p2;
-  C->window = L;
-  C->length = N;
 }
 
 void _hmatmul(double* out,
               const double* v,
-              const toeplitz_circulant *C) {
-  R_len_t L = C->window, N = C->length;
+              const toeplitz_circulant *C,
+              R_len_t N, R_len_t L) {
   R_len_t K = N - L + 1, i;
   double *circ;
   fftw_complex *ocirc;
@@ -129,7 +127,7 @@ void _hmatmul2(double* out,
                const hankel_matrix *h,
                Rboolean t) {
   const toeplitz_circulant *C = (t ? &h->transposed : &h->normal);
-  _hmatmul(out, v, C);
+  _hmatmul(out, v, C, h->length, h->window);
 }
 
 static void hmatFinalizer(SEXP ptr) {
@@ -161,6 +159,8 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
   h = Calloc(1, hankel_matrix);
   _initialize_circulant(&h->normal, REAL(F), N, L);
   _initialize_circulant(&h->transposed, REAL(F), N, N - L + 1);
+  h->window = L;
+  h->length = N;
 
   /* Make an external pointer envolope */
   hmat = R_MakeExternalPtr(h, install("hankel matrix"), R_NilValue);
@@ -231,14 +231,14 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
 
   /* Check agains absurd values of inputs */
   K = length(v);
-  if (K + C->window - 1 != C->length)
+  if (K + h->window - 1 != h->length)
     error("invalid length of input vector 'v'");
 
   /* Allocate output buffer */
-  PROTECT(Y = allocVector(REALSXP, C->window));
+  PROTECT(Y = allocVector(REALSXP, h->window));
 
   /* Calculate the product */
-  _hmatmul(REAL(Y), REAL(v), C);
+  _hmatmul(REAL(Y), REAL(v), C, h->length, h->window);
 
   UNPROTECT(1);
 
