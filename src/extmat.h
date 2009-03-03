@@ -19,4 +19,20 @@
  *   MA 02139, USA.
  */
 
+#ifndef __EXTMAT_H__
+#define __EXTMAT_H__
 
+/* External matrix structure */
+typedef void (*mulfn) (double* out, const double* v, const void* matrix);
+typedef unsigned (*infofn) (const void* matrix);
+
+typedef struct {
+  const char* type;
+  void* matrix;
+  mulfn mulfn;
+  mulfn tmulfn;
+  infofn ncol;
+  infofn nrow;
+} ext_matrix;
+
+#endif /* __EXTMAT_H__ */

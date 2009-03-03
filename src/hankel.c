@@ -24,35 +24,34 @@
 
 #include <complex.h>
 #include <fftw3.h>
+#include "extmat.h"
 #include "hankel.h"
 
-struct toeplitz_circulant_tag {
+typedef struct {
   fftw_complex * circ_freq;
   fftw_plan r2c_plan;
   fftw_plan c2r_plan;
-};
-
-struct hankel_matrix_tag {
-  toeplitz_circulant C;
   R_len_t window;
   R_len_t length;
-};
+} hankel_matrix;
 
-int _hankel_rows(hankel_matrix *h) {
+unsigned _hankel_nrow(const void *matrix) {
+  const hankel_matrix *h = matrix;
   return h->window;
 }
 
-int _hankel_cols(hankel_matrix *h) {
+unsigned _hankel_ncol(const void *matrix) {
+  const hankel_matrix *h = matrix;
   return h->length - h->window + 1;
 }
 
-void _free_circulant(toeplitz_circulant *C) {
-  fftw_free(C->circ_freq);
-  fftw_destroy_plan(C->r2c_plan);
-  fftw_destroy_plan(C->c2r_plan);
+void _free_circulant(hankel_matrix *h) {
+  fftw_free(h->circ_freq);
+  fftw_destroy_plan(h->r2c_plan);
+  fftw_destroy_plan(h->c2r_plan);
 }
 
-void _initialize_circulant(toeplitz_circulant *C,
+void _initialize_circulant(hankel_matrix *h,
                            const double *F, R_len_t N, R_len_t L) {
   R_len_t K = N - L + 1, i;
   fftw_complex *ocirc;
@@ -81,15 +80,18 @@ void _initialize_circulant(toeplitz_circulant *C,
   /* Cleanup and return */
   fftw_free(circ);
 
-  C->circ_freq = ocirc;
-  C->r2c_plan = p1;
-  C->c2r_plan = p2;
+  h->circ_freq = ocirc;
+  h->r2c_plan = p1;
+  h->c2r_plan = p2;
+  h->window = L;
+  h->length = N;
 }
 
-void _hmatmul(double* out,
-              const double* v,
-              const toeplitz_circulant *C,
-              R_len_t N, R_len_t L) {
+void _hankel_matmul(double* out,
+                    const double* v,
+                    const void* matrix) {
+  const hankel_matrix *h = matrix;
+  R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
   double *circ;
   fftw_complex *ocirc;
@@ -104,14 +106,14 @@ void _hmatmul(double* out,
   memset(circ + K, 0, (L - 1)*sizeof(double));
 
   /* Compute the FFT of the reversed vector v */
-  fftw_execute_dft_r2c(C->r2c_plan, circ, ocirc);
+  fftw_execute_dft_r2c(h->r2c_plan, circ, ocirc);
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
   for (i = 0; i < (N/2 + 1); ++i)
-    ocirc[i] = ocirc[i] * C->circ_freq[i];
+    ocirc[i] = ocirc[i] * h->circ_freq[i];
 
   /* Compute the reverse transform to obtain result */
-  fftw_execute_dft_c2r(C->c2r_plan, ocirc, circ);
+  fftw_execute_dft_c2r(h->c2r_plan, ocirc, circ);
 
   /* Cleanup and return */
   for (i = 0; i < L; ++i)
@@ -121,10 +123,11 @@ void _hmatmul(double* out,
   fftw_free(ocirc);
 }
 
-void _thmatmul(double* out,
-               const double* v,
-               const toeplitz_circulant *C,
-               R_len_t N, R_len_t L) {
+void _hankel_tmatmul(double* out,
+                     const double* v,
+                     const void* matrix) {
+  const hankel_matrix *h = matrix;
+  R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
   double *circ;
   fftw_complex *ocirc;
@@ -139,14 +142,14 @@ void _thmatmul(double* out,
     circ[i + K - 1] = v[L - i - 1];
 
   /* Compute the FFT of the reversed vector v */
-  fftw_execute_dft_r2c(C->r2c_plan, circ, ocirc);
+  fftw_execute_dft_r2c(h->r2c_plan, circ, ocirc);
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
   for (i = 0; i < (N/2 + 1); ++i)
-    ocirc[i] = ocirc[i] * C->circ_freq[i];
+    ocirc[i] = ocirc[i] * h->circ_freq[i];
 
   /* Compute the reverse transform to obtain result */
-  fftw_execute_dft_c2r(C->c2r_plan, ocirc, circ);
+  fftw_execute_dft_c2r(h->c2r_plan, ocirc, circ);
 
   /* Cleanup and return */
   for (i = 0; i < K; ++i)
@@ -156,48 +159,53 @@ void _thmatmul(double* out,
   fftw_free(ocirc);
 }
 
-void _hmatmul2(double* out,
-               const double* v,
-               const hankel_matrix *h,
-               Rboolean t) {
-  if (t)
-    _thmatmul(out, v, &h->C, h->length, h->window);
-  else
-    _hmatmul(out, v, &h->C, h->length, h->window);
-}
-
 static void hmatFinalizer(SEXP ptr) {
+  ext_matrix *e;
   hankel_matrix *h;
 
   if (TYPEOF(ptr) != EXTPTRSXP)
     return;
 
-  h = R_ExternalPtrAddr(ptr);
-  if (!h)
+  e = R_ExternalPtrAddr(ptr);
+  if (!e)
     return;
 
-  _free_circulant(&h->C);
+  if (!strcmp(e->type, "hankel matrix"))
+    return;
+
+  h = e->matrix;
+
+  _free_circulant(h);
   Free(h);
 
+  Free(e);
   R_ClearExternalPtr(ptr);
 }
 
 SEXP initialize_hmat(SEXP F, SEXP window) {
   R_len_t N, L;
   hankel_matrix *h;
+  ext_matrix *e;
   SEXP hmat;
 
   N = length(F);
   L = INTEGER(window)[0];
 
-  /* Build toeplitz circulants for normal and transposed matrices */
+  /* Allocate memory */
+  e = Calloc(1, ext_matrix);
+  e->type = "hankel matrix";
+  e->mulfn = _hankel_matmul;
+  e->tmulfn = _hankel_tmatmul;
+  e->ncol = _hankel_ncol;
+  e->nrow = _hankel_nrow;
+
+  /* Build toeplitz circulants for hankel matrix */
   h = Calloc(1, hankel_matrix);
-  _initialize_circulant(&h->C, REAL(F), N, L);
-  h->window = L;
-  h->length = N;
+  _initialize_circulant(h, REAL(F), N, L);
+  e->matrix = h;
 
   /* Make an external pointer envolope */
-  hmat = R_MakeExternalPtr(h, install("hankel matrix"), R_NilValue);
+  hmat = R_MakeExternalPtr(e, install("external matrix"), R_NilValue);
   R_RegisterCFinalizer(hmat, hmatFinalizer);
 
   return hmat;
@@ -205,7 +213,7 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
 
 SEXP is_hmat(SEXP ptr) {
   SEXP ans;
-  hankel_matrix *h;
+  ext_matrix *e = NULL;
 
   PROTECT(ans = allocVector(LGLSXP, 1));
   LOGICAL(ans)[0] = 1;
@@ -214,17 +222,22 @@ SEXP is_hmat(SEXP ptr) {
   if (TYPEOF(ptr) != EXTPTRSXP)
     LOGICAL(ans)[0] = 0;
 
-  if (LOGICAL(ans)[0]) {
-    /* tag should be 'hankel matrix' */
-    /*if (LOGICAL(ans)[0] &&
-        R_ExternalPtrTag(ptr) != install("hankel matrix"))
-        LOGICAL(ans)[0] = 0;*/
+  /* tag should be 'external matrix' */
+  if (LOGICAL(ans)[0] &&
+      R_ExternalPtrTag(ptr) != install("external matrix"))
+    LOGICAL(ans)[0] = 0;
 
-    /* pointer itself should not be null */
-    h = R_ExternalPtrAddr(ptr);
-    if (!h)
+  /* pointer itself should not be null */
+  if (LOGICAL(ans)[0]) {
+    e = R_ExternalPtrAddr(ptr);
+    if (!e)
       LOGICAL(ans)[0] = 0;
   }
+
+  /* finally, type should be `hankel matrix' */
+  if (LOGICAL(ans)[0] && e &&
+      strcmp(e->type, "hankel matrix") != 0)
+    LOGICAL(ans)[0] = 0;
 
   UNPROTECT(1);
 
@@ -232,50 +245,79 @@ SEXP is_hmat(SEXP ptr) {
 }
 
 SEXP hankel_rows(SEXP ptr) {
-  hankel_matrix *h = R_ExternalPtrAddr(ptr);
-  SEXP ans;
+  SEXP tchk;
+  SEXP ans = NILSXP;
 
-  PROTECT(ans = allocVector(INTSXP, 1));
-  INTEGER(ans)[0] = _hankel_rows(h);
+  /* Perform a type checking */
+  PROTECT(tchk = is_hmat(ptr));
+
+  if (LOGICAL(tchk)[0]) {
+    ext_matrix *e = R_ExternalPtrAddr(ptr);
+
+    PROTECT(ans = allocVector(INTSXP, 1));
+    INTEGER(ans)[0] = _hankel_nrow(e->matrix);
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a hankel matrix");
+
   UNPROTECT(1);
 
   return ans;
 }
 
 SEXP hankel_cols(SEXP ptr) {
-  hankel_matrix *h = R_ExternalPtrAddr(ptr);
-  SEXP ans;
+  SEXP tchk;
+  SEXP ans = NILSXP;
 
-  PROTECT(ans = allocVector(INTSXP, 1));
-  INTEGER(ans)[0] = _hankel_cols(h);
+  /* Perform a type checking */
+  PROTECT(tchk = is_hmat(ptr));
+
+  if (LOGICAL(tchk)[0]) {
+    ext_matrix *e = R_ExternalPtrAddr(ptr);
+
+    PROTECT(ans = allocVector(INTSXP, 1));
+    INTEGER(ans)[0] = _hankel_ncol(e->matrix);
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a hankel matrix");
+
   UNPROTECT(1);
 
   return ans;
 }
 
 SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
-  R_len_t K = length(v);
-  hankel_matrix *h;
-  toeplitz_circulant *C;
-  SEXP Y;
+  SEXP Y = NILSXP, tchk;
 
-  /* Grab needed data */
-  h = R_ExternalPtrAddr(hmat);
-  C = &h->C;
+  /* Perform a type checking */
+  PROTECT(tchk = is_hmat(hmat));
 
-  /* Check agains absurd values of inputs */
-  K = length(v);
-  if (K + h->window - 1 != h->length)
-    error("invalid length of input vector 'v'");
+  if (LOGICAL(tchk)[0]) {
+    R_len_t K = length(v);
+    ext_matrix *e;
+    hankel_matrix *h;
 
-  /* Allocate output buffer */
-  PROTECT(Y = allocVector(REALSXP, h->window));
+    /* Grab needed data */
+    e = R_ExternalPtrAddr(hmat);
+    h = e->matrix;
 
-  /* Calculate the product */
-  if (LOGICAL(transposed)[0])
-    _thmatmul(REAL(Y), REAL(v), C, h->length, h->window);
-  else
-    _hmatmul(REAL(Y), REAL(v), C, h->length, h->window);
+    /* Check agains absurd values of inputs */
+    K = length(v);
+    if (K + h->window - 1 != h->length)
+      error("invalid length of input vector 'v'");
+
+    /* Allocate output buffer */
+    PROTECT(Y = allocVector(REALSXP, h->window));
+
+    /* Calculate the product */
+    if (LOGICAL(transposed)[0])
+      _hankel_tmatmul(REAL(Y), REAL(v), h);
+    else
+      _hankel_matmul(REAL(Y), REAL(v), h);
+
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a hankel matrix");
 
   UNPROTECT(1);
 

@@ -25,22 +25,22 @@
 #include <R_ext/Utils.h>
 #include <R_ext/BLAS.h>
 
-#include "hankel.h"
+#include "extmat.h"
 
 void F77_NAME(clearstat)(void);
 void F77_NAME(printstat)(void);
 
-typedef void (*mul_fn_t) (char *transa,
-                          int *m, int *n,
-                          double *x, double *y,
-                          double *dparm, int *iparm);
+typedef void (*propack_mulfn) (char *transa,
+                               int *m, int *n,
+                               double *x, double *y,
+                               double *dparm, int *iparm);
 
 void F77_NAME(dlansvd_irl) (char *which, char *jobu, char *jobv,
                             int *m, int *n,
                             int *dim, int *p,
                             int *neig,
                             int *maxiter,
-                            mul_fn_t aprod,
+                            propack_mulfn aprod,
                             double *u, int *ldu,
                             double *sigma,
                             double *bnd,
@@ -95,18 +95,18 @@ static void dense_matmul(char *transa,
 }
 
 /* Hankel matrix-vector product routine */
-static void hankel_matmul(char *transa,
-                          int *m, int *n,
-                          double *x, double *y,
-                          double *dparm, int *iparm) {
-  hankel_matrix *h = (hankel_matrix*)iparm;
+static void ext_matmul(char *transa,
+                       int *m, int *n,
+                       double *x, double *y,
+                       double *dparm, int *iparm) {
+  ext_matrix *e = (ext_matrix*)iparm;
 
   UNUSED(dparm); UNUSED(m); UNUSED(n);
 
   if (*transa == 'T' || *transa == 't')
-    _hmatmul2(y, x, h, TRUE);
+    e->tmulfn(y, x, e->matrix);
   else
-    _hmatmul2(y, x, h, FALSE);
+    e->mulfn(y, x, e->matrix);
 }
 
 /* Get the list element named str, or return NULL */
@@ -137,7 +137,7 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   double doption[4];
   int ioption[2];
   SEXP F, U, V, res;
-  mul_fn_t mulfn = NULL;
+  propack_mulfn mulfn = NULL;
   double* dparm = NULL;
   int* iparm = NULL;
 
@@ -149,13 +149,12 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
     dparm = REAL(A); iparm = NULL;
     mulfn = dense_matmul;
   } else if (TYPEOF(A) == EXTPTRSXP &&
-             R_ExternalPtrTag(A) == install("hankel matrix")) {
-    /* Hankel matrix case */
-    hankel_matrix *h = R_ExternalPtrAddr(A);
-    m = _hankel_rows(h);
-    n = _hankel_cols(h);
-    dparm = NULL; iparm = (int*)h;
-    mulfn = hankel_matmul;
+             R_ExternalPtrTag(A) == install("external matrix")) {
+    /* externall matrix case */
+    ext_matrix *e = R_ExternalPtrAddr(A);
+    m = e->nrow(e->matrix); n = e->ncol(e->matrix);
+    dparm = NULL; iparm = (int*)e;
+    mulfn = ext_matmul;
   } else
     error("unsupported input matrix 'A' type");
 

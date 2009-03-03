@@ -25,7 +25,7 @@
 #include <R_ext/Utils.h>
 #include <R_ext/BLAS.h>
 
-#include "hankel.h"
+#include "extmat.h"
 #include "trlan.h"
 
 typedef struct {
@@ -36,20 +36,20 @@ typedef struct {
 
 #define UNUSED(x) (void)(x)
 
-void hankel_op(int *pnrow, int *pncol,
+void extmat_op(int *pnrow, int *pncol,
                double *xin, int *pldx,
                double *yout, int *pldy,
                void *lparam) {
   op_param *param = lparam;
-  hankel_matrix *hmat = param->matrix;
+  const ext_matrix *e = param->matrix;
   double *tmp = param->tmp;
 
   int ncol = *pncol, ldx  = *pldx, ldy  = *pldy, i;
   UNUSED(pnrow);
 
   for (i = 0; i < ncol; ++i) {
-    _hmatmul2(tmp, xin+i*ldx, hmat, 1);
-    _hmatmul2(yout+i*ldy, tmp, hmat, 0);
+    e->tmulfn(tmp, xin+i*ldx, e->matrix);
+    e->mulfn(yout+i*ldy, tmp, e->matrix);
   }
 }
 
@@ -112,12 +112,12 @@ SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts) {
     param.matrix = REAL(A);
     opfn = dense_op;
   } else if (TYPEOF(A) == EXTPTRSXP &&
-             R_ExternalPtrTag(A) == install("hankel matrix")) {
+             R_ExternalPtrTag(A) == install("external matrix")) {
     /* Hankel matrix case */
-    hankel_matrix *h = R_ExternalPtrAddr(A);
-    m = _hankel_rows(h); n = _hankel_cols(h);
-    param.matrix = h;
-    opfn = hankel_op;
+    ext_matrix *e = R_ExternalPtrAddr(A);
+    m = e->nrow(e->matrix); n = e->ncol(e->matrix);
+    param.matrix = e;
+    opfn = extmat_op;
   } else
     error("unsupported input matrix 'A' type");
 
