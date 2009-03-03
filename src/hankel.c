@@ -33,8 +33,7 @@ struct toeplitz_circulant_tag {
 };
 
 struct hankel_matrix_tag {
-  toeplitz_circulant normal;
-  toeplitz_circulant transposed;
+  toeplitz_circulant C;
   R_len_t window;
   R_len_t length;
 };
@@ -122,12 +121,49 @@ void _hmatmul(double* out,
   fftw_free(ocirc);
 }
 
+void _thmatmul(double* out,
+               const double* v,
+               const toeplitz_circulant *C,
+               R_len_t N, R_len_t L) {
+  R_len_t K = N - L + 1, i;
+  double *circ;
+  fftw_complex *ocirc;
+
+  /* Allocate needed memory */
+  circ = (double*) fftw_malloc(N * sizeof(double));
+  ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
+
+  /* Fill the arrays */
+  memset(circ, 0, (K - 1)*sizeof(double));
+  for (i = 0; i < L; ++i)
+    circ[i + K - 1] = v[L - i - 1];
+
+  /* Compute the FFT of the reversed vector v */
+  fftw_execute_dft_r2c(C->r2c_plan, circ, ocirc);
+
+  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
+  for (i = 0; i < (N/2 + 1); ++i)
+    ocirc[i] = ocirc[i] * C->circ_freq[i];
+
+  /* Compute the reverse transform to obtain result */
+  fftw_execute_dft_c2r(C->c2r_plan, ocirc, circ);
+
+  /* Cleanup and return */
+  for (i = 0; i < K; ++i)
+    out[i] = circ[i + L - 1] / N;
+
+  fftw_free(circ);
+  fftw_free(ocirc);
+}
+
 void _hmatmul2(double* out,
                const double* v,
                const hankel_matrix *h,
                Rboolean t) {
-  const toeplitz_circulant *C = (t ? &h->transposed : &h->normal);
-  _hmatmul(out, v, C, h->length, h->window);
+  if (t)
+    _thmatmul(out, v, &h->C, h->length, h->window);
+  else
+    _hmatmul(out, v, &h->C, h->length, h->window);
 }
 
 static void hmatFinalizer(SEXP ptr) {
@@ -140,8 +176,7 @@ static void hmatFinalizer(SEXP ptr) {
   if (!h)
     return;
 
-  _free_circulant(&h->normal);
-  _free_circulant(&h->transposed);
+  _free_circulant(&h->C);
   Free(h);
 
   R_ClearExternalPtr(ptr);
@@ -157,8 +192,7 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
 
   /* Build toeplitz circulants for normal and transposed matrices */
   h = Calloc(1, hankel_matrix);
-  _initialize_circulant(&h->normal, REAL(F), N, L);
-  _initialize_circulant(&h->transposed, REAL(F), N, N - L + 1);
+  _initialize_circulant(&h->C, REAL(F), N, L);
   h->window = L;
   h->length = N;
 
@@ -227,7 +261,7 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
 
   /* Grab needed data */
   h = R_ExternalPtrAddr(hmat);
-  C = (LOGICAL(transposed)[0] ? &h->transposed : &h->normal);
+  C = &h->C;
 
   /* Check agains absurd values of inputs */
   K = length(v);
@@ -238,7 +272,10 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
   PROTECT(Y = allocVector(REALSXP, h->window));
 
   /* Calculate the product */
-  _hmatmul(REAL(Y), REAL(v), C, h->length, h->window);
+  if (LOGICAL(transposed)[0])
+    _thmatmul(REAL(Y), REAL(v), C, h->length, h->window);
+  else
+    _hmatmul(REAL(Y), REAL(v), C, h->length, h->window);
 
   UNPROTECT(1);
 
