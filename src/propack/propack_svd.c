@@ -150,7 +150,7 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
     mulfn = dense_matmul;
   } else if (TYPEOF(A) == EXTPTRSXP &&
              R_ExternalPtrTag(A) == install("external matrix")) {
-    /* externall matrix case */
+    /* External matrix case */
     ext_matrix *e = R_ExternalPtrAddr(A);
     m = e->nrow(e->matrix); n = e->ncol(e->matrix);
     dparm = NULL; iparm = (int*)e;

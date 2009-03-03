@@ -113,7 +113,7 @@ SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts) {
     opfn = dense_op;
   } else if (TYPEOF(A) == EXTPTRSXP &&
              R_ExternalPtrTag(A) == install("external matrix")) {
-    /* Hankel matrix case */
+    /* External matrix case */
     ext_matrix *e = R_ExternalPtrAddr(A);
     m = e->nrow(e->matrix); n = e->ncol(e->matrix);
     param.matrix = e;
