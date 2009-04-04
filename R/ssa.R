@@ -68,8 +68,7 @@ decompose.ssa.svd <- function(this,
     .set(this, "V", S$v);
 }
 
-decompose.ssa.eigen <- function(this,
-                                ...) {
+decompose.ssa.eigen <- function(this, ...) {
   N <- this$length; L <- this$window; K <- N - L + 1;
   F <- .get(this, "F");
 
@@ -77,6 +76,10 @@ decompose.ssa.eigen <- function(this,
   h <- hankel(F, L = L);
 
   # Do decomposition
+  if ("neig" %in% names(list(...)))
+    warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
+            immediate. = TRUE)
+  
   S <- eigen(tcrossprod(h));
 
   # Fix small negative values
