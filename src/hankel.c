@@ -293,7 +293,7 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
   PROTECT(tchk = is_hmat(hmat));
 
   if (LOGICAL(tchk)[0]) {
-    R_len_t K = length(v);
+    R_len_t K, L;
     ext_matrix *e;
     hankel_matrix *h;
 
@@ -301,13 +301,15 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
     e = R_ExternalPtrAddr(hmat);
     h = e->matrix;
 
+    L = (LOGICAL(transposed)[0] ? h->length - h->window + 1 : h->window);
+
     /* Check agains absurd values of inputs */
     K = length(v);
-    if (K + h->window - 1 != h->length)
+    if (K + L - 1 != h->length)
       error("invalid length of input vector 'v'");
 
     /* Allocate output buffer */
-    PROTECT(Y = allocVector(REALSXP, h->window));
+    PROTECT(Y = allocVector(REALSXP, L));
 
     /* Calculate the product */
     if (LOGICAL(transposed)[0])
