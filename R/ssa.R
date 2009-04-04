@@ -21,10 +21,8 @@ new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ..., 
                     method = c("hankel", "toeplitz"),
-                    centering = c("none", "row", "both"),
                     force.decompose = TRUE) {
   method <- match.arg(method);
-  centering <- match.arg(centering);
   N <- length(x);
 
   # Create information body
@@ -32,8 +30,7 @@ new.ssa <- function(x,
                window = L,
                call = match.call(),
                series = deparse(substitute(x)),
-               method = method,
-               centering = centering);
+               method = method);
 
   # Create data storage
   this <- .create.storage(this);
