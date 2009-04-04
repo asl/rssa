@@ -87,32 +87,6 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hmatmul", hmat, v, transposed);
 }
 
-.decompose.ssa.hankel <- function(this,
-                                  method = c("nutrlan", "propack"),
-                                  neig = min(50, L, K),
-                                  ...) {
-  method <- match.arg(method);
-  
-  N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- .get(this, "F");
-
-  h <- new.hmat(F, L = L);
-
-  if (identical(method, "nutrlan")) {
-    S <- trlan_svd(h, neig = neig, ...);
-  } else {
-    S <- propack_svd(h, neig = neig, ...);
-  }
-
-  # Save results
-  .set(this, "hmat", h);
-  .set(this, "lambda", S$d);
-  if (!is.null(S$u))
-    .set(this, "U", S$u);
-  if (!is.null(S$v))
-    .set(this, "V", S$v);
-}
-
 mes <- function(N = 1000, L = (N %/% 2), n = 50) {
   F <- rnorm(N);
   v <- rnorm(N - L + 1);

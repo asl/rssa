@@ -39,7 +39,7 @@ new.ssa <- function(x,
   .set(this, "F", x);
   
   # Make this S3 object
-  class(this) <- "ssa";
+  class(this) <- c(paste("ssa", method, sep = "."), "ssa");
 
   # Decompose, if necessary
   if (force.decompose)
@@ -48,14 +48,16 @@ new.ssa <- function(x,
   this;
 }
 
-.decompose.ssa.svd <- function(this,
-                               neig = min(L, K),
-                               ...) {
+decompose.ssa.svd <- function(this,
+                              neig = min(L, K),
+                              ...) {
   N <- this$length; L <- this$window; K <- N - L + 1;
   F <- .get(this, "F");
 
+  # Build hankel matrix
   h <- hankel(F, L = L);
 
+  # Do decomposition
   S <- svd(h, nu = neig, nv = neig);
 
   # Save results
@@ -66,17 +68,40 @@ new.ssa <- function(x,
     .set(this, "V", S$v);
 }
 
-decompose.ssa <- function(this, ...) {
-  method <- this$method;
+decompose.ssa.propack <- function(this,
+                                  neig = min(50, L, K),
+                                  ...) {
+  N <- this$length; L <- this$window; K <- N - L + 1;
+  F <- .get(this, "F");
 
-  if (identical(method, "nutrlan") ||
-      identical(method, "propack")) {
-    .decompose.ssa.hankel(this, method, ...);
-  } else if (identical(method, "svd")) {
-    .decompose.ssa.svd(this, ...);
-  } else {
-    stop("Unknown method in SSA")
-  }
+  h <- new.hmat(F, L = L);
+
+  S <- propack_svd(h, neig = neig, ...);
+
+  # Save results
+  .set(this, "hmat", h);
+  .set(this, "lambda", S$d);
+  if (!is.null(S$u))
+    .set(this, "U", S$u);
+  if (!is.null(S$v))
+    .set(this, "V", S$v);
+}
+
+decompose.ssa.nutrlan <- function(this,
+                                  neig = min(50, L, K),
+                                  ...) {
+  N <- this$length; L <- this$window; K <- N - L + 1;
+  F <- .get(this, "F");
+
+  h <- new.hmat(F, L = L);
+
+  S <- trlan_svd(h, neig = neig, ...);
+
+  # Save results
+  .set(this, "hmat", h);
+  .set(this, "lambda", S$d);
+  if (!is.null(S$u))
+    .set(this, "U", S$u);
 }
 
 precache.ssa <- function(this, n, ...) {
@@ -145,7 +170,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   if (missing(groups))
     groups <- as.list(1:nlambda(this));
 
-  # We're supporting only 'full' data for now
+  # Determine the upper bound of desired eigentriples
   U <- .get(this, "U");
   V <- .get(this, "V");
   lambda <- .get(this, "lambda");
