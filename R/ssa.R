@@ -20,7 +20,7 @@
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ..., 
-                    method = c("nutrlan", "propack", "svd"),
+                    method = c("nutrlan", "propack", "svd", "eigen"),
                     force.decompose = TRUE) {
   method <- match.arg(method);
   N <- length(x);
@@ -66,6 +66,22 @@ decompose.ssa.svd <- function(this,
     .set(this, "U", S$u);
   if (!is.null(S$v))
     .set(this, "V", S$v);
+}
+
+decompose.ssa.eigen <- function(this,
+                                ...) {
+  N <- this$length; L <- this$window; K <- N - L + 1;
+  F <- .get(this, "F");
+
+  # Build hankel matrix (this can be done more efficiently!)
+  h <- hankel(F, L = L);
+
+  # Do decomposition
+  S <- eigen(tcrossprod(h));
+
+  # Save results
+  .set(this, "lambda", S$values);
+  .set(this, "U", S$vectors);
 }
 
 decompose.ssa.propack <- function(this,

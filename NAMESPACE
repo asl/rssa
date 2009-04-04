@@ -27,6 +27,7 @@ export(clone,
 
 S3method("clone", ssa)
 S3method("decompose", ssa.svd)
+S3method("decompose", ssa.eigen)
 S3method("decompose", ssa.propack)
 S3method("decompose", ssa.nutrlan)
 S3method("reconstruct", ssa)
