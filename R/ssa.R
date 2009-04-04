@@ -20,7 +20,7 @@
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ..., 
-                    method = c("hankel", "toeplitz"),
+                    method = c("nutrlan", "propack", "svd"),
                     force.decompose = TRUE) {
   method <- match.arg(method);
   N <- length(x);
@@ -48,17 +48,32 @@ new.ssa <- function(x,
   this;
 }
 
-.decompose.ssa.toeplitz <- function(this, ...) {
-  stop("Unimplemented!")
+.decompose.ssa.svd <- function(this,
+                               neig = min(L, K),
+                               ...) {
+  N <- this$length; L <- this$window; K <- N - L + 1;
+  F <- .get(this, "F");
+
+  h <- hankel(F, L = L);
+
+  S <- svd(h, nu = neig, nv = neig);
+
+  # Save results
+  .set(this, "lambda", S$d);
+  if (!is.null(S$u))
+    .set(this, "U", S$u);
+  if (!is.null(S$v))
+    .set(this, "V", S$v);
 }
 
 decompose.ssa <- function(this, ...) {
   method <- this$method;
 
-  if (identical(method, "hankel")) {
-    .decompose.ssa.hankel(this, ...);
-  } else if (identical(method, "toeplitz")) {
-    .decompose.ssa.toeplitz(this, ...);
+  if (identical(method, "nutrlan") ||
+      identical(method, "propack")) {
+    .decompose.ssa.hankel(this, method, ...);
+  } else if (identical(method, "svd")) {
+    .decompose.ssa.svd(this, ...);
   } else {
     stop("Unknown method in SSA")
   }

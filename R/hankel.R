@@ -88,14 +88,21 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
 }
 
 .decompose.ssa.hankel <- function(this,
+                                  method = c("nutrlan", "propack"),
                                   neig = min(50, L, K),
                                   ...) {
+  method <- match.arg(method);
+  
   N <- this$length; L <- this$window; K <- N - L + 1;
   F <- .get(this, "F");
 
   h <- new.hmat(F, L = L);
 
-  S <- propack_svd(h, neig = neig, ...);
+  if (identical(method, "nutrlan")) {
+    S <- trlan_svd(h, neig = neig, ...);
+  } else {
+    S <- propack_svd(h, neig = neig, ...);
+  }
 
   # Save results
   .set(this, "hmat", h);

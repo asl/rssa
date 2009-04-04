@@ -22,7 +22,8 @@ export(clone,
        hrows,
        is.hmat,
 # SVD
-       propack_svd)
+       propack_svd,
+       trlan_svd)
 
 S3method("clone", ssa)
 S3method("decompose", ssa)
