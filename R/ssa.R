@@ -79,8 +79,11 @@ decompose.ssa.eigen <- function(this,
   # Do decomposition
   S <- eigen(tcrossprod(h));
 
+  # Fix small negative values
+  S$values[S$values < 0] <- 0;
+  
   # Save results
-  .set(this, "lambda", S$values);
+  .set(this, "lambda", sqrt(S$values));
   .set(this, "U", S$vectors);
 }
 
