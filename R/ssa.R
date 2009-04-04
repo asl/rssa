@@ -197,6 +197,10 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   # Grab indices of pre-cached values
   info <- .get.series.info(this);
 
+  # Hack-hack-hack! Some routines will work much more efficiently if we'll
+  # pass space to store some data which is needed to be calculated only once.
+  e <- new.env();
+
   # Do actual reconstruction
   for (i in seq_along(groups)) {
     group <- groups[[i]];
@@ -208,7 +212,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
       out[[i]] <- numeric(this$length);
     } else {
       # Do actual reconstruction (depending on method, etc)
-      out[[i]] <- .do.reconstruct(this, new)
+      out[[i]] <- .do.reconstruct(this, new, env = e);
 
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
@@ -219,13 +223,18 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
     out[[i]] <- out[[i]] + .get.series(this, cached);
   }
 
+  # Cleanup
+  rm(list = ls(envir = e, all.names = TRUE),
+     envir = e, inherits = FALSE);
+  gc();
+
   names(out) <- paste("F", 1:length(groups), sep="");
 
   # Reconstructed series can be pretty huge...
   invisible(out);
 }
 
-.do.reconstruct <- function(this, idx) {
+.do.reconstruct <- function(this, idx, env = .GlobalEnv) {
   if (max(idx) > nlambda(this))
     stop("Too few eigentriples computed for this decompostion")
 
@@ -248,8 +257,9 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
     # No factor vectors available. Calculate them on-fly.
     # FIXME: Should we consider caching them? Per-request?
     res <- numeric(this$length);
+
     for (i in idx) {
-      V <- calc.v(this, i)
+      V <- calc.v(this, i, env = env);
       res <- res + lambda[i] * .hankelize.one(U[, i], V);
     }
   }
@@ -266,8 +276,35 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
 
-calc.v.ssa.nutrlan <- function(this, idx) .calc.v.hankel(this, idx)
-calc.v.ssa.propack <- function(this, idx) .calc.v.hankel(this, idx)
+.calc.v.svd <- function(this, idx, env) {
+  # Check, if there is garbage-collected storage to hold some pre-calculated
+  # stuff.
+  if (identical(env, .GlobalEnv) ||
+      !exists(".ssa.temporary.storage", envir = env, inherits = FALSE)) {
+    F <- .get(this, "F");
+
+    # Build hankel matrix.
+    X <- hankel(F, L = this$window);
+
+    # Save to later use, if possible.
+    if (!identical(env, .GlobalEnv)) {
+      assign(".ssa.temporary.storage", X, envir = env, inherits = FALSE);
+    }
+  } else {
+    X <- get(".ssa.temporary.storage", envir = env, inherits = FALSE);
+  }
+
+  lambda <- .get(this, "lambda")[idx];
+  U <- .get(this, "U")[, idx, drop = FALSE];
+
+  invisible(sapply(1:length(idx),
+                   function(i) crossprod(X, U[, i]) / lambda[i]));
+}
+
+calc.v.ssa.nutrlan <- function(this, idx, env = .GlobalEnv) .calc.v.hankel(this, idx)
+calc.v.ssa.propack <- function(this, idx, env = .GlobalEnv) .calc.v.hankel(this, idx)
+calc.v.ssa.svd <- function(this, idx, env = .GlobalEnv) .calc.v.svd(this, idx, env)
+calc.v.ssa.eigen <- function(this, idx, env = .GlobalEnv) .calc.v.svd(this, idx, env)
 
 nu.ssa <- function(this, ...) {
   ifelse(.exists(this, "U"), ncol(.get(this, "U")), 0);
