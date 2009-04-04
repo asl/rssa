@@ -190,12 +190,9 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   nu <- nu(this); nv <- nv(this);
 
   if (missing(groups))
-    groups <- as.list(1:nlambda(this));
+    groups <- as.list(1:min(nlambda(this), nu(this)));
 
   # Determine the upper bound of desired eigentriples
-  U <- .get(this, "U");
-  V <- .get(this, "V");
-  lambda <- .get(this, "lambda");
 
   # Grab indices of pre-cached values
   info <- .get.series.info(this);
@@ -209,18 +206,15 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
     if (length(new) == 0) {
       # Nothing to compute, just create zero output
       out[[i]] <- numeric(this$length);
-    } else if (length(new) == 1) {
-      # Special case for rank one reconstruction
-      out[[i]] <- lambda[new] * .hankelize.one(U[, new], V[, new]);
+    } else {
+      # Do actual reconstruction (depending on method, etc)
+      out[[i]] <- .do.reconstruct(this, new)
 
       # Cache the reconstructed series, if this was requested
-      if (cache)
+      if (cache && length(new) == 1)
         .set.series(this, out[[i]], new);
-    } else {
-      out[[i]] <- hankel(U[, new] %*%
-                         diag(lambda[new], nrow = length(group)) %*%
-                         t(V[, new]));
     }
+
     # Add pre-cached series
     out[[i]] <- out[[i]] + .get.series(this, cached);
   }
@@ -230,6 +224,50 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   # Reconstructed series can be pretty huge...
   invisible(out);
 }
+
+.do.reconstruct <- function(this, idx) {
+  if (max(idx) > nlambda(this))
+    stop("Too few eigentriples computed for this decompostion")
+
+  lambda <- .get(this, "lambda");
+  U <- .get(this, "U");
+
+  if (nv(this) > 0) {
+    # Check, whether we have factor vectors for reconstruction
+    V <- .get(this, "V");
+
+    if (length(idx) == 1) {
+      # Special case for rank one reconstruction
+      res <- lambda[idx] * .hankelize.one(U[, idx], V[, idx]);
+    } else {
+      res <- hankel(U[, idx] %*%
+                    diag(lambda[idx], nrow = length(idx)) %*%
+                    t(V[, idx]));
+    }
+  } else {
+    # No factor vectors available. Calculate them on-fly.
+    # FIXME: Should we consider caching them? Per-request?
+    res <- numeric(this$length);
+    for (i in idx) {
+      V <- calc.v(this, i)
+      res <- res + lambda[i] * .hankelize.one(U[, i], V);
+    }
+  }
+
+  res;
+}
+
+.calc.v.hankel <- function(this, idx) {
+  lambda <- .get(this, "lambda")[idx];
+  U <- .get(this, "U")[, idx, drop = FALSE];
+  h <- .get(this, "hmat");
+
+  invisible(sapply(1:length(idx),
+                   function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
+}
+
+calc.v.ssa.nutrlan <- function(this, idx) .calc.v.hankel(this, idx)
+calc.v.ssa.propack <- function(this, idx) .calc.v.hankel(this, idx)
 
 nu.ssa <- function(this, ...) {
   ifelse(.exists(this, "U"), ncol(.get(this, "U")), 0);

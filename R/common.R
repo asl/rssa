@@ -79,6 +79,8 @@ eigenplot <- function(this, ...)
   UseMethod("eigenplot");
 clusterify <- function(this, ...)
   UseMethod("clusterify");
+calc.v <- function(this, ...)
+  UseMethod("calc.v");
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(this, ...) UseMethod("decompose");
