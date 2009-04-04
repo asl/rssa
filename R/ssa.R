@@ -232,5 +232,19 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   NULL;
 }
 
+print.ssa <- function(this, ...) {
+  cat("\nCall:\n", deparse(this$call), "\n\n", sep="");
+  cat("Series length:", this$length);
+  cat(",\tWindow length:", this$window);
+  cat("\n\nComputed:\n");
+  cat("Eigenvalues:", nlambda(this));
+  cat(",\tEigenvectors:", nu(this));
+  cat(",\tFactor vectors:", nv(this));
+  cat("\n\nPrecached:", length(.get.series.info(this)));
+  cat(" subseries");
+  cat("\n");
+  invisible(this);
+}
+
 #.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
 # F <- .F(1:5000);
