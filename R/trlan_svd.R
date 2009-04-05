@@ -19,7 +19,8 @@
 
 # Stubs to call nu-TRLan SVD implementation
 
-trlan_svd <- function(X, neig = min(m, n), opts = list()) {
+trlan_svd <- function(X, neig = min(m, n),
+                      opts = list(), lambda = NULL, U = NULL) {
   if (is.matrix(X)) {
     m <- dim(X)[1]; n <- dim(X)[2];
     storage.mode(X) <- "double";
@@ -32,6 +33,6 @@ trlan_svd <- function(X, neig = min(m, n), opts = list()) {
   storage.mode(neig) <- "integer"
   storage.mode(opts) <- "list"
   
-  .Call("trlan_svd", X, neig, opts);
+  .Call("trlan_svd", X, neig, opts, lambda, U);
 }
 

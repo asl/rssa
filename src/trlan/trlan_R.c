@@ -95,8 +95,9 @@ static SEXP getListElement(SEXP list, const char *str) {
   } while(0)
 
 /* Main driver routine for TRLAN */
-SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts) {
-  R_len_t m = 0, n = 0, kmax, lwrk;
+SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts,
+               SEXP ilambda, SEXP iU) {
+  R_len_t m = 0, n = 0, kmax, lwrk, computed = 0;
   int neig = *INTEGER(ne), maxiter, i, verbose;
   double *wrk, *eval, *evec, tol, *rF, *rU;
   op_param param;
@@ -152,8 +153,38 @@ SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts) {
   trl_init_info(&info, m, kmax, +1, neig, tol, 7, maxiter, -1);
   info.verbose = verbose;
 
+  /* Check, whether we have something to start from */
+  if (!isNull(ilambda) && !isNull(iU)) {
+    int *dimU;
+
+    /* Check, whether we have vector and matrix */
+    if (!isVector(ilambda))
+      error("lambda provided should be vector");
+    if (!isVector(iU))
+      error("U provided should be matrix");
+
+    /* Check dimensions */
+    dimU = INTEGER(getAttrib(iU, R_DimSymbol));
+    if (dimU[0] != m)
+      error("invalid row dimension of provided matrix U, expected %d", m);
+    if (dimU[1] != length(ilambda))
+      warning("column dimension of matrix U differs from the length of lambda");
+
+    /* Determine the safe upper bound of number of already computed vectors */
+    computed = length(ilambda);
+    computed = imin2(computed, dimU[1]);
+    computed = imin2(computed, kmax);
+    computed = imin2(computed, 3*neig/4);
+
+    for (i = 0; i < computed; ++i) {
+      double lambda = REAL(ilambda)[i];
+      eval[i] = lambda * lambda;
+    }
+    Memcpy(evec, REAL(iU), computed*m);
+  }
+
   /* The Lanczos recurrence is set to start with [1,1,...,1]^T */
-  trl_set_iguess(&info, 0, -1, 0, NULL);
+  trl_set_iguess(&info, computed, -1, 0, NULL);
 
   trlan(opfn, &info, m, kmax, eval, evec, m, lwrk, wrk, &param);
 
@@ -163,20 +194,20 @@ SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts) {
   Free(wrk);
 
   if (info.stat == 0) {
-    if (info.nec < neig)
+    if (info.nec < neig) {
       warning("%d singular triplets did not converge within %d iterations.",
               neig, maxiter);
+      neig = info.nec;
+    }
   } else
     error("nu-TRLan returned error code %d", info.stat);
 
   /* Form the result */
-  neig = info.nec;
-
   PROTECT(F = allocVector(REALSXP, neig)); rF = REAL(F);
   PROTECT(U = allocMatrix(REALSXP, m, neig)); rU = REAL(U);
 
   for (i = 0; i < neig; ++i) {
-    R_len_t idx = neig - i - 1;
+    R_len_t idx = info.nec - i - 1;
     rF[i] = sqrt(eval[idx]);
     Memcpy((rU+m*i), (evec+m*idx), m);
   }

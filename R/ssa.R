@@ -113,11 +113,18 @@ decompose.ssa.nutrlan <- function(this,
                                   neig = min(50, L, K),
                                   ...) {
   N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- .get(this, "F");
 
-  h <- new.hmat(F, L = L);
+  h <- .get(this, "hmat", allow.null = TRUE);
+  if (is.null(h)) {
+    F <- .get(this, "F");
+    h <- new.hmat(F, L = L);
+  }
 
-  S <- trlan_svd(h, neig = neig, ...);
+  lambda <- .get(this, "lambda", allow.null = TRUE);
+  U <- .get(this, "U", allow.null = TRUE);
+
+  S <- trlan_svd(h, neig = neig, ...,
+                 lambda = lambda, U = U);
 
   # Save results
   .set(this, "hmat", h);
