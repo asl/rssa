@@ -27,8 +27,13 @@
 .storage <- function(this)
   attr(this, ".env");
 
-.get <- function(this, name)
-  get(name, envir = .storage(this));
+.get <- function(this, name, allow.null = FALSE) {
+  ret <- NULL;
+  if (!allow.null || .exists(this, name))
+    ret <- get(name, envir = .storage(this));
+
+  ret;
+}
 
 .set <- function(this, name, value)
   assign(name, value, envir = .storage(this), inherits = FALSE);
