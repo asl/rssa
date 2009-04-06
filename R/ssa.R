@@ -209,7 +209,6 @@ cleanup.ssa <- function(this, ...) {
 
 reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   out <- list();
-  nu <- nu(this); nv <- nv(this);
 
   if (missing(groups))
     groups <- as.list(1:min(nlambda(this), nu(this)));
@@ -276,6 +275,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
       # Special case for rank one reconstruction
       res <- lambda[idx] * .hankelize.one(U[, idx], V[, idx]);
     } else {
+      # This won't work for lengthy series. Consider fixing :)
       res <- hankel(U[, idx] %*%
                     diag(lambda[idx], nrow = length(idx)) %*%
                     t(V[, idx]));
