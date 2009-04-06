@@ -50,11 +50,16 @@ new.ssa <- function(x,
 
 decompose.ssa.svd <- function(this,
                               neig = min(L, K),
-                              ...) {
+                              ...,
+                              force.continue = FALSE) {
   N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- .get(this, "F");
+
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(this) > 0)
+    stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
+  F <- .get(this, "F");
   h <- hankel(F, L = L);
 
   # Do decomposition
@@ -68,11 +73,16 @@ decompose.ssa.svd <- function(this,
     .set(this, "V", S$v);
 }
 
-decompose.ssa.eigen <- function(this, ...) {
+decompose.ssa.eigen <- function(this, ...,
+                                force.continue = FALSE) {
   N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- .get(this, "F");
+
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(this) > 0)
+    stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix (this can be done more efficiently!)
+  F <- .get(this, "F");
   h <- hankel(F, L = L);
 
   # Do decomposition
@@ -92,10 +102,15 @@ decompose.ssa.eigen <- function(this, ...) {
 
 decompose.ssa.propack <- function(this,
                                   neig = min(50, L, K),
-                                  ...) {
+                                  ...,
+                                  force.continue = FALSE) {
   N <- this$length; L <- this$window; K <- N - L + 1;
-  F <- .get(this, "F");
 
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(this) > 0)
+    stop("Continuation of decompostion is not yet implemented for this method.")
+
+  F <- .get(this, "F");
   h <- new.hmat(F, L = L);
 
   S <- propack_svd(h, neig = neig, ...);
@@ -200,6 +215,11 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
     groups <- as.list(1:min(nlambda(this), nu(this)));
 
   # Determine the upper bound of desired eigentriples
+  desired <- max(unlist(groups));
+
+  # Continue decomposition, if necessary
+  if (desired > min(nlambda(this), nu(this)))
+    decompose(this, ..., neig = desired);
 
   # Grab indices of pre-cached values
   info <- .get.series.info(this);
