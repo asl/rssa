@@ -56,6 +56,11 @@ hankel <- function(X, L) {
   .Call("hankelize_one", U, V);
 }
 
+.hankelize.one.fft <- function(U, V) {
+  storage.mode(U) <- storage.mode(V) <- "double";
+  .Call("hankelize_one_fft", U, V);
+}
+
 .hankelize.multi <- function(U, V) {
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_multi", U, V);

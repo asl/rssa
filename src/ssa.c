@@ -23,6 +23,9 @@
 #include <Rinternals.h>
 #include <R_ext/Utils.h>
 
+#include <complex.h>
+#include <fftw3.h>
+
 /* This is just direct R-to-C translation and will need to be rethought in the
  * future */
 
@@ -60,6 +63,59 @@ static R_INLINE void hankelize(double *F,
   }
 }
 
+static R_INLINE void hankelize_fft(double *F,
+                                   double *U, double *V,
+                                   R_len_t L, R_len_t K) {
+  R_len_t i, N = K + L - 1;
+  double *iU, *iV;
+  fftw_complex *cU, *cV;
+  fftw_plan p1, p2;
+
+  /* Allocate needed memory */
+  iU = (double*) fftw_malloc((2*N - 1) * sizeof(double));
+  iV = (double*) fftw_malloc((2*N - 1) * sizeof(double));
+  cU = (fftw_complex*) fftw_malloc(((2*N - 1)/2 + 1) * sizeof(fftw_complex));
+  cV = (fftw_complex*) fftw_malloc(((2*N - 1)/2 + 1) * sizeof(fftw_complex));
+
+  /* Estimate the best plans for given input length */
+  p1 = fftw_plan_dft_r2c_1d(2*N - 1, iU, cU, FFTW_ESTIMATE);
+  p2 = fftw_plan_dft_c2r_1d(2*N - 1, cU, iU, FFTW_ESTIMATE);
+
+  /* Fill in buffers */
+  for (i = 0; i < L; ++i)
+    iU[2*N - 1 - L + i] = U[i];
+  memset(iU, 0, (2*N - 1 - L)*sizeof(double));
+
+  for (i = 0; i < K; ++i)
+    iV[i] = V[K - i - 1];
+  memset(iV + K, 0, (2*N - 1 - K)*sizeof(double));
+
+  /* Compute the FFTs */
+  fftw_execute_dft_r2c(p1, iU, cU);
+  fftw_execute_dft_r2c(p1, iV, cV);
+
+  /* Dot-multiply */
+  for (i = 0; i < (2*N - 1)/2 + 1; ++i)
+    cU[i] = cU[i] * conj(cV[i]);
+
+  /* Compute the reverse FFT */
+  fftw_execute_dft_c2r(p2, cU, iU);
+
+  /* Form the result */
+  for (i = 0; i < N; ++i) {
+    double w = (2*N-1)*(i < L ?
+                        i+1 : (i >= K ? N - i : L));
+    F[i] = iU[N - 1 + i] / w;
+  }
+
+  fftw_free(iU);
+  fftw_free(iV);
+  fftw_free(cU);
+  fftw_free(cV);
+  fftw_destroy_plan(p1);
+  fftw_destroy_plan(p2);
+}
+
 SEXP hankelize_one(SEXP U, SEXP V) {
   double *rU = REAL(U), *rV = REAL(V), *rF;
   R_len_t L, K;
@@ -74,6 +130,25 @@ SEXP hankelize_one(SEXP U, SEXP V) {
 
   /* Perform the actual hankelization */
   hankelize(rF, rU, rV, L, K);
+
+  UNPROTECT(1);
+  return F;
+}
+
+SEXP hankelize_one_fft(SEXP U, SEXP V) {
+  double *rU = REAL(U), *rV = REAL(V), *rF;
+  R_len_t L, K;
+  SEXP F;
+
+  /* Calculate length of inputs */
+  L = length(U); K = length(V);
+
+  /* Allocate buffer for output */
+  PROTECT(F = allocVector(REALSXP, K + L - 1));
+  rF = REAL(F);
+
+  /* Perform the actual hankelization */
+  hankelize_fft(rF, rU, rV, L, K);
 
   UNPROTECT(1);
   return F;
