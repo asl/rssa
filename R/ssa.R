@@ -381,7 +381,13 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   NULL;
 }
 
-print.ssa <- function(this, ...) {
+.object.size.ssa <- function(this, ...) {
+  env <- .storage(this);
+  members <- ls(envir = env, all.names = TRUE);
+  sum(sapply(members, function(x) object.size(.get(this, x))));
+}
+
+print.ssa <- function(this, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall:\n", deparse(this$call), "\n\n", sep="");
   cat("Series length:", this$length);
   cat(",\tWindow length:", this$window);
@@ -391,6 +397,9 @@ print.ssa <- function(this, ...) {
   cat(",\tFactor vectors:", nv(this));
   cat("\n\nPrecached:", length(.get.series.info(this)));
   cat(" subseries");
+  cat("\n\nMemory consumption (estimate):",
+      format(.object.size(this) / 1024 / 1024, digits = digits));
+  cat(" MiB");
   cat("\n");
   invisible(this);
 }
