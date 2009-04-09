@@ -98,7 +98,7 @@ static R_INLINE void hankelize_fft(double *F,
   for (i = 0; i < (2*N - 1)/2 + 1; ++i)
     cU[i] = cU[i] * conj(cV[i]);
 
-  /* Compute the reverse FFT */
+  /* Compute the inverse FFT */
   fftw_execute_dft_c2r(p2, cU, iU);
 
   /* Form the result */
