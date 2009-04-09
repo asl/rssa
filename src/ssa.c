@@ -26,9 +26,7 @@
 #include <complex.h>
 #include <fftw3.h>
 
-/* This is just direct R-to-C translation and will need to be rethought in the
- * future */
-
+/* This is just direct R-to-C translation  */
 static R_INLINE void hankelize(double *F,
                                double *U, double *V,
                                R_len_t L, R_len_t K) {
@@ -103,9 +101,14 @@ static R_INLINE void hankelize_fft(double *F,
 
   /* Form the result */
   for (i = 0; i < N; ++i) {
-    double w = (2*N-1)*(i < L ?
-                        i+1 : (i >= K ? N - i : L));
-    F[i] = iU[N - 1 + i] / w;
+    size_t leftu, rightu, l;
+
+    if (i < L) leftu = i; else leftu = L - 1;
+    if (i < K) rightu = 0; else  rightu = i - K + 1;
+
+    l = (2*N-1)*(leftu - rightu + 1);
+
+    F[i] = iU[N - 1 + i] / l;
   }
 
   fftw_free(iU);
