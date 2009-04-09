@@ -273,7 +273,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
     if (length(idx) == 1) {
       # Special case for rank one reconstruction
-      res <- lambda[idx] * .hankelize.one(U[, idx], V[, idx]);
+      res <- lambda[idx] * .hankelize.one.fft(U[, idx], V[, idx]);
     } else {
       # This won't work for lengthy series. Consider fixing :)
       res <- hankel(U[, idx] %*%
@@ -287,7 +287,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
     for (i in idx) {
       V <- calc.v(this, i, env = env);
-      res <- res + lambda[i] * .hankelize.one(U[, i], V);
+      res <- res + lambda[i] * .hankelize.one.fft(U[, i], V);
     }
   }
 
