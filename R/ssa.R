@@ -381,10 +381,17 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   NULL;
 }
 
-.object.size.ssa <- function(this, ...) {
+.object.size.ssa <- function(this, pat = NULL) {
   env <- .storage(this);
-  members <- ls(envir = env, all.names = TRUE);
-  sum(sapply(members, function(x) object.size(.get(this, x))));
+  if (is.null(pat)) {
+    members <- ls(envir = env, all.names = TRUE);
+  } else {
+    members <- ls(envir = env, pattern = pat);
+  }
+
+  l <- sapply(members, function(x) object.size(.get(this, x)))
+
+  ifelse(length(l), sum(l), 0);
 }
 
 print.ssa <- function(this, digits = max(3, getOption("digits") - 3), ...) {
@@ -395,11 +402,14 @@ print.ssa <- function(this, digits = max(3, getOption("digits") - 3), ...) {
   cat("Eigenvalues:", nlambda(this));
   cat(",\tEigenvectors:", nu(this));
   cat(",\tFactor vectors:", nv(this));
-  cat("\n\nPrecached:", length(.get.series.info(this)));
-  cat(" subseries");
-  cat("\n\nMemory consumption (estimate):",
-      format(.object.size(this) / 1024 / 1024, digits = digits));
-  cat(" MiB");
+  cat("\n\nPrecached:",
+      length(.get.series.info(this)),
+      "subseries (")
+  cat(format(.object.size(this, pat = "series:") / 1024 / 1024, digits = digits),
+      "MiB)");
+  cat("\n\nOverall memory consumption (estimate):",
+      format(.object.size(this) / 1024 / 1024, digits = digits),
+      "MiB");
   cat("\n");
   invisible(this);
 }
