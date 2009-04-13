@@ -91,6 +91,6 @@ calc.v <- function(this, ...)
   UseMethod(".object.size")
 
 # There is decompose() call in stats package, we need to take control over it
-decompose <- function(this, ...) UseMethod("decompose");
+decompose <- function(x, ...) UseMethod("decompose");
 decompose.default <- stats::decompose;
 formals(decompose.default) <- c(formals(decompose.default), alist(... = ));

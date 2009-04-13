@@ -48,41 +48,41 @@ new.ssa <- function(x,
   this;
 }
 
-decompose.ssa.svd <- function(this,
+decompose.ssa.svd <- function(x,
                               neig = min(L, K),
                               ...,
                               force.continue = FALSE) {
-  N <- this$length; L <- this$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(this) > 0)
+  if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(this, "F");
+  F <- .get(x, "F");
   h <- hankel(F, L = L);
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig);
 
   # Save results
-  .set(this, "lambda", S$d);
+  .set(x, "lambda", S$d);
   if (!is.null(S$u))
-    .set(this, "U", S$u);
+    .set(x, "U", S$u);
   if (!is.null(S$v))
-    .set(this, "V", S$v);
+    .set(x, "V", S$v);
 }
 
-decompose.ssa.eigen <- function(this, ...,
+decompose.ssa.eigen <- function(x, ...,
                                 force.continue = FALSE) {
-  N <- this$length; L <- this$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(this) > 0)
+  if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix (this can be done more efficiently!)
-  F <- .get(this, "F");
+  F <- .get(x, "F");
   h <- hankel(F, L = L);
 
   # Do decomposition
@@ -96,56 +96,56 @@ decompose.ssa.eigen <- function(this, ...,
   S$values[S$values < 0] <- 0;
   
   # Save results
-  .set(this, "lambda", sqrt(S$values));
-  .set(this, "U", S$vectors);
+  .set(x, "lambda", sqrt(S$values));
+  .set(x, "U", S$vectors);
 }
 
-decompose.ssa.propack <- function(this,
+decompose.ssa.propack <- function(x,
                                   neig = min(50, L, K),
                                   ...,
                                   force.continue = FALSE) {
-  N <- this$length; L <- this$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(this) > 0)
+  if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
 
-  F <- .get(this, "F");
+  F <- .get(x, "F");
   h <- new.hmat(F, L = L);
 
   S <- propack_svd(h, neig = neig, ...);
 
   # Save results
-  .set(this, "hmat", h);
-  .set(this, "lambda", S$d);
+  .set(x, "hmat", h);
+  .set(x, "lambda", S$d);
   if (!is.null(S$u))
-    .set(this, "U", S$u);
+    .set(x, "U", S$u);
   if (!is.null(S$v))
-    .set(this, "V", S$v);
+    .set(x, "V", S$v);
 }
 
-decompose.ssa.nutrlan <- function(this,
+decompose.ssa.nutrlan <- function(x,
                                   neig = min(50, L, K),
                                   ...) {
-  N <- this$length; L <- this$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1;
 
-  h <- .get(this, "hmat", allow.null = TRUE);
+  h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
-    F <- .get(this, "F");
+    F <- .get(x, "F");
     h <- new.hmat(F, L = L);
   }
 
-  lambda <- .get(this, "lambda", allow.null = TRUE);
-  U <- .get(this, "U", allow.null = TRUE);
+  lambda <- .get(x, "lambda", allow.null = TRUE);
+  U <- .get(x, "U", allow.null = TRUE);
 
   S <- trlan_svd(h, neig = neig, ...,
                  lambda = lambda, U = U);
 
   # Save results
-  .set(this, "hmat", h);
-  .set(this, "lambda", S$d);
+  .set(x, "hmat", h);
+  .set(x, "lambda", S$d);
   if (!is.null(S$u))
-    .set(this, "U", S$u);
+    .set(x, "U", S$u);
 }
 
 precache.ssa <- function(this, n, ...) {
@@ -328,10 +328,10 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
                    function(i) crossprod(X, U[, i]) / lambda[i]));
 }
 
-calc.v.ssa.nutrlan <- function(this, idx, env = .GlobalEnv) .calc.v.hankel(this, idx)
-calc.v.ssa.propack <- function(this, idx, env = .GlobalEnv) .calc.v.hankel(this, idx)
-calc.v.ssa.svd <- function(this, idx, env = .GlobalEnv) .calc.v.svd(this, idx, env)
-calc.v.ssa.eigen <- function(this, idx, env = .GlobalEnv) .calc.v.svd(this, idx, env)
+calc.v.ssa.nutrlan <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
+calc.v.ssa.propack <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
+calc.v.ssa.svd <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
+calc.v.ssa.eigen <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
 
 nu.ssa <- function(this, ...) {
   ifelse(.exists(this, "U"), ncol(.get(this, "U")), 0);
@@ -394,24 +394,24 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   ifelse(length(l), sum(l), 0);
 }
 
-print.ssa <- function(this, digits = max(3, getOption("digits") - 3), ...) {
-  cat("\nCall:\n", deparse(this$call), "\n\n", sep="");
-  cat("Series length:", this$length);
-  cat(",\tWindow length:", this$window);
+print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+  cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
+  cat("Series length:", x$length);
+  cat(",\tWindow length:", x$window);
   cat("\n\nComputed:\n");
-  cat("Eigenvalues:", nlambda(this));
-  cat(",\tEigenvectors:", nu(this));
-  cat(",\tFactor vectors:", nv(this));
+  cat("Eigenvalues:", nlambda(x));
+  cat(",\tEigenvectors:", nu(x));
+  cat(",\tFactor vectors:", nv(x));
   cat("\n\nPrecached:",
-      length(.get.series.info(this)),
+      length(.get.series.info(x)),
       "subseries (")
-  cat(format(.object.size(this, pat = "series:") / 1024 / 1024, digits = digits),
+  cat(format(.object.size(x, pat = "series:") / 1024 / 1024, digits = digits),
       "MiB)");
   cat("\n\nOverall memory consumption (estimate):",
-      format(.object.size(this) / 1024 / 1024, digits = digits),
+      format(.object.size(x) / 1024 / 1024, digits = digits),
       "MiB");
   cat("\n");
-  invisible(this);
+  invisible(x);
 }
 
 #.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
