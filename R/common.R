@@ -63,6 +63,34 @@
   obj;
 }
 
+.get.series.info <- function(this) {
+  if (.exists(this, "series:info"))
+    return (.get(this, "series:info"));
+
+  numeric(0);
+}
+
+.append.series.info <- function(this, index) {
+  .set(this, "series:info",
+           union(.get.series.info(this), index));
+}
+
+.set.series <- function(this, F, index) {
+  name <- paste("series:", index, sep = "");
+  .set(this, name, F);
+  .append.series.info(this, index);
+  index;
+}
+
+.get.series <- function(this, index) {
+  F <- numeric(this$length);
+  for (i in index) {
+    name <- paste("series:", i, sep = "");
+    F <- F + .get(this, name);
+  }
+  F;
+}
+
 # Generics
 
 # 'ssa' object
