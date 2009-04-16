@@ -31,6 +31,7 @@ new.ssa <- function(x,
   this <- list(length = N,
                window = L,
                call = match.call(),
+               kind = kind,
                series = deparse(substitute(x)),
                svd_method = svd_method);
 
@@ -147,7 +148,8 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
     if (length(idx) == 1) {
       # Special case for rank one reconstruction
-      res <- lambda[idx] * .hankelize.one.fft(U[, idx], V[, idx]);
+      res <- lambda[idx] * do.call(paste(".hankelize.one", this$kind, sep = "."),
+                                   args = list(U = U[, idx], V = V[, idx]));
     } else {
       # This won't work for lengthy series. Consider fixing :)
       res <- hankel(U[, idx] %*%
@@ -161,7 +163,8 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
     for (i in idx) {
       V <- calc.v(this, i, env = env);
-      res <- res + lambda[i] * .hankelize.one.fft(U[, i], V);
+      res <- res + lambda[i] * do.call(paste(".hankelize.one", this$kind, sep = "."),
+                                       args = list(U = U[, i], V = V));
     }
   }
 
