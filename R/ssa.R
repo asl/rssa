@@ -19,10 +19,12 @@
 
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
-                    ..., 
+                    ...,
+                    kind = c("ssa"),
                     svd_method = c("nutrlan", "propack", "svd", "eigen"),
                     force.decompose = TRUE) {
   svd_method <- match.arg(svd_method);
+  kind <- match.arg(kind);
   N <- length(x);
 
   # Create information body
@@ -39,11 +41,11 @@ new.ssa <- function(x,
   .set(this, "F", x);
   
   # Make this S3 object
-  class(this) <- c(paste("ssa", svd_method, sep = "."), "ssa");
+  class(this) <- c(paste(kind, svd_method, sep = "."), "ssa");
 
   # Decompose, if necessary
   if (force.decompose)
-    decompose(this, ...);
+    this <- decompose(this, ...);
 
   this;
 }

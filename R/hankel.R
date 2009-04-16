@@ -115,6 +115,8 @@ decompose.ssa.svd <- function(x,
     .set(x, "U", S$u);
   if (!is.null(S$v))
     .set(x, "V", S$v);
+
+  x;
 }
 
 decompose.ssa.eigen <- function(x, ...,
@@ -142,6 +144,8 @@ decompose.ssa.eigen <- function(x, ...,
   # Save results
   .set(x, "lambda", sqrt(S$values));
   .set(x, "U", S$vectors);
+
+  x;
 }
 
 decompose.ssa.propack <- function(x,
@@ -166,6 +170,8 @@ decompose.ssa.propack <- function(x,
     .set(x, "U", S$u);
   if (!is.null(S$v))
     .set(x, "V", S$v);
+
+  x;
 }
 
 decompose.ssa.nutrlan <- function(x,
@@ -190,6 +196,8 @@ decompose.ssa.nutrlan <- function(x,
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
+
+  x;
 }
 
 .calc.v.hankel <- function(this, idx) {
