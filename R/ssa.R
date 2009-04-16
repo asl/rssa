@@ -20,9 +20,9 @@
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ..., 
-                    method = c("nutrlan", "propack", "svd", "eigen"),
+                    svd_method = c("nutrlan", "propack", "svd", "eigen"),
                     force.decompose = TRUE) {
-  method <- match.arg(method);
+  svd_method <- match.arg(svd_method);
   N <- length(x);
 
   # Create information body
@@ -30,7 +30,7 @@ new.ssa <- function(x,
                window = L,
                call = match.call(),
                series = deparse(substitute(x)),
-               method = method);
+               svd_method = svd_method);
 
   # Create data storage
   this <- .create.storage(this);
@@ -39,113 +39,13 @@ new.ssa <- function(x,
   .set(this, "F", x);
   
   # Make this S3 object
-  class(this) <- c(paste("ssa", method, sep = "."), "ssa");
+  class(this) <- c(paste("ssa", svd_method, sep = "."), "ssa");
 
   # Decompose, if necessary
   if (force.decompose)
     decompose(this, ...);
 
   this;
-}
-
-decompose.ssa.svd <- function(x,
-                              neig = min(L, K),
-                              ...,
-                              force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decompostion is not supported for this method.")
-
-  # Build hankel matrix
-  F <- .get(x, "F");
-  h <- hankel(F, L = L);
-
-  # Do decomposition
-  S <- svd(h, nu = neig, nv = neig);
-
-  # Save results
-  .set(x, "lambda", S$d);
-  if (!is.null(S$u))
-    .set(x, "U", S$u);
-  if (!is.null(S$v))
-    .set(x, "V", S$v);
-}
-
-decompose.ssa.eigen <- function(x, ...,
-                                force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decompostion is not supported for this method.")
-
-  # Build hankel matrix (this can be done more efficiently!)
-  F <- .get(x, "F");
-  h <- hankel(F, L = L);
-
-  # Do decomposition
-  if ("neig" %in% names(list(...)))
-    warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
-            immediate. = TRUE)
-  
-  S <- eigen(tcrossprod(h));
-
-  # Fix small negative values
-  S$values[S$values < 0] <- 0;
-  
-  # Save results
-  .set(x, "lambda", sqrt(S$values));
-  .set(x, "U", S$vectors);
-}
-
-decompose.ssa.propack <- function(x,
-                                  neig = min(50, L, K),
-                                  ...,
-                                  force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decompostion is not yet implemented for this method.")
-
-  F <- .get(x, "F");
-  h <- new.hmat(F, L = L);
-
-  S <- propack_svd(h, neig = neig, ...);
-
-  # Save results
-  .set(x, "hmat", h);
-  .set(x, "lambda", S$d);
-  if (!is.null(S$u))
-    .set(x, "U", S$u);
-  if (!is.null(S$v))
-    .set(x, "V", S$v);
-}
-
-decompose.ssa.nutrlan <- function(x,
-                                  neig = min(50, L, K),
-                                  ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
-
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    F <- .get(x, "F");
-    h <- new.hmat(F, L = L);
-  }
-
-  lambda <- .get(x, "lambda", allow.null = TRUE);
-  U <- .get(x, "U", allow.null = TRUE);
-
-  S <- trlan_svd(h, neig = neig, ...,
-                 lambda = lambda, U = U);
-
-  # Save results
-  .set(x, "hmat", h);
-  .set(x, "lambda", S$d);
-  if (!is.null(S$u))
-    .set(x, "U", S$u);
 }
 
 precache.ssa <- function(this, n, ...) {
@@ -294,45 +194,6 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   res;
 }
 
-.calc.v.hankel <- function(this, idx) {
-  lambda <- .get(this, "lambda")[idx];
-  U <- .get(this, "U")[, idx, drop = FALSE];
-  h <- .get(this, "hmat");
-
-  invisible(sapply(1:length(idx),
-                   function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
-}
-
-.calc.v.svd <- function(this, idx, env) {
-  # Check, if there is garbage-collected storage to hold some pre-calculated
-  # stuff.
-  if (identical(env, .GlobalEnv) ||
-      !exists(".ssa.temporary.storage", envir = env, inherits = FALSE)) {
-    F <- .get(this, "F");
-
-    # Build hankel matrix.
-    X <- hankel(F, L = this$window);
-
-    # Save to later use, if possible.
-    if (!identical(env, .GlobalEnv)) {
-      assign(".ssa.temporary.storage", X, envir = env, inherits = FALSE);
-    }
-  } else {
-    X <- get(".ssa.temporary.storage", envir = env, inherits = FALSE);
-  }
-
-  lambda <- .get(this, "lambda")[idx];
-  U <- .get(this, "U")[, idx, drop = FALSE];
-
-  invisible(sapply(1:length(idx),
-                   function(i) crossprod(X, U[, i]) / lambda[i]));
-}
-
-calc.v.ssa.nutrlan <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
-calc.v.ssa.propack <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
-calc.v.ssa.svd <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
-calc.v.ssa.eigen <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
-
 nu.ssa <- function(this, ...) {
   ifelse(.exists(this, "U"), ncol(.get(this, "U")), 0);
 }
@@ -398,6 +259,7 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
   cat("Series length:", x$length);
   cat(",\tWindow length:", x$window);
+  cat(",\tSVD method:", x$svd_method);
   cat("\n\nComputed:\n");
   cat("Eigenvalues:", nlambda(x));
   cat(",\tEigenvectors:", nu(x));
