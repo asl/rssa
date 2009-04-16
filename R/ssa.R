@@ -42,7 +42,7 @@ new.ssa <- function(x,
   .set(this, "F", x);
   
   # Make this S3 object
-  class(this) <- c(paste(kind, svd_method, sep = "."), "ssa");
+  class(this) <- c(paste(kind, svd_method, sep = "."), kind, "ssa");
 
   # Decompose, if necessary
   if (force.decompose)
