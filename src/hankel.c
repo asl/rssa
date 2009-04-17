@@ -392,11 +392,11 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
     e = R_ExternalPtrAddr(hmat);
     h = e->matrix;
 
-    L = (LOGICAL(transposed)[0] ? h->length - h->window + 1 : h->window);
+    L = (LOGICAL(transposed)[0] ? hankel_ncol(h) : hankel_nrow(h));
+    K = (LOGICAL(transposed)[0] ? hankel_nrow(h) : hankel_ncol(h));
 
     /* Check agains absurd values of inputs */
-    K = length(v);
-    if (K + L - 1 != h->length)
+    if (K != length(v))
       error("invalid length of input vector 'v'");
 
     /* Allocate output buffer */
