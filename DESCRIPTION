@@ -4,6 +4,7 @@ Title: A collection of methods for singular spectrum analysis
 Version: 0.6
 Date: 2009-04-10
 Depends: lattice
+SystemRequirements: fftw (>=3.0)
 Author: Anton Korobeynikov
 Maintainer: Anton Korobeynikov <asl@math.spbu.ru>
 Description: This package implements Singular Spectrum Analysis.
