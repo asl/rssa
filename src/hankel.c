@@ -303,34 +303,29 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
 }
 
 SEXP is_hmat(SEXP ptr) {
-  SEXP ans;
+  SEXP ans = NILSXP, tchk;
   ext_matrix *e = NULL;
 
   PROTECT(ans = allocVector(LGLSXP, 1));
   LOGICAL(ans)[0] = 1;
 
-  /* hmat object is an external pointer */
-  if (TYPEOF(ptr) != EXTPTRSXP)
-    LOGICAL(ans)[0] = 0;
-
-  /* tag should be 'external matrix' */
-  if (LOGICAL(ans)[0] &&
-      R_ExternalPtrTag(ptr) != install("external matrix"))
-    LOGICAL(ans)[0] = 0;
+  /* Object should be external matrix */
+  PROTECT(tchk = is_extmat(ptr));
 
   /* pointer itself should not be null */
-  if (LOGICAL(ans)[0]) {
+  if (LOGICAL(tchk)[0]) {
     e = R_ExternalPtrAddr(ptr);
     if (!e)
       LOGICAL(ans)[0] = 0;
-  }
+  } else
+    LOGICAL(ans)[0] = 0;
 
   /* finally, type should be `hankel matrix' */
   if (LOGICAL(ans)[0] && e &&
       strcmp(e->type, "hankel matrix") != 0)
     LOGICAL(ans)[0] = 0;
 
-  UNPROTECT(1);
+  UNPROTECT(2);
 
   return ans;
 }

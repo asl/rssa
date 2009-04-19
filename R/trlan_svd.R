@@ -24,8 +24,8 @@ trlan_svd <- function(X, neig = min(m, n),
   if (is.matrix(X)) {
     m <- dim(X)[1]; n <- dim(X)[2];
     storage.mode(X) <- "double";
-  } else if (is.hmat(X)) {
-    m <- hrows(X); n <- hcols(X);
+  } else if (is.extmat(X)) {
+    m <- extmat.nrow(X); n <- extmat.ncol(X);
   } else {
     stop('unsupported matrix type for SVD')
   }

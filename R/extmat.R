@@ -17,21 +17,16 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-# Stubs to call PROPACK' SVD implementation
+#   Routines for external matrix stuff
 
-propack_svd <- function(X, neig = min(m, n), opts = list()) {
-  if (is.matrix(X)) {
-    m <- dim(X)[1]; n <- dim(X)[2];
-    storage.mode(X) <- "double";
-  } else if (is.extmat(X)) {
-    m <- extmat.nrow(X); n <- extmat.ncol(X);
-  } else {
-    stop('unsupported matrix type for SVD')
-  }
-
-  storage.mode(neig) <- "integer"
-  storage.mode(opts) <- "list"
-  
-  .Call("propack_svd", X, neig, opts);
+extmat.ncol <- function(X) {
+  .Call("extmat_cols", X)
 }
 
+extmat.nrow <- function(X) {
+  .Call("extmat_rows", X)
+}
+
+is.extmat <- function(X) {
+  .Call("is_extmat", X)
+}

@@ -22,6 +22,8 @@
 #ifndef __EXTMAT_H__
 #define __EXTMAT_H__
 
+#include <R.h>
+
 /* External matrix structure */
 typedef void (*mulfn) (double* out, const double* v, const void* matrix);
 typedef unsigned (*infofn) (const void* matrix);
@@ -34,5 +36,7 @@ typedef struct {
   infofn ncol;
   infofn nrow;
 } ext_matrix;
+
+SEXP is_extmat(SEXP ptr);
 
 #endif /* __EXTMAT_H__ */
