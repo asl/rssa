@@ -22,6 +22,12 @@ export(clone,
        hcols,
        hrows,
        is.hmat,
+# Hankel-block hankel matrix' routines
+       new.hbhmat,
+       hbhmatmul,
+       hbhcols,
+       hbhrows,
+       is.hbhmat,
 # SVD
        propack_svd,
        trlan_svd)

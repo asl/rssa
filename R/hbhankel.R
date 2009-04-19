@@ -24,10 +24,8 @@ tcircpile <- function(F, Lx = (Nx - 1) %/% 2, Ly = (Ny - 1) %/% 2) {
   Nx <- nrow(F); Ny <- ncol(F);
   Kx <- Nx - Lx + 1; Ky <- Ny - Ly + 1;
 
-  .res <- list(Lx = Lx,
-               Ly = Ly,
-               Kx = Kx,
-               Ky = Ky);
+  .res <- list(Lx = Lx, Ly = Ly,
+               Kx = Kx, Ky = Ky);
 
   TF <- cbind(F[,Ky:Ny],F[,1:(Ky-1)]);
   .res$Cblock <- fft(rbind(TF[Kx:Nx,],TF[1:(Kx-1),]));
@@ -35,7 +33,7 @@ tcircpile <- function(F, Lx = (Nx - 1) %/% 2, Ly = (Ny - 1) %/% 2) {
   .res;
 }
 
-hbhmatmul <- function(C, v) {
+hbhmatmul.old <- function(C, v) {
   revv <- matrix(c(rev(v), rep(0, C$Kx*(C$Ly-1))), C$Kx, ncol(C$Cblock));
   revv <- rbind(revv, matrix(0, (C$Lx-1), ncol(revv)));
 
@@ -44,13 +42,41 @@ hbhmatmul <- function(C, v) {
   Re((mult/(prod(dim(C$Cblock))))[1:C$Lx,1:C$Ly]);
 }
 
-thbhmatmul <- function(C, v) {
+thbhmatmul.old <- function(C, v) {
   revv <- matrix(c(rep(0, C$Lx*(C$Ky-1)), rev(v)), C$Lx, ncol(C$Cblock));
   revv <- rbind(matrix(0, (C$Kx-1), ncol(revv)), revv);
 
   mult <- fft(C$Cblock * fft(revv), inverse = TRUE);
 
   Re((mult/(prod(dim(C$Cblock))))[C$Lx:(C$Lx+C$Kx-1),C$Ly:(C$Ly+C$Ky-1)]);
+}
+
+new.hbhmat <- function(F,
+                       Lx = (Nx - 1) %/% 2,
+                       Ly = (Ny - 1) %/% 2) {
+  Nx <- nrow(F); Ny <- ncol(F);
+  storage.mode(F) <- "double";
+  storage.mode(Lx) <- "integer";
+  storage.mode(Ly) <- "integer";
+  h <- .Call("initialize_hbhmat", F, Lx, Ly);
+}
+
+hbhcols <- function(h) {
+  .Call("hbhankel_cols", h)
+}
+
+hbhrows <- function(h) {
+  .Call("hbhankel_rows", h)
+}
+
+is.hbhmat <- function(h) {
+  .Call("is_hbhmat", h)
+}
+
+hbhmatmul <- function(hmat, v, transposed = FALSE) {
+  storage.mode(v) <- "double";
+  storage.mode(transposed) <- "logical";
+  .Call("hbhmatmul", hmat, v, transposed);
 }
 
 mes <- function(Nx = 200, Ny = 90, Lx = 100, Ly = 50, n = 50) {
