@@ -52,13 +52,11 @@ thbhmatmul.old <- function(C, v) {
 }
 
 new.hbhmat <- function(F,
-                       Lx = (Nx - 1) %/% 2,
-                       Ly = (Ny - 1) %/% 2) {
-  Nx <- nrow(F); Ny <- ncol(F);
+                       L = (N - 1) %/% 2) {
+  N <- dim(F);
   storage.mode(F) <- "double";
-  storage.mode(Lx) <- "integer";
-  storage.mode(Ly) <- "integer";
-  h <- .Call("initialize_hbhmat", F, Lx, Ly);
+  storage.mode(L) <- "integer";
+  h <- .Call("initialize_hbhmat", F, L[1], L[2]);
 }
 
 hbhcols <- function(h) {
@@ -79,23 +77,62 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hbhmatmul", hmat, v, transposed);
 }
 
-mes <- function(Nx = 200, Ny = 90, Lx = 100, Ly = 50, n = 50) {
-  Kx <- Nx - Lx +1;
-  Ky <- Ny - Ly +1;
-  F <- matrix(rnorm(Nx*Ny),Nx,Ny);
-  #F <- matrix(1:(Nx*Ny),Nx,Ny);
-  C <- tcircpile(F, Lx,Ly);
-  X <- outer(1:(Lx*Ly), 1:(Kx*Ky), function(x,z) { F[(((x-1)%%Lx)+((z-1)%%Kx))+(((x-1)%/%Lx)+((z-1)%/%Kx))*Nx+1] });
+"decompose.2d-ssa" <- function(x, ...)
+  stop("Unsupported SVD method for 2D-SSA!");
+
+"decompose.2d-ssa.nutrlan" <- function(x,
+                                       neig = min(50, prod(L), prod(K)),
+                                       ...) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+  svd_method <- x$svd_method;
+
+  h <- .get(x, "hmat", allow.null = TRUE);
+  if (is.null(h)) {
+    F <- .get(x, "F");
+    h <- new.hbhmat(F, L = L);
+  }
+
+  lambda <- .get(x, "lambda", allow.null = TRUE);
+  U <- .get(x, "U", allow.null = TRUE);
+
+  S <- trlan_svd(h, neig = neig, ...,
+                 lambda = lambda, U = U);
+
+  # Save results
+  .set(x, "hmat", h);
+  .set(x, "lambda", S$d);
+  if (!is.null(S$u))
+    .set(x, "U", S$u);
+
+  x;
+}
+
+"calc.v.2d-ssa" <- function(this, idx, ...) {
+  lambda <- .get(this, "lambda")[idx];
+  U <- .get(this, "U")[, idx, drop = FALSE];
+  h <- .get(this, "hmat");
+
+  invisible(sapply(1:length(idx),
+                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
+}
+
+#mes <- function(Nx = 200, Ny = 90, Lx = 100, Ly = 50, n = 50) {
+#  Kx <- Nx - Lx +1;
+#  Ky <- Ny - Ly +1;
+#  F <- matrix(rnorm(Nx*Ny),Nx,Ny);
+#  F <- matrix(1:(Nx*Ny),Nx,Ny);
+#  C <- tcircpile(F, Lx,Ly);
+#  X <- outer(1:(Lx*Ly), 1:(Kx*Ky), function(x,z) { F[(((x-1)%%Lx)+((z-1)%%Kx))+(((x-1)%/%Lx)+((z-1)%/%Kx))*Nx+1] });
 
   #X <- matrix(X, Lx*Ly, Kx*Ky);
 
-  v <- rnorm(Kx*Ky);
-  st1 <- system.time(for (i in 1:n) X %*% v);
-  st2 <- system.time(for (i in 1:n) hbhmatmul(C, matrix(v,Kx,Ky)));
+#  v <- rnorm(Kx*Ky);
+#  st1 <- system.time(for (i in 1:n) X %*% v);
+#  st2 <- system.time(for (i in 1:n) hbhmatmul(C, matrix(v,Kx,Ky)));
 
-  print(c(st1[["user.self"]],st2[["user.self"]]),5);
+#  print(c(st1[["user.self"]],st2[["user.self"]]),5);
 
   #v1 <- X %*% v;
   #v2 <- hbhmatmul(C, matrix(v,Kx,Ky));
   #print(max(abs(v1-v2)));
-}
+#}

@@ -20,12 +20,25 @@
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ...,
-                    kind = c("ssa"),
+                    kind = c("ssa", "2d-ssa"),
                     svd_method = c("nutrlan", "propack", "svd", "eigen"),
                     force.decompose = TRUE) {
   svd_method <- match.arg(svd_method);
   kind <- match.arg(kind);
-  N <- length(x);
+
+  if (identical(kind, "ssa")) {
+    # Coerce input to vector if necessary
+    if (!is.vector(x))
+      x <- as.vector(x);
+
+    N <- length(x);
+  } else if (identical(kind, "2d-ssa")) {
+    # Coerce input to matrix if necessary
+    if (!is.matrix(x))
+      x <- as.matrix(x);
+
+    N <- dim(x);
+  }
 
   # Create information body
   this <- list(length = N,
@@ -234,8 +247,8 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
 
 print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
-  cat("Series length:", x$length);
-  cat(",\tWindow length:", x$window);
+  cat("Series length:", paste(x$length, collapse = " x "));
+  cat(",\tWindow length:", paste(x$window, collapse = " x "));
   cat(",\tSVD method:", x$svd_method);
   cat("\n\nComputed:\n");
   cat("Eigenvalues:", nlambda(x));
