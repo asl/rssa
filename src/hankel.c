@@ -195,9 +195,11 @@ static R_INLINE void hankelize(double *F,
 }
 
 static R_INLINE void hankelize_fft(double *F,
-                                   double *U, double *V,
-                                   size_t L, size_t K) {
-  size_t i, N = K + L - 1;
+                                   const double *U, const double *V,
+                                   const hankel_matrix *h) {
+  R_len_t N = h->length, L = h->window;
+  R_len_t K = N - L + 1;
+  R_len_t i;
   double *iU, *iV;
   fftw_complex *cU, *cV;
   fftw_plan p1, p2;
@@ -431,22 +433,34 @@ SEXP hankelize_one(SEXP U, SEXP V) {
   return F;
 }
 
-SEXP hankelize_one_fft(SEXP U, SEXP V) {
-  double *rU = REAL(U), *rV = REAL(V), *rF;
-  R_len_t L, K;
-  SEXP F;
+SEXP hankelize_one_fft(SEXP U, SEXP V, SEXP hmat) {
+  SEXP F = NILSXP, tchk;
 
-  /* Calculate length of inputs */
-  L = length(U); K = length(V);
+  /* Perform a type checking */
+  PROTECT(tchk = is_hmat(hmat));
 
-  /* Allocate buffer for output */
-  PROTECT(F = allocVector(REALSXP, K + L - 1));
-  rF = REAL(F);
+  if (LOGICAL(tchk)[0]) {
+    ext_matrix *e;
+    hankel_matrix *h;
+    double *rU = REAL(U), *rV = REAL(V), *rF;
 
-  /* Perform the actual hankelization */
-  hankelize_fft(rF, rU, rV, L, K);
+    /* Grab needed data */
+    e = R_ExternalPtrAddr(hmat);
+    h = e->matrix;
+
+    /* Allocate buffer for output */
+    PROTECT(F = allocVector(REALSXP, h->length));
+    rF = REAL(F);
+
+    /* Perform the actual hankelization */
+    hankelize_fft(rF, rU, rV, h);
+
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a hankel matrix");
 
   UNPROTECT(1);
+
   return F;
 }
 

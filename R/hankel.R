@@ -58,7 +58,7 @@ hankel <- function(X, L) {
 
 .hankelize.one.hankel <- function(U, V, h) {
   storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_one_fft", U, V);
+  .Call("hankelize_one_fft", U, V, h);
 }
 
 .hankelize.one.ssa.propack <- function(this, U, V) {

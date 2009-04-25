@@ -186,7 +186,7 @@ static void hbhankel_tmatmul(double* out,
 }
 
 static R_INLINE void hbhankelize_fft(double *F,
-                                     double *U, double *V,
+                                     const double *U, const double *V,
                                      const hbhankel_matrix* h) {
   R_len_t Nx = h->length.x, Ny = h->length.y;
   R_len_t Lx = h->window.x, Ly = h->window.y;
