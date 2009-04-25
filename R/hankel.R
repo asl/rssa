@@ -51,14 +51,24 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1]);
 }
 
-.hankelize.one <- function(U, V) {
+.hankelize.one.ssa <- function(this, U, V) {
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_one", U, V);
 }
 
-.hankelize.one.ssa <- function(U, V) {
+.hankelize.one.hankel <- function(U, V, h) {
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_one_fft", U, V);
+}
+
+.hankelize.one.ssa.propack <- function(this, U, V) {
+  h <- .get(this, "hmat");
+  .hankelize.one.hankel(U, V, h);
+}
+
+.hankelize.one.ssa.nutrlan <- function(this, U, V) {
+  h <- .get(this, "hmat");
+  .hankelize.one.hankel(U, V, h);
 }
 
 .hankelize.multi <- function(U, V) {

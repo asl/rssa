@@ -118,6 +118,9 @@ calc.v <- function(this, ...)
 .object.size <- function(this, ...)
   UseMethod(".object.size")
 
+.hankelize.one <- function(this, ...)
+  UseMethod(".hankelize.one")
+
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(x, ...) UseMethod("decompose");
 decompose.default <- stats::decompose;

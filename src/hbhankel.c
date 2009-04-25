@@ -185,6 +185,77 @@ static void hbhankel_tmatmul(double* out,
   fftw_free(ocirc);
 }
 
+static R_INLINE void hbhankelize_fft(double *F,
+                                     double *U, double *V,
+                                     const hbhankel_matrix* h) {
+  R_len_t Nx = h->length.x, Ny = h->length.y;
+  R_len_t Lx = h->window.x, Ly = h->window.y;
+  R_len_t Kx = Nx - Lx + 1, Ky = Ny - Ly + 1;
+  R_len_t i, j;
+  R_len_t wx, dwx, wy, dwy;
+
+  double *iU, *iV;
+  fftw_complex *cU, *cV;
+  fftw_plan p1, p2;
+
+  /* Allocate needed memory */
+  iU = (double*) fftw_malloc(Nx * Ny * sizeof(double));
+  iV = (double*) fftw_malloc(Nx * Ny * sizeof(double));
+  cU = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+  cV = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+
+  /* Estimate the best plans for given input length, note, that input data is
+     stored in column-major mode, that's why we're passing dimensions in
+     *reverse* order */
+  p1 = fftw_plan_dft_r2c_2d(Ny, Nx, iU, cU, FFTW_ESTIMATE);
+  p2 = fftw_plan_dft_c2r_2d(Ny, Nx, cU, iU, FFTW_ESTIMATE);
+
+  /* Fill the arrays */
+  memset(iU, 0, Nx * Ny * sizeof(double));
+  for (j = 0; j < Ly; ++j)
+    for (i = 0; i < Lx; ++i)
+      iU[i + j*Nx] = U[i + j*Lx];
+
+  memset(iV, 0, Nx * Ny * sizeof(double));
+  for (j = 0; j < Ky; ++j)
+    for (i = 0; i < Kx; ++i)
+      iV[i + j*Nx] = V[i + j*Kx];
+
+  /* Compute the FFTs */
+  fftw_execute_dft_r2c(p1, iU, cU);
+  fftw_execute_dft_r2c(p1, iV, cV);
+
+   /* Dot-multiply */
+  for (i = 0; i < Ny * (Nx/2 + 1); ++i)
+    cU[i] = cU[i] * cV[i];
+
+  /* Compute the inverse FFT */
+  fftw_execute_dft_c2r(p2, cU, iU);
+
+  /* Form the result */
+  for (j = 0, wy = 1, dwy = 1; j < Ny; ++j, wy += dwy) {
+    if (j == Ly - 1)
+      dwy--;
+    if (j == Ky - 1) /* Do not join two ifs! */
+      dwy--;
+
+    for (i = 0, wx = 1, dwx = 1; i < Nx; ++i, wx += dwx) {
+      if (i == Lx - 1)
+        dwx--;
+      if (i == Kx - 1)
+        dwx--;
+      F[i+j*Nx] = iU[i+j*Nx] / (wx * wy);
+    }
+  }
+
+  fftw_free(iU);
+  fftw_free(iV);
+  fftw_free(cU);
+  fftw_free(cV);
+  fftw_destroy_plan(p1);
+  fftw_destroy_plan(p2);
+}
+
 static void hbhmat_finalizer(SEXP ptr) {
   ext_matrix *e;
   hbhankel_matrix *h;
@@ -346,4 +417,35 @@ SEXP hbhmatmul(SEXP hmat, SEXP v, SEXP transposed) {
   UNPROTECT(1);
 
   return Y;
+}
+
+SEXP hbhankelize_one_fft(SEXP U, SEXP V, SEXP hmat) {
+  SEXP F = NILSXP, tchk;
+
+  /* Perform a type checking */
+  PROTECT(tchk = is_hbhmat(hmat));
+
+  if (LOGICAL(tchk)[0]) {
+    ext_matrix *e;
+    hbhankel_matrix *h;
+    double *rU = REAL(U), *rV = REAL(V), *rF;
+
+    /* Grab needed data */
+    e = R_ExternalPtrAddr(hmat);
+    h = e->matrix;
+
+    /* Allocate buffer for output */
+    PROTECT(F = allocVector(REALSXP, h->length.x * h->length.y));
+    rF = REAL(F);
+
+    /* Perform the actual hankelization */
+    hbhankelize_fft(rF, rU, rV, h);
+
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a hankel block-hankel matrix");
+
+  UNPROTECT(1);
+
+  return F;
 }

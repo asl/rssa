@@ -116,6 +116,12 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                    function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
 
+".hankelize.one.2d-ssa" <- function(this, U, V) {
+  h <- .get(this, "hmat");
+  storage.mode(U) <- storage.mode(V) <- "double";
+  .Call("hbhankelize_one_fft", U, V, h);
+}
+
 #mes <- function(Nx = 200, Ny = 90, Lx = 100, Ly = 50, n = 50) {
 #  Kx <- Nx - Lx +1;
 #  Ky <- Ny - Ly +1;
