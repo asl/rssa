@@ -202,17 +202,12 @@ static R_INLINE void hankelize_fft(double *F,
   R_len_t i;
   double *iU, *iV;
   fftw_complex *cU, *cV;
-  fftw_plan p1, p2;
 
   /* Allocate needed memory */
   iU = (double*) fftw_malloc(N * sizeof(double));
   iV = (double*) fftw_malloc(N * sizeof(double));
   cU = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
   cV = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
-
-  /* Estimate the best plans for given input length */
-  p1 = fftw_plan_dft_r2c_1d(N, iU, cU, FFTW_ESTIMATE);
-  p2 = fftw_plan_dft_c2r_1d(N, cU, iU, FFTW_ESTIMATE);
 
   /* Fill in buffers */
   memcpy(iU, U, L*sizeof(double));
@@ -222,19 +217,19 @@ static R_INLINE void hankelize_fft(double *F,
   memset(iV+K, 0, (L - 1)*sizeof(double));
 
   /* Compute the FFTs */
-  fftw_execute_dft_r2c(p1, iU, cU);
-  fftw_execute_dft_r2c(p1, iV, cV);
+  fftw_execute_dft_r2c(h->r2c_plan, iU, cU);
+  fftw_execute_dft_r2c(h->r2c_plan, iV, cV);
 
   /* Dot-multiply */
   for (i = 0; i < N/2 + 1; ++i)
     cU[i] = cU[i] * cV[i];
 
   /* Compute the inverse FFT */
-  fftw_execute_dft_c2r(p2, cU, iU);
+  fftw_execute_dft_c2r(h->c2r_plan, cU, iU);
 
   /* Form the result */
   for (i = 0; i < N; ++i) {
-    size_t leftu, rightu, l;
+    R_len_t leftu, rightu, l;
 
     if (i < L) leftu = i; else leftu = L - 1;
     if (i < K) rightu = 0; else  rightu = i - K + 1;
@@ -248,8 +243,6 @@ static R_INLINE void hankelize_fft(double *F,
   fftw_free(iV);
   fftw_free(cU);
   fftw_free(cV);
-  fftw_destroy_plan(p1);
-  fftw_destroy_plan(p2);
 }
 
 static void hmat_finalizer(SEXP ptr) {

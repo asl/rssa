@@ -196,19 +196,12 @@ static R_INLINE void hbhankelize_fft(double *F,
 
   double *iU, *iV;
   fftw_complex *cU, *cV;
-  fftw_plan p1, p2;
 
   /* Allocate needed memory */
   iU = (double*) fftw_malloc(Nx * Ny * sizeof(double));
   iV = (double*) fftw_malloc(Nx * Ny * sizeof(double));
   cU = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
   cV = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
-
-  /* Estimate the best plans for given input length, note, that input data is
-     stored in column-major mode, that's why we're passing dimensions in
-     *reverse* order */
-  p1 = fftw_plan_dft_r2c_2d(Ny, Nx, iU, cU, FFTW_ESTIMATE);
-  p2 = fftw_plan_dft_c2r_2d(Ny, Nx, cU, iU, FFTW_ESTIMATE);
 
   /* Fill the arrays */
   memset(iU, 0, Nx * Ny * sizeof(double));
@@ -222,15 +215,15 @@ static R_INLINE void hbhankelize_fft(double *F,
       iV[i + j*Nx] = V[i + j*Kx];
 
   /* Compute the FFTs */
-  fftw_execute_dft_r2c(p1, iU, cU);
-  fftw_execute_dft_r2c(p1, iV, cV);
+  fftw_execute_dft_r2c(h->r2c_plan, iU, cU);
+  fftw_execute_dft_r2c(h->r2c_plan, iV, cV);
 
    /* Dot-multiply */
   for (i = 0; i < Ny * (Nx/2 + 1); ++i)
     cU[i] = cU[i] * cV[i];
 
   /* Compute the inverse FFT */
-  fftw_execute_dft_c2r(p2, cU, iU);
+  fftw_execute_dft_c2r(h->c2r_plan, cU, iU);
 
   /* Form the result */
   for (j = 0, wy = 1, dwy = 1; j < Ny; ++j, wy += dwy) {
@@ -252,8 +245,6 @@ static R_INLINE void hbhankelize_fft(double *F,
   fftw_free(iV);
   fftw_free(cU);
   fftw_free(cV);
-  fftw_destroy_plan(p1);
-  fftw_destroy_plan(p2);
 }
 
 static void hbhmat_finalizer(SEXP ptr) {
