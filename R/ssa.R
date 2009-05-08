@@ -136,6 +136,9 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
     # Add pre-cached series
     out[[i]] <- out[[i]] + .get.series(this, cached);
+
+    # Propagate dimension attributes (e.g. for 2d-SSA)
+    dim(out[[i]]) <- this$length;
   }
 
   # Cleanup
