@@ -25,6 +25,7 @@ new.ssa <- function(x,
                     force.decompose = TRUE) {
   svd_method <- match.arg(svd_method);
   kind <- match.arg(kind);
+  xattr <- attributes(x);
 
   if (identical(kind, "ssa")) {
     # Coerce input to vector if necessary
@@ -53,6 +54,9 @@ new.ssa <- function(x,
 
   # Save series
   .set(this, "F", x);
+
+  # Save attributes
+  .set(this, "Fattr", xattr);
   
   # Make this S3 object
   class(this) <- c(paste(kind, svd_method, sep = "."), kind, "ssa");
@@ -137,8 +141,8 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
     # Add pre-cached series
     out[[i]] <- out[[i]] + .get.series(this, cached);
 
-    # Propagate dimension attributes (e.g. for 2d-SSA)
-    dim(out[[i]]) <- this$length;
+    # Propagate attributes (e.g. dimension for 2d-SSA)
+    attributes(out[[i]]) <- .get(this, "Fattr");
   }
 
   # Cleanup
