@@ -263,6 +263,3 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\n");
   invisible(x);
 }
-
-#.F <- function(x) exp(-.01 * x)*cos(x/100) + 0.05*rnorm(length(x));
-# F <- .F(1:5000);
