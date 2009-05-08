@@ -75,24 +75,25 @@ precache.ssa <- function(this, n, ...) {
   info <- .get.series.info(this);
   new <- setdiff(1:n, info);
 
-  # We're supporting only 'full' data for now
-  U <- .get(this, "U");
-  V <- .get(this, "V");
-  lambda <- .get(this, "lambda");
+  # Hack-hack-hack! Some routines will work much more efficiently if we'll
+  # pass space to store some data which is needed to be calculated only once.
+  e <- new.env();
 
-  F <- .hankelize.multi(U[,new], V[,new]);
+  for (idx in new) {
+    # Do actual reconstruction (depending on method, etc)
+    .set.series(this,
+                .do.reconstruct(this, idx, env = e), idx);
+  }
 
-  # Return numbers of sub-series cached
-  invisible(sapply(new,
-                   function(i) {
-                     .set.series(this,
-                                 lambda[i] * F[,i],
-                                 i)}));
+  # Cleanup
+  rm(list = ls(envir = e, all.names = TRUE),
+     envir = e, inherits = FALSE);
+  invisible(gc(verbose = FALSE));
 }
 
 cleanup.ssa <- function(this, ...) {
   .remove(this, ls(.storage(this), pattern = "series:"));
-  gc();
+  invisible(gc(verbose = FALSE));
 }
 
 reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
@@ -140,7 +141,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   # Cleanup
   rm(list = ls(envir = e, all.names = TRUE),
      envir = e, inherits = FALSE);
-  gc();
+  gc(verbose = FALSE);
 
   names(out) <- paste("F", 1:length(groups), sep="");
 
