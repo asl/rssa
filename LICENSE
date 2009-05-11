@@ -9,4 +9,4 @@ non-commercial use. Commercial use requires a license from Stanford University.
 3. Everything else is distributed under GPLv2 license.
 
 Every source file in this package contains header, which indentifies uniquely
-the license file is distributed under.
+the license file the source is distributed under.
