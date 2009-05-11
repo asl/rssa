@@ -3,7 +3,7 @@ useDynLib(Rssa)
 import(lattice)
 
 export(clone,
-       decompose, decompose.default,
+       decompose,
        reconstruct,
        nu,
        nv,
@@ -14,7 +14,7 @@ export(clone,
        eigenplot,
        new.ssa,
        clusterify,
-       wcor, wcor.default,
+       wcor,
 # Hankel matrix' routines
        new.hmat,
        hmatmul,
