@@ -234,9 +234,9 @@ static R_INLINE void hankelize_fft(double *F,
     if (i < L) leftu = i; else leftu = L - 1;
     if (i < K) rightu = 0; else  rightu = i - K + 1;
 
-    l = N*(leftu - rightu + 1);
+    l = (leftu - rightu + 1);
 
-    F[i] = iU[i] / l;
+    F[i] = iU[i] / l / N;
   }
 
   fftw_free(iU);

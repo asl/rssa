@@ -237,7 +237,7 @@ static R_INLINE void hbhankelize_fft(double *F,
         dwx--;
       if (i == Kx - 1)
         dwx--;
-      F[i+j*Nx] = iU[i+j*Nx] / (wx * wy * Nx * Ny);
+      F[i+j*Nx] = iU[i+j*Nx] / wx / wy / Nx / Ny;
     }
   }
 
