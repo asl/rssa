@@ -33,6 +33,12 @@ new.ssa <- function(x,
       x <- as.vector(x);
 
     N <- length(x);
+
+    # Fix svd method, if needed
+    if ((identical(svd_method, "nutrlan") ||
+         identical(svd_method, "propack")) &&
+        L < 50)
+      svd_method <- "eigen";
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
