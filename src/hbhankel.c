@@ -258,7 +258,7 @@ static void hbhmat_finalizer(SEXP ptr) {
   if (!e)
     return;
 
-  if (!strcmp(e->type, "hbhankel matrix"))
+  if (strcmp(e->type, "hbhankel matrix"))
     return;
 
   h = e->matrix;

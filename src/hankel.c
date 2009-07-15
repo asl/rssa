@@ -256,7 +256,7 @@ static void hmat_finalizer(SEXP ptr) {
   if (!e)
     return;
 
-  if (!strcmp(e->type, "hankel matrix"))
+  if (strcmp(e->type, "hankel matrix"))
     return;
 
   h = e->matrix;
