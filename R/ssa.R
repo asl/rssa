@@ -20,14 +20,14 @@
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ...,
-                    kind = c("ssa", "2d-ssa"),
+                    kind = c("1d-ssa", "2d-ssa"),
                     svd_method = c("nutrlan", "propack", "svd", "eigen"),
                     force.decompose = TRUE) {
   svd_method <- match.arg(svd_method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
-  if (identical(kind, "ssa")) {
+  if (identical(kind, "1d-ssa")) {
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x);
