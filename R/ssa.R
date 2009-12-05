@@ -169,28 +169,19 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   lambda <- .get(this, "lambda");
   U <- .get(this, "U");
 
-  if (nv(this) > 0) {
-    # Check, whether we have factor vectors for reconstruction
-    V <- .get(this, "V");
+  res <- numeric(this$length);
 
-    if (length(idx) == 1) {
-      # Special case for rank one reconstruction
-      res <- lambda[idx] * .hankelize.one(this, U = U[, idx], V = V[, idx]);
+  for (i in idx) {
+    if (nv(this) > i) {
+      # FIXME: Check, whether we have factor vectors for reconstruction
+      # FIXME: Get rid of .get call
+      V <- .get(this, "V")[, i];
     } else {
-      # This won't work for lengthy series. Consider fixing :)
-      res <- hankel(U[, idx] %*%
-                    diag(lambda[idx], nrow = length(idx)) %*%
-                    t(V[, idx]));
-    }
-  } else {
-    # No factor vectors available. Calculate them on-fly.
-    # FIXME: Should we consider caching them? Per-request?
-    res <- numeric(this$length);
-
-    for (i in idx) {
+      # No factor vectors available. Calculate them on-fly.
       V <- calc.v(this, i, env = env);
-      res <- res + lambda[i] * .hankelize.one(this, U = U[, i], V = V);
     }
+
+    res <- res + lambda[i] * .hankelize.one(this, U = U[, i], V = V);
   }
 
   res;
