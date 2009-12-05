@@ -108,8 +108,6 @@ precache <- function(this, ...)
   UseMethod("precache");
 cleanup <- function(this, ...)
   UseMethod("cleanup");
-eigenplot <- function(this, ...)
-  UseMethod("eigenplot");
 clusterify <- function(this, ...)
   UseMethod("clusterify");
 calc.v <- function(this, ...)

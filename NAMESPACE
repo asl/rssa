@@ -11,7 +11,6 @@ export(clone,
        calc.v,
        precache,
        cleanup,
-       eigenplot,
        new.ssa,
        clusterify,
        wcor,
@@ -52,7 +51,8 @@ S3method("precache", ssa)
 S3method("cleanup", ssa)
 S3method("$", ssa)
 S3method("print", ssa)
-S3method("eigenplot", ssa)
+S3method("summary", ssa)
+S3method("plot", ssa)
 S3method("wcor", "1d-ssa")
 S3method("plot", wcor.matrix)
 S3method("clusterify", wcor.matrix)

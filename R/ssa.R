@@ -257,7 +257,7 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   ifelse(length(l), sum(l), 0);
 }
 
-print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+summary.ssa <- print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
   cat("Series length:", paste(x$length, collapse = " x "));
   cat(",\tWindow length:", paste(x$window, collapse = " x "));

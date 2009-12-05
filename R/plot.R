@@ -34,15 +34,15 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   panel.xyplot(U, V, ...);
 }
 
-eigenplot.ssa <- function(this,
-                          kind = c("values", "vectors", "paired"),
-                          ...,
-                          plot.contrib = TRUE,
-                          numvalues = nlambda(this),
-                          numvectors = min(nlambda(this), 10),
-                          idx = 1:numvectors,
-                          idy) {
-  kind <- match.arg(kind);
+plot.ssa <- function(this,
+                     type = c("values", "vectors", "paired"),
+                     ...,
+                     plot.contrib = TRUE,
+                     numvalues = nlambda(this),
+                     numvectors = min(nlambda(this), 10),
+                     idx = 1:numvectors,
+                     idy) {
+  type <- match.arg(type);
   dots <- list(...);
 
   .defaults <- function(v, key, value) {
@@ -50,7 +50,7 @@ eigenplot.ssa <- function(this,
     v;
   }
 
-  if (identical(kind, "values")) {
+  if (identical(type, "values")) {
     # FIXME: check for proper lengths
     d <- data.frame(A = 1:numvalues, B = this$lambda[1:numvalues]);
 
@@ -64,7 +64,7 @@ eigenplot.ssa <- function(this,
 
     do.call("xyplot",
             c(list(x = B ~ A , data = d, ssaobj = this), dots));
-  } else if (identical(kind, "vectors")) {
+  } else if (identical(type, "vectors")) {
     # FIXME: check for proper lengths
     d <- data.frame(A = idx, B = idx);
 
@@ -88,7 +88,7 @@ eigenplot.ssa <- function(this,
                    panel = panel.eigenvectors,
                    prepanel = prepanel.eigenvectors),
               dots));
-  } else if (identical(kind, "paired")) {
+  } else if (identical(type, "paired")) {
     if (missing(idy))
       idy <- idx + 1;
 
@@ -118,6 +118,6 @@ eigenplot.ssa <- function(this,
                    prepanel = prepanel.eigenvectors),
               dots));
   } else {
-    stop("Unsupported kind of eigenplot!");
+    stop("Unsupported type of eigenplot!");
   }
 }
