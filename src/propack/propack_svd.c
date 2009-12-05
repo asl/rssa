@@ -131,7 +131,7 @@ static SEXP getListElement(SEXP list, const char *str) {
 /* Main driver routine for PROPACK */
 SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   R_len_t m, n, kmax;
-  int neig = *INTEGER(ne);
+  int neig = *INTEGER(ne), oneig;
   int p, dim, maxiter, liwrk, lwrk, *iwork, info, verbose;
   double *wU, *wV, *work, *sigma, *bnd, tol;
   double doption[4];
@@ -208,8 +208,8 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   /* Allocate work buffers */
   work = (double*)Calloc(lwrk, double);
   iwork = (int*)Calloc(liwrk, int);
-  wU = (double*)R_alloc(m, (kmax+1)*sizeof(double));
-  wV = (double*)R_alloc(n, kmax*sizeof(double));
+  wU = (double*)R_alloc(m, (kmax+2)*sizeof(double));
+  wV = (double*)R_alloc(n, (kmax+1)*sizeof(double));
   sigma = (double*)R_alloc(kmax, sizeof(double));
   bnd = (double*)Calloc(kmax, double);
 
@@ -217,6 +217,7 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
      starting vector */
   memset(wU, 0, m*sizeof(double));
 
+  oneig = neig;
   F77_CALL(clearstat)();
   F77_CALL(dlansvd_irl)("L", "Y", "Y",
                         &m, &n,
@@ -245,6 +246,9 @@ SEXP propack_svd(SEXP A, SEXP ne, SEXP opts) {
   else if (info < 0)
     error("%d singular triplets did not converge within %d iterations.",
           neig, kmax);
+  else if (neig < oneig)
+    warning("Only %d singular triplets converged within %d iterations.",
+            neig, kmax);
 
   /* Form the result */
   PROTECT(F = allocVector(REALSXP, neig));

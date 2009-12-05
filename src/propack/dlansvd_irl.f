@@ -214,6 +214,7 @@ c     %---------------------------------------------------%
          call dlanbpro(m, n, kold, dim, aprod, U, ldu, V, ldv,
      c        work(ialpha),dim,rnorm,doption(1),ioption(1),
      c        work(iwrk), iwork, dparm, iparm, ierr)
+
          kold = k
 c     %---------------------------------------------%
 c     | Compute and analyze SVD(B) and error bounds |
@@ -403,8 +404,7 @@ c$OMP END PARALLEL
          iter = iter + 1
       enddo
 
- 50   if ((nconv.ge.neig .or. info.gt.0) .and.
-     c     (lsame(jobu,'y') .or. lsame(jobv,'y'))) then
+ 50   if (info.ge.0 .and. (lsame(jobu,'y') .or. lsame(jobv,'y'))) then
 c     %-----------------------------------------%
 c     | Calculate singular vectors if requested %
 c     %-----------------------------------------%
