@@ -136,14 +136,22 @@ SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts,
     ext_matrix *e = R_ExternalPtrAddr(A);
     m = e->nrow(e->matrix); n = e->ncol(e->matrix);
     param.matrix = e;
+#ifdef CYCLIC
+    opfn = extmat_op2;
+#else
     opfn = extmat_op;
+#endif
   } else
     error("unsupported input matrix 'A' type");
 
-  param.tmp = (double*)R_alloc(n, sizeof(double));
-  param.m = m; param.n = n;
-
   /* Compute needed options */
+#ifdef CYCLIC
+  param.m = m; param.n = n;
+  m = n = m + n;
+#else
+  param.m = m; param.n = n;
+#endif
+  param.tmp = (double*)R_alloc(n, sizeof(double));
 
   /* Fix number of requested eigentriples */
   if (neig > m) neig = m;
@@ -226,7 +234,11 @@ SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts,
 
   for (i = 0; i < neig; ++i) {
     R_len_t idx = info.nec - i - 1;
+#ifdef CYCLIC
+    rF[i] = eval[idx];
+#else
     rF[i] = sqrt(eval[idx]);
+#endif
     Memcpy((rU+m*i), (evec+m*idx), m);
   }
 
