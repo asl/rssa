@@ -53,6 +53,24 @@ void extmat_op(int *pnrow, int *pncol,
   }
 }
 
+void extmat_op2(int *pnrow, int *pncol,
+                double *xin, int *pldx,
+                double *yout, int *pldy,
+                void *lparam) {
+  op_param *param = lparam;
+  const ext_matrix *e = param->matrix;
+  double *tmp = param->tmp;
+  R_len_t m = param->m;
+
+  int ncol = *pncol, ldx  = *pldx, ldy  = *pldy, i;
+  UNUSED(pnrow);
+
+  for (i = 0; i < ncol; ++i) {
+    e->mulfn(yout+i*ldy, xin+i*ldx+m, e->matrix);
+    e->tmulfn(yout+i*ldy+m, xin+i*ldx, e->matrix);
+  }
+}
+
 void dense_op(int *pnrow, int *pncol,
               double *xin, int *pldx,
               double *yout, int *pldy,
