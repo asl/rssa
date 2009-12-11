@@ -115,14 +115,57 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
             dots));
 }
 
+prepanel.series <- function(x, y, recon, ...) {
+  Y <- recon[[paste("F", y, sep = "")]];
+  X <- if (identical(x, y)) 1:length(Y)
+       else  recon[[paste("F", x, sep = "")]];
+
+  prepanel.default.xyplot(X, Y, ...);
+}
+
+panel.series <- function(x, y, recon, ...) {
+  Y <- recon[[paste("F", y, sep = "")]];
+  X <- if (identical(x, y)) 1:length(Y)
+       else  recon[[paste("F", x, sep = "")]];
+
+  panel.xyplot(X, Y, ...);
+}
+
+.plot.ssa.series <- function(this, ..., groups) {
+  dots <- list(...);
+
+  # FIXME: check for proper lengths
+  idx <- seq_along(groups);
+  d <- data.frame(A = idx, B = idx);
+
+  r <- reconstruct(this, groups = groups);
+
+  # Provide convenient defaults
+  dots <- .defaults(dots, "type", "l");
+  dots <- .defaults(dots, "xlab", "");
+  dots <- .defaults(dots, "ylab", "");
+  dots <- .defaults(dots, "main", "Reconstructed series");
+  dots <- .defaults(dots, "as.table", TRUE);
+  dots <- .defaults(dots, "scales", list(relation = "free"));
+
+  do.call("xyplot",
+          c(list(x = A ~ B | factor(A, labels = paste(groups)),
+                 data = d, recon = r,
+                 panel = panel.series,
+                 prepanel = prepanel.series),
+            dots));
+
+}
+
 plot.ssa <- function(this,
-                     type = c("values", "vectors", "paired"),
+                     type = c("values", "vectors", "paired", "series"),
                      ...,
                      plot.contrib = TRUE,
                      numvalues = nlambda(this),
                      numvectors = min(nlambda(this), 10),
                      idx = 1:numvectors,
-                     idy) {
+                     idy,
+                     groups) {
   type <- match.arg(type);
  
   if (identical(type, "values")) {
@@ -134,6 +177,11 @@ plot.ssa <- function(this,
       idy <- idx + 1;
 
     .plot.ssa.paired(this, ..., plot.contrib = plot.contrib, idx = idx, idy = idy);
+  } else if (identical(type, "series")) {
+    if (missing(groups))
+      groups <- as.list(1:min(nlambda(this), nu(this)));
+
+    .plot.ssa.series(this, ..., groups = groups);
   } else {
     stop("Unsupported type of eigenplot!");
   }
