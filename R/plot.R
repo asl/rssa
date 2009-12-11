@@ -34,6 +34,87 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   panel.xyplot(U, V, ...);
 }
 
+.defaults <- function(v, key, value) {
+  if (!(key %in% names(v))) v[[key]] <- value;
+  v;
+}
+
+.plot.ssa.values <- function(this, ..., numvalues) {
+  dots <- list(...);
+
+  # FIXME: check for proper lengths
+  d <- data.frame(A = 1:numvalues, B = this$lambda[1:numvalues]);
+
+  # Provide convenient defaults
+  dots <- .defaults(dots, "type", c("b", "g"));
+  dots <- .defaults(dots, "xlab", "Index");
+  dots <- .defaults(dots, "ylab", "log of eigenvalue");
+  dots <- .defaults(dots, "main", "Eigenvalues");
+  dots <- .defaults(dots, "scales", list(y = list(log = TRUE)));
+  dots <- .defaults(dots, "pch", 20);
+
+  do.call("xyplot",
+          c(list(x = B ~ A , data = d, ssaobj = this), dots));
+}
+
+.plot.ssa.vectors <- function(this, ..., plot.contrib, idx) {
+  dots <- list(...);
+
+  # FIXME: check for proper lengths
+  d <- data.frame(A = idx, B = idx);
+
+  if (plot.contrib) {
+    total <- sum(this$lambda);
+    lambda <- round(100*this$lambda[idx] / total, digits = 2);
+  }
+
+  # Provide convenient defaults
+  dots <- .defaults(dots, "type", "l");
+  dots <- .defaults(dots, "xlab", "");
+  dots <- .defaults(dots, "ylab", "");
+  dots <- .defaults(dots, "main", "Eigenvectors");
+  dots <- .defaults(dots, "as.table", TRUE);
+  dots <- .defaults(dots, "scales", list(relation = "free"));
+
+  do.call("xyplot",
+          c(list(x = A ~ B | factor(A,
+                                    labels = if (!plot.contrib) A else paste(A, " (", lambda, "%)", sep = "")),
+                 data = d, ssaobj = this,
+                 panel = panel.eigenvectors,
+                 prepanel = prepanel.eigenvectors),
+            dots));
+}
+
+.plot.ssa.paired <- function(this, ..., plot.contrib, idx, idy) {
+  dots <- list(...);
+
+  # FIXME: check for proper lengths
+  d <- data.frame(A = idx, B = idy);
+
+  if (plot.contrib) {
+    total <- sum(this$lambda);
+    lambdax <- round(100*this$lambda[idx] / total, digits = 2);
+    lambday <- round(100*this$lambda[idy] / total, digits = 2);
+  }
+
+  # Provide convenient defaults
+  dots <- .defaults(dots, "type", "l");
+  dots <- .defaults(dots, "xlab", "");
+  dots <- .defaults(dots, "ylab", "");
+  dots <- .defaults(dots, "main", "Pairs of eigenvectors");
+  dots <- .defaults(dots, "as.table", TRUE);
+  dots <- .defaults(dots, "scales", list(relation = "free"));
+
+  do.call("xyplot",
+          c(list(x = A ~ B | factor(A,
+                                    labels = if (!plot.contrib) paste(A, "vs", B)
+                                             else paste(A, " (", lambdax, "%) vs ", B, " (", lambday, "%)", sep = "")),
+                 data = d, ssaobj = this,
+                 panel = panel.eigenvectors,
+                 prepanel = prepanel.eigenvectors),
+            dots));
+}
+
 plot.ssa <- function(this,
                      type = c("values", "vectors", "paired"),
                      ...,
@@ -43,80 +124,16 @@ plot.ssa <- function(this,
                      idx = 1:numvectors,
                      idy) {
   type <- match.arg(type);
-  dots <- list(...);
-
-  .defaults <- function(v, key, value) {
-    if (!(key %in% names(v))) v[[key]] <- value;
-    v;
-  }
-
+ 
   if (identical(type, "values")) {
-    # FIXME: check for proper lengths
-    d <- data.frame(A = 1:numvalues, B = this$lambda[1:numvalues]);
-
-    # Provide convenient defaults
-    dots <- .defaults(dots, "type", c("b", "g"));
-    dots <- .defaults(dots, "xlab", "Index");
-    dots <- .defaults(dots, "ylab", "log of eigenvalue");
-    dots <- .defaults(dots, "main", "Eigenvalues");
-    dots <- .defaults(dots, "scales", list(y = list(log = TRUE)));
-    dots <- .defaults(dots, "pch", 20);
-
-    do.call("xyplot",
-            c(list(x = B ~ A , data = d, ssaobj = this), dots));
+    .plot.ssa.values(this, ..., numvalues = numvalues);
   } else if (identical(type, "vectors")) {
-    # FIXME: check for proper lengths
-    d <- data.frame(A = idx, B = idx);
-
-    if (plot.contrib) {
-      total <- sum(this$lambda);
-      lambda <- round(100*this$lambda[idx] / total, digits = 2);
-    }
-
-    # Provide convenient defaults
-    dots <- .defaults(dots, "type", "l");
-    dots <- .defaults(dots, "xlab", "");
-    dots <- .defaults(dots, "ylab", "");
-    dots <- .defaults(dots, "main", "Eigenvectors");
-    dots <- .defaults(dots, "as.table", TRUE);
-    dots <- .defaults(dots, "scales", list(relation = "free"));
-
-    do.call("xyplot",
-            c(list(x = A ~ B | factor(A,
-                                      labels = if (!plot.contrib) A else paste(A, " (", lambda, "%)", sep = "")),
-                   data = d, ssaobj = this,
-                   panel = panel.eigenvectors,
-                   prepanel = prepanel.eigenvectors),
-              dots));
+    .plot.ssa.vectors(this, ..., plot.contrib = plot.contrib, idx = idx);
   } else if (identical(type, "paired")) {
     if (missing(idy))
       idy <- idx + 1;
 
-    # FIXME: check for proper lengths
-    d <- data.frame(A = idx, B = idy);
-
-    if (plot.contrib) {
-      total <- sum(this$lambda);
-      lambdax <- round(100*this$lambda[idx] / total, digits = 2);
-      lambday <- round(100*this$lambda[idy] / total, digits = 2);
-    }
-
-    # Provide convenient defaults
-    dots <- .defaults(dots, "type", "l");
-    dots <- .defaults(dots, "xlab", "");
-    dots <- .defaults(dots, "ylab", "");
-    dots <- .defaults(dots, "main", "Pairs of eigenvectors");
-    dots <- .defaults(dots, "as.table", TRUE);
-    dots <- .defaults(dots, "scales", list(relation = "free"));
-
-    do.call("xyplot",
-            c(list(x = A ~ B | factor(A,
-                                      labels = if (!plot.contrib) paste(A, "vs", B)
-                                               else paste(A, " (", lambdax, "%) vs ", B, " (", lambday, "%)", sep = "")),
-                   data = d, ssaobj = this,
-                   panel = panel.eigenvectors,
-                   prepanel = prepanel.eigenvectors),
-              dots));
+    .plot.ssa.paired(this, ..., plot.contrib = plot.contrib, idx = idx, idy = idy);
   } else {
     stop("Unsupported type of eigenplot!");
   }
