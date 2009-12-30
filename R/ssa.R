@@ -172,7 +172,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   res <- numeric(this$length);
 
   for (i in idx) {
-    if (nv(this) > i) {
+    if (nv(this) >= i) {
       # FIXME: Check, whether we have factor vectors for reconstruction
       # FIXME: Get rid of .get call
       V <- .get(this, "V")[, i];
