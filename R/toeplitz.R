@@ -19,6 +19,22 @@
 
 #   Routines for toeplitz SSA
 
+tcirc.old <- function(F, L = (N - 1) %/% 2) {
+  N <- length(F);
+
+  R <- as.vector(acf(F, lag.max = L - 1, type = "covariance", plot = FALSE, demean = FALSE)$acf);
+
+  .res <- list();
+  .res$C <- as.vector(fft(c(R, rev(R[-1]))));
+  .res$L <- L;
+  return (.res);
+}
+
+tmatmul.old <- function(C, v) {
+  v <- as.vector(fft(C$C * fft(c(v, rep(0, C$L-1))), inverse = TRUE));
+  Re((v/length(C$C))[1:C$L]);
+}
+
 "decompose.toeplitz-ssa.eigen" <- function(x, ...,
                                            force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
