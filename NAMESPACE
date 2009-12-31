@@ -28,6 +28,12 @@ export(clone,
        hbhcols,
        hbhrows,
        is.hbhmat,
+# Symmetric toeplitz matrix' routines
+       new.tmat,
+       tmatmul,
+       tcols,
+       trows,
+       is.tmat,
 # SVD
        propack_svd,
        trlan_svd)

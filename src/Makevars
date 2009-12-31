@@ -9,7 +9,7 @@ PROPACK_DIR=propack
 TRLAN_OBJS=dsort2.o dstqrb.o trlcore.o trlaux.o trlan.o trl_comm_none.o trlmap.o restart.o trlan_R.o
 TRLAN_DIR=trlan
 
-RSSA_OBJS=hankel.o ssa.o extmat.o hbhankel.o
+RSSA_OBJS=hankel.o ssa.o extmat.o hbhankel.o toeplitz.o
 
 OBJECTS=$(RSSA_OBJS)                                 \
         $(addprefix $(PROPACK_DIR)/,$(PROPACK_OBJS)) \

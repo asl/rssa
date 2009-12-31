@@ -35,6 +35,35 @@ tmatmul.old <- function(C, v) {
   Re((v/length(C$C))[1:C$L]);
 }
 
+new.tmat <- function(F,
+                     L = (N - 1) %/% 2) {
+  N <- length(F);
+
+  # FIXME: Perform estimation via FFT (to drop complexity from O(N^2) to O(N log N)
+  R <- as.vector(acf(F, lag.max = L - 1, type = "covariance", plot = FALSE, demean = FALSE)$acf);
+
+  storage.mode(R) <- "double";
+  t <- .Call("initialize_tmat", R);
+}
+
+tcols <- function(t) {
+  .Call("toeplitz_cols", t)
+}
+
+trows <- function(t) {
+  .Call("toeplitz_rows", t)
+}
+
+is.tmat <- function(t) {
+  .Call("is_tmat", t)
+}
+
+tmatmul <- function(tmat, v, transposed = FALSE) {
+  storage.mode(v) <- "double";
+  storage.mode(transposed) <- "logical";
+  .Call("tmatmul", tmat, v, transposed);
+}
+
 "decompose.toeplitz-ssa.eigen" <- function(x, ...,
                                            force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
