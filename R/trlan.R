@@ -17,7 +17,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-# Stubs to call nu-TRLan SVD implementation
+# Stubs to call nu-TRLan SVD / eigen implementation
 
 trlan_svd <- function(X, neig = min(m, n),
                       opts = list(), lambda = NULL, U = NULL) {
@@ -36,3 +36,19 @@ trlan_svd <- function(X, neig = min(m, n),
   .Call("trlan_svd", X, neig, opts, lambda, U);
 }
 
+trlan_eigen <- function(X, neig = min(m, n),
+                        opts = list(), lambda = NULL, U = NULL) {
+  if (is.matrix(X)) {
+    m <- dim(X)[1]; n <- dim(X)[2];
+    storage.mode(X) <- "double";
+  } else if (is.extmat(X)) {
+    m <- extmat.nrow(X); n <- extmat.ncol(X);
+  } else {
+    stop('unsupported matrix type for SVD')
+  }
+
+  storage.mode(neig) <- "integer"
+  storage.mode(opts) <- "list"
+  
+  .Call("trlan_eigen", X, neig, opts, lambda, U);
+}
