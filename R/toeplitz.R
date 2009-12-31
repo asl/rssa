@@ -64,6 +64,50 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   .Call("tmatmul", tmat, v, transposed);
 }
 
+"decompose.toeplitz-ssa.nutrlan" <- function(x,
+                                             neig = min(50, L, K),
+                                             ...) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+
+  h <- .get(x, "hmat", allow.null = TRUE);
+  if (is.null(h)) {
+    F <- .get(x, "F");
+    h <- new.hmat(F, L = L);
+  }
+
+  olambda <- .get(x, "olambda", allow.null = TRUE);
+  U <- .get(x, "U", allow.null = TRUE);
+
+  T <- new.tmat(F, L = L);
+
+  S <- trlan_eigen(T, neig = neig, ...,
+                   lambda = olambda, U = U);
+
+  # Fix small negative values
+  S$values[S$values < 0] <- 0;
+
+  # Save results
+  .set(x, "hmat", h);
+  .set(x, "olambda", S$d);
+  if (!is.null(S$u))
+    .set(x, "U", S$u);
+
+  num <- length(S$d);
+  lambda <- numeric(num);
+  V <- matrix(nrow = K, ncol = num);
+  for (i in 1:num) {
+    Z <- hmatmul(h, S$u[, i], transposed = TRUE);
+    lambda[i] <- sum(Z^2);
+    V[, i] <- Z / lambda[i];
+  }
+
+  # Save results
+  .set(x, "lambda", lambda);
+  .set(x, "V", V);
+
+  x;
+}
+
 "decompose.toeplitz-ssa.eigen" <- function(x, ...,
                                            force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
