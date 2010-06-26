@@ -1,7 +1,7 @@
 PKG_LIBS=$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
-PKG_FFLAGS+=-W -Wall -I.
-PKG_CFLAGS+=-W -Wall -I.
-PKG_LIBS+=-lfftw3
+PKG_FFLAGS+=-W -Wall @RSSA_CPPFLAGS@
+PKG_CFLAGS+=-W -Wall @RSSA_CPPFLAGS@
+PKG_LIBS+=@LIBS@
 
 PROPACK_OBJS=dlansvd_irl.o printstat.o second.o propack_svd.o
 PROPACK_DIR=propack
