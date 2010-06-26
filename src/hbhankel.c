@@ -1,7 +1,7 @@
 /*
  *   R package for Singular Spectrum Analysis
- *   Copyright (c) 2009 Anton Korobeynikov <asl@math.spbu.ru>
  *   Copyright (c) 2009 Konstantin Usevich <usevich.k.d@gmail.com>
+ *   Copyright (c) 2009-2010 Anton Korobeynikov <asl@math.spbu.ru>
  *
  *   This program is free software; you can redistribute it
  *   and/or modify it under the terms of the GNU General Public
@@ -24,13 +24,22 @@
 #include <Rinternals.h>
 
 #include <complex.h>
-#include <fftw3.h>
+
 #include "extmat.h"
+#include "config.h"
+#if HAVE_FFTW3_H
+#include <fftw3.h>
+#else
+#include <R_ext/Applic.h>
+#endif
 
 typedef struct {
+#if HAVE_FFTW3_H
   fftw_complex * circ_freq;
   fftw_plan r2c_plan;
   fftw_plan c2r_plan;
+#else
+#endif
   struct {R_len_t x; R_len_t y;} window;
   struct {R_len_t x; R_len_t y;} length;
 } hbhankel_matrix;
@@ -45,6 +54,7 @@ static unsigned hbhankel_ncol(const void *matrix) {
   return (h->length.x - h->window.x + 1)*(h->length.y - h->window.y + 1);
 }
 
+#if HAVE_FFTW3_H
 static void free_circulant(hbhankel_matrix *h) {
   fftw_free(h->circ_freq);
   fftw_destroy_plan(h->r2c_plan);
@@ -246,6 +256,36 @@ static R_INLINE void hbhankelize_fft(double *F,
   fftw_free(cU);
   fftw_free(cV);
 }
+#else
+static void free_circulant(hbhankel_matrix *h) {
+  error("FFTW-less version of 2D-SSA is not implemented yet!");
+}
+
+static void initialize_circulant(hbhankel_matrix *h,
+                                 const double *F,
+                                 R_len_t Nx, R_len_t Ny,
+                                 R_len_t Lx, R_len_t Ly) {
+  error("FFTW-less version of 2D-SSA is not implemented yet!");
+}
+
+static void hbhankel_matmul(double* out,
+                            const double* v,
+                            const void* matrix) {
+  error("FFTW-less version of 2D-SSA is not implemented yet!");
+}
+
+static void hbhankel_tmatmul(double* out,
+                            const double* v,
+                            const void* matrix) {
+  error("FFTW-less version of 2D-SSA is not implemented yet!");
+}
+
+static R_INLINE void hbhankelize_fft(double *F,
+                                     const double *U, const double *V,
+                                     const hbhankel_matrix* h) {
+  error("FFTW-less version of 2D-SSA is not implemented yet!");
+}
+#endif
 
 static void hbhmat_finalizer(SEXP ptr) {
   ext_matrix *e;

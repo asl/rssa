@@ -1,6 +1,6 @@
 /*
  *   R package for Singular Spectrum Analysis
- *   Copyright (c) 2009 Anton Korobeynikov <asl@math.spbu.ru>
+ *   Copyright (c) 2009-2010 Anton Korobeynikov <asl@math.spbu.ru>
  *
  *   This program is free software; you can redistribute it
  *   and/or modify it under the terms of the GNU General Public
@@ -23,13 +23,23 @@
 #include <Rinternals.h>
 
 #include <complex.h>
-#include <fftw3.h>
+
 #include "extmat.h"
+#include "config.h"
+#if HAVE_FFTW3_H
+#include <fftw3.h>
+#else
+#include <R_ext/Applic.h>
+#endif
 
 typedef struct {
+#if HAVE_FFTW3_H
   fftw_complex * circ_freq;
   fftw_plan r2c_plan;
   fftw_plan c2r_plan;
+#else
+  complex double * circ_freq;
+#endif
   R_len_t window;
   R_len_t length;
 } toeplitz_matrix;
@@ -44,6 +54,7 @@ static unsigned toeplitz_ncol(const void *matrix) {
   return t->length - t->window + 1;
 }
 
+#if HAVE_FFTW3_H
 static void free_circulant(toeplitz_matrix *t) {
   fftw_free(t->circ_freq);
   fftw_destroy_plan(t->r2c_plan);
@@ -156,6 +167,136 @@ static void toeplitz_tmatmul(double* out,
   fftw_free(circ);
   fftw_free(ocirc);
 }
+#else
+static void free_circulant(toeplitz_matrix *t) {
+  Free(t->circ_freq);
+}
+
+static void initialize_circulant(toeplitz_matrix *t,
+                                 const double *R, R_len_t L) {
+  R_len_t N = 2*L - 1, i;
+  int *iwork, maxf, maxp;
+  double *work;
+  complex double *circ;
+
+  /* Allocate needed memory */
+  circ = Calloc(N, complex double);
+
+  /* Estimate the best plans for given input length */
+  fft_factor(N, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
+
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  /* Fill input buffer */
+  for (i = 0; i < L; ++i)
+    circ[i] = R[i];
+
+  for (i = 0; i < L-1; ++i)
+    circ[L + i] = R[L-i-1];
+
+  /* Run the plan on input data */
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+
+  /* Cleanup and return */
+  Free(work);
+  Free(iwork);
+
+  t->circ_freq = circ;
+  t->window = L;
+  t->length = N;
+}
+
+static void toeplitz_matmul(double* out,
+                            const double* v,
+                            const void* matrix) {
+  const toeplitz_matrix *t = matrix;
+  R_len_t N = t->length, L = t->window;
+  R_len_t K = N - L + 1, i;
+  double *work;
+  complex double *circ;
+  int *iwork, maxf, maxp;
+
+  /* Estimate the best plans for given input length */
+  fft_factor(N, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
+
+  /* Allocate needed memory */
+  circ = Calloc(N, complex double);
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  /* Fill the arrays */
+  for (i = 0; i < K; ++i)
+    circ[i] = v[i];
+
+  /* Compute the FFT of the vector v */
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+
+  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
+  for (i = 0; i < N; ++i)
+    circ[i] = circ[i] * t->circ_freq[i];
+
+  /* Compute the reverse transform to obtain result */
+  fft_factor(N, &maxf, &maxp);
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+
+  /* Cleanup and return */
+  for (i = 0; i < L; ++i)
+    out[i] = creal(circ[i]) / N;
+
+  Free(circ);
+  Free(work);
+  Free(iwork);
+}
+
+static void toeplitz_tmatmul(double* out,
+                             const double* v,
+                             const void* matrix) {
+  const toeplitz_matrix *t = matrix;
+  R_len_t N = t->length, L = t->window;
+  R_len_t K = N - L + 1, i;
+  double *work;
+  complex double *circ;
+  int *iwork, maxf, maxp;
+
+  /* Estimate the best plans for given input length */
+  fft_factor(N, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
+
+  /* Allocate needed memory */
+  circ = Calloc(N, complex double);
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  /* Fill the arrays */
+  for (i = 0; i < L; ++i)
+    circ[i + K - 1] = v[i];
+
+  /* Compute the FFT of the reversed vector v */
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+
+  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
+  for (i = 0; i < N; ++i)
+    circ[i] = circ[i] * t->circ_freq[i];
+
+  /* Compute the reverse transform to obtain result */
+  fft_factor(N, &maxf, &maxp);
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+
+  /* Cleanup and return */
+  for (i = 0; i < K; ++i)
+    out[i] = creal(circ[i + L - 1]) / N;
+
+  Free(circ);
+  Free(work);
+  Free(iwork);
+}
+#endif
 
 static void tmat_finalizer(SEXP ptr) {
   ext_matrix *e;
