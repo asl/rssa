@@ -24,8 +24,8 @@
 
 #include <complex.h>
 #include <fftw3.h>
+
 #include "extmat.h"
-#include "hankel.h"
 
 typedef struct {
   fftw_complex * circ_freq;
