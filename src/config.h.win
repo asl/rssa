@@ -1,0 +1,3 @@
+/* Assume FFTW3 is always available */
+
+#define HAVE_FFTW3_H 1
