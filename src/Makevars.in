@@ -3,6 +3,8 @@ PKG_FFLAGS+=-W -Wall @RSSA_CPPFLAGS@
 PKG_CFLAGS+=-W -Wall @RSSA_CPPFLAGS@
 PKG_LIBS+=@LIBS@
 
+.PHONY: all clean shlib-clean
+
 PROPACK_OBJS=dlansvd_irl.o printstat.o second.o propack_svd.o
 PROPACK_DIR=propack
 
@@ -14,3 +16,8 @@ RSSA_OBJS=hankel.o extmat.o hbhankel.o toeplitz.o
 OBJECTS=$(RSSA_OBJS)                                 \
         $(addprefix $(PROPACK_DIR)/,$(PROPACK_OBJS)) \
         $(addprefix $(TRLAN_DIR)/,$(TRLAN_OBJS))
+
+all: $(SHLIB)
+
+clean:
+	rm -f $(OBJECTS) $(SHLIB)
