@@ -1,0 +1,2 @@
+cp -r src/config.h.win src/config.h
+sed -e "s#@RSSA_CPPFLAGS@##g" -e "s#@LIBS@#-lfftw3#g" src/Makevars.in > src/Makevars.win
