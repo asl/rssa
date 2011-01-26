@@ -4,6 +4,7 @@ import(lattice)
 
 export(clone,
        decompose,
+       decompose.default,
        reconstruct,
        nu,
        nv,
