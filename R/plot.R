@@ -157,7 +157,7 @@ panel.series <- function(x, y, recon, ...) {
 
 }
 
-plot.ssa <- function(this,
+plot.ssa <- function(x,
                      type = c("values", "vectors", "paired", "series"),
                      ...,
                      plot.contrib = TRUE,
@@ -167,6 +167,7 @@ plot.ssa <- function(this,
                      idy,
                      groups) {
   type <- match.arg(type);
+  this <- x;
  
   if (identical(type, "values")) {
     .plot.ssa.values(this, ..., numvalues = numvalues);
@@ -183,6 +184,6 @@ plot.ssa <- function(this,
 
     .plot.ssa.series(this, ..., groups = groups);
   } else {
-    stop("Unsupported type of eigenplot!");
+    stop("Unsupported type of SSA plot!");
   }
 }

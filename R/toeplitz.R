@@ -150,16 +150,10 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   x;
 }
 
-"decompose.toeplitz-ssa.svd" <- function(x,
-                                         neig = min(L, K),
-                                         ...,
-                                         force.continue = FALSE) {
+"decompose.toeplitz-ssa.svd" <- function(x, ...) {
   stop("'SVD' method is not applicable to toeplitz SSA");
 }
 
-"decompose.toeplitz-ssa.propack" <- function(x,
-                                             neig = min(L, K),
-                                             ...,
-                                             force.continue = FALSE) {
+"decompose.toeplitz-ssa.propack" <- function(x, ...) {
   stop("'PROPACK' method is not applicable to toeplitz SSA");
 }
