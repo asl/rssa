@@ -245,8 +245,6 @@ SEXP trlan_svd(SEXP A, SEXP ne, SEXP opts,
 
   trlan(opfn, &info, m, kmax, eval, evec, m, lwrk, wrk, &param);
 
-  trl_print_info(&info);
-
   /* Cleanup */
   Free(wrk);
 
