@@ -95,7 +95,7 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   lambda <- .get(x, "lambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  S <- trlan_svd(h, neig = neig, ...,
+  S <- trlan.svd(h, neig = neig, ...,
                  lambda = lambda, U = U);
 
   # Save results

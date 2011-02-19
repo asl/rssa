@@ -36,10 +36,10 @@ export(clone,
        trows,
        is.tmat,
 # SVD
-       propack_svd,
-       trlan_svd,
+       propack.svd,
+       trlan.svd,
 # Eigensolvers
-       trlan_eigen)
+       trlan.eigen)
 
 S3method("clone", ssa)
 S3method("decompose", "1d-ssa.svd")

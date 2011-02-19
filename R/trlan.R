@@ -19,7 +19,7 @@
 
 # Stubs to call nu-TRLan SVD / eigen implementation
 
-trlan_svd <- function(X, neig = min(m, n),
+trlan.svd <- function(X, neig = min(m, n),
                       opts = list(), lambda = NULL, U = NULL) {
   if (is.matrix(X)) {
     m <- dim(X)[1]; n <- dim(X)[2];
@@ -36,7 +36,7 @@ trlan_svd <- function(X, neig = min(m, n),
   .Call("trlan_svd", X, neig, opts, lambda, U);
 }
 
-trlan_eigen <- function(X, neig = min(m, n),
+trlan.eigen <- function(X, neig = min(m, n),
                         opts = list(), lambda = NULL, U = NULL) {
   if (is.matrix(X)) {
     m <- dim(X)[1]; n <- dim(X)[2];

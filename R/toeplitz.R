@@ -80,7 +80,7 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 
   T <- new.tmat(F, L = L);
 
-  S <- trlan_eigen(T, neig = neig, ...,
+  S <- trlan.eigen(T, neig = neig, ...,
                    lambda = olambda, U = U);
 
   # Fix small negative values

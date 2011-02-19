@@ -19,7 +19,7 @@
 
 # Stubs to call PROPACK' SVD implementation
 
-propack_svd <- function(X, neig = min(m, n), opts = list()) {
+propack.svd <- function(X, neig = min(m, n), opts = list()) {
   if (is.matrix(X)) {
     m <- dim(X)[1]; n <- dim(X)[2];
     storage.mode(X) <- "double";
