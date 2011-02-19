@@ -102,6 +102,9 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hmatmul", hmat, v, transposed);
 }
 
+"decompose.1d-ssa" <- function(x, ...)
+  stop("Unsupported SVD method for 1D-SSA!");
+
 "decompose.1d-ssa.svd" <- function(x,
                                    neig = min(L, K),
                                    ...,
@@ -110,7 +113,7 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decompostion is not supported for this method.")
+    stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
   F <- .get(x, "F");

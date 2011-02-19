@@ -107,6 +107,33 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   x;
 }
 
+"decompose.2d-ssa.propack" <- function(x,
+                                       neig = min(50,prod(L), prod(K)),
+                                       ...,
+                                       force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+  svd_method <- x$svd_method;
+
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(x) > 0)
+    stop("Continuation of decomposition is not yet implemented for this method.")
+
+  F <- .get(x, "F");
+  h <- new.hbhmat(F, L = L);
+
+  S <- propack.svd(h, neig = neig, ...);
+
+  # Save results
+  .set(x, "hmat", h);
+  .set(x, "lambda", S$d);
+  if (!is.null(S$u))
+    .set(x, "U", S$u);
+  if (!is.null(S$v))
+    .set(x, "V", S$v);
+
+  x;
+}
+
 "calc.v.2d-ssa" <- function(this, idx, ...) {
   lambda <- .get(this, "lambda")[idx];
   U <- .get(this, "U")[, idx, drop = FALSE];
