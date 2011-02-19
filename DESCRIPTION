@@ -2,11 +2,11 @@ Package: Rssa
 Type: Package
 Title: A collection of methods for singular spectrum analysis
 Version: 0.8.0
-Date: 2010-06-26
+Date: 2011-02-19
 Depends: lattice
 SystemRequirements: fftw (>=3.2)
 Author: Anton Korobeynikov
 Maintainer: Anton Korobeynikov <asl@math.spbu.ru>
-Description: This package implements Singular Spectrum Analysis.
+Description: This package provides various Singular Spectrum Analysis routines.
 License: file LICENSE
-URL: 
+URL: http://github.com/asl/rssa
