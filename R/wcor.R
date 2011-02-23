@@ -55,8 +55,11 @@ wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
   colnames(X) <- names(F);
 
   # Finally, compute w-correlations and return
-  NextMethod("wcor", L = L)
+  wcor.default(X, L = L)
 }
+
+wcor.ssa <- function(X, groups, ..., cache = TRUE)
+  stop("Unsupported SVD method for SSA!");
 
 wcor <- function(X, ...) {
   UseMethod("wcor");
