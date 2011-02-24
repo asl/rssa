@@ -16,7 +16,7 @@
   \item{X}{the input object. This might be ssa object for \emph{ssa}
     method, or just a matrix with elementary series in columns for
   \emph{default} implementation.}
-  \item{L}{Window length.}
+  \item{L}{window length.}
   \item{groups}{list of numeric vectors, indices of elementary subseries
     used for reconstruction.}
   \item{\dots}{further arguments passed to \code{reconstruct} routine.}
