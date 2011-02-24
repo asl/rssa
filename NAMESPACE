@@ -42,6 +42,7 @@ export(clone,
        trlan.eigen)
 
 S3method("clone", ssa)
+S3method("decompose", ssa)
 S3method("decompose", "1d-ssa.svd")
 S3method("decompose", "1d-ssa.eigen")
 S3method("decompose", "1d-ssa.propack")

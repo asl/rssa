@@ -274,3 +274,8 @@ summary.ssa <- function(object, digits = max(3, getOption("digits") - 3), ...)
 
 calc.v.ssa <- function(this, idx, env = .GlobalEnv, ...)
   stop("Unsupported SVD method for SSA!");
+
+decompose.ssa <- function(x, neig = min(50, L, K), ...) {
+  L <- K <- 0;
+  stop("Unsupported SVD method for SSA!");
+}
