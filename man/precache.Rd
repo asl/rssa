@@ -20,8 +20,8 @@
 
 \note{
   In most cases it is not necessary to call this routine directly. By
-  default all functions from the package collect all elementary
-  subseries they see encounter during the calculations.
+  default functions from the package collect all elementary
+  subseries they encounter during the calculations.
 }
 
 \seealso{
