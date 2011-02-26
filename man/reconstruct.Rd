@@ -13,7 +13,7 @@
 }
 
 \arguments{
-  \item{this}{SSA object/}
+  \item{this}{SSA object}
   \item{groups}{list of numeric vectors, indices of elementary subseries
     used for reconstruction.}
   \item{\dots}{further arguments passed to routines (e.g. to
