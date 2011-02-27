@@ -1,10 +1,10 @@
 \name{precache}
 \alias{precache}
 \alias{precache.ssa}
-\title{Calculates and caches elementary series inside `ssa' object}
+\title{Calculates and caches elementary series inside SSA object}
 
 \description{
-  Calculates all the elementary series and saves inside `ssa'
+  Calculates all the elementary series and saves inside SSA
   object. After this the grouping procedure can be performed much
   faster.
 }

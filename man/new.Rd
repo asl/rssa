@@ -1,9 +1,9 @@
 \name{new.ssa}
 \alias{new.ssa}
-\title{Create a new `ssa' object}
+\title{Create a new SSA object}
 
 \description{
-  Set up the `ssa' object and perform the decomposition, if necessary.
+  Set up the SSA object and perform the decomposition, if necessary.
 }
 
 \usage{

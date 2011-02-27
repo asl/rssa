@@ -2,7 +2,7 @@
 \alias{nlambda}
 \alias{nu}
 \alias{nv}
-\title{Properties of `ssa' object}
+\title{Properties of SSA object}
 
 \description{
   Functions to query for number of singular values, eigenvectors and
@@ -23,8 +23,11 @@ nv(this, ...)
 \details{
   The numbers returned solely depend on used singular value
   decomposition method and parameters of this method (e.g. 'neig'
-  argument for 'propack' and 'nutrlan' SVD methods).  } \value{ an
-  'integer' of length 1.
+  argument for 'propack' and 'nutrlan' SVD methods).
+}
+
+\value{
+  an 'integer' of length 1.
 }
 
 \examples{
