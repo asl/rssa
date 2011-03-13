@@ -1,6 +1,7 @@
 useDynLib(Rssa)
 
 import(lattice)
+import(svd)
 
 export(clone,
        decompose,
@@ -34,12 +35,7 @@ export(clone,
        tmatmul,
        tcols,
        trows,
-       is.tmat,
-# SVD
-       propack.svd,
-       trlan.svd,
-# Eigensolvers
-       trlan.eigen)
+       is.tmat)
 
 S3method("clone", ssa)
 S3method("decompose", ssa)

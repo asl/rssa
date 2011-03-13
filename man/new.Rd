@@ -106,7 +106,7 @@ new.ssa(x,
     Pp. 257-268  
 }
 \seealso{
-  \code{\link[Rssa:svd]{svd}},
+  \code{\link[svd:svd]{svd}},
   \code{\link[Rssa:decompose.ssa]{decompose}},
   \code{\link[Rssa:ssa]{ssa}}
 }

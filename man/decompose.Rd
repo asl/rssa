@@ -37,7 +37,7 @@
 }
 
 \seealso{
-  \code{\link[Rssa:svd]{svd}}, \code{\link[Rssa:new.ssa]{new.ssa}}
+  \code{\link[svd:svd]{svd}}, \code{\link[Rssa:new.ssa]{new.ssa}}
 }
 
 \examples{
