@@ -4,7 +4,6 @@ Title: A collection of methods for singular spectrum analysis
 Version: 0.8.1
 Date: 2011-03-13
 Depends: lattice, svd
-LinkingTo: svd
 SystemRequirements: fftw (>=3.2)
 Author: Anton Korobeynikov
 Maintainer: Anton Korobeynikov <asl@math.spbu.ru>

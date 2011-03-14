@@ -21,7 +21,6 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include <R_ext/Rdynload.h>
 
 #include <complex.h>
 
@@ -502,7 +501,6 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
 SEXP is_hmat(SEXP ptr) {
   SEXP ans = NILSXP, tchk;
   ext_matrix *e = NULL;
-  extmat_fn_t is_extmat =  (extmat_fn_t)R_GetCCallable("svd", "is_extmat");
 
   PROTECT(ans = allocVector(LGLSXP, 1));
   LOGICAL(ans)[0] = 1;

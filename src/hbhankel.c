@@ -22,7 +22,6 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include <R_ext/Rdynload.h>
 
 #include <complex.h>
 
@@ -344,7 +343,6 @@ SEXP initialize_hbhmat(SEXP F, SEXP windowx, SEXP windowy) {
 SEXP is_hbhmat(SEXP ptr) {
   SEXP ans = NILSXP, tchk;
   ext_matrix *e = NULL;
-  extmat_fn_t is_extmat =  (extmat_fn_t)R_GetCCallable("svd", "is_extmat");
 
   PROTECT(ans = allocVector(LGLSXP, 1));
   LOGICAL(ans)[0] = 1;
