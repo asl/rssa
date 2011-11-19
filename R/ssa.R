@@ -225,13 +225,23 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   out;
 }
 
+names.ssa <- function(this){
+  c(attr(this, "names"), ls(envir = .storage(this)));
+}
+
 '$.ssa' <- function(this, name) {
-  if (ind <- charmatch(name, names(this), nomatch = 0))
+  if (ind <- charmatch(name, attr(this, "names"), nomatch = 0))
     return (this[[ind]]);
 
-  if (.exists(this, name))
-    return (.get(this, name));
-
+  env <- .storage(this)
+	
+	if(exists(name, envir = env, inherits = FALSE))
+		return(get(name, envir = env, inherits = FALSE));
+	
+  ll <- ls(pattern=sprintf("^%s", name), envir = env);
+	if(length(ll) == 1)
+		return(get(ll[1], envir = env, inherits = FALSE));
+	
   NULL;
 }
 

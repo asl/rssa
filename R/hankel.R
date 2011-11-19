@@ -71,6 +71,11 @@ hankel <- function(X, L) {
   .hankelize.one.hankel(U, V, h);
 }
 
+.hankelize.one.ssa.eigen <- function(this, U, V) {
+  h <- .get(this, "hmat");
+  .hankelize.one.hankel(U, V, h);
+}
+
 .hankelize.multi <- function(U, V) {
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_multi", U, V);
@@ -140,21 +145,21 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not supported for this method.")
 
-  # Build hankel matrix (this can be done more efficiently!)
   F <- .get(x, "F");
-  h <- hankel(F, L = L);
+  h <- new.hmat(F, L = L);
+  
 
   # Do decomposition
   if ("neig" %in% names(list(...)))
     warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
             immediate. = TRUE)
 
-  S <- eigen(tcrossprod(h));
+  S <- eigen(Lcov.matrix(F, L), symmetric = TRUE);
 
-  # Fix small negative values
   S$values[S$values < 0] <- 0;
 
   # Save results
+  .set(x, "hmat", h);
   .set(x, "lambda", sqrt(S$values));
   .set(x, "U", S$vectors);
 
@@ -222,6 +227,9 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
 
+# This function is not necessery more, because "svd" method compute all V-vectors at once
+# "eigen" method not use explicit (naive) hankel matrix more
+#
 .calc.v.svd <- function(this, idx, env) {
   # Check, if there is garbage-collected storage to hold some pre-calculated
   # stuff.
@@ -250,7 +258,9 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
 "calc.v.1d-ssa.nutrlan" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
 "calc.v.1d-ssa.propack" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
 "calc.v.1d-ssa.svd" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
-"calc.v.1d-ssa.eigen" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
+"calc.v.1d-ssa.eigen" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
+
+
 
 #mes <- function(N = 1000, L = (N %/% 2), n = 50) {
 #  F <- rnorm(N);
