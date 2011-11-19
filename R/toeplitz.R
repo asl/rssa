@@ -70,7 +70,7 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 as.matrix.tmat <- function(tmat){
   L <- tcols(tmat);
   
-  E <- diag(nrow=L, ncol=L);
+  E <- diag(nrow = L, ncol = L);
   sapply(1:L, function(i)(tmatmul(tmat, E[,i])));
 }
 
@@ -80,24 +80,27 @@ as.matrix.tmat <- function(tmat){
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
+  tmat <- .get(x, "tmat", allow.null = TRUE);
+  
+  if (is.null(h) || is.null(tmat)) {
     F <- .get(x, "F");
     h <- new.hmat(F, L = L);
+    tmat <- new.tmat(F, L = L);
   }
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- new.tmat(F, L = L);
+  
 
-  S <- trlan.eigen(T, neig = neig, ...,
+  S <- trlan.eigen(tmat, neig = neig, ...,
                    lambda = olambda, U = U);
 
   # Save results
   .set(x, "hmat", h);
+  .set(x, "tmat", tmat);
   .set(x, "olambda", S$d);
-  if (!is.null(S$u))
-    .set(x, "U", S$u);
+  .set(x, "U", S$u);
 
   num <- length(S$d);
   lambda <- numeric(num);
@@ -122,7 +125,7 @@ as.matrix.tmat <- function(tmat){
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decompostion is not supported for this method.")
+    stop("Continuation of decompostion is not supported for this method.");
 
   # Build hankel matrix
   F <- .get(x, "F");
@@ -167,7 +170,7 @@ as.matrix.tmat <- function(tmat){
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decompostion is not yet implemented for this method.")
+    stop("Continuation of decompostion is not yet implemented for this method.");
   
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
