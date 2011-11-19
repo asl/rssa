@@ -83,7 +83,7 @@
 }
 
 .get.series <- function(this, index) {
-  F <- numeric(this$length);
+  F <- numeric(prod(this$length));
   for (i in index) {
     name <- paste("series:", i, sep = "");
     F <- F + .get(this, name);

@@ -23,7 +23,8 @@ new.ssa <- function(x,
                     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
                     svd_method = c("nutrlan", "propack", "svd", "eigen"),
                     force.decompose = TRUE) {
-  svd_method <- match.arg(svd_method);
+  #ASH: see below
+  #svd_method <- match.arg(svd_method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
@@ -35,16 +36,40 @@ new.ssa <- function(x,
     N <- length(x);
 
     # Fix svd method, if needed
-    if ((identical(svd_method, "nutrlan") ||
-         identical(svd_method, "propack")) &&
-        L < 50)
-      svd_method <- "eigen";
+    # ASH: I disable it, because
+    # 1) It's very naive criterion
+    # 2) Is masks some real problems with nu-trlan method with small L and N
+#    if ((identical(svd_method, "nutrlan") ||
+#         identical(svd_method, "propack")) &&
+#        L < 50)
+#      svd_method <- "eigen";
+    # My version
+    ###########################################
+    if (missing(svd_method)) {
+      if(L < 50) {
+        svd_method <- "eigen";
+      } else {
+        svd_method <- "propack";
+      }
+    } else {
+      #If user choose some method, use it and only it!
+      svd_method <- match.arg(svd_method);
+    }
+    #####################################################
+      
+      
   } else if (identical(kind, "2d-ssa")) {
+    svd_method <- match.arg(svd_method);
+    
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
       x <- as.matrix(x);
 
     N <- dim(x);
+    
+    if (length(L) == 1){
+      L <- rep(L[1], 2); 
+    }
   }
 
   # Create information body
@@ -134,7 +159,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
     if (length(new) == 0) {
       # Nothing to compute, just create zero output
-      out[[i]] <- numeric(this$length);
+      out[[i]] <- numeric(prod(this$length));
     } else {
       # Do actual reconstruction (depending on method, etc)
       out[[i]] <- .do.reconstruct(this, new, env = e);
@@ -169,7 +194,8 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   lambda <- .get(this, "lambda");
   U <- .get(this, "U");
 
-  res <- numeric(this$length);
+  # res <- numeric(this$length);
+  res <- numeric(prod(this$length));
 
   for (i in idx) {
     if (nv(this) >= i) {
@@ -225,13 +251,23 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   out;
 }
 
+names.ssa <- function(x){
+  c(attr(x, "names"), ls(envir = .storage(x)));
+}
+
 '$.ssa' <- function(this, name) {
-  if (ind <- charmatch(name, names(this), nomatch = 0))
+  if (ind <- charmatch(name, attr(this, "names"), nomatch = 0))
     return (this[[ind]]);
 
-  if (.exists(this, name))
-    return (.get(this, name));
-
+  env <- .storage(this)
+	
+	if(exists(name, envir = env, inherits = FALSE))
+		return(get(name, envir = env, inherits = FALSE));
+	
+  ll <- ls(pattern=sprintf("^%s", name), envir = env);
+	if(length(ll) == 1)
+		return(get(ll[1], envir = env, inherits = FALSE));
+	
   NULL;
 }
 

@@ -61,7 +61,7 @@ static void free_circulant(toeplitz_matrix *t) {
   fftw_destroy_plan(t->c2r_plan);
 }
 
-static void initialize_circulant(toeplitz_matrix *t,
+static void initialize_symmetric_circulant(toeplitz_matrix *t,
                                  const double *R, R_len_t L) {
   R_len_t N = 2*L - 1, i;
   fftw_complex *ocirc;
@@ -167,12 +167,57 @@ static void toeplitz_tmatmul(double* out,
   fftw_free(circ);
   fftw_free(ocirc);
 }
+
+
+static void compute_L_correlation(const double *F, R_len_t N, R_len_t L,
+                                 double *R) {
+  R_len_t No, i;
+  double *circ;
+  fftw_complex *ocirc;
+  fftw_plan p1, p2;
+
+  /* Length's check */
+  if ((L >= N) || (L < 1))
+    error("must be 'N' > 'L' >= 1");
+    
+  /* Allocate needed memory */
+  No = N + L - 1;
+   
+  circ = (double*) fftw_malloc(No * sizeof(double));
+  ocirc = (fftw_complex*) fftw_malloc((No/2 + 1) * sizeof(fftw_complex));
+  
+  /* Estimate the best plans for given input length */
+  p1 = fftw_plan_dft_r2c_1d(No, circ, ocirc, FFTW_ESTIMATE);
+  p2 = fftw_plan_dft_c2r_1d(No, ocirc, circ, FFTW_ESTIMATE);
+
+  memcpy(circ, F, N*sizeof(double));
+  memset(circ + N, 0, (L - 1)*sizeof(double));  
+   
+  /* Run the plan on input data */
+  fftw_execute(p1);
+
+  /* Auto dot-product */
+  for (i = 0; i < No/2 + 1; ++i)
+    ocirc[i] = creal(ocirc[i])*creal(ocirc[i]) + cimag(ocirc[i])*cimag(ocirc[i]);
+    
+  fftw_execute(p2);
+
+  /* Return */
+  for (i = 0; i < L; ++i)
+    R[i] = circ[i] / (N - i) / No;  
+  
+  /* Cleanup */
+  fftw_free(circ);
+  fftw_free(ocirc);
+  fftw_destroy_plan(p1);
+  fftw_destroy_plan(p2);
+}
 #else
 static void free_circulant(toeplitz_matrix *t) {
   Free(t->circ_freq);
 }
 
-static void initialize_circulant(toeplitz_matrix *t,
+static void initialize_symmetric_circulant(toeplitz_matrix *t,
                                  const double *R, R_len_t L) {
   R_len_t N = 2*L - 1, i;
   int *iwork, maxf, maxp;
@@ -296,6 +341,14 @@ static void toeplitz_tmatmul(double* out,
   Free(work);
   Free(iwork);
 }
+
+
+static void compute_L_correlation(const double *F, R_len_t N, R_len_t L,
+                                 double *R) {
+  /* STUB */
+  /* FIXME */
+  error("sorry, but computation L-correlations without FFTW is not implemented yet =(");
+}
 #endif
 
 static void tmat_finalizer(SEXP ptr) {
@@ -321,7 +374,7 @@ static void tmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_tmat(SEXP R) {
+SEXP initialize_symmetric_tmat(SEXP R) {
   R_len_t L;
   toeplitz_matrix *t;
   ext_matrix *e;
@@ -339,7 +392,7 @@ SEXP initialize_tmat(SEXP R) {
 
   /* Build toeplitz circulants for toeplitz matrix */
   t = Calloc(1, toeplitz_matrix);
-  initialize_circulant(t, REAL(R), L);
+  initialize_symmetric_circulant(t, REAL(R), L);
   e->matrix = t;
 
   /* Make an external pointer envelope */
@@ -457,4 +510,18 @@ SEXP tmatmul(SEXP tmat, SEXP v, SEXP transposed) {
   UNPROTECT(1);
 
   return Y;
+}
+
+SEXP Lcor(SEXP F, SEXP L) {
+  SEXP R = NILSXP;
+  
+  R_len_t intL = INTEGER(L)[0];
+  
+  /* Allocate output buffer */
+  PROTECT(R = allocVector(REALSXP, intL));
+
+  compute_L_correlation(REAL(F), length(F), intL, REAL(R));
+
+  UNPROTECT(1);
+  return R;
 }

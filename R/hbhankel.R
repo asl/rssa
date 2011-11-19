@@ -77,14 +77,51 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hbhmatmul", hmat, v, transposed);
 }
 
-"decompose.2d-ssa" <- function(x, ...)
-  stop("Unsupported SVD method for 2D-SSA!");
+"decompose.2d-ssa.svd" <- function(x, ...) {
+  stop("'SVD' method is not realized for 2-d SSA");
+  # ASH: Applicable, but very slow=)
+  # MB realize it? For fun only?
+}
 
+"decompose.2d-ssa.eigen" <- function(x, ...,
+                                       force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+  #Useless
+  #svd_method <- x$svd_method;
+
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(x) > 0)
+    stop("Continuation of decompostion is not supported for this method.");
+
+  F <- .get(x, "F");
+    
+  h <- new.hbhmat(F, L = L);
+  
+  #FIXME Computation of hh^T may be realized much more efficiently
+  hhT <- matrix(0.0, prod(L), prod(L));
+  E <- diag(nrow = prod(L), ncol = prod(L));
+  for (i in 1:prod(L)) {
+    hhT[,i] <- hbhmatmul(h, hbhmatmul(h, E[,i], TRUE), FALSE);
+  }
+    
+  S <- eigen(hhT, symmetric = TRUE);
+  # Fix small negative values
+  S$values[S$values < 0] <- 0;
+  
+  # Save results
+  .set(x, "hmat", h);
+  .set(x, "lambda", sqrt(S$values));
+  .set(x, "U", S$vectors);
+  
+  x;
+}
+   
 "decompose.2d-ssa.nutrlan" <- function(x,
                                        neig = min(50, prod(L), prod(K)),
                                        ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
-  svd_method <- x$svd_method;
+  # ASH: Useless
+  #svd_method <- x$svd_method;
 
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
@@ -112,11 +149,12 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                                        ...,
                                        force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
-  svd_method <- x$svd_method;
+  #Useless
+  #svd_method <- x$svd_method;
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decomposition is not yet implemented for this method.")
+    stop("Continuation of decomposition is not yet implemented for this method.");
 
   F <- .get(x, "F");
   h <- new.hbhmat(F, L = L);
