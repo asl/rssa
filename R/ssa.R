@@ -225,8 +225,8 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   out;
 }
 
-names.ssa <- function(this){
-  c(attr(this, "names"), ls(envir = .storage(this)));
+names.ssa <- function(x){
+  c(attr(x, "names"), ls(envir = .storage(x)));
 }
 
 '$.ssa' <- function(this, name) {
