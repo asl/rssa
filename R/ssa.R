@@ -134,11 +134,11 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
     if (length(new) == 0) {
       # Nothing to compute, just create zero output
-      out[[i]] <- numeric(this$length);
+      out[[i]] <- numeric(prod(this$length));
     } else {
       # Do actual reconstruction (depending on method, etc)
       out[[i]] <- .do.reconstruct(this, new, env = e);
-
+  
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
         .set.series(this, out[[i]], new);
@@ -169,7 +169,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   lambda <- .get(this, "lambda");
   U <- .get(this, "U");
 
-  res <- numeric(this$length);
+  res <- numeric(prod(this$length));
 
   for (i in idx) {
     if (nv(this) >= i) {
