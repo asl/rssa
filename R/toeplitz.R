@@ -1,20 +1,20 @@
 #   R package for Singular Spectrum Analysis
 #   Copyright (c) 2009 Anton Korobeynikov <asl@math.spbu.ru>
-#   
-#   This program is free software; you can redistribute it 
-#   and/or modify it under the terms of the GNU General Public 
-#   License as published by the Free Software Foundation; 
-#   either version 2 of the License, or (at your option) 
+#
+#   This program is free software; you can redistribute it
+#   and/or modify it under the terms of the GNU General Public
+#   License as published by the Free Software Foundation;
+#   either version 2 of the License, or (at your option)
 #   any later version.
 #
-#   This program is distributed in the hope that it will be 
-#   useful, but WITHOUT ANY WARRANTY; without even the implied 
-#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+#   This program is distributed in the hope that it will be
+#   useful, but WITHOUT ANY WARRANTY; without even the implied
+#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 #   PURPOSE.  See the GNU General Public License for more details.
-#   
-#   You should have received a copy of the GNU General Public 
-#   License along with this program; if not, write to the 
-#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
+#
+#   You should have received a copy of the GNU General Public
+#   License along with this program; if not, write to the
+#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
 #   Routines for toeplitz SSA
@@ -22,7 +22,8 @@
 tcirc.old <- function(F, L = (N - 1) %/% 2) {
   N <- length(F);
 
-  R <- as.vector(acf(F, lag.max = L - 1, type = "covariance", plot = FALSE, demean = FALSE)$acf);
+  f <- fft(c(F, rep(0, L-1)))
+  R <- fft(f * Conj(f), inverse = TRUE)[1:L] / (N+L-1) / seq(from = N, to = N-L+1, by = -1)
 
   .res <- list();
   .res$C <- as.vector(fft(c(R, rev(R[-1]))));
@@ -35,12 +36,16 @@ tmatmul.old <- function(C, v) {
   Re((v/length(C$C))[1:C$L]);
 }
 
-new.tmat <- function(F,
-                     L = (N - 1) %/% 2) {
-  N <- length(F);
 
-  # FIXME: Perform estimation via FFT (to drop complexity from O(N^2) to O(N log N)
-  R <- as.vector(acf(F, lag.max = L - 1, type = "covariance", plot = FALSE, demean = FALSE)$acf);
+Lcor <- function(F, L) {
+  storage.mode(F) <- "double"
+  storage.mode(L) <- "integer";
+  .Call("Lcor", F, L);
+}
+
+new.tmat <- function(F, L = (N - 1) %/% 2) {
+  N <- length(F);
+  R <- Lcor(F, L)
 
   storage.mode(R) <- "double";
   t <- .Call("initialize_tmat", R);
@@ -132,7 +137,7 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 
   # Fix small negative values
   S$values[S$values < 0] <- 0;
-  
+
   .set(x, "U", S$vectors);
 
   lambda <- numeric(L);
@@ -140,13 +145,13 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   for (i in 1:L) {
     Z <- hmatmul(h, S$vectors[,i], transposed = TRUE);
     lambda[i] <- sqrt(sum(Z^2));
-    V[, i] <- Z / lambda[i]; 
+    V[, i] <- Z / lambda[i];
   }
-  
+
   # Save results
   .set(x, "lambda", lambda);
   .set(x, "V", V);
-  
+
   x;
 }
 

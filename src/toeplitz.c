@@ -167,7 +167,47 @@ static void toeplitz_tmatmul(double* out,
   fftw_free(circ);
   fftw_free(ocirc);
 }
+
+static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
+  R_len_t No, i;
+  double *circ;
+  fftw_complex *ocirc;
+  fftw_plan p1, p2;
+
+  /* Allocate needed memory */
+  No = N + L - 1;
+  circ = (double*) fftw_malloc(No * sizeof(double));
+  ocirc = (fftw_complex*) fftw_malloc((No/2 + 1) * sizeof(fftw_complex));
+
+  /* Estimate the best plans for given input length */
+  p1 = fftw_plan_dft_r2c_1d(No, circ, ocirc, FFTW_ESTIMATE);
+  p2 = fftw_plan_dft_c2r_1d(No, ocirc, circ, FFTW_ESTIMATE);
+
+  memcpy(circ, F, N*sizeof(double));
+  memset(circ + N, 0, (L - 1)*sizeof(double));
+
+  /* Run the plan on input data */
+  fftw_execute(p1);
+
+  /* Auto dot-product */
+  for (i = 0; i < No/2 + 1; ++i)
+    ocirc[i] = ocirc[i] * conj(ocirc[i]);
+
+  fftw_execute(p2);
+
+  /* Return */
+  for (i = 0; i < L; ++i)
+    R[i] = circ[i] / (N - i) / No;
+
+  /* Cleanup */
+  fftw_free(circ);
+  fftw_free(ocirc);
+  fftw_destroy_plan(p1);
+  fftw_destroy_plan(p2);
+}
+
 #else
+
 static void free_circulant(toeplitz_matrix *t) {
   Free(t->circ_freq);
 }
@@ -292,6 +332,45 @@ static void toeplitz_tmatmul(double* out,
   for (i = 0; i < K; ++i)
     out[i] = creal(circ[i + L - 1]) / N;
 
+  Free(circ);
+  Free(work);
+  Free(iwork);
+}
+
+static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
+  R_len_t No = N + L - 1, i;
+  complex double *circ;
+  int *iwork, maxf, maxp;
+
+  /* Estimate the best plans for given input length */
+  fft_factor(No, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
+
+  /* Allocate needed memory */
+  circ = Calloc(No, complex double);
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  for (i = 0; i < N; ++i)
+    circ[i] = F[i];
+
+  /* Compute the FFT of the padded input vector */
+  fft_work((double*)circ, ((double*)circ)+1, 1, No, 1, -2, work, iwork);
+
+  /* Auto dot-product */
+  for (i = 0; i < No; ++i)
+    circ[i] = circ[i] * conj(circ[i]);
+
+  /* Compute the reverse transform to obtain result */
+  fft_factor(No, &maxf, &maxp);
+  fft_work((double*)circ, ((double*)circ)+1, 1, No, 1, +2, work, iwork);
+
+  /* Return */
+  for (i = 0; i < L; ++i)
+    R[i] = creal(circ[i]) / (N - i) / No;
+
+  /* Cleanup */
   Free(circ);
   Free(work);
   Free(iwork);
@@ -457,4 +536,22 @@ SEXP tmatmul(SEXP tmat, SEXP v, SEXP transposed) {
   UNPROTECT(1);
 
   return Y;
+}
+
+SEXP Lcor(SEXP F, SEXP L) {
+  SEXP R = NILSXP;
+
+  R_len_t N = length(F), intL = INTEGER(L)[0];
+
+  if (intL == 0 || intL > N - 1)
+    error("invalid length of inpur vector 'F'");
+
+  /* Allocate output buffer */
+  PROTECT(R = allocVector(REALSXP, intL));
+
+  calc_Lcor(REAL(R), REAL(F), length(F), intL);
+
+  UNPROTECT(1);
+
+  return R;
 }
