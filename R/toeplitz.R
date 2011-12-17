@@ -97,7 +97,7 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   V <- matrix(nrow = K, ncol = num);
   for (i in 1:num) {
     Z <- hmatmul(h, S$u[, i], transposed = TRUE);
-    lambda[i] <- sum(Z^2);
+    lambda[i] <- sqrt(sum(Z^2));
     V[, i] <- Z / lambda[i];
   }
 
@@ -139,7 +139,7 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   V <- matrix(nrow = K, ncol = L);
   for (i in 1:L) {
     Z <- hmatmul(h, S$vectors[,i], transposed = TRUE);
-    lambda[i] <- sum(Z^2);
+    lambda[i] <- sqrt(sum(Z^2));
     V[, i] <- Z / lambda[i]; 
   }
   
