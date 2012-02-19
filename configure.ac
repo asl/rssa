@@ -1,4 +1,4 @@
-AC_INIT([Rssa], 0.8.0)
+AC_INIT([Rssa], 0.9.0)
 
 dnl Select an optional include path, from a configure option
 dnl or from an environment variable.
@@ -59,7 +59,7 @@ dnl Substitute RSSA_CPPFLAGS and LIBS
 AC_SUBST(RSSA_CPPFLAGS)
 AC_SUBST(LIBS)
 
-dnl Do substitution in the src/Makevars.in and src/config.h
+dnl Do substitution in src/Makevars.in, src/config.h and R/init.R
 AC_CONFIG_HEADERS([src/config.h])
-AC_CONFIG_FILES([src/Makevars])
+AC_CONFIG_FILES([src/Makevars R/init.R])
 AC_OUTPUT
