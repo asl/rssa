@@ -340,6 +340,7 @@ static void toeplitz_tmatmul(double* out,
 static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
   R_len_t No = N + L - 1, i;
   complex double *circ;
+  double *work;
   int *iwork, maxf, maxp;
 
   /* Estimate the best plans for given input length */
