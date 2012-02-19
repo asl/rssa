@@ -24,7 +24,7 @@
 
 \value{
   List of vectors of reconstructed series. Elements of the list are
-  named 'F1'', 'F2', and so on.
+  named 'F1', 'F2', and so on.
 }
 
 \examples{
