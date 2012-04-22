@@ -225,6 +225,32 @@ clusterify.ssa <- function(this, groups, nclust = length(groups) / 2,
   out;
 }
 
+hmatr <- function(F, ...,
+                  B = N %/% 4, T = N %/% 4, L = B %/% 2,
+                  neig = 10) {
+  N <- length(F)
+
+  # Pre-calculate embedding vectors and their squared norms
+  th <- t(hankel(F, L = L))
+  cth2 <- c(0, cumsum(rowSums(th^2)))
+  cth2 <- (cth2[1:(N-T)+(T-L+1)] - cth2[1:(N-T)])
+
+  hc <- function(idx) {
+    Fb <- F[idx:(idx+B)]   # Form a basis subspace
+    s <- new.ssa(Fb, L = L, ..., neig = min(2*neig, 50))
+
+    # Calculate the distance
+    U <- s$U[, 1:neig, drop = FALSE]
+    # FIXME: Can we use FFT stuff here somehow?
+    cXU2 <- c(0, cumsum(rowSums((th %*% U)^2)))
+
+    1 - (cXU2[1:(N-T)+(T-L+1)] - cXU2[1:(N-T)]) / cth2
+  }
+
+  invisible(sapply(1:(N-B), hc))
+}
+
+
 '$.ssa' <- function(this, name) {
   if (ind <- charmatch(name, names(this), nomatch = 0))
     return (this[[ind]]);

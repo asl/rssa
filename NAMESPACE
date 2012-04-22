@@ -17,6 +17,7 @@ export(clone,
        clusterify,
        wcor,
        wcor.default,
+       hmatr,
 # Hankel matrix' routines
        new.hmat,
        hmatmul,
