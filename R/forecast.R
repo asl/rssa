@@ -40,12 +40,19 @@ roots.lrf <- function(x) {
 
 plot.lrf <- function(x, ..., raw = FALSE) {
   r <- roots(x)
-  plot(r, ..., 
-       main = "Roots of Linear Recurrence Formula",
-       xlab = "Real Part",
-       ylab = "Imaginary Part")
-  if (!raw)
+  if (raw) {
+    plot(r, ...)
+  } else {
+    xlim <- range(c(Re(r), +1, -1))
+    ylim <- range(c(Im(r), +1, -1))
+
+    plot(r, ...,
+         xlim = xlim, ylim = ylim,
+         main = "Roots of Linear Recurrence Formula",
+         xlab = "Real Part",
+         ylab = "Imaginary Part")
     symbols(0, 0, circles = 1, add = TRUE, inches = FALSE)
+  }
 }
 
 apply.lrf <- function(F, lrf, len = 1) {
