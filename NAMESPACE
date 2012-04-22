@@ -37,6 +37,9 @@ export(clone,
        trows,
        is.tmat,
 # Forecast stuff
+       basis2lrf,
+       lrf,
+       roots,
        rforecast)
 
 S3method("clone", ssa)
@@ -74,4 +77,7 @@ S3method("wcor", "toeplitz-ssa")
 S3method("plot", wcor.matrix)
 S3method("clusterify", wcor.matrix)
 S3method("clusterify", ssa)
+S3method("lrf", "1d-ssa")
 S3method("rforecast", "1d-ssa")
+S3method("roots", "lrf")
+S3method("plot", "lrf")

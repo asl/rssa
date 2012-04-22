@@ -25,6 +25,29 @@ basis2lrf <- function(U) {
   (lpf[-N]) / (1 - lpf[N])
 }
 
+"lrf.1d-ssa" <- function(this, group, ...) {
+  U <- .get(this, "U")[, group, drop = FALSE]
+
+  res <- basis2lrf(U)
+  class(res) <- "lrf"
+
+  res
+}
+
+roots.lrf <- function(x) {
+  polyroot(c(-x, 1))
+}
+
+plot.lrf <- function(x, ..., raw = FALSE) {
+  r <- roots(x)
+  plot(r, ..., 
+       main = "Roots of Linear Recurrence Formula",
+       xlab = "Real Part",
+       ylab = "Imaginary Part")
+  if (!raw)
+    symbols(0, 0, circles = 1, add = TRUE, inches = FALSE)
+}
+
 apply.lrf <- function(F, lrf, len = 1) {
   N <- length(F)
   r <- length(lrf)
@@ -64,8 +87,7 @@ apply.lrf <- function(F, lrf, len = 1) {
     group <- groups[[i]]
 
     # Calculate the LRF corresponding to group
-    U <- .get(this, "U")[, group, drop = FALSE]
-    lrf <- basis2lrf(U)
+    lrf <- lrf(this, group)
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrf(if (identical(base, "reconstructed")) r[[i]] else .get(this, "F"),
@@ -82,4 +104,8 @@ rforecast.ssa <- function(x, groups, len = 1,
                           base = c("reconstructed", "original"),
                           ..., cache = TRUE) {
   stop("generic recurrent forecast not implemented yet!")
+}
+
+lrf.ssa <- function(x, group) {
+  stop("generic LRF calculation not implemented yet!")
 }

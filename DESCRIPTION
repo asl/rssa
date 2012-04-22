@@ -1,8 +1,8 @@
 Package: Rssa
 Type: Package
 Title: A collection of methods for singular spectrum analysis
-Version: 0.9
-Date: 2012-02-19
+Version: 0.9.1
+Date: 2012-04-22
 Depends: lattice, svd
 SystemRequirements: fftw (>=3.2)
 Author: Anton Korobeynikov
