@@ -107,6 +107,77 @@ apply.lrf <- function(F, lrf, len = 1) {
   out
 }
 
+
+"vforecast.1d-ssa" <- function(this, groups, len = 1,
+                               ...) {
+  L <- this$window
+  K <- this$length - L + 1;
+  L.s <- min(L, K);
+  N <- K + L - 1 + len + L - 1;
+  N.res <- K + L - 1 + len;
+
+  dv <- c(1:(L.s-1), rep(L.s, N-2*L.s+2), (L.s-1):1);
+
+  convolve.open <- function(F, G) {
+    NF <- length(F)
+    NG <- length(G)
+
+    NN <- nextn(NF+NG-1)
+    ZFZ <- c(rep(0, NG-1), F, rep(0, NN-(NF+NG-1)));
+    GZ <- c(G, rep(0, NN-NG));
+
+    res <- fft(fft(ZFZ)*Conj(fft(GZ)), inverse = TRUE)/NN;
+
+    Re(res)[1:(NF+NG-1)];
+  }
+
+  if (missing(groups))
+    groups <- as.list(1:min(nlambda(this), nu(this)))
+
+  # Determine the upper bound of desired eigentriples
+  desired <- max(unlist(groups));
+
+  # Continue decomposition, if necessary
+  if (desired > min(nlambda(this), nu(this)))
+    decompose(this, ..., neig = desired);
+
+  lambda <- .get(this, "lambda");
+  U <- .get(this, "U");
+
+  V <- if (nv(this) >= desired) .get(this, "V") else NULL
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    ET <- unique(groups[[i]])
+
+    Vl <- matrix(NA, N.res, length(ET));
+    Uet <- U[ , ET, drop=FALSE];
+
+    Vl[1:K, ] <- (if (is.null(V))
+                    calc.v(this, idx = ET)
+                  else V[ , ET]) %*% diag(lambda[ET], nrow = length(ET))
+
+    U.head <- Uet[-L, , drop=FALSE];
+    U.tail <- Uet[-1, , drop=FALSE];
+    P <- solve(t(U.head) %*% U.head, t(U.head) %*% U.tail);
+
+    for (j in (K+1):(K+len+L-1)) {
+      Vl[j, ] <- P %*% Vl[j-1, ];
+    }
+
+    res <- rep(0, N);
+    for (j in 1:length(ET)) {
+      res <- res + convolve.open(Vl[ , j], rev(Uet[ , j]));
+    }
+
+    out[[i]] <- (res/dv)[1:N.res];
+  };
+
+  names(out) <- paste(sep = "", "F", 1:length(groups));
+
+  out
+}
+
 rforecast.ssa <- function(x, groups, len = 1,
                           base = c("reconstructed", "original"),
                           ..., cache = TRUE) {
@@ -115,4 +186,9 @@ rforecast.ssa <- function(x, groups, len = 1,
 
 lrf.ssa <- function(x, group) {
   stop("generic LRF calculation not implemented yet!")
+}
+
+vforecast.ssa <- function(this, groups, len = 1,
+                          ...) {
+  stop("generic vector forecast not implemented yet!")
 }

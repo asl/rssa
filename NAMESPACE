@@ -40,7 +40,8 @@ export(clone,
        basis2lrf,
        lrf,
        roots,
-       rforecast)
+       rforecast,
+       vforecast)
 
 S3method("clone", ssa)
 S3method("decompose", ssa)
@@ -79,5 +80,6 @@ S3method("clusterify", wcor.matrix)
 S3method("clusterify", ssa)
 S3method("lrf", "1d-ssa")
 S3method("rforecast", "1d-ssa")
+S3method("vforecast", "1d-ssa")
 S3method("roots", "lrf")
 S3method("plot", "lrf")

@@ -118,6 +118,8 @@ roots <- function(x)
   UseMethod("roots")
 rforecast <- function(this, ...)
   UseMethod("rforecast")
+vforecast <- function(this, ...)
+  UseMethod("vforecast")
 
 .object.size <- function(this, ...)
   UseMethod(".object.size")
