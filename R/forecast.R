@@ -188,7 +188,7 @@ lrf.ssa <- function(x, group) {
   stop("generic LRF calculation not implemented yet!")
 }
 
-vforecast.ssa <- function(this, groups, len = 1,
+vforecast.ssa <- function(x, groups, len = 1,
                           ...) {
   stop("generic vector forecast not implemented yet!")
 }
