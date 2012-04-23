@@ -112,14 +112,6 @@ clusterify <- function(this, ...)
   UseMethod("clusterify");
 calc.v <- function(this, ...)
   UseMethod("calc.v");
-lrf <- function(this, ...)
-  UseMethod("lrf")
-roots <- function(x)
-  UseMethod("roots")
-rforecast <- function(this, ...)
-  UseMethod("rforecast")
-vforecast <- function(this, ...)
-  UseMethod("vforecast")
 
 .object.size <- function(this, ...)
   UseMethod(".object.size")

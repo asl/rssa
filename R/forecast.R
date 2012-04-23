@@ -192,3 +192,12 @@ vforecast.ssa <- function(x, groups, len = 1,
                           ...) {
   stop("generic vector forecast not implemented yet!")
 }
+
+lrf <- function(this, ...)
+  UseMethod("lrf")
+roots <- function(x)
+  UseMethod("roots")
+rforecast <- function(this, ...)
+  UseMethod("rforecast")
+vforecast <- function(this, ...)
+  UseMethod("vforecast")
