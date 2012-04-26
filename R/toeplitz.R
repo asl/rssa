@@ -132,13 +132,8 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
     warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
             immediate. = TRUE)
 
-  R <- acf(F, lag.max = L - 1, type = "covariance", plot = FALSE, demean = FALSE);
-  # FIXME: find a better way to construct toeplitz matrix
-  C <- toeplitz(as.vector(R$acf));
+  C <- toeplitz(Lcor(F, L));
   S <- eigen(C, symmetric = TRUE);
-
-  # Fix small negative values
-  S$values[S$values < 0] <- 0;
 
   .set(x, "U", S$vectors);
 
