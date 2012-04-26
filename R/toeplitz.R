@@ -74,25 +74,27 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
                                              ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
+  F <- .get(x, "F");
+
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
-    F <- .get(x, "F");
     h <- new.hmat(F, L = L);
   }
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- new.tmat(F, L = L);
+  T <- .get(x, "tmat", allow.null = TRUE);
+  if (is.null(T)) {
+    T <- new.tmat(F, L = L);
+  }
 
   S <- trlan.eigen(T, neig = neig, ...,
                    lambda = olambda, U = U);
 
-  # Fix small negative values
-  S$values[S$values < 0] <- 0;
-
   # Save results
   .set(x, "hmat", h);
+  .set(x, "tmat", T);
   .set(x, "olambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
