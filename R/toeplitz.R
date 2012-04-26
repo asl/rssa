@@ -156,9 +156,9 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 }
 
 "decompose.toeplitz-ssa.propack" <- function(x,
-    neig = min(50, L, K),
-    ...,
-    force.continue = FALSE) {
+                                             neig = min(50, L, K),
+                                             ...,
+                                             force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
   
   # Check, whether continuation of decomposition is requested
