@@ -74,25 +74,27 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
                                              ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
+  F <- .get(x, "F");
+
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
-    F <- .get(x, "F");
     h <- new.hmat(F, L = L);
   }
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- new.tmat(F, L = L);
+  T <- .get(x, "tmat", allow.null = TRUE);
+  if (is.null(T)) {
+    T <- new.tmat(F, L = L);
+  }
 
   S <- trlan.eigen(T, neig = neig, ...,
                    lambda = olambda, U = U);
 
-  # Fix small negative values
-  S$values[S$values < 0] <- 0;
-
   # Save results
   .set(x, "hmat", h);
+  .set(x, "tmat", T);
   .set(x, "olambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -130,13 +132,8 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
     warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
             immediate. = TRUE)
 
-  R <- acf(F, lag.max = L - 1, type = "covariance", plot = FALSE, demean = FALSE);
-  # FIXME: find a better way to construct toeplitz matrix
-  C <- toeplitz(as.vector(R$acf));
+  C <- toeplitz(Lcor(F, L));
   S <- eigen(C, symmetric = TRUE);
-
-  # Fix small negative values
-  S$values[S$values < 0] <- 0;
 
   .set(x, "U", S$vectors);
 
@@ -159,6 +156,52 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   stop("'SVD' method is not applicable to toeplitz SSA");
 }
 
-"decompose.toeplitz-ssa.propack" <- function(x, ...) {
-  stop("'PROPACK' method is not applicable to toeplitz SSA");
+"decompose.toeplitz-ssa.propack" <- function(x,
+                                             neig = min(50, L, K),
+                                             ...,
+                                             force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+  
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(x) > 0)
+    stop("Continuation of decompostion is not yet implemented for this method.");
+  
+  F <- .get(x, "F");
+
+  h <- .get(x, "hmat", allow.null = TRUE);
+  if (is.null(h)) {
+    h <- new.hmat(F, L = L);
+  }
+  
+  olambda <- .get(x, "olambda", allow.null = TRUE);
+  U <- .get(x, "U", allow.null = TRUE);
+  
+  T <- .get(x, "tmat", allow.null = TRUE);
+  if (is.null(T)) {
+    T <- new.tmat(F, L = L);
+  }
+  
+  S <- propack.svd(T, neig = neig, ...);
+  
+  # Save results
+  .set(x, "hmat", h);
+  .set(x, "tmat", T);
+  .set(x, "olambda", S$d);
+  if (!is.null(S$u))
+    .set(x, "U", S$u);
+  
+  num <- length(S$d);
+  lambda <- numeric(num);
+  V <- matrix(nrow = K, ncol = num);
+  for (i in 1:num) {
+    Z <- hmatmul(h, S$u[, i], transposed = TRUE);
+    lambda[i] <- sqrt(sum(Z^2));
+    V[, i] <- Z / lambda[i];
+  }
+  
+  # Save results
+  .set(x, "lambda", lambda);
+  .set(x, "V", V);
+  
+  x;
 }
