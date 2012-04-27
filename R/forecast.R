@@ -108,11 +108,11 @@ apply.lrf <- function(F, lrf, len = 1) {
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
-    r <- reconstruct(this, groups = groups, ..., cache = cache)
+    r <- reconstruct(this, groups = groups, ..., cache = cache);
 
-  out <- list()
+  out <- list();
   for (i in seq_along(groups)) {
-    group <- groups[[i]]
+    group <- groups[[i]];
 
     # Calculate the LRF corresponding to group
     lrf <- lrf(this, group)
@@ -123,7 +123,7 @@ apply.lrf <- function(F, lrf, len = 1) {
     # FIXME: try to fixup the attributes
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- paste(sep = "", "F", 1:length(groups));
 
   out
 }
