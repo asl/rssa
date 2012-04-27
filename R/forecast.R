@@ -158,8 +158,8 @@ apply.lrf <- function(F, lrf, len = 1) {
     V <- .get(this, "V");
   } else {
     if (cache){
-      # FIXME We can evaluate less FV here
-      V <- calc.v(this, idx = 1:desired);
+      V <- cbind(.get(this, "V", allow.null = TRUE),
+                 calc.v(this, idx = (nv(this) + 1):desired));
       .set(this, "V", V);
     } else {
       V <- NULL;
