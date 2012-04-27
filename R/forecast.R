@@ -109,24 +109,26 @@ apply.lrf <- function(F, lrf, len = 1) {
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
-    r <- reconstruct(this, groups = groups, ..., cache = cache)
+    r <- reconstruct(this, groups = groups, ..., cache = cache);
 
-  out <- list()
+  out <- list();
   for (i in seq_along(groups)) {
-    group <- groups[[i]]
+    group <- groups[[i]];
 
     # Calculate the LRF corresponding to group
-    lrf <- lrf(this, group)
+    lf <- lrf(this, group);
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrf(if (identical(base, "reconstructed")) r[[i]] else .get(this, "F"),
-                          lrf, len)
+                          lf, len);
     # FIXME: try to fixup the attributes
+    # FIXME: ASH It's impossible --- different lengths =(
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- paste(sep = "", "F", 1:length(groups));
 
-  out
+  # Forecasted series can be pretty huge...
+  invisible(out);
 }
 
 
