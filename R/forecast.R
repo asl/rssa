@@ -136,27 +136,10 @@ apply.lrf <- function(F, lrf, len = 1) {
 "vforecast.1d-ssa" <- function(this, groups, len = 1,
                                ...,
                                cache = TRUE) {
-  #TODO Implement convolution via FFTW in C-code
-  convolve.open <- function(F, G) {
-    NF <- length(F)
-    NG <- length(G)
-    
-    NN <- nextn(NF+NG-1)
-    ZFZ <- c(rep(0, NG-1), F, rep(0, NN-(NF+NG-1)));
-    GZ <- c(G, rep(0, NN-NG));
-    
-    res <- fft(fft(ZFZ)*Conj(fft(GZ)), inverse = TRUE)/NN;
-    
-    Re(res)[1:(NF+NG-1)];
-  }
-
   L <- this$window;
   K <- this$length - L + 1;
-  L.s <- min(L, K);
   N <- K + L - 1 + len + L - 1;
   N.res <- K + L - 1 + len;
-
-  dv <- c(1:(L.s-1), rep(L.s, N-2*L.s+2), (L.s-1):1);
 
   if (missing(groups))
     groups <- as.list(1:min(nlambda(this), nu(this)));
@@ -183,6 +166,9 @@ apply.lrf <- function(F, lrf, len = 1) {
     }
   }
   
+  # Make hankel matrix for fast hankelization (we use it for plan) 
+  h <- new.hmat(double(N), L);
+  
   out <- list();
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]]);
@@ -204,10 +190,10 @@ apply.lrf <- function(F, lrf, len = 1) {
      
     res <- double(N);
     for(j in seq_along(group)) {
-      res <- res + convolve.open(Z[ , j], rev(Uet[ , j]));
+      res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], h);
     }
     
-    out[[i]] <- (res/dv)[1:N.res];
+    out[[i]] <- res[1:N.res];
   }
   
   names(out) <- paste(sep = "", "F", 1:length(groups));
