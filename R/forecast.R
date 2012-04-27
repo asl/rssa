@@ -125,7 +125,8 @@ apply.lrf <- function(F, lrf, len = 1) {
 
   names(out) <- paste(sep = "", "F", 1:length(groups));
 
-  out
+  # Forecasted series can be pretty huge...
+  invisible(out);
 }
 
 
