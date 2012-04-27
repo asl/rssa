@@ -75,6 +75,7 @@ plot.lrf <- function(x, ..., raw = FALSE) {
 }
 
 apply.lrf <- function(F, lrf, len = 1) {
+  # TODO Rewrite this function on C
   N <- length(F);
   r <- length(lrf);
 
