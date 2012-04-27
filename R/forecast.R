@@ -105,11 +105,11 @@ apply.lrf <- function(F, lrf, len = 1) {
     group <- groups[[i]]
 
     # Calculate the LRF corresponding to group
-    lrf <- lrf(this, group)
+    lf <- lrf(this, group)
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrf(if (identical(base, "reconstructed")) r[[i]] else .get(this, "F"),
-                          lrf, len)
+                          lf, len)
     # FIXME: try to fixup the attributes
   }
 
