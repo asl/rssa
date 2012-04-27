@@ -22,14 +22,14 @@ basis2lrf <- function(U) {
   N <- nrow(U);
   lpf <- U %*% t(U[N, , drop = FALSE]);
 
-  (lpf[-N]) / (1 - lpf[N])
+  (lpf[-N]) / (1 - lpf[N]);
 }
 
 "lrf.1d-ssa" <- function(this, group, ...) {
-  U <- .get(this, "U")[, group, drop = FALSE]
+  U <- .get(this, "U")[, group, drop = FALSE];
 
-  res <- basis2lrf(U)
-  class(res) <- "lrf"
+  res <- basis2lrf(U);
+  class(res) <- "lrf";
 
   res
 }
