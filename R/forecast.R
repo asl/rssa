@@ -119,75 +119,63 @@ apply.lrf <- function(F, lrf, len = 1) {
   invisible(out)
 }
 
-
 "vforecast.1d-ssa" <- function(this, groups, len = 1,
                                ...) {
   L <- this$window
-  K <- this$length - L + 1;
-  L.s <- min(L, K);
-  N <- K + L - 1 + len + L - 1;
-  N.res <- K + L - 1 + len;
-
-  dv <- c(1:(L.s-1), rep(L.s, N-2*L.s+2), (L.s-1):1);
-
-  convolve.open <- function(F, G) {
-    NF <- length(F)
-    NG <- length(G)
-
-    NN <- nextn(NF+NG-1)
-    ZFZ <- c(rep(0, NG-1), F, rep(0, NN-(NF+NG-1)));
-    GZ <- c(G, rep(0, NN-NG));
-
-    res <- fft(fft(ZFZ)*Conj(fft(GZ)), inverse = TRUE)/NN;
-
-    Re(res)[1:(NF+NG-1)];
-  }
+  K <- this$length - L + 1
+  N <- K + L - 1 + len + L - 1
+  N.res <- K + L - 1 + len
 
   if (missing(groups))
     groups <- as.list(1:min(nlambda(this), nu(this)))
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups));
+  desired <- max(unlist(groups))
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(this), nu(this)))
-    decompose(this, ..., neig = desired);
+    decompose(this, ..., neig = desired)
 
-  lambda <- .get(this, "lambda");
-  U <- .get(this, "U");
+  lambda <- .get(this, "lambda")
+  U <- .get(this, "U")
 
   V <- if (nv(this) >= desired) .get(this, "V") else NULL
 
+  # Make hankel matrix for fast hankelization (we use it for plan)
+  h <- new.hmat(double(N), L)
+
   out <- list()
   for (i in seq_along(groups)) {
-    ET <- unique(groups[[i]])
+    group <- unique(groups[[i]])
 
-    Vl <- matrix(NA, N.res, length(ET));
-    Uet <- U[ , ET, drop=FALSE];
+    Uet <- U[, group, drop = FALSE]
+    Vet <- if (is.null(V)) calc.v(this, idx = group) else V[, group, drop = FALSE]
 
-    Vl[1:K, ] <- (if (is.null(V))
-                    calc.v(this, idx = ET)
-                  else V[ , ET]) %*% diag(lambda[ET], nrow = length(ET))
+    Z <- rbind(t(lambda[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
 
-    U.head <- Uet[-L, , drop=FALSE];
-    U.tail <- Uet[-1, , drop=FALSE];
-    P <- solve(t(U.head) %*% U.head, t(U.head) %*% U.tail);
+    U.head <- Uet[-L, , drop = FALSE]
+    U.tail <- Uet[-1, , drop = FALSE]
+    Pi <- Uet[L, ]
+    tUhUt <- t(U.head) %*% U.tail
+    P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt)
 
-    for (j in (K+1):(K+len+L-1)) {
-      Vl[j, ] <- P %*% Vl[j-1, ];
+    for (j in (K + 1):(K + len + L - 1)) {
+      Z[j, ] <- P %*% Z[j - 1, ]
     }
 
-    res <- rep(0, N);
-    for (j in 1:length(ET)) {
-      res <- res + convolve.open(Vl[ , j], rev(Uet[ , j]));
+    res <- double(N)
+    for (j in seq_along(group)) {
+      res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], h)
     }
 
-    out[[i]] <- (res/dv)[1:N.res];
-  };
+    out[[i]] <- res[1:N.res]
+    # FIXME: try to fixup the attributes
+  }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups));
+  names(out) <- paste(sep = "", "F", 1:length(groups))
 
-  out
+  # Forecasted series can be pretty huge...
+  invisible(out)
 }
 
 "lrf.toeplitz-ssa" <- `lrf.1d-ssa`;
