@@ -1,5 +1,5 @@
 #   R package for Singular Spectrum Analysis
-#   Copyright (c) 2012 Alexandr Shlemov <shlemovalex@gmail.com>
+#   Copyright (c) 2012 Alexander Shlemov <shlemovalex@gmail.com>
 #   Copyright (c) 2012 Anton Korobeynikov <asl@math.spbu.ru>
 #   
 #   This program is free software; you can redistribute it 
