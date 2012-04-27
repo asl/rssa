@@ -22,61 +22,83 @@ basis2lrf <- function(U) {
   N <- nrow(U);
   lpf <- U %*% t(U[N, , drop = FALSE]);
 
-  (lpf[-N]) / (1 - lpf[N])
+  (lpf[-N]) / (1 - lpf[N]);
 }
 
 "lrf.1d-ssa" <- function(this, group, ...) {
-  U <- .get(this, "U")[, group, drop = FALSE]
+  # Determine the upper bound of desired eigentriples
+  desired <- max(group);
+  
+  # Continue decomposition, if necessary
+  if (desired > nu(this))
+    decompose(this, ..., neig = desired);
+  
+  U <- .get(this, "U")[, group, drop = FALSE];
 
-  res <- basis2lrf(U)
-  class(res) <- "lrf"
+  res <- basis2lrf(U);
+  class(res) <- "lrf";
 
-  res
+  res;
+}
+
+
+companion.matrix.lrf <- function(x) {
+  n <- length(x) + 1;
+  res <- matrix(0, n, n);
+  res[-n, n] <- x;
+  res[seq(from = 2, by = n + 1, length.out = n - 1)] <- 1;
+  
+  res;
 }
 
 roots.lrf <- function(x) {
-  polyroot(c(-x, 1))
+  # polyroot(c(-x, 1));
+  # Much more complicated but much more stable
+  eigen(companion.matrix.lrf(x), only.values = TRUE)$values;
 }
 
 plot.lrf <- function(x, ..., raw = FALSE) {
-  r <- roots(x)
+  r <- roots(x);
   if (raw) {
-    plot(r, ...)
+    plot(r, ...);
   } else {
-    xlim <- range(c(Re(r), +1, -1))
-    ylim <- range(c(Im(r), +1, -1))
+    xlim <- range(c(Re(r), +1, -1));
+    ylim <- range(c(Im(r), +1, -1));
 
     plot(r, ...,
          xlim = xlim, ylim = ylim,
          main = "Roots of Linear Recurrence Formula",
          xlab = "Real Part",
-         ylab = "Imaginary Part")
-    symbols(0, 0, circles = 1, add = TRUE, inches = FALSE)
+         ylab = "Imaginary Part",
+         asp = 1);
+    symbols(0, 0, circles = 1, add = TRUE, inches = FALSE);
   }
 }
 
 apply.lrf <- function(F, lrf, len = 1) {
-  N <- length(F)
-  r <- length(lrf)
+  N <- length(F);
+  r <- length(lrf);
 
   # Sanity check of inputs
   if (r > N)
-    stop("Wrong length of LRF")
+    stop("Wrong length of LRF");
 
   # Run the actual LRF
-  F <- c(F, rep(NA, len))
+  F <- c(F, rep(NA, len));
+  
+  # TODO Rewrite this function on C
   for (i in 1:len)
-    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrf)
+    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrf);
 
-  F
+  F;
 }
 
 "rforecast.1d-ssa" <- function(this, groups, len = 1,
                                base = c("reconstructed", "original"),
                                ..., cache = TRUE) {
-  base <- match.arg(base)
+  base <- match.arg(base);
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(this), nu(this)))
+    groups <- as.list(1:min(nlambda(this), nu(this)));
 
   # Determine the upper bound of desired eigentriples
   desired <- max(unlist(groups));
