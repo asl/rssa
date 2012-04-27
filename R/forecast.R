@@ -41,8 +41,19 @@ basis2lrf <- function(U) {
   res;
 }
 
+companion.matrix.lrf <- function(x) {
+  n <- length(x) + 1;
+  res <- matrix(0, n, n);
+  res[-n, n] <- x;
+  res[seq(from = 2, by = n + 1, length.out = n - 1)] <- 1;
+
+  res;
+}
+
 roots.lrf <- function(x) {
-  polyroot(c(-x, 1))
+  # polyroot(c(-x, 1));
+  # Much more complicated but much more stable
+  eigen(companion.matrix.lrf(x), only.values = TRUE)$values;
 }
 
 plot.lrf <- function(x, ..., raw = FALSE) {
