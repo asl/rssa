@@ -178,6 +178,10 @@ apply.lrf <- function(F, lrf, len = 1) {
   out
 }
 
+"lrf.toeplitz-ssa" <- `lrf.1d-ssa`;
+"vforecast.toeplitz-ssa" <- `vforecast.1d-ssa`;
+"rforecast.toeplitz-ssa" <- `rforecast.1d-ssa`;
+
 rforecast.ssa <- function(x, groups, len = 1,
                           base = c("reconstructed", "original"),
                           ..., cache = TRUE) {
