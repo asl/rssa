@@ -26,6 +26,13 @@ basis2lrf <- function(U) {
 }
 
 "lrf.1d-ssa" <- function(this, group, ...) {
+  # Determine the upper bound of desired eigentriples
+  desired <- max(group)
+
+  # Continue decomposition, if necessary
+  if (desired > nu(this))
+    decompose(this, ..., neig = desired)
+
   U <- .get(this, "U")[, group, drop = FALSE]
 
   res <- basis2lrf(U)
