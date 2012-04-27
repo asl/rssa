@@ -57,7 +57,8 @@ plot.lrf <- function(x, ..., raw = FALSE) {
          xlim = xlim, ylim = ylim,
          main = "Roots of Linear Recurrence Formula",
          xlab = "Real Part",
-         ylab = "Imaginary Part")
+         ylab = "Imaginary Part",
+         asl = 1)
     symbols(0, 0, circles = 1, add = TRUE, inches = FALSE)
   }
 }
