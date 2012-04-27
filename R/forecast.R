@@ -180,9 +180,9 @@ apply.lrf <- function(F, lrf, len = 1) {
     
     U.head <- Uet[-L, , drop = FALSE];
     U.tail <- Uet[-1, , drop = FALSE];
-    
-    #TODO Get rid of solve
-    P <- solve(t(U.head) %*% U.head, t(U.head) %*% U.tail);
+    Pi <- Uet[L, ];
+    tUhUt <- t(U.head) %*% U.tail;
+    P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt);
     
     for(j in (K + 1):(K + len + L - 1)) {
       Z[j, ] <- P %*% Z[j - 1, ];
