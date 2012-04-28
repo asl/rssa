@@ -26,6 +26,9 @@ basis2lrf <- function(U) {
 }
 
 "lrf.1d-ssa" <- function(this, group, ...) {
+  if (missing(group))
+    group <- 1:min(nlambda(this), nu(this))
+
   # Determine the upper bound of desired eigentriples
   desired <- max(group)
 
