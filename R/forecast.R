@@ -18,11 +18,15 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-basis2lrf <- function(U) {
+basis2lrf <- function(U, eps = sqrt(.Machine$double.eps)) {
   N <- nrow(U);
   lpf <- U %*% t(U[N, , drop = FALSE]);
+  
+  divider <- 1 - lpf[N]
+  if (divider < eps)
+    stop("Verticality coefficient equals to 1");
 
-  (lpf[-N]) / (1 - lpf[N])
+  lpf[-N] / divider
 }
 
 "lrf.1d-ssa" <- function(this, group, ...) {

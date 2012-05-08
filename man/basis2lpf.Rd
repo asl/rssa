@@ -8,11 +8,12 @@
 }
 
 \usage{
-basis2lrf(U)
+basis2lrf(U, eps = sqrt(.Machine$double.eps))
 }
 
 \arguments{
   \item{U}{Matrix containing the basis vectors in columns}
+  \item{eps}{Tolerance for verticality checking}
 }
 
 \details{
