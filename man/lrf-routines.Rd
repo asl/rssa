@@ -41,8 +41,10 @@
 \examples{
 # Decompose 'co2' series with some parameters
 s <- new.ssa(co2, L = 24)
+# Evaluate the LRF
+l <- lrf(s, group = c(1:3))
 # Calculate the roots of the LRF
-roots(lrf(s))
+roots(l)
 # Plot the roots
-\dontrun{plot(lrf(s))}
+\dontrun{plot(l)}
 }
