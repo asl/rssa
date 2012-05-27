@@ -70,7 +70,7 @@ plot.lrf <- function(x, ..., raw = FALSE) {
   }
 }
 
-apply.lrf <- function(F, lrf, len = 1) {
+apply.lrf <- function(F, lrf, len = 1, only.new = FALSE) {
   N <- length(F)
   r <- length(lrf)
 
@@ -83,7 +83,7 @@ apply.lrf <- function(F, lrf, len = 1) {
   for (i in 1:len)
     F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrf)
 
-  F
+  if (only.new) F[(N+1):(N+len)] else F
 }
 
 "rforecast.1d-ssa" <- function(this, groups, len = 1,
