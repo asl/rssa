@@ -1,21 +1,21 @@
 #   R package for Singular Spectrum Analysis
 #   Copyright (c) 2012 Alexander Shlemov <shlemovalex@gmail.com>
 #   Copyright (c) 2012 Anton Korobeynikov <asl@math.spbu.ru>
-#   
-#   This program is free software; you can redistribute it 
-#   and/or modify it under the terms of the GNU General Public 
-#   License as published by the Free Software Foundation; 
-#   either version 2 of the License, or (at your option) 
+#
+#   This program is free software; you can redistribute it
+#   and/or modify it under the terms of the GNU General Public
+#   License as published by the Free Software Foundation;
+#   either version 2 of the License, or (at your option)
 #   any later version.
 #
-#   This program is distributed in the hope that it will be 
-#   useful, but WITHOUT ANY WARRANTY; without even the implied 
-#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+#   This program is distributed in the hope that it will be
+#   useful, but WITHOUT ANY WARRANTY; without even the implied
+#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 #   PURPOSE.  See the GNU General Public License for more details.
-#   
-#   You should have received a copy of the GNU General Public 
-#   License along with this program; if not, write to the 
-#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
+#
+#   You should have received a copy of the GNU General Public
+#   License along with this program; if not, write to the
+#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
 basis2lrf <- function(U, eps = sqrt(.Machine$double.eps)) {
@@ -182,14 +182,43 @@ apply.lrf <- function(F, lrf, len = 1, only.new = FALSE) {
   invisible(out)
 }
 
+"bforecast.1d-ssa" <- function(this, group,
+                               len = 1, R = 100, level = 0.95,
+                               ...,
+                               cache = TRUE) {
+  # First, perform the reconstruction and calculate the residuals.
+  r <- reconstruct(this, groups = list(group), ..., cache = cache)
+  stopifnot(length(r) == 1)
+  residuals <- this$F - r[[1]]
+
+  # Get the LRF, corresponding to group
+  lf <- lrf(this, group)
+
+  # Do the actual bootstrap forecast
+  bF <- replicate(R, apply.lrf(r[[1]] + sample(residuals, replace = TRUE),
+                               lf, len = len, only.new = TRUE))
+
+  # Finally, calculate the statistics of interest
+  cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
+  cbind(Value = rowMeans(bF), t(cf))
+}
+
 "lrf.toeplitz-ssa" <- `lrf.1d-ssa`;
 "vforecast.toeplitz-ssa" <- `vforecast.1d-ssa`;
 "rforecast.toeplitz-ssa" <- `rforecast.1d-ssa`;
+"bforecast.toeplitz-ssa" <- `bforecast.1d-ssa`;
 
 rforecast.ssa <- function(x, groups, len = 1,
                           base = c("reconstructed", "original"),
                           ..., cache = TRUE) {
   stop("generic recurrent forecast not implemented yet!")
+}
+
+bforecast.ssa <- function(x, group,
+                          len = 1, R = 100, level = 0.95,
+                          ...,
+                          cache = TRUE) {
+  stop("generic bootstrapped forecast not implemented yet!")
 }
 
 lrf.ssa <- function(x, group) {
@@ -209,3 +238,5 @@ rforecast <- function(this, ...)
   UseMethod("rforecast")
 vforecast <- function(this, ...)
   UseMethod("vforecast")
+bforecast <- function(this, ...)
+  UseMethod("bforecast")

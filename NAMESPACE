@@ -42,7 +42,8 @@ export(clone,
        lrf,
        roots,
        rforecast,
-       vforecast)
+       vforecast,
+       bforecast)
 
 S3method("clone", ssa)
 S3method("decompose", ssa)
@@ -88,3 +89,5 @@ S3method("vforecast", "toeplitz-ssa")
 S3method("roots", "lrf")
 S3method("plot", "lrf")
 S3method("plot", "hmatr")
+S3method("bforecast", "1d-ssa")
+S3method("bforecast", "toeplitz-ssa")
