@@ -187,3 +187,34 @@ plot.ssa <- function(x,
     stop("Unsupported type of SSA plot!");
   }
 }
+
+"plot.1d-ssa.reconstruction" <- function(x, ...,
+                                         type = c("raw", "cumsum"),
+                                         plot.method = c("matplot", "native")) {
+  type <- match.arg(type);
+  plot.method <- match.arg(plot.method)
+
+  # Nifty defaults
+  dots <- list(...)
+  dots <- .defaults(dots, "main", "Reconstructed Series");
+  dots <- .defaults(dots, "type", "l");
+  dots <- .defaults(dots, "ylab", "");
+
+  # Prepare the matrix with all the data
+  m <- matrix(unlist(x), ncol = length(x))
+
+  # Transform the matrix, if necessary
+  if (identical(type, "cumsum"))
+    m <- t(apply(m, 1, cumsum))
+
+  # Merge the attributes in
+  attributes(m) <- append(attributes(m), attributes(x[[1]]))
+
+  # Plot'em'all!
+  if (identical(plot.method, "matplot"))
+    do.call(matplot, c(list(x = m), dots))
+  else if (identical(plot.method, "native"))
+    do.call(plot, c(list(m), dots))
+  else
+    stop("Unknown plot method")
+}

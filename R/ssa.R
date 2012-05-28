@@ -159,6 +159,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   names(out) <- paste("F", 1:length(groups), sep="");
 
   # Reconstructed series can be pretty huge...
+  class(out) <- paste(this$kind, "reconstruction", sep = ".")
   invisible(out);
 }
 
