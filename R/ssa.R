@@ -126,7 +126,8 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   # pass space to store some data which is needed to be calculated only once.
   e <- new.env();
 
-  # Do actual reconstruction
+  # Do actual reconstruction. Calculate the residuals on the way
+  residuals <- this$F
   for (i in seq_along(groups)) {
     group <- groups[[i]];
     new <- setdiff(group, info);
@@ -147,9 +148,15 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
     # Add pre-cached series
     out[[i]] <- out[[i]] + .get.series(this, cached);
 
+    # Calculate the residuals
+    residuals <- residuals - out[[i]]
+
     # Propagate attributes (e.g. dimension for 2d-SSA)
     attributes(out[[i]]) <- .get(this, "Fattr");
   }
+
+  # Propagate attributes of residuals
+  attributes(residuals) <- .get(this, "Fattr");
 
   # Cleanup
   rm(list = ls(envir = e, all.names = TRUE),
@@ -157,10 +164,21 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
   gc(verbose = FALSE);
 
   names(out) <- paste("F", 1:length(groups), sep="");
+  attr(out, "residuals") <- residuals;
 
   # Reconstructed series can be pretty huge...
-  class(out) <- paste(this$kind, "reconstruction", sep = ".")
+  class(out) <- paste(c(this$kind, "ssa"), "reconstruction", sep = ".")
   invisible(out);
+}
+
+residuals.ssa <- function(object, groups, ..., cache = TRUE) {
+  groups <- list(if (missing(groups)) 1:min(nlambda(object), nu(object)) else unlist(groups))
+
+  residuals(reconstruct(object, groups = groups, ..., cache = cache))
+}
+
+residuals.ssa.reconstruction <- function(object, ...) {
+  attr(object, "residuals")
 }
 
 .do.reconstruct <- function(this, idx, env = .GlobalEnv) {
