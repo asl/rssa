@@ -165,6 +165,7 @@ reconstruct.ssa <- function(this, groups, ..., cache = TRUE) {
 
   names(out) <- paste("F", 1:length(groups), sep="");
   attr(out, "residuals") <- residuals;
+  attr(out, "series") <- this$F;
 
   # Reconstructed series can be pretty huge...
   class(out) <- paste(c(this$kind, "ssa"), "reconstruction", sep = ".")

@@ -190,7 +190,9 @@ plot.ssa <- function(x,
 
 "plot.1d-ssa.reconstruction" <- function(x, ...,
                                          type = c("raw", "cumsum"),
-                                         plot.method = c("matplot", "native")) {
+                                         plot.method = c("matplot", "native"),
+                                         add.original = FALSE,
+                                         add.residuals = FALSE) {
   type <- match.arg(type);
   plot.method <- match.arg(plot.method)
 
@@ -209,6 +211,11 @@ plot.ssa <- function(x,
 
   # Merge the attributes in
   attributes(m) <- append(attributes(m), attributes(x[[1]]))
+
+  if (add.original)
+    m <- cbind(Original = attr(x, "series"), Series = m)
+  if (add.residuals)
+    m <- cbind(m, Residuals = attr(x, "residuals"))
 
   # Plot'em'all!
   if (identical(plot.method, "matplot"))
