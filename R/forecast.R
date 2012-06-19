@@ -48,8 +48,25 @@ basis2lrr <- function(U, eps = sqrt(.Machine$double.eps)) {
   res
 }
 
-roots.lrr <- function(x) {
-  polyroot(c(-x, 1))
+companion.matrix.lrr <- function(x) {
+  n <- length(x)
+  res <- matrix(0, n, n)
+  res[, n] <- x
+  res[seq(from = 2, by = n + 1, length.out = n - 1)] <- 1
+  res
+}
+
+roots.lrr <- function(x, ..., method = c("companion", "polyroot")) {
+  method <- match.arg(method)
+
+  res <-
+    if (identical(method, "polyroot")) {
+      polyroot(c(-x, 1))
+    } else {
+      eigen(companion.matrix.lrr(x), only.values = TRUE)$values
+    }
+
+  res[order(abs(res), decreasing = TRUE)]
 }
 
 plot.lrr <- function(x, ..., raw = FALSE) {
@@ -232,7 +249,7 @@ vforecast.ssa <- function(x, groups, len = 1,
 
 lrr <- function(this, ...)
   UseMethod("lrr")
-roots <- function(x)
+roots <- function(x, ...)
   UseMethod("roots")
 rforecast <- function(this, ...)
   UseMethod("rforecast")
