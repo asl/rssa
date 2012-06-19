@@ -18,7 +18,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-basis2lrf <- function(U, eps = sqrt(.Machine$double.eps)) {
+basis2lrr <- function(U, eps = sqrt(.Machine$double.eps)) {
   N <- nrow(U);
   lpf <- U %*% t(U[N, , drop = FALSE]);
   
@@ -29,7 +29,7 @@ basis2lrf <- function(U, eps = sqrt(.Machine$double.eps)) {
   lpf[-N] / divider
 }
 
-"lrf.1d-ssa" <- function(this, group, ...) {
+"lrr.1d-ssa" <- function(this, group, ...) {
   if (missing(group))
     group <- 1:min(nlambda(this), nu(this))
 
@@ -42,17 +42,17 @@ basis2lrf <- function(U, eps = sqrt(.Machine$double.eps)) {
 
   U <- .get(this, "U")[, group, drop = FALSE]
 
-  res <- basis2lrf(U)
-  class(res) <- "lrf"
+  res <- basis2lrr(U)
+  class(res) <- "lrr"
 
   res
 }
 
-roots.lrf <- function(x) {
+roots.lrr <- function(x) {
   polyroot(c(-x, 1))
 }
 
-plot.lrf <- function(x, ..., raw = FALSE) {
+plot.lrr <- function(x, ..., raw = FALSE) {
   r <- roots(x)
   if (raw) {
     plot(r, ...)
@@ -65,23 +65,23 @@ plot.lrf <- function(x, ..., raw = FALSE) {
          main = "Roots of Linear Recurrence Formula",
          xlab = "Real Part",
          ylab = "Imaginary Part",
-         asl = 1)
+         asp = 1)
     symbols(0, 0, circles = 1, add = TRUE, inches = FALSE)
   }
 }
 
-apply.lrf <- function(F, lrf, len = 1, only.new = FALSE) {
+apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   N <- length(F)
-  r <- length(lrf)
+  r <- length(lrr)
 
   # Sanity check of inputs
   if (r > N)
-    stop("Wrong length of LRF")
+    stop("Wrong length of LRR")
 
-  # Run the actual LRF
+  # Run the actual LRR
   F <- c(F, rep(NA, len))
   for (i in 1:len)
-    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrf)
+    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr)
 
   if (only.new) F[(N+1):(N+len)] else F
 }
@@ -108,11 +108,11 @@ apply.lrf <- function(F, lrf, len = 1, only.new = FALSE) {
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
-    # Calculate the LRF corresponding to group
-    lf <- lrf(this, group)
+    # Calculate the LRR corresponding to group
+    lf <- lrr(this, group)
 
     # Calculate the forecasted values
-    out[[i]] <- apply.lrf(if (identical(base, "reconstructed")) r[[i]] else .get(this, "F"),
+    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(this, "F"),
                           lf, len)
     # FIXME: try to fixup the attributes
   }
@@ -191,11 +191,11 @@ apply.lrf <- function(F, lrf, len = 1, only.new = FALSE) {
   stopifnot(length(r) == 1)
   residuals <- this$F - r[[1]]
 
-  # Get the LRF, corresponding to group
-  lf <- lrf(this, group)
+  # Get the LRR, corresponding to group
+  lf <- lrr(this, group)
 
   # Do the actual bootstrap forecast
-  bF <- replicate(R, apply.lrf(r[[1]] + sample(residuals, replace = TRUE),
+  bF <- replicate(R, apply.lrr(r[[1]] + sample(residuals, replace = TRUE),
                                lf, len = len, only.new = TRUE))
 
   # Finally, calculate the statistics of interest
@@ -203,7 +203,7 @@ apply.lrf <- function(F, lrf, len = 1, only.new = FALSE) {
   cbind(Value = rowMeans(bF), t(cf))
 }
 
-"lrf.toeplitz-ssa" <- `lrf.1d-ssa`;
+"lrr.toeplitz-ssa" <- `lrr.1d-ssa`;
 "vforecast.toeplitz-ssa" <- `vforecast.1d-ssa`;
 "rforecast.toeplitz-ssa" <- `rforecast.1d-ssa`;
 "bforecast.toeplitz-ssa" <- `bforecast.1d-ssa`;
@@ -221,8 +221,8 @@ bforecast.ssa <- function(x, group,
   stop("generic bootstrapped forecast not implemented yet!")
 }
 
-lrf.ssa <- function(x, group) {
-  stop("generic LRF calculation not implemented yet!")
+lrr.ssa <- function(x, group) {
+  stop("generic LRR calculation not implemented yet!")
 }
 
 vforecast.ssa <- function(x, groups, len = 1,
@@ -230,8 +230,8 @@ vforecast.ssa <- function(x, groups, len = 1,
   stop("generic vector forecast not implemented yet!")
 }
 
-lrf <- function(this, ...)
-  UseMethod("lrf")
+lrr <- function(this, ...)
+  UseMethod("lrr")
 roots <- function(x)
   UseMethod("roots")
 rforecast <- function(this, ...)

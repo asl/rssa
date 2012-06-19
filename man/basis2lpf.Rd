@@ -1,14 +1,14 @@
-\name{basis2lrf}
-\alias{basis2lrf}
-\title{Derive LRF From Set of Basis Vectors}
+\name{basis2lrr}
+\alias{basis2lrr}
+\title{Derive LRR From Set of Basis Vectors}
 
 \description{
-  Function to calculate the Linear Recurrence Formula (LRF) given a set
+  Function to calculate the Linear Recurrence Relation (LRR) given a set
   of basis vectors.
 }
 
 \usage{
-basis2lrf(U, eps = sqrt(.Machine$double.eps))
+basis2lrr(U, eps = sqrt(.Machine$double.eps))
 }
 
 \arguments{
@@ -36,11 +36,11 @@ basis2lrf(U, eps = sqrt(.Machine$double.eps))
 
 \note{
   In most cases you should not use this function directly. Use
-  \code{\link{lrf}} routine instead.
+  \code{\link{lrr}} routine instead.
 }
 
 \seealso{
-  \code{\link{lrf}}
+  \code{\link{lrr}}
 }
 
 \references{
@@ -51,8 +51,8 @@ basis2lrf(U, eps = sqrt(.Machine$double.eps))
 \examples{
 # Decompose 'co2' series with default parameters
 s <- new.ssa(co2, neig = 20)
-# Derive the LRF which governs the whole series
-print(basis2lrf(s$U))
+# Derive the LRR which governs the whole series
+print(basis2lrr(s$U))
 }
 
 \keyword{algebra}
