@@ -10,7 +10,7 @@
 }
 
 \usage{
-\method{bforecast}{ssa}(x, group, len = 1, R = 100, level = 0.95, \dots, cache = TRUE)
+\method{bforecast}{ssa}(x, group, len = 1, R = 100, level = 0.95, type = c("recurrent", "vector"), \dots, cache = TRUE)
 }
 
 \arguments{
@@ -19,6 +19,7 @@
   \item{len}{the desired length of the forecasted series}
   \item{R}{number of bootstrap replications}
   \item{level}{confidence level for bounds}
+  \item{type}{the type of forecast method to be used during bootstrapping}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}} routines}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}
@@ -29,7 +30,7 @@
   their empirical distribution (the residuals are assumed to be
   stationary). Empirical distribution of the residuals is used to
   perform bootstrap series simulation. Such bootsrapped series are then
-  extended via recurrent forecast. Finally, the distribution of
+  extended via selected forecast method. Finally, the distribution of
   forecasted values is used to calculate bootstrap estimate of series
   forecast and confidence bounds.
 }

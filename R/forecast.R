@@ -203,19 +203,29 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
 
 "bforecast.1d-ssa" <- function(this, group,
                                len = 1, R = 100, level = 0.95,
+                               type = c("recurrent", "vector"),
                                ...,
                                cache = TRUE) {
+  type <- match.arg(type)
   # First, perform the reconstruction and calculate the residuals.
   r <- reconstruct(this, groups = list(group), ..., cache = cache)
   stopifnot(length(r) == 1)
-  residuals <- this$F - r[[1]]
+  res <- residuals(r)
 
-  # Get the LRR, corresponding to group
-  lf <- lrr(this, group)
+  boot.forecast <- function(F, base) {
+    s <- clone(base, copy.cache = FALSE, copy.storage = FALSE)
+    .set(s, "F", F)
+    .set(s, "Fattr", attributes(F))
+    if (identical(type, "recurrent")) {
+      rforecast(s, ..., groups = list(group), len = len, only.new = TRUE)[[1]]
+    } else {
+      vforecast(s, ..., groups = list(group), len = len, only.new = TRUE)[[1]]
+    }
+  }
 
   # Do the actual bootstrap forecast
-  bF <- replicate(R, apply.lrr(r[[1]] + sample(residuals, replace = TRUE),
-                               lf, len = len, only.new = TRUE))
+  bF <- replicate(R,
+                  boot.forecast(r[[1]] + sample(res, replace = TRUE), this))
 
   # Finally, calculate the statistics of interest
   cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
@@ -236,6 +246,7 @@ rforecast.ssa <- function(x, groups, len = 1,
 
 bforecast.ssa <- function(x, group,
                           len = 1, R = 100, level = 0.95,
+                          type = c("recurrent", "vector"),
                           ...,
                           cache = TRUE) {
   stop("generic bootstrapped forecast not implemented yet!")
