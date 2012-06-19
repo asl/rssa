@@ -105,6 +105,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
 
 "rforecast.1d-ssa" <- function(this, groups, len = 1,
                                base = c("reconstructed", "original"),
+                               only.new = TRUE,
                                ..., cache = TRUE) {
   base <- match.arg(base)
   if (missing(groups))
@@ -130,7 +131,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(this, "F"),
-                          lf, len)
+                          lf, len, only.new = only.new)
     # FIXME: try to fixup the attributes
   }
 
@@ -141,6 +142,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
 }
 
 "vforecast.1d-ssa" <- function(this, groups, len = 1,
+                               only.new = TRUE,
                                ...) {
   L <- this$window
   K <- this$length - L + 1
@@ -189,7 +191,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
       res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], h)
     }
 
-    out[[i]] <- res[1:N.res]
+    out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
     # FIXME: try to fixup the attributes
   }
 
@@ -227,6 +229,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
 
 rforecast.ssa <- function(x, groups, len = 1,
                           base = c("reconstructed", "original"),
+                          only.new = TRUE,
                           ..., cache = TRUE) {
   stop("generic recurrent forecast not implemented yet!")
 }
@@ -243,6 +246,7 @@ lrr.ssa <- function(x, group) {
 }
 
 vforecast.ssa <- function(x, groups, len = 1,
+                          only.new = TRUE,
                           ...) {
   stop("generic vector forecast not implemented yet!")
 }

@@ -10,15 +10,17 @@
 }
 
 \usage{
-\method{rforecast}{ssa}(x, groups, len = 1, base = c("reconstructed", "original"), \dots, cache = TRUE)
+\method{rforecast}{ssa}(x, groups, len = 1, base = c("reconstructed", "original"), only.new = TRUE, \dots, cache = TRUE)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
-  \item{groups}{the grouping of eigentriples to be used in the forecast}
-  \item{len}{the desired length of the forecasted series}
+  \item{groups}{list, the grouping of eigentriples to be used in the forecast}
+  \item{len}{integer, the desired length of the forecasted series}
   \item{base}{series used as a 'seed' of forecast: original or
     reconstructed according to the value of \code{groups} argument}
+  \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
+    whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}} routines}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}

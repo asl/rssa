@@ -10,13 +10,15 @@
 }
 
 \usage{
-\method{vforecast}{ssa}(x, groups, len = 1, \dots)
+\method{vforecast}{ssa}(x, groups, len = 1, only.new = TRUE, \dots)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
-  \item{groups}{the grouping of eigentriples to be used in the forecast}
-  \item{len}{the desired length of the forecasted series}
+  \item{groups}{list, the grouping of eigentriples to be used in the forecast}
+  \item{len}{integer, the desired length of the forecasted series}
+  \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
+    whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{decompose}} routines}
 }
 
