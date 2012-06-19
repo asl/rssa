@@ -171,7 +171,7 @@ plot.ssa <- function(x,
                      groups) {
   type <- match.arg(type);
   this <- x;
- 
+
   if (identical(type, "values")) {
     .plot.ssa.values(this, ..., numvalues = numvalues);
   } else if (identical(type, "vectors")) {
@@ -194,10 +194,20 @@ plot.ssa <- function(x,
 "plot.1d-ssa.reconstruction" <- function(x, ...,
                                          type = c("raw", "cumsum"),
                                          plot.method = c("matplot", "native"),
+                                         base.series = NULL,
                                          add.original = FALSE,
                                          add.residuals = FALSE) {
   type <- match.arg(type);
   plot.method <- match.arg(plot.method)
+  original <- attr(x, "series")
+  res <- attr(x, "residuals")
+
+  # Handle base series, if any
+  if (!is.null(base.series)) {
+    stopifnot(inherits(base.series, "ssa.reconstruction"))
+    m0 <- matrix(unlist(base.series), ncol = length(base.series))
+    original <- attr(base.series, "series")
+  }
 
   # Nifty defaults
   dots <- list(...)
@@ -207,6 +217,7 @@ plot.ssa <- function(x,
 
   # Prepare the matrix with all the data
   m <- matrix(unlist(x), ncol = length(x))
+  if (!is.null(base.series)) m <- cbind(m0, m)
 
   # Transform the matrix, if necessary
   if (identical(type, "cumsum"))
@@ -215,10 +226,16 @@ plot.ssa <- function(x,
   # Merge the attributes in
   attributes(m) <- append(attributes(m), attributes(x[[1]]))
 
-  if (add.original)
-    m <- cbind(Original = attr(x, "series"), Series = m)
-  if (add.residuals)
-    m <- cbind(m, Residuals = attr(x, "residuals"))
+  mnames <- paste("Reconstructed", 1:ncol(m))
+  if (add.original) {
+    m <- cbind(original, m)
+    mnames <- c("Original", mnames)
+  }
+  if (add.residuals) {
+    m <- cbind(m, res)
+    mnames <- c(mnames, "Residuals")
+  }
+  colnames(m) <- mnames
 
   # Plot'em'all!
   if (identical(plot.method, "matplot"))
