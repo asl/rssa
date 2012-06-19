@@ -232,10 +232,39 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   cbind(Value = rowMeans(bF), t(cf))
 }
 
+"sforecast.1d-ssa" <- function(this, group,
+                               len = 1,
+                               ...,
+                               cache = TRUE) {
+  # First, perform the reconstruction.
+  r <- reconstruct(this, groups = list(group), ..., cache = cache)
+  stopifnot(length(r) == 1)
+  r <- r[[1]]
+
+  # Calculate the LRR
+  lf <- lrr(this, group)
+
+  # Now calculate the recurrent forecast on sliding part of the series
+  N <- this$length
+  L <- this$window
+  K <- N - L + 1
+  K.l <- K - len
+
+  if (N < L + len)
+    stop("too large `len' for sliding forecast")
+
+  res <- numeric(K.l)
+  for (i in 1:K.l)
+    res[i] <- apply.lrr(r[i:(i+L)], lf, len = len, only.new = TRUE)[len]
+
+  res
+}
+
 "lrr.toeplitz-ssa" <- `lrr.1d-ssa`;
 "vforecast.toeplitz-ssa" <- `vforecast.1d-ssa`;
 "rforecast.toeplitz-ssa" <- `rforecast.1d-ssa`;
 "bforecast.toeplitz-ssa" <- `bforecast.1d-ssa`;
+"sforecast.toeplitz-ssa" <- `sforecast.1d-ssa`;
 
 rforecast.ssa <- function(x, groups, len = 1,
                           base = c("reconstructed", "original"),
@@ -262,6 +291,13 @@ vforecast.ssa <- function(x, groups, len = 1,
   stop("generic vector forecast not implemented yet!")
 }
 
+sforecast.ssa <- function(x, group, len = 1,
+                          ...,
+                          cache = TRUE) {
+  stop("generic sliding forecast not implemented yet!")
+}
+
+
 lrr <- function(this, ...)
   UseMethod("lrr")
 roots <- function(x, ...)
@@ -272,3 +308,5 @@ vforecast <- function(this, ...)
   UseMethod("vforecast")
 bforecast <- function(this, ...)
   UseMethod("bforecast")
+sforecast <- function(this, ...)
+  UseMethod("sforecast")
