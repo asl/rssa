@@ -10,12 +10,14 @@
 }
 
 \usage{
-\method{roots}{lrr}(x)
+\method{roots}{lrr}(x, ..., method = c("companion", "polyroot"))
 \method{plot}{lrr}(x, ..., raw = FALSE)
 }
 
 \arguments{
   \item{x}{'LRR' object}
+  \item{method}{methods used for poly roots calculation: via eigenvalues
+    of companion matrix or R's standard polyroot routine}
   \item{\dots}{other arguments forwarded to \code{plot}}
   \item{raw}{logical, if 'TRUE' then \code{plot} routine will not add any
     additional plot components (e.g. unit circle)}
