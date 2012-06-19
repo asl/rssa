@@ -219,8 +219,8 @@ nlambda.ssa <- function(this, ...) {
   ifelse(.exists(this, "lambda"), length(.get(this, "lambda")), 0);
 }
 
-clone.ssa <- function(this, copy.cache = TRUE, ...) {
-  obj <- .clone(this);
+clone.ssa <- function(this, copy.storage = TRUE, copy.cache = TRUE, ...) {
+  obj <- .clone(this, copy.storage = copy.storage);
   if (copy.cache == FALSE)
     cleanup(obj);
 

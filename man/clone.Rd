@@ -10,11 +10,12 @@
 }
 
 \usage{
-\method{clone}{ssa}(this, copy.cache = TRUE, \dots)
+\method{clone}{ssa}(this, copy.storage = TRUE, copy.cache = TRUE, \dots)
 }
 
 \arguments{
   \item{this}{object to be cloned}
+  \item{copy.storage}{enable/disable copying of the internal storage.}
   \item{copy.cache}{enable/disable copying of the set of pre-cached subseries.}
   \item{\dots}{additional arguments to 'clone'.}
 }
