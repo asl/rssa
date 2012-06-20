@@ -245,3 +245,5 @@ plot.ssa <- function(x,
   else
     stop("Unknown plot method")
 }
+
+"plot.toeplitz-ssa.reconstruction" <- `plot.1d-ssa.reconstruction`
