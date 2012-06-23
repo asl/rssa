@@ -17,6 +17,31 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
+fix.svd.method <- function(svd.method, L, N, ...) {
+  dots <- list(...)
+  neig <- dots$neig
+  truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
+
+  if (is.null(neig)) neig <- min(50, L, N - L + 1)
+  if (truncated) {
+    # It's not wise to call truncated methods for small matrices at all
+    if (L < 50) {
+      truncated <- FALSE
+      svd.method <- "eigen"
+    } else if (neig > L /2) {
+    # Check, whether desired eigentriples amount is too huge
+      if (L < 200) {
+        svd.method <- "eigen"
+        truncated <- FALSE
+      } else {
+        warning("too many eigentriples requested")
+      }
+    }
+  }
+
+  svd.method
+}
+
 new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ...,
@@ -35,9 +60,7 @@ new.ssa <- function(x,
     N <- length(x);
 
     # Fix svd method, if needed
-    if ((identical(svd.method, "nutrlan") || identical(svd.method, "propack")) &&
-        L < 50)
-      svd.method <- "eigen";
+    svd.method <- fix.svd.method(svd.method, L, N, ...)
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
