@@ -21,7 +21,7 @@
 \note{
   In most cases it is not necessary to call this routine directly. By
   default functions from the package collect all elementary
-  subseries they encounter during the calculations.
+  series they encounter during the calculations.
 }
 
 \seealso{

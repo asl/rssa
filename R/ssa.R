@@ -279,7 +279,7 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat(",\tFactor vectors:", nv(x));
   cat("\n\nPrecached:",
       length(.get.series.info(x)),
-      "subseries (")
+      "elementary series (")
   cat(format(.object.size(x, pat = "series:") / 1024 / 1024, digits = digits),
       "MiB)");
   cat("\n\nOverall memory consumption (estimate):",

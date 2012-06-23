@@ -24,7 +24,7 @@
 
   Also, SSA routines tend to save some intermediate information which
   can be used later inside SSA object. This includes (but not limited
-  to) elementary subseries, etc.
+  to) elementary series, etc.
 
   'cleanup' call deletes all pre-cached stuff freeing memory necessary
   for calculations.

@@ -17,7 +17,7 @@
     method, or just a matrix with elementary series in columns for
   \emph{default} implementation.}
   \item{L}{window length.}
-  \item{groups}{list of numeric vectors, indices of elementary subseries
+  \item{groups}{list of numeric vectors, indices of elementary series
     used for reconstruction.}
   \item{\dots}{further arguments passed to \code{reconstruct} routine.}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
@@ -45,7 +45,7 @@
 \examples{
 # Decompose co2 series with default parameters
 s <- new.ssa(co2)
-# Calculate the w-correlation matrix between first 10 subseries
+# Calculate the w-correlation matrix between first 10 series
 w <- wcor(s, groups = 1:10)
 print(w)
 plot(w)

@@ -16,7 +16,8 @@
 \arguments{
   \item{this}{object to be cloned}
   \item{copy.storage}{enable/disable copying of the internal storage.}
-  \item{copy.cache}{enable/disable copying of the set of pre-cached subseries.}
+  \item{copy.cache}{enable/disable copying of the set of pre-cached
+  elementary series.}
   \item{\dots}{additional arguments to 'clone'.}
 }
 \details{

@@ -5,7 +5,7 @@
 
 \description{
   Reconstruct the series given the SSA decomposition and the desired
-  grouping of the elementary subseries.
+  grouping of the elementary series.
 }
 
 \usage{
@@ -14,7 +14,7 @@
 
 \arguments{
   \item{this}{SSA object}
-  \item{groups}{list of numeric vectors, indices of elementary subseries
+  \item{groups}{list of numeric vectors, indices of elementary series
     used for reconstruction.}
   \item{\dots}{further arguments passed to routines (e.g. to
   \code{decompose} routine if the continuation is desired).}
@@ -30,7 +30,7 @@
 \examples{
 # Decompose 'co2' series with default parameters
 s <- new.ssa(co2)
-# Reconstruct the series, grouping elementary subseries 2, 3 and 4, 5.
+# Reconstruct the series, grouping elementary series 2, 3 and 4, 5.
 r <- reconstruct(s, groups = list(1, c(2,3), c(4,5)))
 \dontrun{plot(r$F1, col = "black")}
 \dontrun{lines(r$F1 + r$F2, col = "red")}
