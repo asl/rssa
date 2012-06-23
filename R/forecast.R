@@ -18,10 +18,23 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
+check.for.groups <- function(use.group = TRUE) {
+  # R magic to extract the call to parent function
+  call <- as.list(match.call(definition = sys.function(-1),
+                             call = sys.call(sys.parent())))
+  if (use.group) {
+    if (!is.null(call$groups))
+      stop("`groups' found in the arguments, however function expect `group'")
+  } else {
+    if (!is.null(call$group))
+      warning("`group' found in the arguments, however function expect `groups'")
+  }
+}
+
 basis2lrr <- function(U, eps = sqrt(.Machine$double.eps)) {
   N <- nrow(U);
   lpf <- U %*% t(U[N, , drop = FALSE]);
-  
+
   divider <- 1 - lpf[N]
   if (divider < eps)
     stop("Verticality coefficient equals to 1");
@@ -32,6 +45,8 @@ basis2lrr <- function(U, eps = sqrt(.Machine$double.eps)) {
 "lrr.1d-ssa" <- function(this, group, ...) {
   if (missing(group))
     group <- 1:min(nlambda(this), nu(this))
+
+  check.for.groups(use.group = TRUE)
 
   # Determine the upper bound of desired eigentriples
   desired <- max(group)
@@ -111,6 +126,8 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   if (missing(groups))
     groups <- as.list(1:min(nlambda(this), nu(this)))
 
+  check.for.groups(use.group = FALSE)
+
   # Determine the upper bound of desired eigentriples
   desired <- max(unlist(groups));
 
@@ -151,6 +168,8 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
 
   if (missing(groups))
     groups <- as.list(1:min(nlambda(this), nu(this)))
+
+  check.for.groups(use.group = FALSE)
 
   # Determine the upper bound of desired eigentriples
   desired <- max(unlist(groups))
@@ -207,6 +226,8 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
                                ...,
                                cache = TRUE) {
   type <- match.arg(type)
+  check.for.groups(use.group = TRUE)
+
   # First, perform the reconstruction and calculate the residuals.
   r <- reconstruct(this, groups = list(group), ..., cache = cache)
   stopifnot(length(r) == 1)
@@ -236,6 +257,8 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
                                len = 1,
                                ...,
                                cache = TRUE) {
+  check.for.groups(use.group = TRUE)
+
   # First, perform the reconstruction.
   r <- reconstruct(this, groups = list(group), ..., cache = cache)
   stopifnot(length(r) == 1)
