@@ -246,8 +246,9 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   }
 
   # Do the actual bootstrap forecast
-  bF <- replicate(R,
-                  boot.forecast(r[[1]] + sample(res, replace = TRUE), this))
+  bF <- matrix(nrow = len, ncol = R)
+  bF[] <- replicate(R,
+                    boot.forecast(r[[1]] + sample(res, replace = TRUE), this))
 
   # Finally, calculate the statistics of interest
   cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
