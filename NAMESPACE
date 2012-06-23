@@ -45,7 +45,6 @@ export(clone,
        vforecast,
        bforecast,
        sforecast,
-       forecast.check,
 # Period estimation
        perestimate
        )
