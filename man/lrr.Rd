@@ -3,10 +3,10 @@
 \alias{lrr.default}
 \alias{lrr.ssa}
 \alias{lrr.1d-ssa}
-\title{Calculate the Linear Recurrent Relation}
+\title{Calculate the Linear Recurrence Relation}
 
 \description{
-  Calculates the Linear Recurrent Relation given the 'ssa' object.
+  Calculates the Linear Recurrence Relation given the 'ssa' object.
 }
 
 \usage{
@@ -19,7 +19,7 @@
 }
 
 \details{
-  Produces the linear recurrent relation from the series. Check
+  Produces the linear recurrence relation from the series. Check
   \code{\link{basis2lrr}} for calculation details.
 }
 

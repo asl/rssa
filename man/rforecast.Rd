@@ -42,7 +42,7 @@
 \note{
   In fact the current implementation of the algorithm instead of using
   the direct projections of the series calculates the so-called Linear
-  Recurrent Formula which governs the series and uses it for the
+  Recurrence Relations which governs the series and uses it for the
   forecast.
 }
 

@@ -24,7 +24,7 @@
 
 \details{
   The routing performs the so-called multistart sliding forecast
-  applying the linear recurrent relation to sliding segments of the
+  applying the linear recurrence relation to sliding segments of the
   original series. The resulting series can be used to predict the
   estimation quality of the LRR on the series.
 }
