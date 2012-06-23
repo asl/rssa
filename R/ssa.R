@@ -21,9 +21,9 @@ new.ssa <- function(x,
                     L = (N - 1) %/% 2,
                     ...,
                     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
-                    svd_method = c("nutrlan", "propack", "svd", "eigen"),
+                    svd.method = c("nutrlan", "propack", "svd", "eigen"),
                     force.decompose = TRUE) {
-  svd_method <- match.arg(svd_method);
+  svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
@@ -35,10 +35,9 @@ new.ssa <- function(x,
     N <- length(x);
 
     # Fix svd method, if needed
-    if ((identical(svd_method, "nutrlan") ||
-         identical(svd_method, "propack")) &&
+    if ((identical(svd.method, "nutrlan") || identical(svd.method, "propack")) &&
         L < 50)
-      svd_method <- "eigen";
+      svd.method <- "eigen";
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
@@ -53,7 +52,7 @@ new.ssa <- function(x,
                call = match.call(),
                kind = kind,
                series = deparse(substitute(x)),
-               svd_method = svd_method);
+               svd.method = svd.method);
 
   # Create data storage
   this <- .create.storage(this);
@@ -65,7 +64,7 @@ new.ssa <- function(x,
   .set(this, "Fattr", xattr);
   
   # Make this S3 object
-  class(this) <- c(paste(kind, svd_method, sep = "."), kind, "ssa");
+  class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
 
   # Decompose, if necessary
   if (force.decompose)
@@ -272,7 +271,7 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
   cat("Series length:", paste(x$length, collapse = " x "));
   cat(",\tWindow length:", paste(x$window, collapse = " x "));
-  cat(",\tSVD method:", x$svd_method);
+  cat(",\tSVD method:", x$svd.method);
   cat("\n\nComputed:\n");
   cat("Eigenvalues:", nlambda(x));
   cat(",\tEigenvectors:", nu(x));

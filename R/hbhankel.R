@@ -84,7 +84,6 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                                        neig = min(50, prod(L), prod(K)),
                                        ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
-  svd_method <- x$svd_method;
 
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
@@ -112,7 +111,6 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                                        ...,
                                        force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
-  svd_method <- x$svd_method;
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
