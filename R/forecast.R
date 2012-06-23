@@ -227,21 +227,22 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
                                cache = TRUE) {
   type <- match.arg(type)
   check.for.groups(use.group = TRUE)
+  dots <- list(...)
 
   # First, perform the reconstruction and calculate the residuals.
   r <- reconstruct(this, groups = list(group), ..., cache = cache)
   stopifnot(length(r) == 1)
   res <- residuals(r)
 
+  forecast.fun <- if (identical(type, "recurrent")) rforecast else vforecast
   boot.forecast <- function(F, base) {
     s <- clone(base, copy.cache = FALSE, copy.storage = FALSE)
     .set(s, "F", F)
     .set(s, "Fattr", attributes(F))
-    if (identical(type, "recurrent")) {
-      rforecast(s, ..., groups = list(group), len = len, only.new = TRUE)[[1]]
-    } else {
-      vforecast(s, ..., groups = list(group), len = len, only.new = TRUE)[[1]]
-    }
+    do.call(forecast.fun,
+            c(list(s,
+                   groups = list(group), len = len, only.new = TRUE),
+              dots))[[1]]
   }
 
   # Do the actual bootstrap forecast
