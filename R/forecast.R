@@ -285,6 +285,50 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   res
 }
 
+forecast.check <- function(F, group,
+                           forecast.len = 1, sliding.len = N %/% 4,
+                           ...,
+                           type = c("recurrent", "vector"),
+                           result = c("mean-sum-squares", "last-sum-squares", "raw")) {
+  type <- match.arg(type)
+  result <- match.arg(result)
+  check.for.groups(use.group = TRUE)
+
+  # Coerce input to vector if necessary
+  if (!is.vector(F))
+    F <- as.vector(F)
+
+  N <- length(F)
+  K.sliding <- N - sliding.len - forecast.len + 1
+
+  # Perform the actual decomposition and forecast
+  r <- matrix(nrow = K.sliding, ncol = forecast.len)
+  for (i in 1:K.sliding) {
+    s <- new.ssa(F[seq(from = i, length.out = sliding.len)], ...)
+    if (identical(type, "recurrent")) {
+      f <- rforecast(s, groups = list(group), len = forecast.len, only.new = TRUE)[[1]]
+    } else {
+      f <- vforecast(s, groups = list(group), len = forecast.len, only.new = TRUE)[[1]]
+    }
+    r[i, ] <- f
+  }
+
+  if (identical(result, "raw")) {
+    r
+  } else if (identical(result, "last-sum-squares")) {
+    res <- r[, forecast.len]
+    ss <- (F[-(1:(length(F)-K.sliding))] - res)^2
+    list(forecast = res, lss = ss)
+  } else {
+    res <- r[, forecast.len]
+    mss <- sapply(1:K.sliding,
+                  function(idx) {
+                    mean((r[idx,] - F[seq(from = sliding.len + idx, length.out = forecast.len)])^2)
+                  })
+    list(forecast = res, mss = mss)
+  }
+}
+
 "lrr.toeplitz-ssa" <- `lrr.1d-ssa`;
 "vforecast.toeplitz-ssa" <- `vforecast.1d-ssa`;
 "rforecast.toeplitz-ssa" <- `rforecast.1d-ssa`;
