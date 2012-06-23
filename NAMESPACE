@@ -44,7 +44,11 @@ export(clone,
        rforecast,
        vforecast,
        bforecast,
-       sforecast)
+       sforecast,
+       forecast.check,
+# Period estimation
+       perestimate
+       )
 
 S3method("clone", ssa)
 S3method("decompose", ssa)
@@ -98,3 +102,5 @@ S3method("bforecast", "1d-ssa")
 S3method("bforecast", "toeplitz-ssa")
 S3method("sforecast", "1d-ssa")
 S3method("sforecast", "toeplitz-ssa")
+S3method("perestimate", "1d-ssa")
+S3method("perestimate", "toeplitz-ssa")
