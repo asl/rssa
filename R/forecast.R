@@ -23,10 +23,10 @@ check.for.groups <- function(use.group = TRUE) {
   call <- as.list(match.call(definition = sys.function(-1),
                              call = sys.call(sys.parent())))
   if (use.group) {
-    if (!is.null(call$groups))
+    if (!is.null(call[["groups"]]))
       stop("`groups' found in the arguments, however function expect `group'")
   } else {
-    if (!is.null(call$group))
+    if (!is.null(call[["group"]]))
       warning("`group' found in the arguments, however function expect `groups'")
   }
 }
