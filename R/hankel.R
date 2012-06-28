@@ -145,10 +145,6 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   h <- hankel(F, L = L);
 
   # Do decomposition
-  if ("neig" %in% names(list(...)))
-    warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
-            immediate. = TRUE)
-
   S <- eigen(tcrossprod(h));
 
   # Fix small negative values
