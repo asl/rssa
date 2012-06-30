@@ -46,7 +46,7 @@ export(clone,
        bforecast,
        sforecast,
 # Period estimation
-       perestimate
+       parestimate
        )
 
 S3method("clone", ssa)
@@ -101,5 +101,5 @@ S3method("bforecast", "1d-ssa")
 S3method("bforecast", "toeplitz-ssa")
 S3method("sforecast", "1d-ssa")
 S3method("sforecast", "toeplitz-ssa")
-S3method("perestimate", "1d-ssa")
-S3method("perestimate", "toeplitz-ssa")
+S3method("parestimate", "1d-ssa")
+S3method("parestimate", "toeplitz-ssa")

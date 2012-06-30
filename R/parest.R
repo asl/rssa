@@ -17,7 +17,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-perestimate.pairs <- function(U) {
+parestimate.pairs <- function(U) {
   # Sanity check
   stopifnot(ncol(U) == 2)
 
@@ -34,13 +34,13 @@ perestimate.pairs <- function(U) {
   list(periods=2*pi/acos(median(scos)))
 }
 
-perestimate.esprit <- function(U) {
+parestimate.esprit <- function(U) {
   Z <- qr.solve(U[-nrow(U),], U[-1, ])
   r <- eigen(Z, only.values = TRUE)$values
   list(periods=2*pi/Arg(r), modules = Mod(r))
 }
 
-"perestimate.1d-ssa" <- function(this, group,
+"parestimate.1d-ssa" <- function(this, group,
                                  ...,
                                  method = c("pairs", "esprit-ls")) {
   method <- match.arg(method)
@@ -56,19 +56,19 @@ perestimate.esprit <- function(U) {
   if (identical(method, "pairs")) {
     if (length(group) != 2)
       stop("can estimate for pair of eigenvectors only using `pairs' method")
-    perestimate.pairs(this$U[, group])
+    parestimate.pairs(this$U[, group])
   } else if (identical(method, "esprit-ls")) {
-    perestimate.esprit(this$U[, group])
+    parestimate.esprit(this$U[, group])
   }
 }
 
-"perestimate.toeplitz-ssa" <- `perestimate.1d-ssa`
+"parestimate.toeplitz-ssa" <- `parestimate.1d-ssa`
 
-perestimate.ssa <- function(this, group,
+parestimate.ssa <- function(this, group,
                             ...,
                             method = c("pairs", "esprit-ls")) {
-  stop("generic period estimation is not available yet")
+  stop("generic parameter estimation is not available yet")
 }
 
-perestimate <- function(this, ...)
-  UseMethod("perestimate")
+parestimate <- function(this, ...)
+  UseMethod("parestimate")

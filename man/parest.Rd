@@ -1,6 +1,6 @@
-\name{perestimate}
-\alias{perestimate}
-\alias{perestimate.ssa}
+\name{parestimate}
+\alias{parestimate}
+\alias{parestimate.ssa}
 \title{Estimate periods from (set of) eigenvectors}
 
 \description{
@@ -8,7 +8,7 @@
 }
 
 \usage{
-\method{perestimate}{ssa}(this, group, \dots, method = c("pairs", "esprit-ls"))
+\method{parestimate}{ssa}(this, group, \dots, method = c("pairs", "esprit-ls"))
 }
 
 \arguments{
@@ -35,8 +35,8 @@
 s <- new.ssa(co2, neig = 20)
 # Estimate the periods from 2nd and 3rd eigenvectors using default
 # 'pairs' method
-print(perestimate(s, group = c(2, 3)))
+print(parestimate(s, group = c(2, 3)))
 # Estimate the peroids from 2nd and 3rd eigenvectors using ESPRIT
-print(perestimate(s, group = c(2, 3), method = "esprit-ls"))
+print(parestimate(s, group = c(2, 3), method = "esprit-ls"))
 }
 
