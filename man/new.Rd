@@ -8,7 +8,7 @@
 
 \usage{
 new.ssa(x,
-        L = (N - 1) \%/\% 2,
+        L = (N + 1) \%/\% 2,
         \dots,
         kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
         svd.method = c("nutrlan", "propack", "svd", "eigen"),
