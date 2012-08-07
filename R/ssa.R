@@ -43,7 +43,7 @@ fix.svd.method <- function(svd.method, L, N, ...) {
 }
 
 new.ssa <- function(x,
-                    L = (N - 1) %/% 2,
+                    L = (N + 1) %/% 2,
                     ...,
                     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
                     svd.method = c("nutrlan", "propack", "svd", "eigen"),
