@@ -46,7 +46,7 @@
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2)
+s <- ssa(co2)
 # Produce the series forecast from 5th forecasted values derived from
 # sliding segement of the series using the first 3 eigentriples as a
 # base space for the forecast.

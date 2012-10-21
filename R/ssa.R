@@ -42,12 +42,17 @@ fix.svd.method <- function(svd.method, L, N, ...) {
   svd.method
 }
 
-new.ssa <- function(x,
-                    L = (N + 1) %/% 2,
-                    ...,
-                    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
-                    svd.method = c("nutrlan", "propack", "svd", "eigen"),
-                    force.decompose = TRUE) {
+new.ssa <- function(...) {
+  warning("`new.ssa' method is deprecated, use `ssa' instead")
+  ssa(...)
+}
+
+ssa <- function(x,
+                L = (N + 1) %/% 2,
+                ...,
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+                svd.method = c("nutrlan", "propack", "svd", "eigen"),
+                force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
   xattr <- attributes(x);

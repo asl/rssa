@@ -13,7 +13,7 @@
 
 \details{
   Typically the use of the package starts with the \emph{decomposition} of the
-  time series using \code{\link{new.ssa}}. After this a suitable
+  time series using \code{\link{ssa}}. After this a suitable
   \emph{grouping} of the elementary time series is required. This can be done
   heuristically, for example, via looking at the eigenplots of the
   decomposition (\code{\link[Rssa:plot.ssa]{plot}}). Alternatively, one can
@@ -32,12 +32,12 @@
 }
 \keyword{package}
 \seealso{
-    \code{\link{new.ssa}}, \code{\link[Rssa:decompose.ssa]{decompose}},
+    \code{\link{ssa}}, \code{\link[Rssa:decompose.ssa]{decompose}},
     \code{\link[Rssa:reconstruct.ssa]{reconstruct}},
     \code{\link{wcor}}, \code{\link[Rssa:plot.ssa]{plot}}
 }
 \examples{
-s <- new.ssa(co2) # Perform the decomposition using the default window length
+s <- ssa(co2) # Perform the decomposition using the default window length
 summary(s)        # Show various information about the decomposition
 plot(s)           # Show the plot of the eigenvalues
 f <- reconstruct(s, groups = list(1, c(2, 3), 4)) # Reconstruct into 3 series

@@ -29,7 +29,7 @@
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2)
+s <- ssa(co2)
 # Reconstruct the series, grouping elementary series 2, 3 and 4, 5.
 r <- reconstruct(s, groups = list(1, c(2,3), c(4,5)))
 \dontrun{plot(r$F1, col = "black")}

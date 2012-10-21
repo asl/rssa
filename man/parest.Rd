@@ -32,7 +32,7 @@
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2, neig = 20)
+s <- ssa(co2, neig = 20)
 # Estimate the periods from 2nd and 3rd eigenvectors using default
 # 'pairs' method
 print(parestimate(s, group = c(2, 3)))

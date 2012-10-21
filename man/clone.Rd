@@ -33,7 +33,7 @@
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2);
+s <- ssa(co2);
 # Perform 'normal copy' of SSA object
 s1 <- s;
 # Perform 'deep copy' of SSA object

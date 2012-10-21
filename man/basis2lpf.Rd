@@ -50,7 +50,7 @@ basis2lrr(U, eps = sqrt(.Machine$double.eps))
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2, neig = 20)
+s <- ssa(co2, neig = 20)
 # Derive the LRR which governs the whole series
 print(basis2lrr(s$U))
 }

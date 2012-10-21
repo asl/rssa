@@ -35,7 +35,7 @@
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2, L = 24)
+s <- ssa(co2, L = 24)
 # Calculate the LRR out of first 3 eigentriples
 lrr(s, group = c(1:3))
 }

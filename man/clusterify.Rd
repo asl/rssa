@@ -40,7 +40,7 @@
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2)
+s <- ssa(co2)
 # Form 5 series out of initial 10:
 l <- clusterify(s, groups = 1:10)
 }

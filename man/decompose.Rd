@@ -21,7 +21,7 @@
 \details{
   This is the main function which does the decomposition of the series
   trajectory matrix. Depending on the SVD method selected in the
-  \code{\link{new.ssa}} different SVD implementations are called. This
+  \code{\link{ssa}} different SVD implementations are called. This
   might be the ordinary full SVD routines or fast methods which exploit
   the Hankel / Toeplitz / Hankel with Hankel blocks matrix structure and
   allow the calculation of first few eigentriples.
@@ -37,12 +37,12 @@
 }
 
 \seealso{
-  \code{\link[svd:svd]{svd}}, \code{\link[Rssa:new.ssa]{new.ssa}}
+  \code{\link[svd:svd]{svd}}, \code{\link[Rssa:ssa]{ssa}}
 }
 
 \examples{
 # Decompose 'co2' series with default parameters and decomposition turned off.
-s <- new.ssa(co2, force.decompose = FALSE)
+s <- ssa(co2, force.decompose = FALSE)
 # Perform the decomposition
 decompose(s, neig = 50)
 # Continue the decomposition

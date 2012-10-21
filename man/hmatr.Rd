@@ -12,7 +12,7 @@
 
 \arguments{
   \item{F}{the series to be checked for structural changes}
-  \item{\dots}{further arguments passed to \code{new.ssa} routine.}
+  \item{\dots}{further arguments passed to \code{ssa} routine.}
   \item{B}{integer, length of base series}
   \item{T}{integer, length of tested series}
   \item{L}{integer, window length for the decomposition of the base
@@ -62,7 +62,7 @@
     Time Series Structure: SSA and related techniques.} Chapman and Hall/CRC. ISBN 1584881941
 }
 \seealso{
-  \code{\link[Rssa:new.ssa]{new.ssa}}
+  \code{\link[Rssa:ssa]{ssa}}
 }
 
 \examples{

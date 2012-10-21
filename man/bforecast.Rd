@@ -43,14 +43,14 @@
 
 \seealso{
   \code{\link[svd:svd]{svd}},
-  \code{\link[Rssa:new.ssa]{new.ssa}},
+  \code{\link[Rssa:ssa]{ssa}},
   \code{\link[Rssa:reconstruct]{reconstruct}},
   \code{\link[Rssa:rforecast]{rforecast}}
 }
 
 \examples{
 # Decompose 'co2' series with default parameters
-s <- new.ssa(co2)
+s <- ssa(co2)
 # Produce 5 forecasted values and confidence bounds of the series using
 # the first 3 eigentriples as a base space for the forecast.
 bforecast(s, group = 1:3, len = 5)

@@ -42,7 +42,7 @@
 
 \examples{
 # Decompose 'co2' series with some parameters
-s <- new.ssa(co2, L = 24)
+s <- ssa(co2, L = 24)
 # Evaluate the LRR
 l <- lrr(s, group = c(1:3))
 # Calculate the roots of the LRR
