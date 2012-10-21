@@ -10,13 +10,13 @@
 }
 
 \usage{
-nlambda(this, ...)
-nu(this, ...)
-nv(this, ...)
+nlambda(x, ...)
+nu(x, ...)
+nv(x, ...)
 }
 
 \arguments{
-  \item{this}{SSA object to query.}
+  \item{x}{SSA object to query}
   \item{\dots}{further arguments}
 }
 

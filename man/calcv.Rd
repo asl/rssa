@@ -1,8 +1,9 @@
 \name{calc.v}
 \alias{calc.v}
 \alias{calc.v.ssa}
-\alias{calc.v.1d-ssa}
-\alias{calc.v.2d-ssa}
+\alias{calc.v.1d.ssa}
+\alias{calc.v.toeplitz.ssa}
+\alias{calc.v.2d.ssa}
 
 \title{Calculate Factor Vector(s)}
 
@@ -12,11 +13,11 @@
 }
 
 \usage{
-\method{calc.v}{ssa}(this, idx, env = .GlobalEnv, \dots)
+\method{calc.v}{ssa}(x, idx, env = .GlobalEnv, \dots)
 }
 
 \arguments{
-  \item{this}{SSA object holding the decomposition.}
+  \item{x}{SSA object holding the decomposition.}
   \item{idx}{indices of the factor vectors to compute.}
   \item{env}{temporary environment used for precalculation.}
   \item{\dots}{additional arguments to 'calc.v'.}

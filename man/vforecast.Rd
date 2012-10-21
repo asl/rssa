@@ -2,7 +2,8 @@
 \alias{vforecast}
 \alias{vforecast.default}
 \alias{vforecast.ssa}
-\alias{vforecast.1d-ssa}
+\alias{vforecast.1d.ssa}
+\alias{vforecast.toeplitz.ssa}
 \title{Perform vector SSA forecasting of the series}
 
 \description{
@@ -10,7 +11,8 @@
 }
 
 \usage{
-\method{vforecast}{ssa}(x, groups, len = 1, only.new = TRUE, \dots)
+\method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots)
+\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots)
 }
 
 \arguments{

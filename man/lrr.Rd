@@ -2,7 +2,8 @@
 \alias{lrr}
 \alias{lrr.default}
 \alias{lrr.ssa}
-\alias{lrr.1d-ssa}
+\alias{lrr.1d.ssa}
+\alias{lrr.toeplitz.ssa}
 \title{Calculate the Linear Recurrence Relation}
 
 \description{
@@ -10,12 +11,14 @@
 }
 
 \usage{
-\method{lrr}{ssa}(x, group)
+\method{lrr}{1d.ssa}(x, group, \dots)
+\method{lrr}{toeplitz.ssa}(x, group, \dots)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
   \item{group}{indices of eigenvectors used to derive the LRR}
+  \item{\dots}{further arguments to be passed to `decompose' call, if necessary}
 }
 
 \details{

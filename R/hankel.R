@@ -51,7 +51,7 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1]);
 }
 
-.hankelize.one.ssa <- function(this, U, V) {
+.hankelize.one.ssa <- function(x, U, V) {
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_one", U, V);
 }
@@ -61,13 +61,13 @@ hankel <- function(X, L) {
   .Call("hankelize_one_fft", U, V, h);
 }
 
-.hankelize.one.ssa.propack <- function(this, U, V) {
-  h <- .get(this, "hmat");
+.hankelize.one.ssa.propack <- function(x, U, V) {
+  h <- .get(x, "hmat");
   .hankelize.one.hankel(U, V, h);
 }
 
-.hankelize.one.ssa.nutrlan <- function(this, U, V) {
-  h <- .get(this, "hmat");
+.hankelize.one.ssa.nutrlan <- function(x, U, V) {
+  h <- .get(x, "hmat");
   .hankelize.one.hankel(U, V, h);
 }
 
@@ -209,24 +209,24 @@ decompose.1d.ssa.nutrlan <- function(x,
   x;
 }
 
-.calc.v.hankel <- function(this, idx) {
-  lambda <- .get(this, "lambda")[idx];
-  U <- .get(this, "U")[, idx, drop = FALSE];
-  h <- .get(this, "hmat");
+.calc.v.hankel <- function(x, idx) {
+  lambda <- .get(x, "lambda")[idx];
+  U <- .get(x, "U")[, idx, drop = FALSE];
+  h <- .get(x, "hmat");
 
   invisible(sapply(1:length(idx),
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
 
-.calc.v.svd <- function(this, idx, env) {
+.calc.v.svd <- function(x, idx, env) {
   # Check, if there is garbage-collected storage to hold some pre-calculated
   # stuff.
   if (identical(env, .GlobalEnv) ||
       !exists(".ssa.temporary.storage", envir = env, inherits = FALSE)) {
-    F <- .get(this, "F");
+    F <- .get(x, "F");
 
     # Build hankel matrix.
-    X <- hankel(F, L = this$window);
+    X <- hankel(F, L = x$window);
 
     # Save to later use, if possible.
     if (!identical(env, .GlobalEnv)) {
@@ -236,17 +236,17 @@ decompose.1d.ssa.nutrlan <- function(x,
     X <- get(".ssa.temporary.storage", envir = env, inherits = FALSE);
   }
 
-  lambda <- .get(this, "lambda")[idx];
-  U <- .get(this, "U")[, idx, drop = FALSE];
+  lambda <- .get(x, "lambda")[idx];
+  U <- .get(x, "U")[, idx, drop = FALSE];
 
   invisible(sapply(1:length(idx),
                    function(i) crossprod(X, U[, i]) / lambda[i]));
 }
 
-calc.v.1d.ssa.nutrlan <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
-calc.v.1d.ssa.propack <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
-calc.v.1d.ssa.svd <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
-calc.v.1d.ssa.eigen <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
+calc.v.1d.ssa.nutrlan <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
+calc.v.1d.ssa.propack <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
+calc.v.1d.ssa.svd <- function(x, idx, env = .GlobalEnv, ...) .calc.v.svd(x, idx, env)
+calc.v.1d.ssa.eigen <- function(x, idx, env = .GlobalEnv, ...) .calc.v.svd(x, idx, env)
 
 #mes <- function(N = 1000, L = (N %/% 2), n = 50) {
 #  F <- rnorm(N);

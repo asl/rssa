@@ -39,11 +39,11 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   v;
 }
 
-.plot.ssa.values <- function(this, ..., numvalues) {
+.plot.ssa.values <- function(x, ..., numvalues) {
   dots <- list(...);
 
   # FIXME: check for proper lengths
-  d <- data.frame(A = 1:numvalues, B = this$lambda[1:numvalues]);
+  d <- data.frame(A = 1:numvalues, B = x$lambda[1:numvalues]);
 
   # Provide convenient defaults
   dots <- .defaults(dots, "type", c("b", "g"));
@@ -54,19 +54,19 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   dots <- .defaults(dots, "pch", 20);
 
   res <- do.call("xyplot",
-                 c(list(x = B ~ A , data = d, ssaobj = this), dots));
+                 c(list(x = B ~ A , data = d, ssaobj = x), dots));
   print(res)
 }
 
-.plot.ssa.vectors <- function(this, ..., plot.contrib, idx) {
+.plot.ssa.vectors <- function(x, ..., plot.contrib, idx) {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idx);
 
   if (plot.contrib) {
-    total <- sum(this$lambda);
-    lambda <- round(100*this$lambda[idx] / total, digits = 2);
+    total <- sum(x$lambda);
+    lambda <- round(100*x$lambda[idx] / total, digits = 2);
   }
 
   # Provide convenient defaults
@@ -80,23 +80,23 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,
                                            labels = if (!plot.contrib) A else paste(A, " (", lambda, "%)", sep = "")),
-                        data = d, ssaobj = this,
+                        data = d, ssaobj = x,
                         panel = panel.eigenvectors,
                         prepanel = prepanel.eigenvectors),
                    dots));
   print(res)
 }
 
-.plot.ssa.paired <- function(this, ..., plot.contrib, idx, idy) {
+.plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy) {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idy);
 
   if (plot.contrib) {
-    total <- sum(this$lambda);
-    lambdax <- round(100*this$lambda[idx] / total, digits = 2);
-    lambday <- round(100*this$lambda[idy] / total, digits = 2);
+    total <- sum(x$lambda);
+    lambdax <- round(100*x$lambda[idx] / total, digits = 2);
+    lambday <- round(100*x$lambda[idy] / total, digits = 2);
   }
 
   # Provide convenient defaults
@@ -111,7 +111,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
                  c(list(x = A ~ B | factor(A,
                                            labels = if (!plot.contrib) paste(A, "vs", B)
                                                     else paste(A, " (", lambdax, "%) vs ", B, " (", lambday, "%)", sep = "")),
-                        data = d, ssaobj = this,
+                        data = d, ssaobj = x,
                         panel = panel.eigenvectors,
                         prepanel = prepanel.eigenvectors),
                    dots));
@@ -134,14 +134,14 @@ panel.series <- function(x, y, recon, ...) {
   panel.xyplot(X, Y, ...);
 }
 
-.plot.ssa.series <- function(this, ..., groups) {
+.plot.ssa.series <- function(x, ..., groups) {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   idx <- seq_along(groups);
   d <- data.frame(A = idx, B = idx);
 
-  r <- reconstruct(this, groups = groups);
+  r <- reconstruct(x, groups = groups);
 
   # Provide convenient defaults
   dots <- .defaults(dots, "type", "l");
@@ -170,22 +170,21 @@ plot.ssa <- function(x,
                      idy,
                      groups) {
   type <- match.arg(type);
-  this <- x;
 
   if (identical(type, "values")) {
-    .plot.ssa.values(this, ..., numvalues = numvalues);
+    .plot.ssa.values(x, ..., numvalues = numvalues);
   } else if (identical(type, "vectors")) {
-    .plot.ssa.vectors(this, ..., plot.contrib = plot.contrib, idx = idx);
+    .plot.ssa.vectors(x, ..., plot.contrib = plot.contrib, idx = idx);
   } else if (identical(type, "paired")) {
     if (missing(idy))
       idy <- idx + 1;
 
-    .plot.ssa.paired(this, ..., plot.contrib = plot.contrib, idx = idx, idy = idy);
+    .plot.ssa.paired(x, ..., plot.contrib = plot.contrib, idx = idx, idy = idy);
   } else if (identical(type, "series")) {
     if (missing(groups))
-      groups <- as.list(1:min(nlambda(this), nu(this)));
+      groups <- as.list(1:min(nlambda(x), nu(x)));
 
-    .plot.ssa.series(this, ..., groups = groups);
+    .plot.ssa.series(x, ..., groups = groups);
   } else {
     stop("Unsupported type of SSA plot!");
   }

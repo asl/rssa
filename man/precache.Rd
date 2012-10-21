@@ -9,13 +9,13 @@
   faster.
 }
 \usage{
-\method{precache}{ssa}(this, n, \dots)
+\method{precache}{ssa}(x, n, \dots)
 }
 
 \arguments{
-  \item{this}{SSA object.}
-  \item{n}{integer, number of series to calculate and save.}
-  \item{\dots}{further arguments passed to the reconstruction routines.}
+  \item{x}{SSA object}
+  \item{n}{integer, number of series to calculate and save}
+  \item{\dots}{further arguments passed to the reconstruction routines}
 }
 
 \note{

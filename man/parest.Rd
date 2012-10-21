@@ -1,6 +1,7 @@
 \name{parestimate}
 \alias{parestimate}
-\alias{parestimate.ssa}
+\alias{parestimate.1d.ssa}
+\alias{parestimate.toeplitz.ssa}
 \title{Estimate periods from (set of) eigenvectors}
 
 \description{
@@ -8,11 +9,12 @@
 }
 
 \usage{
-\method{parestimate}{ssa}(this, group, \dots, method = c("pairs", "esprit-ls"))
+\method{parestimate}{1d.ssa}(x, group, \dots, method = c("pairs", "esprit-ls"))
+\method{parestimate}{toeplitz.ssa}(x, group, \dots, method = c("pairs", "esprit-ls"))
 }
 
 \arguments{
-  \item{this}{SSA object}
+  \item{x}{SSA object}
   \item{group}{indices of eigenvectors to estimate from}
   \item{\dots}{further arguments passed to 'decompose' routine, if
     necessary}

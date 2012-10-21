@@ -42,9 +42,9 @@ basis2lrr <- function(U, eps = sqrt(.Machine$double.eps)) {
   lpf[-N] / divider
 }
 
-lrr.1d.ssa <- function(this, group, ...) {
+lrr.1d.ssa <- function(x, group, ...) {
   if (missing(group))
-    group <- 1:min(nlambda(this), nu(this))
+    group <- 1:min(nlambda(x), nu(x))
 
   check.for.groups(use.group = TRUE)
 
@@ -52,10 +52,10 @@ lrr.1d.ssa <- function(this, group, ...) {
   desired <- max(group)
 
   # Continue decomposition, if necessary
-  if (desired > nu(this))
-    decompose(this, ..., neig = desired)
+  if (desired > nu(x))
+    decompose(x, ..., neig = desired)
 
-  U <- .get(this, "U")[, group, drop = FALSE]
+  U <- .get(x, "U")[, group, drop = FALSE]
 
   res <- basis2lrr(U)
   class(res) <- "lrr"
@@ -118,13 +118,13 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   if (only.new) F[(N+1):(N+len)] else F
 }
 
-rforecast.1d.ssa <- function(this, groups, len = 1,
+rforecast.1d.ssa <- function(x, groups, len = 1,
                              base = c("reconstructed", "original"),
                              only.new = TRUE,
                              ..., cache = TRUE) {
   base <- match.arg(base)
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(this), nu(this)))
+    groups <- as.list(1:min(nlambda(x), nu(x)))
 
   check.for.groups(use.group = FALSE)
 
@@ -132,22 +132,22 @@ rforecast.1d.ssa <- function(this, groups, len = 1,
   desired <- max(unlist(groups));
 
   # Continue decomposition, if necessary
-  if (desired > min(nlambda(this), nu(this)))
-    decompose(this, ..., neig = desired);
+  if (desired > min(nlambda(x), nu(x)))
+    decompose(x, ..., neig = desired);
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
-    r <- reconstruct(this, groups = groups, ..., cache = cache)
+    r <- reconstruct(x, groups = groups, ..., cache = cache)
 
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
     # Calculate the LRR corresponding to group
-    lf <- lrr(this, group)
+    lf <- lrr(x, group)
 
     # Calculate the forecasted values
-    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(this, "F"),
+    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
                           lf, len, only.new = only.new)
     # FIXME: try to fixup the attributes
   }
@@ -158,16 +158,16 @@ rforecast.1d.ssa <- function(this, groups, len = 1,
   invisible(out)
 }
 
-vforecast.1d.ssa <- function(this, groups, len = 1,
+vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...) {
-  L <- this$window
-  K <- this$length - L + 1
+  L <- x$window
+  K <- x$length - L + 1
   N <- K + L - 1 + len + L - 1
   N.res <- K + L - 1 + len
 
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(this), nu(this)))
+    groups <- as.list(1:min(nlambda(x), nu(x)))
 
   check.for.groups(use.group = FALSE)
 
@@ -175,13 +175,13 @@ vforecast.1d.ssa <- function(this, groups, len = 1,
   desired <- max(unlist(groups))
 
   # Continue decomposition, if necessary
-  if (desired > min(nlambda(this), nu(this)))
-    decompose(this, ..., neig = desired)
+  if (desired > min(nlambda(x), nu(x)))
+    decompose(x, ..., neig = desired)
 
-  lambda <- .get(this, "lambda")
-  U <- .get(this, "U")
+  lambda <- .get(x, "lambda")
+  U <- .get(x, "U")
 
-  V <- if (nv(this) >= desired) .get(this, "V") else NULL
+  V <- if (nv(x) >= desired) .get(x, "V") else NULL
 
   # Make hankel matrix for fast hankelization (we use it for plan)
   h <- new.hmat(double(N), L)
@@ -191,7 +191,7 @@ vforecast.1d.ssa <- function(this, groups, len = 1,
     group <- unique(groups[[i]])
 
     Uet <- U[, group, drop = FALSE]
-    Vet <- if (is.null(V)) calc.v(this, idx = group) else V[, group, drop = FALSE]
+    Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
 
     Z <- rbind(t(lambda[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
 
@@ -255,23 +255,23 @@ bforecast.1d.ssa <- function(x, group,
   cbind(Value = rowMeans(bF), t(cf))
 }
 
-sforecast.1d.ssa <- function(this, group,
+sforecast.1d.ssa <- function(x, group,
                              len = 1,
                              ...,
                              cache = TRUE) {
   check.for.groups(use.group = TRUE)
 
   # First, perform the reconstruction.
-  r <- reconstruct(this, groups = list(group), ..., cache = cache)
+  r <- reconstruct(x, groups = list(group), ..., cache = cache)
   stopifnot(length(r) == 1)
   r <- r[[1]]
 
   # Calculate the LRR
-  lf <- lrr(this, group)
+  lf <- lrr(x, group)
 
   # Now calculate the recurrent forecast on sliding part of the series
-  N <- this$length
-  L <- this$window
+  N <- x$length
+  L <- x$window
   K <- N - L + 1
   K.l <- K - len
 
@@ -291,38 +291,15 @@ sforecast.1d.ssa <- function(this, group,
 "bforecast.toeplitz.ssa" <- `bforecast.1d.ssa`;
 "sforecast.toeplitz.ssa" <- `sforecast.1d.ssa`;
 
-rforecast.ssa <- function(x, groups, len = 1,
-                          base = c("reconstructed", "original"),
-                          only.new = TRUE,
-                          ..., cache = TRUE) {
-  stop("generic recurrent forecast not implemented yet!")
-}
-
-lrr.ssa <- function(x, group) {
-  stop("generic LRR calculation not implemented yet!")
-}
-
-vforecast.ssa <- function(x, groups, len = 1,
-                          only.new = TRUE,
-                          ...) {
-  stop("generic vector forecast not implemented yet!")
-}
-
-sforecast.ssa <- function(x, group, len = 1,
-                          ...,
-                          cache = TRUE) {
-  stop("generic sliding forecast not implemented yet!")
-}
-
-lrr <- function(this, ...)
+lrr <- function(x, ...)
   UseMethod("lrr")
 roots <- function(x, ...)
   UseMethod("roots")
-rforecast <- function(this, ...)
+rforecast <- function(x, ...)
   UseMethod("rforecast")
-vforecast <- function(this, ...)
+vforecast <- function(x, ...)
   UseMethod("vforecast")
 bforecast <- function(x, ...)
   UseMethod("bforecast")
-sforecast <- function(this, ...)
+sforecast <- function(x, ...)
   UseMethod("sforecast")

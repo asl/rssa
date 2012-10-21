@@ -10,15 +10,15 @@
 }
 
 \usage{
-\method{clone}{ssa}(this, copy.storage = TRUE, copy.cache = TRUE, \dots)
+\method{clone}{ssa}(x, copy.storage = TRUE, copy.cache = TRUE, \dots)
 }
 
 \arguments{
-  \item{this}{object to be cloned}
-  \item{copy.storage}{enable/disable copying of the internal storage.}
+  \item{x}{object to be cloned}
+  \item{copy.storage}{enable/disable copying of the internal storage}
   \item{copy.cache}{enable/disable copying of the set of pre-cached
-  elementary series.}
-  \item{\dots}{additional arguments to 'clone'.}
+    elementary series}
+  \item{\dots}{additional arguments to 'clone'}
 }
 \details{
   For the sake of memory efficiency SSA objects hold references to the

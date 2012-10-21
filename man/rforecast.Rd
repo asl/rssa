@@ -2,7 +2,8 @@
 \alias{rforecast}
 \alias{rforecast.default}
 \alias{rforecast.ssa}
-\alias{rforecast.1d-ssa}
+\alias{rforecast.1d.ssa}
+\alias{rforecast.toeplitz.ssa}
 \title{Perform recurrent SSA forecasting of the series}
 
 \description{
@@ -10,7 +11,8 @@
 }
 
 \usage{
-\method{rforecast}{ssa}(x, groups, len = 1, base = c("reconstructed", "original"), only.new = TRUE, \dots, cache = TRUE)
+\method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"), only.new = TRUE, \dots, cache = TRUE)
+\method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"), only.new = TRUE, \dots, cache = TRUE)
 }
 
 \arguments{

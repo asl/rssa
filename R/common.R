@@ -19,34 +19,34 @@
 
 # Convenient helpers to operate with data storage
 
-.create.storage <- function(this) {
-  attr(this, ".env") <- new.env();
-  this;
+.create.storage <- function(x) {
+  attr(x, ".env") <- new.env();
+  x;
 }
 
-.storage <- function(this)
-  attr(this, ".env");
+.storage <- function(x)
+  attr(x, ".env");
 
-.get <- function(this, name, allow.null = FALSE) {
+.get <- function(x, name, allow.null = FALSE) {
   ret <- NULL;
-  if (!allow.null || .exists(this, name))
-    ret <- get(name, envir = .storage(this));
+  if (!allow.null || .exists(x, name))
+    ret <- get(name, envir = .storage(x));
 
   ret;
 }
 
-.set <- function(this, name, value)
-  assign(name, value, envir = .storage(this), inherits = FALSE);
+.set <- function(x, name, value)
+  assign(name, value, envir = .storage(x), inherits = FALSE);
 
-.exists <- function(this, name)
-  exists(name, envir = .storage(this), inherits = FALSE);
+.exists <- function(x, name)
+  exists(name, envir = .storage(x), inherits = FALSE);
 
-.remove <- function(this, name)
-  rm(list = name, envir = .storage(this), inherits = FALSE);
+.remove <- function(x, name)
+  rm(list = name, envir = .storage(x), inherits = FALSE);
 
-.clone <- function(this, copy.storage = TRUE) {
+.clone <- function(x, copy.storage = TRUE) {
   # Copy the information body
-  obj <- this;
+  obj <- x;
 
   # Make new storage
   obj <- .create.storage(obj);
@@ -54,9 +54,9 @@
   # Copy the contents of data storage
   if (copy.storage) {
     clone.env <- .storage(obj);
-    this.env <- .storage(this);
-    for (field in ls(envir = this.env, all.names = TRUE)) {
-      value <- get(field, envir = this.env, inherits = FALSE);
+    x.env <- .storage(x);
+    for (field in ls(envir = x.env, all.names = TRUE)) {
+      value <- get(field, envir = x.env, inherits = FALSE);
       attr(value, "..cloned") <- NULL;
       assign(field, value, envir = clone.env, inherits = FALSE);
     }
@@ -65,30 +65,30 @@
   obj;
 }
 
-.get.series.info <- function(this) {
-  if (.exists(this, "series:info"))
-    return (.get(this, "series:info"));
+.get.series.info <- function(x) {
+  if (.exists(x, "series:info"))
+    return (.get(x, "series:info"));
 
   numeric(0);
 }
 
-.append.series.info <- function(this, index) {
-  .set(this, "series:info",
-           union(.get.series.info(this), index));
+.append.series.info <- function(x, index) {
+  .set(x, "series:info",
+           union(.get.series.info(x), index));
 }
 
-.set.series <- function(this, F, index) {
+.set.series <- function(x, F, index) {
   name <- paste("series:", index, sep = "");
-  .set(this, name, F);
-  .append.series.info(this, index);
+  .set(x, name, F);
+  .append.series.info(x, index);
   index;
 }
 
-.get.series <- function(this, index) {
-  F <- numeric(prod(this$length));
+.get.series <- function(x, index) {
+  F <- numeric(prod(x$length));
   for (i in index) {
     name <- paste("series:", i, sep = "");
-    F <- F + .get(this, name);
+    F <- F + .get(x, name);
   }
   F;
 }
@@ -96,29 +96,29 @@
 # Generics
 
 # 'ssa' object
-clone <- function(this, ...)
+clone <- function(x, ...)
   UseMethod("clone");
-reconstruct <- function(this, ...)
+reconstruct <- function(x, ...)
   UseMethod("reconstruct");
-nu <- function(this, ...)
+nu <- function(x, ...)
   UseMethod("nu");
-nv <- function(this, ...)
+nv <- function(x, ...)
   UseMethod("nv");
-nlambda <- function(this, ...)
+nlambda <- function(x, ...)
   UseMethod("nlambda");
-precache <- function(this, ...)
+precache <- function(x, ...)
   UseMethod("precache");
-cleanup <- function(this, ...)
+cleanup <- function(x, ...)
   UseMethod("cleanup");
-clusterify <- function(this, ...)
+clusterify <- function(x, ...)
   UseMethod("clusterify");
-calc.v <- function(this, ...)
+calc.v <- function(x, ...)
   UseMethod("calc.v");
 
-.object.size <- function(this, ...)
+.object.size <- function(x, ...)
   UseMethod(".object.size")
 
-.hankelize.one <- function(this, ...)
+.hankelize.one <- function(x, ...)
   UseMethod(".hankelize.one")
 
 # There is decompose() call in stats package, we need to take control over it

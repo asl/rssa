@@ -6,19 +6,19 @@
 \description{Try to perform the grouping step of the SSA via clusterization.}
 
 \usage{
-\method{clusterify}{ssa}(this, groups, nclust = length(groups) / 2,
+\method{clusterify}{ssa}(x, groups, nclust = length(groups) / 2,
            \dots,
            type = c("wcor"), cache = TRUE)
 }
 
 \arguments{
-  \item{this}{SSA object.}
-  \item{groups}{list of integer vectors, initial set of elementary series' groups.}
+  \item{x}{SSA object}
+  \item{groups}{list of integer vectors, initial set of elementary series' groups}
   \item{nclust}{integer, desired number of output series}
-  \item{\dots}{further arguments passed to clusterization methods.}
-  \item{type}{algorithm of clusterization, see 'Details' for more info.}
+  \item{\dots}{further arguments passed to clusterization methods}
+  \item{type}{algorithm of clusterization, see 'Details' for more info}
   \item{cache}{logical, if 'TRUE' then the results of the intermediate
-    calculations are saved and reused as much as possible.}
+    calculations are saved and reused as much as possible}
 }
 
 \value{

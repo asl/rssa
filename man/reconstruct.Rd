@@ -9,11 +9,11 @@
 }
 
 \usage{
-\method{reconstruct}{ssa}(this, groups, \dots, cache = TRUE)
+\method{reconstruct}{ssa}(x, groups, \dots, cache = TRUE)
 }
 
 \arguments{
-  \item{this}{SSA object}
+  \item{x}{SSA object}
   \item{groups}{list of numeric vectors, indices of elementary series
     used for reconstruction.}
   \item{\dots}{further arguments passed to routines (e.g. to

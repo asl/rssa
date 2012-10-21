@@ -2,7 +2,8 @@
 \alias{sforecast}
 \alias{sforecast.default}
 \alias{sforecast.ssa}
-\alias{sforecast.1d-ssa}
+\alias{sforecast.1d.ssa}
+\alias{sforecast.toeplitz.ssa}
 \title{Perform sliding SSA forecasting of the series}
 
 \description{
@@ -10,7 +11,8 @@
 }
 
 \usage{
-\method{sforecast}{ssa}(x, group, len = 1, \dots, cache = TRUE)
+\method{sforecast}{1d.ssa}(x, group, len = 1, \dots, cache = TRUE)
+\method{sforecast}{toeplitz.ssa}(x, group, len = 1, \dots, cache = TRUE)
 }
 
 \arguments{

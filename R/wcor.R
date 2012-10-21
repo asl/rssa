@@ -78,12 +78,12 @@ plot.wcor.matrix <- function(x, col = rev(gray(seq(0, 1, len = 20))),
   box();
 }
 
-clusterify.wcor.matrix <- function(this,
+clusterify.wcor.matrix <- function(x,
                                    nclust = N,
                                    ...,
                                    dist = function(X) (1 - X) / 2) {
-  N <- nrow(this);
-  h <- cutree(hclust(as.dist(dist(this)), ...), k = nclust);
+  N <- nrow(x);
+  h <- cutree(hclust(as.dist(dist(x)), ...), k = nclust);
   split(1:N, h);
 }
 

@@ -132,17 +132,17 @@ decompose.2d.ssa.propack <- function(x,
   x;
 }
 
-calc.v.2d.ssa <- function(this, idx, ...) {
-  lambda <- .get(this, "lambda")[idx];
-  U <- .get(this, "U")[, idx, drop = FALSE];
-  h <- .get(this, "hmat");
+calc.v.2d.ssa <- function(x, idx, ...) {
+  lambda <- .get(x, "lambda")[idx];
+  U <- .get(x, "U")[, idx, drop = FALSE];
+  h <- .get(x, "hmat");
 
   invisible(sapply(1:length(idx),
                    function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
 
-.hankelize.one.2d.ssa <- function(this, U, V) {
-  h <- .get(this, "hmat");
+.hankelize.one.2d.ssa <- function(x, U, V) {
+  h <- .get(x, "hmat");
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hbhankelize_one_fft", U, V, h);
 }

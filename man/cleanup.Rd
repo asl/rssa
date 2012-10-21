@@ -10,12 +10,12 @@
 }
 
 \usage{
-\method{cleanup}{ssa}(this, \dots)
+\method{cleanup}{ssa}(x, \dots)
 }
 
 \arguments{
-  \item{this}{object to be cleaned}
-  \item{\dots}{additional arguments to 'cleanup'.}
+  \item{x}{object to be cleaned}
+  \item{\dots}{additional arguments to 'cleanup'}
 }
 \details{
   For the sake of memory efficiency SSA objects hold references to the
