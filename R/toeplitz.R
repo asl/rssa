@@ -69,9 +69,9 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   .Call("tmatmul", tmat, v, transposed);
 }
 
-"decompose.toeplitz-ssa.nutrlan" <- function(x,
-                                             neig = min(50, L, K),
-                                             ...) {
+decompose.toeplitz.ssa.nutrlan <- function(x,
+                                           neig = min(50, L, K),
+                                           ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   F <- .get(x, "F");
@@ -115,8 +115,8 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   x;
 }
 
-"decompose.toeplitz-ssa.eigen" <- function(x, ...,
-                                           force.continue = FALSE) {
+decompose.toeplitz.ssa.eigen <- function(x, ...,
+                                         force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
@@ -152,14 +152,14 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   x;
 }
 
-"decompose.toeplitz-ssa.svd" <- function(x, ...) {
+decompose.toeplitz.ssa.svd <- function(x, ...) {
   stop("'SVD' method is not applicable to toeplitz SSA");
 }
 
-"decompose.toeplitz-ssa.propack" <- function(x,
-                                             neig = min(50, L, K),
-                                             ...,
-                                             force.continue = FALSE) {
+decompose.toeplitz.ssa.propack <- function(x,
+                                           neig = min(50, L, K),
+                                           ...,
+                                           force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
   
   # Check, whether continuation of decomposition is requested

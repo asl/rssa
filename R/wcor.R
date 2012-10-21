@@ -44,7 +44,7 @@ wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
   return (R);
 }
 
-"wcor.toeplitz-ssa" <- "wcor.1d-ssa" <- function(X, groups, ..., cache = TRUE) {
+wcor.toeplitz.ssa <- wcor.1d.ssa <- function(X, groups, ..., cache = TRUE) {
   L <- X$window; N <- X$length;
   if (missing(groups))
     groups <- as.list(1:nlambda(X));

@@ -77,12 +77,12 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hbhmatmul", hmat, v, transposed);
 }
 
-"decompose.2d-ssa" <- function(x, ...)
-  stop("Unsupported SVD method for 2D-SSA!");
+decompose.2d.ssa <- function(x, ...)
+  stop("Unsupported SVD method for 2D.SSA!");
 
-"decompose.2d-ssa.nutrlan" <- function(x,
-                                       neig = min(50, prod(L), prod(K)),
-                                       ...) {
+decompose.2d.ssa.nutrlan <- function(x,
+                                     neig = min(50, prod(L), prod(K)),
+                                     ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   h <- .get(x, "hmat", allow.null = TRUE);
@@ -106,10 +106,10 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   x;
 }
 
-"decompose.2d-ssa.propack" <- function(x,
-                                       neig = min(50,prod(L), prod(K)),
-                                       ...,
-                                       force.continue = FALSE) {
+decompose.2d.ssa.propack <- function(x,
+                                     neig = min(50,prod(L), prod(K)),
+                                     ...,
+                                     force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
@@ -132,7 +132,7 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   x;
 }
 
-"calc.v.2d-ssa" <- function(this, idx, ...) {
+calc.v.2d.ssa <- function(this, idx, ...) {
   lambda <- .get(this, "lambda")[idx];
   U <- .get(this, "U")[, idx, drop = FALSE];
   h <- .get(this, "hmat");
@@ -141,7 +141,7 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                    function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
 
-".hankelize.one.2d-ssa" <- function(this, U, V) {
+.hankelize.one.2d.ssa <- function(this, U, V) {
   h <- .get(this, "hmat");
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hbhankelize_one_fft", U, V, h);

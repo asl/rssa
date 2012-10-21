@@ -40,9 +40,9 @@ parestimate.esprit <- function(U) {
   list(periods=2*pi/Arg(r), modules = Mod(r))
 }
 
-"parestimate.1d-ssa" <- function(this, group,
-                                 ...,
-                                 method = c("pairs", "esprit-ls")) {
+parestimate.1d.ssa <- function(this, group,
+                               ...,
+                               method = c("pairs", "esprit-ls")) {
   method <- match.arg(method)
 
   # Determine the upper bound of desired eigentriples
@@ -62,7 +62,7 @@ parestimate.esprit <- function(U) {
   }
 }
 
-"parestimate.toeplitz-ssa" <- `parestimate.1d-ssa`
+parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
 
 parestimate.ssa <- function(this, group,
                             ...,

@@ -2,7 +2,8 @@
 \alias{bforecast}
 \alias{bforecast.default}
 \alias{bforecast.ssa}
-\alias{bforecast.1d-ssa}
+\alias{bforecast.1d.ssa}
+\alias{bforecast.toeplitz.ssa}
 \title{Perform bootstrap SSA forecasting of the series}
 
 \description{
@@ -10,7 +11,8 @@
 }
 
 \usage{
-\method{bforecast}{ssa}(x, group, len = 1, R = 100, level = 0.95, type = c("recurrent", "vector"), \dots, cache = TRUE)
+\method{bforecast}{1d.ssa}(x, group, len = 1, R = 100, level = 0.95, type = c("recurrent", "vector"), \dots, cache = TRUE)
+\method{bforecast}{toeplitz.ssa}(x, group, len = 1, R = 100, level = 0.95, type = c("recurrent", "vector"), \dots, cache = TRUE)
 }
 
 \arguments{

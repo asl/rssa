@@ -102,13 +102,13 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hmatmul", hmat, v, transposed);
 }
 
-"decompose.1d-ssa" <- function(x, ...)
-  stop("Unsupported SVD method for 1D-SSA!");
+decompose.1d.ssa <- function(x, ...)
+  stop("Unsupported SVD method for 1D SSA!");
 
-"decompose.1d-ssa.svd" <- function(x,
-                                   neig = min(L, K),
-                                   ...,
-                                   force.continue = FALSE) {
+decompose.1d.ssa.svd <- function(x,
+                                 neig = min(L, K),
+                                 ...,
+                                 force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
@@ -132,8 +132,8 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   x;
 }
 
-"decompose.1d-ssa.eigen" <- function(x, ...,
-                                     force.continue = FALSE) {
+decompose.1d.ssa.eigen <- function(x, ...,
+                                   force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
@@ -157,10 +157,10 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   x;
 }
 
-"decompose.1d-ssa.propack" <- function(x,
-                                       neig = min(50, L, K),
-                                       ...,
-                                       force.continue = FALSE) {
+decompose.1d.ssa.propack <- function(x,
+                                     neig = min(50, L, K),
+                                     ...,
+                                     force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   # Check, whether continuation of decomposition is requested
@@ -183,8 +183,8 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   x;
 }
 
-"decompose.1d-ssa.nutrlan" <- function(x,
-                                       neig = min(50, L, K),
+decompose.1d.ssa.nutrlan <- function(x,
+                                     neig = min(50, L, K),
                                        ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
@@ -243,10 +243,10 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
                    function(i) crossprod(X, U[, i]) / lambda[i]));
 }
 
-"calc.v.1d-ssa.nutrlan" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
-"calc.v.1d-ssa.propack" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
-"calc.v.1d-ssa.svd" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
-"calc.v.1d-ssa.eigen" <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
+calc.v.1d.ssa.nutrlan <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
+calc.v.1d.ssa.propack <- function(this, idx, env = .GlobalEnv, ...) .calc.v.hankel(this, idx)
+calc.v.1d.ssa.svd <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
+calc.v.1d.ssa.eigen <- function(this, idx, env = .GlobalEnv, ...) .calc.v.svd(this, idx, env)
 
 #mes <- function(N = 1000, L = (N %/% 2), n = 50) {
 #  F <- rnorm(N);

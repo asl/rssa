@@ -191,12 +191,12 @@ plot.ssa <- function(x,
   }
 }
 
-"plot.1d-ssa.reconstruction" <- function(x, ...,
-                                         type = c("raw", "cumsum"),
-                                         plot.method = c("matplot", "native"),
-                                         base.series = NULL,
-                                         add.original = FALSE,
-                                         add.residuals = FALSE) {
+plot.1d.ssa.reconstruction <- function(x, ...,
+                                       type = c("raw", "cumsum"),
+                                       plot.method = c("matplot", "native"),
+                                       base.series = NULL,
+                                       add.original = FALSE,
+                                       add.residuals = FALSE) {
   type <- match.arg(type);
   plot.method <- match.arg(plot.method)
   original <- attr(x, "series")
@@ -246,4 +246,4 @@ plot.ssa <- function(x,
     stop("Unknown plot method")
 }
 
-"plot.toeplitz-ssa.reconstruction" <- `plot.1d-ssa.reconstruction`
+plot.toeplitz.ssa.reconstruction <- `plot.1d.ssa.reconstruction`

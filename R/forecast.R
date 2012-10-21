@@ -42,7 +42,7 @@ basis2lrr <- function(U, eps = sqrt(.Machine$double.eps)) {
   lpf[-N] / divider
 }
 
-"lrr.1d-ssa" <- function(this, group, ...) {
+lrr.1d.ssa <- function(this, group, ...) {
   if (missing(group))
     group <- 1:min(nlambda(this), nu(this))
 
@@ -118,10 +118,10 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   if (only.new) F[(N+1):(N+len)] else F
 }
 
-"rforecast.1d-ssa" <- function(this, groups, len = 1,
-                               base = c("reconstructed", "original"),
-                               only.new = TRUE,
-                               ..., cache = TRUE) {
+rforecast.1d.ssa <- function(this, groups, len = 1,
+                             base = c("reconstructed", "original"),
+                             only.new = TRUE,
+                             ..., cache = TRUE) {
   base <- match.arg(base)
   if (missing(groups))
     groups <- as.list(1:min(nlambda(this), nu(this)))
@@ -158,9 +158,9 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   invisible(out)
 }
 
-"vforecast.1d-ssa" <- function(this, groups, len = 1,
-                               only.new = TRUE,
-                               ...) {
+vforecast.1d.ssa <- function(this, groups, len = 1,
+                             only.new = TRUE,
+                             ...) {
   L <- this$window
   K <- this$length - L + 1
   N <- K + L - 1 + len + L - 1
@@ -220,17 +220,17 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   invisible(out)
 }
 
-"bforecast.1d-ssa" <- function(this, group,
-                               len = 1, R = 100, level = 0.95,
-                               type = c("recurrent", "vector"),
-                               ...,
-                               cache = TRUE) {
+bforecast.1d.ssa <- function(x, group,
+                             len = 1, R = 100, level = 0.95,
+                             type = c("recurrent", "vector"),
+                             ...,
+                             cache = TRUE) {
   type <- match.arg(type)
   check.for.groups(use.group = TRUE)
   dots <- list(...)
 
   # First, perform the reconstruction and calculate the residuals.
-  r <- reconstruct(this, groups = list(group), ..., cache = cache)
+  r <- reconstruct(x, groups = list(group), ..., cache = cache)
   stopifnot(length(r) == 1)
   res <- residuals(r)
 
@@ -248,17 +248,17 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   # Do the actual bootstrap forecast
   bF <- matrix(nrow = len, ncol = R)
   bF[] <- replicate(R,
-                    boot.forecast(r[[1]] + sample(res, replace = TRUE), this))
+                    boot.forecast(r[[1]] + sample(res, replace = TRUE), x))
 
   # Finally, calculate the statistics of interest
   cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
   cbind(Value = rowMeans(bF), t(cf))
 }
 
-"sforecast.1d-ssa" <- function(this, group,
-                               len = 1,
-                               ...,
-                               cache = TRUE) {
+sforecast.1d.ssa <- function(this, group,
+                             len = 1,
+                             ...,
+                             cache = TRUE) {
   check.for.groups(use.group = TRUE)
 
   # First, perform the reconstruction.
@@ -285,25 +285,17 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   res
 }
 
-"lrr.toeplitz-ssa" <- `lrr.1d-ssa`;
-"vforecast.toeplitz-ssa" <- `vforecast.1d-ssa`;
-"rforecast.toeplitz-ssa" <- `rforecast.1d-ssa`;
-"bforecast.toeplitz-ssa" <- `bforecast.1d-ssa`;
-"sforecast.toeplitz-ssa" <- `sforecast.1d-ssa`;
+"lrr.toeplitz.ssa" <- `lrr.1d.ssa`;
+"vforecast.toeplitz.ssa" <- `vforecast.1d.ssa`;
+"rforecast.toeplitz.ssa" <- `rforecast.1d.ssa`;
+"bforecast.toeplitz.ssa" <- `bforecast.1d.ssa`;
+"sforecast.toeplitz.ssa" <- `sforecast.1d.ssa`;
 
 rforecast.ssa <- function(x, groups, len = 1,
                           base = c("reconstructed", "original"),
                           only.new = TRUE,
                           ..., cache = TRUE) {
   stop("generic recurrent forecast not implemented yet!")
-}
-
-bforecast.ssa <- function(x, group,
-                          len = 1, R = 100, level = 0.95,
-                          type = c("recurrent", "vector"),
-                          ...,
-                          cache = TRUE) {
-  stop("generic bootstrapped forecast not implemented yet!")
 }
 
 lrr.ssa <- function(x, group) {
@@ -322,7 +314,6 @@ sforecast.ssa <- function(x, group, len = 1,
   stop("generic sliding forecast not implemented yet!")
 }
 
-
 lrr <- function(this, ...)
   UseMethod("lrr")
 roots <- function(x, ...)
@@ -331,7 +322,7 @@ rforecast <- function(this, ...)
   UseMethod("rforecast")
 vforecast <- function(this, ...)
   UseMethod("vforecast")
-bforecast <- function(this, ...)
+bforecast <- function(x, ...)
   UseMethod("bforecast")
 sforecast <- function(this, ...)
   UseMethod("sforecast")

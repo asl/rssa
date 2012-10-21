@@ -74,6 +74,9 @@ ssa <- function(x,
     N <- dim(x);
   }
 
+  # Normalized the kind to be used
+  kind <- sub("-", ".", kind, fixed = TRUE)
+  
   # Create information body
   this <- list(length = N,
                window = L,
