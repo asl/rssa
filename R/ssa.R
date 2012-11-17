@@ -50,14 +50,14 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "both-centering-ssa"),
                 svd.method = c("nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
-  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
+  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa") || identical(kind, "both-centering-ssa")) {
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x);
@@ -75,7 +75,7 @@ ssa <- function(x,
   }
 
   # Normalized the kind to be used
-  kind <- sub("-", ".", kind, fixed = TRUE)
+  kind <- gsub("-", ".", kind, fixed = TRUE)
   
   # Create information body
   this <- list(length = N,

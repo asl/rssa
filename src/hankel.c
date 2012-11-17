@@ -686,3 +686,273 @@ SEXP hankelize_multi(SEXP U, SEXP V) {
   UNPROTECT(1);
   return F;
 }
+
+typedef struct {
+  hankel_matrix *h;
+  double *lcv, *rcv;
+} chankel_matrix;
+
+static unsigned chankel_nrow(const void *matrix) {
+  const chankel_matrix *ch = matrix;
+  return ch->h->window;
+}
+
+static unsigned chankel_ncol(const void *matrix) {
+  const chankel_matrix *ch = matrix;
+  return ch->h->length - ch->h->window + 1;
+}
+
+static void initialize_cvectors(chankel_matrix* ch,
+                                double* lcv, R_len_t L,
+                                double* rcv, R_len_t K) {
+  R_len_t i, j;
+
+  ch->lcv = Calloc(L, double);
+  ch->rcv = Calloc(K, double);
+
+  for (i = 0; i < L; ++i)
+    ch->lcv[i] = lcv[i];
+
+  for (j = 0; j < K; ++j)
+    ch->rcv[j] = rcv[j];
+}
+
+static void chankel_matmul(double* out,
+                          const double* v,
+                          const void* matrix) {
+  const chankel_matrix *ch = matrix;
+  const hankel_matrix *h = ch->h;
+  R_len_t N = h->length, L = h->window;
+  R_len_t K = N - L + 1, i, j;
+  double sum_v = 0, rcv_in_p_v = 0;
+
+  hankel_matmul(out, v, h);
+  for (j = 0; j < K; ++j) {
+    sum_v += v[j];
+    rcv_in_p_v += ch->rcv[j] * v[j];
+  }
+
+  for (i = 0; i < L; ++i)
+    out[i] -= ch->lcv[i] * sum_v + rcv_in_p_v;
+}
+
+static void chankel_tmatmul(double* out,
+                           const double* v,
+                           const void* matrix) {
+  const chankel_matrix *ch = matrix;
+  const hankel_matrix *h = ch->h;
+  R_len_t N = h->length, L = h->window;
+  R_len_t K = N - L + 1, i, j;
+  double sum_v = 0, lcv_in_p_v = 0;
+
+  hankel_tmatmul(out, v, h);
+  for (i = 0; i < L; ++i) {
+    sum_v += v[i];
+    lcv_in_p_v += ch->lcv[i] * v[i];
+  }
+
+  for (j = 0; j < K; ++j)
+    out[j] -= ch->rcv[j] * sum_v + lcv_in_p_v;
+}
+
+static void chmat_finalizer(SEXP ptr) {
+  ext_matrix *e;
+  chankel_matrix *ch;
+
+  if (TYPEOF(ptr) != EXTPTRSXP)
+    return;
+
+  e = R_ExternalPtrAddr(ptr);
+  if (!e)
+    return;
+
+  if (strcmp(e->type, "centered hankel matrix"))
+    return;
+
+  ch = e->matrix;
+
+  free_circulant(ch->h);
+  Free(ch->h);
+  Free(ch->lcv);
+  Free(ch->rcv);
+
+  Free(e);
+  R_ClearExternalPtr(ptr);
+}
+
+SEXP initialize_chmat(SEXP F, SEXP window, SEXP lcv, SEXP rcv) {
+  R_len_t N, L;
+  hankel_matrix *h;
+  chankel_matrix *ch;
+  ext_matrix *e;
+  SEXP chmat;
+
+  N = length(F);
+  L = INTEGER(window)[0];
+
+  /* Allocate memory */
+  e = Calloc(1, ext_matrix);
+  e->type = "centered hankel matrix";
+  e->mulfn = chankel_matmul;
+  e->tmulfn = chankel_tmatmul;
+  e->ncol = chankel_ncol;
+  e->nrow = chankel_nrow;
+
+  /* Build toeplitz circulants for hankel matrix */
+  h = Calloc(1, hankel_matrix);
+  initialize_circulant(h, REAL(F), N, L);
+
+  ch = Calloc(1, chankel_matrix);
+  ch->h = h;
+  initialize_cvectors(ch, REAL(lcv), L, REAL(rcv), N - L + 1);
+  e->matrix = ch;
+
+  /* Make an external pointer envelope */
+  chmat = R_MakeExternalPtr(e, install("external matrix"), R_NilValue);
+  R_RegisterCFinalizer(chmat, chmat_finalizer);
+
+  return chmat;
+}
+
+SEXP is_chmat(SEXP ptr) {
+  SEXP ans = NILSXP, tchk;
+  ext_matrix *e = NULL;
+
+  PROTECT(ans = allocVector(LGLSXP, 1));
+  LOGICAL(ans)[0] = 1;
+
+  /* Object should be external matrix */
+  PROTECT(tchk = is_extmat(ptr));
+
+  /* pointer itself should not be null */
+  if (LOGICAL(tchk)[0]) {
+    e = R_ExternalPtrAddr(ptr);
+    if (!e)
+      LOGICAL(ans)[0] = 0;
+  } else
+    LOGICAL(ans)[0] = 0;
+
+  /* finally, type should be `centered hankel matrix' */
+  if (LOGICAL(ans)[0] && e &&
+      strcmp(e->type, "centered hankel matrix") != 0)
+    LOGICAL(ans)[0] = 0;
+
+  UNPROTECT(2);
+
+  return ans;
+}
+
+SEXP chankel_rows(SEXP ptr) {
+  SEXP tchk;
+  SEXP ans = NILSXP;
+
+  /* Perform a type checking */
+  PROTECT(tchk = is_chmat(ptr));
+
+  if (LOGICAL(tchk)[0]) {
+    ext_matrix *e = R_ExternalPtrAddr(ptr);
+
+    PROTECT(ans = allocVector(INTSXP, 1));
+    INTEGER(ans)[0] = chankel_nrow(e->matrix);
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a centered hankel matrix");
+
+  UNPROTECT(1);
+
+  return ans;
+}
+
+SEXP chankel_cols(SEXP ptr) {
+  SEXP tchk;
+  SEXP ans = NILSXP;
+
+  /* Perform a type checking */
+  PROTECT(tchk = is_chmat(ptr));
+
+  if (LOGICAL(tchk)[0]) {
+    ext_matrix *e = R_ExternalPtrAddr(ptr);
+
+    PROTECT(ans = allocVector(INTSXP, 1));
+    INTEGER(ans)[0] = chankel_ncol(e->matrix);
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a centered hankel matrix");
+
+  UNPROTECT(1);
+
+  return ans;
+}
+
+SEXP chmatmul(SEXP chmat, SEXP v, SEXP transposed) {
+  SEXP Y = NILSXP, tchk;
+
+  /* Perform a type checking */
+  PROTECT(tchk = is_chmat(chmat));
+
+  if (LOGICAL(tchk)[0]) {
+    R_len_t K, L;
+    ext_matrix *e;
+    chankel_matrix *ch;
+
+    /* Grab needed data */
+    e = R_ExternalPtrAddr(chmat);
+    ch = e->matrix;
+
+    L = (LOGICAL(transposed)[0] ? chankel_ncol(ch) : chankel_nrow(ch));
+    K = (LOGICAL(transposed)[0] ? chankel_nrow(ch) : chankel_ncol(ch));
+
+    /* Check against absurd values of inputs */
+    if (K != length(v))
+      error("invalid length of input vector 'v'");
+
+    /* Allocate output buffer */
+    PROTECT(Y = allocVector(REALSXP, L));
+
+    /* Calculate the product */
+    if (LOGICAL(transposed)[0])
+      chankel_tmatmul(REAL(Y), REAL(v), ch);
+    else
+      chankel_matmul(REAL(Y), REAL(v), ch);
+
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a centered hankel matrix");
+
+  UNPROTECT(1);
+
+  return Y;
+}
+
+SEXP hankelize_one_fft_chankel(SEXP U, SEXP V, SEXP chmat) {
+  SEXP F = NILSXP, tchk;
+
+  /* Perform a type checking */
+  PROTECT(tchk = is_chmat(chmat));
+
+  if (LOGICAL(tchk)[0]) {
+    ext_matrix *e;
+    chankel_matrix *ch;
+    hankel_matrix *h;
+    double *rU = REAL(U), *rV = REAL(V), *rF;
+
+    /* Grab needed data */
+    e = R_ExternalPtrAddr(chmat);
+    ch = e->matrix;
+    h = ch->h;
+
+    /* Allocate buffer for output */
+    PROTECT(F = allocVector(REALSXP, h->length));
+    rF = REAL(F);
+
+    /* Perform the actual hankelization */
+    hankelize_fft(rF, rU, rV, h);
+
+    UNPROTECT(1);
+  } else
+    error("pointer provided is not a centered hankel matrix");
+
+  UNPROTECT(1);
+
+  return F;
+}
