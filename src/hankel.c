@@ -219,6 +219,55 @@ static R_INLINE void hankelize_fft(double *F,
   fftw_free(cU);
   fftw_free(cV);
 }
+
+static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
+                                 double *R) {
+  double *oF;
+  fftw_complex *iF, *iFc;
+  fftw_plan p1, p2;
+  R_len_t i, K;
+
+  /* Length's check */
+  if ((L >= N) || (L < 1))
+    error("must be 'N' > 'L' >= 1");
+  
+  K = N - L + 1;
+  
+  /* Allocate needed memory */
+   
+  oF = (double*) fftw_malloc(N * sizeof(double));
+  iF = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
+  iFc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
+  
+  /* Estimate the best plans for given input length */
+  p1 = fftw_plan_dft_r2c_1d(N, oF, iF, FFTW_ESTIMATE);
+  p2 = fftw_plan_dft_c2r_1d(N, iF, oF, FFTW_ESTIMATE);
+
+  memcpy(oF, F, N*sizeof(double));
+  
+  fftw_execute_dft_r2c(p1, oF, iF);
+  
+  
+  memcpy(oF, F, K*sizeof(double));
+  memset(oF + K, 0, (N - K)*sizeof(double));  
+   
+  fftw_execute_dft_r2c(p1, oF, iFc);
+ 
+  /* Dot-product */
+  for (i = 0; i < N/2 + 1; ++i)
+    iF[i] = iF[i] * conj(iFc[i]);
+    
+  fftw_execute_dft_c2r(p2, iF, oF);
+
+  /* Return */
+  for (i = 0; i < L; ++i)
+    R[i] = oF[i] / N;  
+  
+  /* Cleanup */
+  fftw_free(oF);
+  fftw_free(iF);
+  fftw_free(iFc);
+}
 #else
 static void free_circulant(hankel_matrix *h) {
   Free(h->circ_freq);
@@ -408,6 +457,25 @@ static R_INLINE void hankelize_fft(double *F,
   Free(iV);
   Free(work);
   Free(iwork);
+}
+
+static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
+                                 double *R) {
+  //FIXME Implement convolution via FFT
+
+  R_len_t i, j, K;
+
+  /* Length's check */
+  if ((L >= N) || (L < 1))
+    error("must be 'N' > 'L' >= 1");
+  
+  K = N - L + 1;
+
+  for (i = 0; i < L; ++i) {
+    R[i] = 0;
+    for (j = 0; j < K; ++j)
+      R[i] += F[j] * F[j + i];
+  }
 }
 #endif
 
@@ -685,4 +753,26 @@ SEXP hankelize_multi(SEXP U, SEXP V) {
 
   UNPROTECT(1);
   return F;
+}
+
+SEXP Lcov_matrix(SEXP F, SEXP L) {
+  R_len_t intL = INTEGER(L)[0];
+  R_len_t i, j;
+  R_len_t K = length(F) - intL + 1;
+  SEXP ans;
+  
+  PROTECT(ans = allocMatrix(REALSXP, intL, intL));
+  double *rans = REAL(ans);
+  double *pF = REAL(F);
+  compute_L_covariation_matrix_first_row(REAL(F), length(F), intL, rans);
+  
+  for (j = 1; j < intL; ++j)
+    rans[intL*j] = rans[j];
+  
+  for (j = 1; j < intL; ++j)
+    for (i = j; i < intL; ++i)
+      rans[i + intL * j] = rans[j + intL * i] = rans[(i - 1) + (j - 1) * intL] - pF[i - 1] * pF[j - 1] + pF[i + K - 1] * pF[j + K - 1];
+      
+  UNPROTECT(1);
+  return ans;
 }
