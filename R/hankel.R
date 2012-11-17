@@ -56,6 +56,11 @@ hankel <- function(X, L) {
   .Call("hankelize_one", U, V);
 }
 
+.hankelize.one.eigen <- function(U, V, h) {
+  storage.mode(U) <- storage.mode(V) <- "double";
+  .Call("hankelize_one_fft", U, V, h);
+}
+
 .hankelize.one.hankel <- function(U, V, h) {
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_one_fft", U, V, h);
@@ -132,6 +137,12 @@ decompose.1d.ssa.svd <- function(x,
   x;
 }
 
+Lcov.matrix <- function(F, L) {
+  storage.mode(F) <- "double";
+  storage.mode(L) <- "integer";
+  .Call("Lcov_matrix", F, L);
+}
+
 decompose.1d.ssa.eigen <- function(x, ...,
                                    force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
@@ -140,17 +151,17 @@ decompose.1d.ssa.eigen <- function(x, ...,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not supported for this method.")
 
-  # Build hankel matrix (this can be done more efficiently!)
   F <- .get(x, "F");
-  h <- hankel(F, L = L);
+  h <- new.hmat(F, L = L);
 
   # Do decomposition
-  S <- eigen(tcrossprod(h));
+  S <- eigen(Lcov.matrix(F, L), symmetric = TRUE);
 
   # Fix small negative values
   S$values[S$values < 0] <- 0;
 
   # Save results
+  .set(x, "hmat", h);
   .set(x, "lambda", sqrt(S$values));
   .set(x, "U", S$vectors);
 
@@ -246,7 +257,7 @@ decompose.1d.ssa.nutrlan <- function(x,
 calc.v.1d.ssa.nutrlan <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
 calc.v.1d.ssa.propack <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
 calc.v.1d.ssa.svd <- function(x, idx, env = .GlobalEnv, ...) .calc.v.svd(x, idx, env)
-calc.v.1d.ssa.eigen <- function(x, idx, env = .GlobalEnv, ...) .calc.v.svd(x, idx, env)
+calc.v.1d.ssa.eigen <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
 
 #mes <- function(N = 1000, L = (N %/% 2), n = 50) {
 #  F <- rnorm(N);
