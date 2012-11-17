@@ -220,8 +220,9 @@ static R_INLINE void hankelize_fft(double *F,
   fftw_free(cV);
 }
 
-static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
-                                 double *R) {
+static void compute_L_covariation_matrix_first_row(const double *F,
+                                                   R_len_t N, R_len_t L,
+                                                   double *R) {
   double *oF;
   fftw_complex *iF, *iFc;
   fftw_plan p1, p2;
@@ -459,8 +460,9 @@ static R_INLINE void hankelize_fft(double *F,
   Free(iwork);
 }
 
-static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
-                                 double *R) {
+static void compute_L_covariation_matrix_first_row(const double *F,
+                                                   R_len_t N, R_len_t L,
+                                                   double *R) {
   //FIXME Implement convolution via FFT
 
   R_len_t i, j, K;
