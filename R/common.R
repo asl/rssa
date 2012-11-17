@@ -120,6 +120,8 @@ calc.v <- function(x, ...)
 
 .hankelize.one <- function(x, ...)
   UseMethod(".hankelize.one")
+.decompose.centering <- function(x, ...)
+  UseMethod(".decompose.centering")
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(x, ...) UseMethod("decompose");
