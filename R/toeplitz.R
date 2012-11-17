@@ -148,8 +148,14 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
   # Save results
   .set(x, "lambda", lambda);
   .set(x, "V", V);
+  .set(x, "hmat", h);
 
   x;
+}
+
+.hankelize.one.toeplitz.ssa.eigen <- function(x, U, V) {
+  h <- .get(x, "hmat");
+  .hankelize.one.hankel(U, V, h);
 }
 
 decompose.toeplitz.ssa.svd <- function(x, ...) {
@@ -161,35 +167,35 @@ decompose.toeplitz.ssa.propack <- function(x,
                                            ...,
                                            force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
-  
+
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.");
-  
+
   F <- .get(x, "F");
 
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
     h <- new.hmat(F, L = L);
   }
-  
+
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
-  
+
   T <- .get(x, "tmat", allow.null = TRUE);
   if (is.null(T)) {
     T <- new.tmat(F, L = L);
   }
-  
+
   S <- propack.svd(T, neig = neig, ...);
-  
+
   # Save results
   .set(x, "hmat", h);
   .set(x, "tmat", T);
   .set(x, "olambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
-  
+
   num <- length(S$d);
   lambda <- numeric(num);
   V <- matrix(nrow = K, ncol = num);
@@ -198,10 +204,10 @@ decompose.toeplitz.ssa.propack <- function(x,
     lambda[i] <- sqrt(sum(Z^2));
     V[, i] <- Z / lambda[i];
   }
-  
+
   # Save results
   .set(x, "lambda", lambda);
   .set(x, "V", V);
-  
+
   x;
 }
