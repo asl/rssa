@@ -102,8 +102,13 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hmatmul", hmat, v, transposed);
 }
 
-decompose.1d.ssa <- function(x, ...)
+decompose.1d.ssa <- function(x,
+                             neig = min(50, L, K),
+                             ...,
+                             force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
   stop("Unsupported SVD method for 1D SSA!");
+}
 
 decompose.1d.ssa.svd <- function(x,
                                  neig = min(L, K),
@@ -242,6 +247,9 @@ decompose.1d.ssa.nutrlan <- function(x,
   invisible(sapply(1:length(idx),
                    function(i) crossprod(X, U[, i]) / lambda[i]));
 }
+
+calc.v.1d.ssa <- function(x, idx, env = .GlobalEnv, ...)
+  stop("Unsupported SVD method for 1D SSA!")
 
 calc.v.1d.ssa.nutrlan <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
 calc.v.1d.ssa.propack <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)

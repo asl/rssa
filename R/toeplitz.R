@@ -205,3 +205,14 @@ decompose.toeplitz.ssa.propack <- function(x,
   
   x;
 }
+
+decompose.toeplitz.ssa <- function(x,
+                             neig = min(50, L, K),
+                             ...,
+                             force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+  stop("Unsupported SVD method for Toeplitz SSA!");
+}
+
+calc.v.toeplitz.ssa <- function(x, idx, env = .GlobalEnv, ...)
+  x$V[, idx]

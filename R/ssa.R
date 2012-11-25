@@ -104,7 +104,7 @@ ssa <- function(x,
   this;
 }
 
-precache.ssa <- function(x, n, ...) {
+precache <- function(x, n, ...) {
   if (missing(n)) {
     warning("Amount of sub-series missed, precaching EVERYTHING",
             immediate. = TRUE);
@@ -131,7 +131,7 @@ precache.ssa <- function(x, n, ...) {
   invisible(gc(verbose = FALSE));
 }
 
-cleanup.ssa <- function(x, ...) {
+cleanup <- function(x) {
   .remove(x, ls(.storage(x), pattern = "series:"));
   invisible(gc(verbose = FALSE));
 }
@@ -239,15 +239,15 @@ residuals.ssa.reconstruction <- function(object, ...) {
   res;
 }
 
-nu.ssa <- function(x, ...) {
+nu <- function(x, ...) {
   ifelse(.exists(x, "U"), ncol(.get(x, "U")), 0);
 }
 
-nv.ssa <- function(x, ...) {
+nv <- function(x, ...) {
   ifelse(.exists(x, "V"), ncol(.get(x, "V")), 0);
 }
 
-nlambda.ssa <- function(x, ...) {
+nlambda <- function(x, ...) {
   ifelse(.exists(x, "lambda"), length(.get(x, "lambda")), 0);
 }
 
@@ -287,7 +287,7 @@ clusterify.ssa <- function(x, groups, nclust = length(groups) / 2,
   NULL;
 }
 
-.object.size.ssa <- function(x, pat = NULL) {
+.object.size <- function(x, pat = NULL) {
   env <- .storage(x);
   if (is.null(pat)) {
     members <- ls(envir = env, all.names = TRUE);
@@ -323,11 +323,3 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
 summary.ssa <- function(object, digits = max(3, getOption("digits") - 3), ...)
   print.ssa(x = object, digits = digits, ...)
-
-calc.v.ssa <- function(x, idx, env = .GlobalEnv, ...)
-  stop("Unsupported SVD method for SSA!");
-
-decompose.ssa <- function(x, neig = min(50, L, K), ...) {
-  L <- K <- 0;
-  stop("Unsupported SVD method for SSA!");
-}

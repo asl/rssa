@@ -77,8 +77,12 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hbhmatmul", hmat, v, transposed);
 }
 
-decompose.2d.ssa <- function(x, ...)
-  stop("Unsupported SVD method for 2D.SSA!");
+decompose.2d.ssa <- function(x,
+                             neig = min(50, prod(L), prod(K)),
+                             ...) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+  stop("Unsupported SVD method for 2D.SSA!")
+}
 
 decompose.2d.ssa.nutrlan <- function(x,
                                      neig = min(50, prod(L), prod(K)),

@@ -13,7 +13,9 @@
 }
 
 \usage{
-\method{calc.v}{ssa}(x, idx, env = .GlobalEnv, \dots)
+\method{calc.v}{1d.ssa}(x, idx, env = .GlobalEnv, \dots)
+\method{calc.v}{toeplitz.ssa}(x, idx, env = .GlobalEnv, \dots)
+\method{calc.v}{2d.ssa}(x, idx, \dots)
 }
 
 \arguments{

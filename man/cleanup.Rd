@@ -10,13 +10,13 @@
 }
 
 \usage{
-\method{cleanup}{ssa}(x, \dots)
+cleanup(x)
 }
 
 \arguments{
   \item{x}{object to be cleaned}
-  \item{\dots}{additional arguments to 'cleanup'}
 }
+
 \details{
   For the sake of memory efficiency SSA objects hold references to the
   data, not the data itself. That is why they can hold huge amount of

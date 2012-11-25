@@ -2,6 +2,9 @@
 \alias{decompose}
 \alias{decompose.default}
 \alias{decompose.ssa}
+\alias{decompose.1d.ssa}
+\alias{decompose.2d.ssa}
+\alias{decompose.toeplitz.ssa}
 \title{Calculate SSA decomposition of the series}
 
 \description{
@@ -9,13 +12,16 @@
 }
 
 \usage{
-\method{decompose}{ssa}(x, neig = min(50, L, K), \dots)
+\method{decompose}{1d.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
+\method{decompose}{toeplitz.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
+\method{decompose}{2d.ssa}(x, neig = min(50, prod(L), prod(K)), \dots)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition.}
   \item{neig}{number of desired eigentriples.}
   \item{\dots}{additional arguments passed to SVD routines.}
+  \item{force.continue}{logical, if TRUE then continuation of the decomposition is explicitly requested}
 }
 
 \details{

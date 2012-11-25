@@ -9,7 +9,7 @@
   faster.
 }
 \usage{
-\method{precache}{ssa}(x, n, \dots)
+precache(x, n, \dots)
 }
 
 \arguments{

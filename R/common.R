@@ -100,23 +100,10 @@ clone <- function(x, ...)
   UseMethod("clone");
 reconstruct <- function(x, ...)
   UseMethod("reconstruct");
-nu <- function(x, ...)
-  UseMethod("nu");
-nv <- function(x, ...)
-  UseMethod("nv");
-nlambda <- function(x, ...)
-  UseMethod("nlambda");
-precache <- function(x, ...)
-  UseMethod("precache");
-cleanup <- function(x, ...)
-  UseMethod("cleanup");
 clusterify <- function(x, ...)
   UseMethod("clusterify");
 calc.v <- function(x, ...)
   UseMethod("calc.v");
-
-.object.size <- function(x, ...)
-  UseMethod(".object.size")
 
 .hankelize.one <- function(x, ...)
   UseMethod(".hankelize.one")
