@@ -11,8 +11,10 @@
 }
 
 \usage{
-\method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"), only.new = TRUE, \dots, cache = TRUE)
-\method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"), only.new = TRUE, \dots, cache = TRUE)
+\method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
+          only.new = TRUE, \dots, cache = TRUE)
+\method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
+          only.new = TRUE, \dots, cache = TRUE)
 }
 
 \arguments{
