@@ -192,10 +192,10 @@ plot.ssa <- function(x,
 
 plot.1d.ssa.reconstruction <- function(x, ...,
                                        type = c("raw", "cumsum"),
-                                       plot.method = c("matplot", "native"),
+                                       plot.method = c("native", "matplot"),
                                        base.series = NULL,
-                                       add.original = FALSE,
-                                       add.residuals = FALSE) {
+                                       add.original = TRUE,
+                                       add.residuals = TRUE) {
   type <- match.arg(type);
   plot.method <- match.arg(plot.method)
   original <- attr(x, "series")
