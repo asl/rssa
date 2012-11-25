@@ -157,7 +157,7 @@ reconstruct.ssa <- function(x, groups, ..., cache = TRUE) {
   e <- new.env();
 
   # Do actual reconstruction. Calculate the residuals on the way
-  residuals <- x$F
+  residuals <- .get(x, "F")
   for (i in seq_along(groups)) {
     group <- groups[[i]];
     new <- setdiff(group, info);
@@ -187,6 +187,8 @@ reconstruct.ssa <- function(x, groups, ..., cache = TRUE) {
 
   # Propagate attributes of residuals
   attributes(residuals) <- .get(x, "Fattr");
+  F <- .get(x, "F")
+  attributes(F) <- .get(x, "Fattr")
 
   # Cleanup
   rm(list = ls(envir = e, all.names = TRUE),
@@ -195,7 +197,7 @@ reconstruct.ssa <- function(x, groups, ..., cache = TRUE) {
 
   names(out) <- paste("F", 1:length(groups), sep="");
   attr(out, "residuals") <- residuals;
-  attr(out, "series") <- x$F;
+  attr(out, "series") <- F;
 
   # Reconstructed series can be pretty huge...
   class(out) <- paste(c(x$kind, "ssa"), "reconstruction", sep = ".")
