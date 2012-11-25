@@ -118,6 +118,25 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   if (only.new) F[(N+1):(N+len)] else F
 }
 
+
+maybe.fixup.attributes <- function(x, v,
+                                   only.new = TRUE) {
+  # Grab the initial set of attributes
+  res <- attributes(v)
+  # Reconstruct the original series
+  F <- .get(x, "F")
+  attributes(F) <- .get(x, "Fattr")
+
+  # Try to guess the indices of known time series classes
+  if (is.ts(F)) {
+    return (ts(v,
+               start = if (only.new) tsp(F)[2] + 1/frequency(F) else start(F),
+               frequency = frequency(F)))
+  }
+
+  return(v)
+}
+
 rforecast.1d.ssa <- function(x, groups, len = 1,
                              base = c("reconstructed", "original"),
                              only.new = TRUE,
@@ -149,7 +168,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
                           lf, len, only.new = only.new)
-    # FIXME: try to fixup the attributes
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new)
   }
 
   names(out) <- paste(sep = "", "F", 1:length(groups))
@@ -211,7 +230,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
     }
 
     out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
-    # FIXME: try to fixup the attributes
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new)
   }
 
   names(out) <- paste(sep = "", "F", 1:length(groups))
@@ -252,7 +271,8 @@ bforecast.1d.ssa <- function(x, group,
 
   # Finally, calculate the statistics of interest
   cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
-  cbind(Value = rowMeans(bF), t(cf))
+  res <- cbind(Value = rowMeans(bF), t(cf))
+  maybe.fixup.attributes(x, res)
 }
 
 sforecast.1d.ssa <- function(x, group,
