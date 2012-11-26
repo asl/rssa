@@ -141,6 +141,9 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                              base = c("reconstructed", "original"),
                              only.new = TRUE,
                              ..., cache = TRUE) {
+  L <- x$window
+  K <- x$length - L + 1
+
   base <- match.arg(base)
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
@@ -148,11 +151,11 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   check.for.groups(use.group = FALSE)
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups));
+  desired <- max(max(unlist(groups)), min(20, L, K))
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))
-    decompose(x, ..., neig = desired);
+    decompose(x, ..., neig = desired)
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
@@ -191,7 +194,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   check.for.groups(use.group = FALSE)
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups))
+  desired <- max(max(unlist(groups)), min(20, L, K))
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))
