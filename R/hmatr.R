@@ -29,7 +29,7 @@ hmatr <- function(F, ...,
 
   hc <- function(idx) {
     Fb <- F[idx:(idx+B)]   # Form a basis subspace
-    s <- new.ssa(Fb, L = L, ..., neig = min(2*neig, 50))
+    s <- ssa(Fb, L = L, ..., neig = min(2*neig, 50))
 
     # Calculate the distance
     U <- s$U[, 1:neig, drop = FALSE]
