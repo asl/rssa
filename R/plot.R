@@ -106,6 +106,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   dots <- .defaults(dots, "main", "Pairs of eigenvectors");
   dots <- .defaults(dots, "as.table", TRUE);
   dots <- .defaults(dots, "scales", list(relation = "free"));
+  dots <- .defaults(dots, "aspect", "x");
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,

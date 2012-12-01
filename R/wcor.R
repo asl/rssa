@@ -71,7 +71,8 @@ plot.wcor.matrix <- function(x, col = rev(gray(seq(0, 1, len = 20))),
                              main = "W-correlation Matrix",
                              ...) {
   image(1:ncol(x), 1:nrow(x), abs(x), col = col,
-        axes = FALSE, xlab = xlab, ylab = ylab, main = main,
+        xlab = xlab, ylab = ylab, main = main,
+        axes = FALSE,
         ...);
   axis(1, at = 1:ncol(x), labels = colnames(x));
   axis(2, at = 1:nrow(x), labels = rownames(x), las = 2);
