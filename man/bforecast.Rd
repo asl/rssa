@@ -12,9 +12,9 @@
 
 \usage{
 \method{bforecast}{1d.ssa}(x, group, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), \dots, cache = TRUE)
+          type = c("recurrent", "vector"), \dots, drop = FALSE, cache = TRUE)
 \method{bforecast}{toeplitz.ssa}(x, group, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), \dots, cache = TRUE)
+          type = c("recurrent", "vector"), \dots, drop = FALSE, cache = TRUE)
 }
 
 \arguments{
@@ -24,7 +24,10 @@
   \item{R}{number of bootstrap replications}
   \item{level}{confidence level for bounds}
   \item{type}{the type of forecast method to be used during bootstrapping}
-  \item{\dots}{additional arguments passed to \code{\link{reconstruct}} routines}
+  \item{\dots}{additional arguments passed to \code{\link{reconstruct}}
+    routines}
+  \item{drop}{logical, if 'TRUE' then the attributes of the input series
+    are not copied to the reconstructed ones.}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}
 }

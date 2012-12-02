@@ -136,7 +136,7 @@ cleanup <- function(x) {
   invisible(gc(verbose = FALSE));
 }
 
-reconstruct.ssa <- function(x, groups, ..., cache = TRUE) {
+reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
   out <- list();
 
   if (missing(groups))
@@ -188,7 +188,8 @@ reconstruct.ssa <- function(x, groups, ..., cache = TRUE) {
   # Propagate attributes of residuals
   attributes(residuals) <- .get(x, "Fattr");
   F <- .get(x, "F")
-  attributes(F) <- .get(x, "Fattr")
+  if (!drop)
+    attributes(F) <- .get(x, "Fattr")
 
   # Cleanup
   rm(list = ls(envir = e, all.names = TRUE),

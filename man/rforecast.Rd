@@ -12,9 +12,9 @@
 
 \usage{
 \method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, \dots, cache = TRUE)
+          only.new = TRUE, \dots, drop = FALSE, cache = TRUE)
 \method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, \dots, cache = TRUE)
+          only.new = TRUE, \dots, drop = FALSE, cache = TRUE)
 }
 
 \arguments{
@@ -25,7 +25,10 @@
     reconstructed according to the value of \code{groups} argument}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
-  \item{\dots}{additional arguments passed to \code{\link{reconstruct}} routines}
+  \item{\dots}{additional arguments passed to \code{\link{reconstruct}}
+    routines}
+  \item{drop}{logical, if 'TRUE' then the attributes of the input series
+    are not copied to the reconstructed ones.}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}
 }

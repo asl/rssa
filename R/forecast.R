@@ -120,12 +120,13 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
 
 
 maybe.fixup.attributes <- function(x, v,
-                                   only.new = TRUE) {
+                                   only.new = TRUE, drop = FALSE) {
   # Grab the initial set of attributes
   res <- attributes(v)
   # Reconstruct the original series
   F <- .get(x, "F")
-  attributes(F) <- .get(x, "Fattr")
+  if (!drop)
+    attributes(F) <- .get(x, "Fattr")
 
   # Try to guess the indices of known time series classes
   if (is.ts(F)) {
@@ -140,7 +141,8 @@ maybe.fixup.attributes <- function(x, v,
 rforecast.1d.ssa <- function(x, groups, len = 1,
                              base = c("reconstructed", "original"),
                              only.new = TRUE,
-                             ..., cache = TRUE) {
+                             ...,
+                             drop = FALSE, cache = TRUE) {
   L <- x$window
   K <- x$length - L + 1
 
@@ -171,7 +173,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
                           lf, len, only.new = only.new)
-    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new)
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop)
   }
 
   names(out) <- paste(sep = "", "F", 1:length(groups))
@@ -182,7 +184,8 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
 
 vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
-                             ...) {
+                             ...,
+                             drop = FALSE) {
   L <- x$window
   K <- x$length - L + 1
   N <- K + L - 1 + len + L - 1
@@ -233,7 +236,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
     }
 
     out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
-    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new)
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop)
   }
 
   names(out) <- paste(sep = "", "F", 1:length(groups))
@@ -246,7 +249,7 @@ bforecast.1d.ssa <- function(x, group,
                              len = 1, R = 100, level = 0.95,
                              type = c("recurrent", "vector"),
                              ...,
-                             cache = TRUE) {
+                             drop = FALSE, cache = TRUE) {
   type <- match.arg(type)
   check.for.groups(use.group = TRUE)
   dots <- list(...)
@@ -275,7 +278,7 @@ bforecast.1d.ssa <- function(x, group,
   # Finally, calculate the statistics of interest
   cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
   res <- cbind(Value = rowMeans(bF), t(cf))
-  maybe.fixup.attributes(x, res)
+  maybe.fixup.attributes(x, res, drop = drop)
 }
 
 sforecast.1d.ssa <- function(x, group,

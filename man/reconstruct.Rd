@@ -9,7 +9,7 @@
 }
 
 \usage{
-\method{reconstruct}{ssa}(x, groups, \dots, cache = TRUE)
+\method{reconstruct}{ssa}(x, groups, \dots, drop = FALSE, cache = TRUE)
 }
 
 \arguments{
@@ -18,6 +18,8 @@
     used for reconstruction.}
   \item{\dots}{further arguments passed to routines (e.g. to
   \code{decompose} routine if the continuation is desired).}
+  \item{drop}{logical, if 'TRUE' then the attributes of the input series
+  are not copied to the reconstructed ones.}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}
 }

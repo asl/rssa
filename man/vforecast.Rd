@@ -11,8 +11,8 @@
 }
 
 \usage{
-\method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots)
-\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots)
+\method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = FALSE)
+\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = FALSE)
 }
 
 \arguments{
@@ -21,7 +21,10 @@
   \item{len}{integer, the desired length of the forecasted series}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
-  \item{\dots}{additional arguments passed to \code{\link{decompose}} routines}
+  \item{\dots}{additional arguments passed to \code{\link{decompose}}
+    routines}
+  \item{drop}{logical, if 'TRUE' then the attributes of the input series
+    are not copied to the reconstructed ones.}
 }
 
 \details{
