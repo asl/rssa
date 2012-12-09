@@ -178,12 +178,19 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
     # Add pre-cached series
     out[[i]] <- out[[i]] + .get.series(x, cached);
 
-    # Calculate the residuals
-    residuals <- residuals - out[[i]]
-
     # Propagate attributes (e.g. dimension for 2d-SSA)
     attributes(out[[i]]) <- .get(x, "Fattr");
   }
+
+  # Calculate the residuals
+  residuals <- .get(x, "F")
+  rgroups <- unique(unlist(groups))
+  info <- .get.series.info(x);
+  rcached <- intersect(rgroups, info)
+  rnew <- setdiff(rgroups, info)
+  residuals <- residuals - .get.series(x, rcached)
+  if (length(rnew))
+    residuals <- residuals - .do.reconstruct(x, rnew, env = e)
 
   # Propagate attributes of residuals
   attributes(residuals) <- .get(x, "Fattr");
