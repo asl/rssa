@@ -40,13 +40,11 @@ export(clone,
        trows,
        is.tmat,
 # Forecast stuff
-       basis2lrr,
        lrr,
        roots,
        rforecast,
        vforecast,
        bforecast,
-       sforecast,
 # Period estimation
        parestimate
        )
@@ -98,7 +96,5 @@ S3method("plot", "lrr")
 S3method("plot", "hmatr")
 S3method("bforecast", "1d.ssa")
 S3method("bforecast", "toeplitz.ssa")
-S3method("sforecast", "1d.ssa")
-S3method("sforecast", "toeplitz.ssa")
 S3method("parestimate", "1d.ssa")
 S3method("parestimate", "toeplitz.ssa")

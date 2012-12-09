@@ -31,7 +31,7 @@ check.for.groups <- function(use.group = TRUE) {
   }
 }
 
-basis2lrr <- function(U, eps = sqrt(.Machine$double.eps)) {
+lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U);
   lpf <- U %*% t(U[N, , drop = FALSE]);
 
@@ -57,7 +57,7 @@ lrr.1d.ssa <- function(x, group, ...) {
 
   U <- .get(x, "U")[, group, drop = FALSE]
 
-  res <- basis2lrr(U)
+  res <- lrr.default(U, ...)
   class(res) <- "lrr"
 
   res
@@ -361,5 +361,3 @@ vforecast <- function(x, ...)
   UseMethod("vforecast")
 bforecast <- function(x, ...)
   UseMethod("bforecast")
-sforecast <- function(x, ...)
-  UseMethod("sforecast")
