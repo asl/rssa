@@ -281,33 +281,66 @@ bforecast.1d.ssa <- function(x, group,
   maybe.fixup.attributes(x, res, drop = drop)
 }
 
-sforecast.1d.ssa <- function(x, group,
-                             len = 1,
-                             ...,
-                             cache = TRUE) {
+predict.1d.ssa <- function(object,
+                           group, len = 1,
+                           method = c("recurrent", "vector", "bootstrap-recurrent", "bootstrap-vector"),
+                           ...,
+                           drop = FALSE, cache = TRUE) {
+  method <- match.arg(method)
   check.for.groups(use.group = TRUE)
+  dots <- list(...)
+
+  # Calculate a forecast
+  switch (method,
+          recurrent = do.call(rforecast, c(list(object, groups = list(group), len = len, cache = cache), dots))[[1]],
+          vector = do.call(vforecast, c(list(object, groups = list(group), len = len, cache = cache), dots))[[1]],
+          'bootstrap-recurrent' =  do.call(bforecast, c(list(object, type = "recurrent", group = group, len = len, cache = cache), dots)),
+          'bootstrap-vector' =  do.call(bforecast, c(list(object, type = "vector", group = group, len = len, cache = cache), dots)))
+}
+
+forecast.1d.ssa <- function(object,
+                            group, len = 1,
+                            method = c("recurrent", "vector", "bootstrap-recurrent", "bootstrap-vector"),
+                            ...,
+                            drop = FALSE, cache = TRUE) {
+  method <- match.arg(method)
+  check.for.groups(use.group = TRUE)
+  dots <- list(...)
 
   # First, perform the reconstruction.
-  r <- reconstruct(x, groups = list(group), ..., cache = cache)
+  r <- reconstruct(object, groups = list(group), ..., cache = cache)
   stopifnot(length(r) == 1)
-  r <- r[[1]]
 
-  # Calculate the LRR
-  lf <- lrr(x, group)
+  # Perform the forecast
+  f <- do.call(predict, c(list(object, group = group, len = len, method = method, drop = drop, cache = cache), dots))
 
-  # Now calculate the recurrent forecast on sliding part of the series
-  N <- x$length
-  L <- x$window
-  K <- N - L + 1
-  K.l <- K - len
+  # Now perform a "cast" to forecast object
+  require(forecast)
+  F <- .get(object, "F")
+  if (!drop)
+    attributes(F) <- .get(object, "Fattr")
+  res <- list(model = object,
+              method = switch(method,
+                              recurrent = "SSA (recurrent)",
+                              recurrent = "SSA (vector)",
+                              `bootstrap-recurrent` = "SSA (bootstrap recurrent)",
+                              `bootstrap-vector` = "SSA (bootstrap vector)"),
+              fitted = r[[1]],
+              residuals = residuals(r),
+              x = F)
+  # Handle bootstrap forecast separately
+  if (method %in% c( "bootstrap-recurrent", "bootstrap-vector")) {
+    nbnd <- (ncol(f) - 1) / 2
+    res$mean  <- f[, "Value"]
+    res$lower <- f[, seq(from = 2, by = 1, length.out = nbnd)]
+    res$upper <- f[, seq(from = 2 + nbnd, by = 1, length.out = nbnd)]
+    # HACK! Need to change if bforecast defaults will be changed!
+    if (is.element("level", names(dots))) res$level <- dots$level else res$level <- 0.95
+  } else {
+    res$mean <- f
+  }
 
-  if (N < L + len)
-    stop("too large `len' for sliding forecast")
-
-  res <- numeric(K.l)
-  for (i in 1:K.l)
-    res[i] <- apply.lrr(r[i:(i+L)], lf, len = len, only.new = TRUE)[len]
-
+  class(res) <- "forecast"
   res
 }
 
@@ -315,7 +348,8 @@ sforecast.1d.ssa <- function(x, group,
 "vforecast.toeplitz.ssa" <- `vforecast.1d.ssa`;
 "rforecast.toeplitz.ssa" <- `rforecast.1d.ssa`;
 "bforecast.toeplitz.ssa" <- `bforecast.1d.ssa`;
-"sforecast.toeplitz.ssa" <- `sforecast.1d.ssa`;
+"forecast.toeplitz.ssa" <- `forecast.1d.ssa`;
+"predict.toeplitz.ssa" <- `predict.1d.ssa`;
 
 lrr <- function(x, ...)
   UseMethod("lrr")

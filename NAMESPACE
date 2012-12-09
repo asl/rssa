@@ -2,6 +2,7 @@ useDynLib(Rssa)
 
 import(lattice)
 import(svd)
+import(forecast)
 
 export(clone,
        decompose,
@@ -84,6 +85,10 @@ S3method("clusterify", wcor.matrix)
 S3method("clusterify", ssa)
 S3method("lrr", "1d.ssa")
 S3method("lrr", "toeplitz.ssa")
+S3method("forecast", "1d.ssa")
+S3method("forecast", "toeplitz.ssa")
+S3method("predict", "1d.ssa")
+S3method("predict", "toeplitz.ssa")
 S3method("rforecast", "1d.ssa")
 S3method("rforecast", "toeplitz.ssa")
 S3method("vforecast", "1d.ssa")
