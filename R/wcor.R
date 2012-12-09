@@ -17,15 +17,15 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
 #   MA 02139, USA.
 
-wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
-  if (is.data.frame(X))
-    X <- as.matrix(X)
-  else if (!is.matrix(X))
-    stop("'X' must be a matrix or a data frame")
-  if (!all(is.finite(X)))
-    stop("'X' must contain finite values only")
+wcor.default <- function(x, L = (N + 1) %/% 2, ...) {
+  if (is.data.frame(x))
+    x <- as.matrix(x)
+  else if (!is.matrix(x))
+    stop("'x' must be a matrix or a data frame")
+  if (!all(is.finite(x)))
+    stop("'x' must contain finite values only")
 
-  N <- nrow(X);
+  N <- nrow(x);
 
   K <- N - L + 1;
   Ls <- min(L, K); Ks <- max(L, K);
@@ -34,7 +34,7 @@ wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
   w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), seq(from = Ls-1, to = 1, by = -1));
 
   # Compute w-covariation
-  cov <- crossprod(sqrt(w) * X);
+  cov <- crossprod(sqrt(w) * x);
 
   # Convert to correlations
   Is <- 1/sqrt(diag(cov));
@@ -44,24 +44,24 @@ wcor.default <- function(X, L = (N + 1) %/% 2, ...) {
   return (R);
 }
 
-wcor.toeplitz.ssa <- wcor.1d.ssa <- function(X, groups, ..., cache = TRUE) {
-  L <- X$window; N <- X$length;
+wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
+  L <- x$window; N <- x$length;
   if (missing(groups))
-    groups <- as.list(1:nlambda(X));
+    groups <- as.list(1:nlambda(x));
 
   # Compute reconstruction.
-  F <- reconstruct(X, groups, ..., cache = cache);
-  X <- matrix(unlist(F), nrow = N, ncol = length(groups));
-  colnames(X) <- names(F);
+  F <- reconstruct(x, groups, ..., cache = cache);
+  x <- matrix(unlist(F), nrow = N, ncol = length(groups));
+  colnames(x) <- names(F);
 
   # Finally, compute w-correlations and return
-  wcor.default(X, L = L)
+  wcor.default(x, L = L)
 }
 
-wcor.ssa <- function(X, groups, ..., cache = TRUE)
+wcor.ssa <- function(x, groups, ..., cache = TRUE)
   stop("Unsupported SVD method for SSA!");
 
-wcor <- function(X, ...) {
+wcor <- function(x, ...) {
   UseMethod("wcor");
 }
 
