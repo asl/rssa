@@ -37,7 +37,7 @@ parestimate.pairs <- function(U) {
 parestimate.esprit <- function(U) {
   Z <- qr.solve(U[-nrow(U),], U[-1, ])
   r <- eigen(Z, only.values = TRUE)$values
-  list(periods=2*pi/Arg(r), modules = Mod(r))
+  list(periods=2*pi/Arg(r), moduli = Mod(r))
 }
 
 parestimate.1d.ssa <- function(x, group,
