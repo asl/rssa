@@ -1,5 +1,6 @@
 \name{hmatr}
 \alias{hmatr}
+\alias{plot.hmatr}
 
 \title{Calculate the heterogeneity matrix.}
 \description{
@@ -8,17 +9,26 @@
 \usage{hmatr(F, \dots,
       B = N \%/\% 4, T = N \%/\% 4, L = B \%/\% 2,
       neig = 10)
+
+\method{plot}{hmatr}(x,
+     col = rev(heat.colors(256)),
+     main = "Heterogeneity Matrix", xlab = "", ylab = "", \dots)
 }
 
 \arguments{
   \item{F}{the series to be checked for structural changes}
-  \item{\dots}{further arguments passed to \code{ssa} routine.}
+  \item{\dots}{further arguments passed to \code{ssa} routine for
+  \code{hmatr} call or \code{image} for \code{plot.hmatr} call}
   \item{B}{integer, length of base series}
   \item{T}{integer, length of tested series}
   \item{L}{integer, window length for the decomposition of the base
     series}
   \item{neig}{integer, number of eigentriples to consider for
-  calculating projections}
+    calculating projections}
+  \item{x}{'hmatr' object}
+  \item{col}{color palette to use}
+  \item{main}{plot title}
+  \item{xlab,ylab}{labels for 'x' and 'y' axis}
 }
 \details{
   The \emph{heterogeneity matrix} (H-matrix) provides a

@@ -34,8 +34,7 @@
 }
 
 \seealso{
-  \code{\link{hclust}}, \code{\link{wcor}},
-  \code{\link[Rssa:decompose.ssa]{decompose}}
+  \code{\link{hclust}}, \code{\link{wcor}}
 }
 
 \examples{

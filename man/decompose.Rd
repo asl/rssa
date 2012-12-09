@@ -43,7 +43,8 @@
 }
 
 \seealso{
-  \code{\link[svd:svd]{svd}}, \code{\link[Rssa:ssa]{ssa}}
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[svd:svd]{svd}}, \code{\link[Rssa:ssa]{ssa}}.
 }
 
 \examples{

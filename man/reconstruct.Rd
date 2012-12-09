@@ -29,17 +29,26 @@
   named 'F1', 'F2', and so on.
 }
 
+\note{
+  By default (argument \code{drop}) the routine copies all the
+  attributes of the input series to the reconstructed series. Thus, the
+  reconstruction result of 'ts' object is the 'ts' object with the same
+  time scale as well.
+}
+
+\seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:ssa]{ssa}},
+  \code{\link[Rssa:plot.reconstruction]{plot.reconstruction}},
+}
+
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
-# Reconstruct the series, grouping elementary series 2, 3 and 4, 5.
-r <- reconstruct(s, groups = list(1, c(2,3), c(4,5)))
-\dontrun{plot(r$F1, col = "black")}
-\dontrun{lines(r$F1 + r$F2, col = "red")}
-\dontrun{lines(r$F1 + r$F2 + r$F3, col = "blue")}
-# 'groups' argument might contain duplicate entires as well
-r <- reconstruct(s, groups = list(1, 1:3, 1:5))
-\dontrun{plot(r$F1, col = "black")}
-\dontrun{lines(r$F2, col = "red")}
-\dontrun{lines(r$F3, col = "blue")}
+# Reconstruct the series, grouping elementary series.
+r <- reconstruct(s, groups = list(c(1, 4), c(2,3), c(5, 6)))
+plot(r)
+# 'groups' argument might contain duplicate entries as well
+r <- reconstruct(s, groups = list(1, 1:4, 1:6))
+plot(r)
 }

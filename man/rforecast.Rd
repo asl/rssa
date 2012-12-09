@@ -35,7 +35,7 @@
 
 \details{
   The routines applies the recurrent SSA forecasting algorithm to
-  produce the new series which are expected to 'continue' the current
+  produce the new series which is expected to 'continue' the current
   series on the basis of the decomposition given. The algorithm
   sequentialy projects the incomplete embedding vectors (either original
   or from reconstructed series) onto the subspace spanned by the
@@ -44,13 +44,13 @@
 
   In such a way the forecasted elements of the series are produced on
   one-by-one basis.
-}
 
-\note{
-  In fact the current implementation of the algorithm instead of using
-  the direct projections of the series calculates the so-called Linear
-  Recurrence Relations which governs the series and uses it for the
-  forecast.
+  In particular, the \eqn{m}-th step of the forecast is calculated by
+  means of linear recurrence relation (see \code{\link[Rssa:lrr]{lrr}}) as
+  \eqn{y_{n+m}=\sum_{k=1}^{L-1} a_k y_{n+m-k}} where the starting points
+  \eqn{y_{n-(L-2)}}, \ldots, \eqn{y_{n}} are taken from the reconstructed
+  time series (\code{base="reconstructed"}) or from the initial
+  (\code{base="initial"}) time series.
 }
 
 \value{
@@ -59,15 +59,17 @@
 }
 
 \seealso{
-  \code{\link[svd:svd]{svd}},
-  \code{\link[Rssa:ssa]{ssa}},
-  \code{\link[Rssa:reconstruct]{reconstruct}}
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:forecast]{forecast}},
+  \code{\link[Rssa:vforecast]{vforecast}},
+  \code{\link[Rssa:bforecast]{bforecast}}.
 }
 
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
-# Produce 5 forecasted values of the series using the first 3
-# eigentriples as a base space for the forecast.
-rforecast(s, groups = list(1:3), len = 5)
+# Produce 24 forecasted values of the series using different sets of eigentriples
+# as a base space for the forecast.
+rfor <- rforecast(s, groups = list(c(1,4), 1:4), len = 24, only.new=FALSE)
+matplot(data.frame(c(co2, rep(NA, 24)), rfor), type="l")
 }

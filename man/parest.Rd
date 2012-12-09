@@ -24,12 +24,29 @@
 
 \value{
   a 'list' with 2 components named 'periods' containing the periods and
-  'modules' containing the modules of eigen roots (may not be present).
+  'moduli' containing the moduli of roots (may not be present).
+}
+
+\details{
+  The time series is assumed to satisfy the model
+  \deqn{
+    x_n = \sum_k{C_k\mu_k^n}
+  }
+  for complex \eqn{\mu_k} or, alternatively,
+  \deqn{
+    x_n = \sum_k{A_k \rho_k^n \sin(2\pi\omega_k n + \phi_k)}.
+  }
+  The return value are the estimated moduli and arguments of complex
+  \eqn{\mu_k}, more precisely, \eqn{\rho_k} ('moduli') and \eqn{T_k =
+  1/\omega_k} ('periods').
 }
 
 \references{
-  Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
-    Time Series Structure: SSA and related techniques.} Chapman and Hall/CRC. ISBN 1584881941
+  Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
+    Analysis for time series}. Springer Briefs in Statistics. Springer.
+
+  Roy, R., Kailath, T., (1989): \emph{ESPRIT: estimation of signal parameters via
+  rotational invariance techniques}. IEEE Trans. Acoust. 37, 984--995.
 }
 
 \examples{
@@ -39,6 +56,6 @@ s <- ssa(co2, neig = 20)
 # 'pairs' method
 print(parestimate(s, group = c(2, 3)))
 # Estimate the peroids from 2nd and 3rd eigenvectors using ESPRIT
-print(parestimate(s, group = c(2, 3), method = "esprit-ls"))
+print(parestimate(s, group = c(2, 3, 5, 6), method = "esprit-ls"))
 }
 

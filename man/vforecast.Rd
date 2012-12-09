@@ -29,11 +29,13 @@
 
 \details{
   The routines applies the vectors SSA forecasting algorithm to
-  produce the new series which are expected to 'continue' the current
+  produce the new series which is expected to 'continue' the current
   series on the basis of the decomposition given. Vector forecast
-  differs from recurrent forecast in such way that it tries to extend
-  the embedded subspace and then - derive the series out of this
-  extended subspace.
+  differs from recurrent forecast in such way that it continues the set
+  of vectors in the subspace spanning the chosen eigenvectors (the same
+  formula as described in \code{\link{lrr}} is used for constructing of
+  the last components of the new vectors) and then derive the series out
+  of this extended set of vectors.
 }
 
 \value{
@@ -41,18 +43,18 @@
   named 'F1', 'F2', and so on.
 }
 
-\references{
-  Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
-    Time Series Structure: SSA and related techniques.} Chapman and Hall/CRC. ISBN 1584881941
-}
 \seealso{
-  \code{\link[Rssa:rforecast]{rforecast}}
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:rforecast]{rforecast}},
+  \code{\link[Rssa:bforecast]{bforecast}},
+  \code{\link[Rssa:forecast]{forecast}}.
 }
 
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
-# Produce 5 forecasted values of the series using the first 3
-# eigentriples as a base space for the forecast.
-vforecast(s, groups = list(1:3), len = 5)
+# Produce 24 forecasted values of the series using different sets of eigentriples
+# as a base space for the forecast.
+vfor <- vforecast(s, groups = list(c(1,4), 1:4), len = 24, only.new=FALSE)
+matplot(data.frame(c(co2, rep(NA, 24)), vfor), type="l")
 }

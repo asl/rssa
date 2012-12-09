@@ -26,6 +26,6 @@ cleanup(x)
   can be used later inside SSA object. This includes (but not limited
   to) elementary series, etc.
 
-  'cleanup' call deletes all pre-cached stuff freeing memory necessary
+  \code{cleanup} call deletes all pre-cached stuff freeing memory necessary
   for calculations.
 }

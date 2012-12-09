@@ -18,16 +18,16 @@
 }
 
 \arguments{
-  \item{x}{SSA object holding the decomposition.}
-  \item{type}{Type of the plot (see 'Details' for more information).}
-  \item{\dots}{Arguments to be passed to methods, such as graphical parameters.}
+  \item{x}{SSA object holding the decomposition}
+  \item{type}{Type of the plot (see 'Details' for more information)}
+  \item{\dots}{Arguments to be passed to methods, such as graphical parameters}
   \item{plot.contrib}{logical. If 'TRUE' (the default), the contribution
-    of the component to the total variance is plotted.}
-  \item{numvalues}{Number of eigenvalues to plot (for type = 'values').}
-  \item{numvectors}{Total number of eigenvectors to plot (for type = 'vectors').}
-  \item{idx}{Indices of eigenvectors to plot (for type = 'vectors').}
-  \item{idy}{Second set of indices of eigenvectors to plot (for type = 'paired').}
-  \item{groups}{Grouping used for the decomposition (see \code{\link{reconstruct.ssa}}).}
+    of the component to the total variance is plotted}
+  \item{numvalues}{Number of eigenvalues to plot (for type = 'values')}
+  \item{numvectors}{Total number of eigenvectors to plot (for type = 'vectors')}
+  \item{idx}{Indices of eigenvectors to plot (for type = 'vectors')}
+  \item{idy}{Second set of indices of eigenvectors to plot (for type = 'paired')}
+  \item{groups}{Grouping used for the decomposition (see \code{\link[Rssa:reconstruct.ssa]{reconstruct}})}
 }
 
 \details{
@@ -46,7 +46,9 @@
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
 # Plot the eigenvalues
-\dontrun{plot(s, type = "values")}
+plot(s, type = "values")
+# Plot the paired plot for first 6 eigenvectors
+plot(s, type = "paired", idx = 1:6)
 # Plot the first 4 reconstructed components
-\dontrun{plot(s, type = "series", groups = list(1:4))}
+plot(s, type = "series", groups = list(1:4))
 }

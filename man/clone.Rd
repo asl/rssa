@@ -18,7 +18,7 @@
   \item{copy.storage}{enable/disable copying of the internal storage}
   \item{copy.cache}{enable/disable copying of the set of pre-cached
     elementary series}
-  \item{\dots}{additional arguments to 'clone'}
+  \item{\dots}{additional arguments to \code{clone}}
 }
 \details{
   For the sake of memory efficiency SSA objects hold references to the
@@ -27,7 +27,7 @@
 
   However, this means that one cannot safely copy the object using
   normal assignment operator, since freeing of references in one object
-  would yield stale references in another. The `clone' method provides
+  would yield stale references in another. The \code{clone} method provides
   safe `deep copy' of SSA objects.
 }
 

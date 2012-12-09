@@ -4,6 +4,10 @@
 \alias{lrr.ssa}
 \alias{lrr.1d.ssa}
 \alias{lrr.toeplitz.ssa}
+\alias{roots}
+\alias{roots.lrr}
+\alias{plot.lrr}
+
 \title{Calculate the Linear Recurrence Relation}
 
 \description{
@@ -13,32 +17,64 @@
 \usage{
 \method{lrr}{1d.ssa}(x, group, \dots)
 \method{lrr}{toeplitz.ssa}(x, group, \dots)
+\method{lrr}{default}(U, eps = sqrt(.Machine$double.eps), \dots)
+\method{roots}{lrr}(x, ..., method = c("companion", "polyroot"))
+\method{plot}{lrr}(x, ..., raw = FALSE)
 }
 
 \arguments{
-  \item{x}{SSA object holding the decomposition}
+  \item{x}{SSA object holding the decomposition for \code{lrr} call or 'lrr'
+    object itself for other function calls}
   \item{group}{indices of eigenvectors used to derive the LRR}
-  \item{\dots}{further arguments to be passed to `decompose' call, if necessary}
+  \item{\dots}{further arguments to be passed to \code{decompose} or
+    \code{plot} call, if necessary}
+  \item{U}{Matrix containing the orthonormal basis vectors in columns}
+  \item{eps}{Tolerance for verticality checking}
+  \item{method}{methods used for calculation of the polynomial roots: via eigenvalues
+    of companion matrix or R's standard polyroot routine}
+  \item{raw}{logical, if 'TRUE' then \code{plot} routine will not add any
+    additional plot components (e.g. unit circle)}
 }
 
 \details{
-  Produces the linear recurrence relation from the series. Check
-  \code{\link{basis2lrr}} for calculation details.
+  Produces the linear recurrence relation from the series. The default
+  implementation works as follows.
+
+  Denote by \eqn{U_i} the columns of matrix \eqn{U}. Denote by
+  \eqn{\tilde{U}_{i}} the same vector \eqn{U_i} but without the
+  last coordinate. Denote the last coordinate of \eqn{U_i} by
+  \eqn{\pi_i}. The returned value is
+  \deqn{
+    \mathcal{R} = \frac{1}{1-\nu^2}\sum_{i=1}^{d}{\pi_i \tilde{U}_{i}},
+  }
+  where
+  \deqn{
+    \nu^2 = \pi_1^2 + \dots + \pi_d^2.
+  }
+
+  For \code{lrr.ssa} case the matrix \eqn{U} used is the matrix of basis
+  vector corresponding to the selected elementary series.
 }
 
 \value{
-  Object of class 'lrr'
-}
+  Object of class 'lrr' for \code{lrr} function call.
 
-\seealso{
-  \code{\link[Rssa:basis2lrr]{basis2lrr}}
-  \code{\link[Rssa:plot.lrr]{plot.lrr}}
-  \code{\link[Rssa:roots.lrr]{roots.lrr}}
+  Vector with the roots of the of the characteristic
+  polynomial of the LRR for \code{roots} function call. Roots are
+  ordered by moduli decreasing.
 }
 
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2, L = 24)
 # Calculate the LRR out of first 3 eigentriples
-lrr(s, group = c(1:3))
+l <- lrr(s, group = c(1:3))
+# Calculate the roots of the LRR
+r <- roots(l)
+# Moduli of the roots
+Mod(r)
+# Periods of three roots with maximal moduli
+2*pi/Arg(r)[1:3]
+# Plot the roots
+plot(l)
 }
