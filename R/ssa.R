@@ -247,15 +247,15 @@ residuals.ssa.reconstruction <- function(object, ...) {
   res;
 }
 
-nu <- function(x, ...) {
+nu <- function(x) {
   ifelse(.exists(x, "U"), ncol(.get(x, "U")), 0);
 }
 
-nv <- function(x, ...) {
+nv <- function(x) {
   ifelse(.exists(x, "V"), ncol(.get(x, "V")), 0);
 }
 
-nlambda <- function(x, ...) {
+nlambda <- function(x) {
   ifelse(.exists(x, "lambda"), length(.get(x, "lambda")), 0);
 }
 
