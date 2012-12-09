@@ -5,9 +5,9 @@
 \title{A collection of methods for singular spectrum analysis}
 \description{
   Singular Spectrum Analysis (SSA, in short) is a modern non-parametric
-  method for the time series analysis. This package provides a set of
-  fast and reliable implementations of various routines to perform
-  decomposition, reconstruction and forecasting of the time series.
+  method for the analysis of time series and digital images. This
+  package provides a set of fast and reliable implementations of various
+  routines to perform decomposition, reconstruction and forecasting.
 }
 
 \details{
@@ -29,6 +29,11 @@
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001):
   \emph{Analysis of Time Series Structure: SSA and related techniques.}
   Chapman and Hall/CRC. ISBN 1584881941
+  
+  Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
+  spectrum analysis: algorithm and elements of theory.} In Matrix
+  Methods: Theory, Algorithms, Applications. World Scientific
+  Publishing, 450-474.
   
   Korobeynikov, A. (2010) \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,

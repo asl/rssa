@@ -58,8 +58,8 @@
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
-# Produce 5 forecasted values and confidence bounds of the series using
+# Produce 24 forecasted values and confidence bounds of the series using
 # the first 3 eigentriples as a base space for the forecast.
-f <- bforecast(s, group = 1:3, len = 5)
-matplot(f, col = c("black", "red", "red"))
+f <- bforecast(s, group = 1:3, len = 24)
+matplot(f, col = c("black", "red", "red"), type='l')
 }
