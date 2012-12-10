@@ -40,7 +40,7 @@
 
 \arguments{
   \item{object}{SSA object holding the decomposition}
-  \item{group}{the grouping of eigentriples to be used in the forecast}
+  \item{group}{vector of integers, numbers of eigentriples to be used in the forecast}
   \item{len}{the desired length of the forecasted series}
   \item{method}{method of forecasting to be used. The confidence bounds
     are available only for bootstrap-based methods}
@@ -72,10 +72,13 @@
 }
 
 \examples{
-# Decompose 'co2' series with default parameters
 s <- ssa(co2)
 # Calculate 24-point forecast using first 6 components as a base
 f <- forecast(s, group = c(1:6), method = "bootstrap-recurrent", len = 24)
 # Plot the result including the last 24 points of the series
 plot(f, include = 24, shadecols = "green", type = "l")
+# Use of predict() for prediction
+p <- predict(s, group = c(1:6), method = "recurrent", len = 24)
+# Simple plotting
+plot(p)
 }

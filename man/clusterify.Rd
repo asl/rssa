@@ -6,14 +6,14 @@
 \description{Try to perform the grouping step of the SSA via clusterization.}
 
 \usage{
-\method{clusterify}{ssa}(x, groups, nclust = length(groups) / 2,
+\method{clusterify}{ssa}(x, group, nclust = length(group) / 2,
            \dots,
            type = c("wcor"), cache = TRUE)
 }
 
 \arguments{
   \item{x}{SSA object}
-  \item{groups}{list of integer vectors, initial set of elementary series' groups}
+  \item{group}{vector of integers, initial set of elementary series numbers}
   \item{nclust}{integer, desired number of output series}
   \item{\dots}{further arguments passed to clusterization methods}
   \item{type}{algorithm of clusterization, see 'Details' for more info}
@@ -40,7 +40,12 @@
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
-# Form 5 series out of initial 10:
-l <- clusterify(s, groups = 1:10)
+# Form 3 series from the initial 6 ones:
+lst <- clusterify(s, group = 1:6, nclust=3)
+# Automatic grouping:
+print(lst)
+# Check separability
+w <- wcor(s, groups = lst)
+plot(w)
 }
 

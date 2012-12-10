@@ -19,7 +19,7 @@
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
-  \item{group}{the grouping of eigentriples to be used in the forecast}
+  \item{group}{vector of integers, numbers of eigentriples to be used in the forecast}
   \item{len}{the desired length of the forecasted series}
   \item{R}{number of bootstrap replications}
   \item{level}{vector of confidence levels for bounds}

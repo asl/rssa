@@ -267,18 +267,18 @@ clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
   obj;
 }
 
-clusterify.ssa <- function(x, groups, nclust = length(groups) / 2,
+clusterify.ssa <- function(x, group, nclust = length(group) / 2,
                            ...,
                            type = c("wcor"), cache = TRUE) {
   type <- match.arg(type)
 
-  if (missing(groups))
-    groups <- as.list(1:nlambda(x));
+  if (missing(group))
+    group <- as.list(1:nlambda(x));
 
   if (identical(type, "wcor")) {
-    w <- wcor(x, groups = groups, ..., cache = cache);
+    w <- wcor(x, groups = group, ..., cache = cache);
     g <- clusterify(w, nclust = nclust, ...);
-    out <- lapply(g, function(idx) unlist(groups[idx]));
+    out <- lapply(g, function(idx) unlist(group[idx]));
   } else {
     stop("Unsupported clusterification method!");
   }
