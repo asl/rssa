@@ -74,7 +74,7 @@
 \examples{
 s <- ssa(co2)
 # Calculate 24-point forecast using first 6 components as a base
-f <- forecast(s, group = c(1:6), method = "bootstrap-recurrent", len = 24)
+f <- forecast(s, group = c(1:6), method = "bootstrap-recurrent", len = 24, R = 50)
 # Plot the result including the last 24 points of the series
 plot(f, include = 24, shadecols = "green", type = "l")
 # Use of predict() for prediction
