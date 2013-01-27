@@ -33,6 +33,9 @@ check.for.groups <- function(use.group = TRUE) {
 
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U);
+  if (ncol(U) == 0)
+    return(rep(0, N - 1))
+
   lpf <- U %*% t(U[N, , drop = FALSE]);
 
   divider <- 1 - lpf[N]
@@ -49,7 +52,7 @@ lrr.1d.ssa <- function(x, group, ...) {
   check.for.groups(use.group = TRUE)
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(group)
+  desired <- max(group, -Inf)
 
   # Continue decomposition, if necessary
   if (desired > nu(x))
@@ -110,10 +113,14 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   if (r > N)
     stop("Wrong length of LRR")
 
+  # Extract offset
+  b <- attr(lrr, "offset")
+  b <- if (!is.null(b)) b else 0
+
   # Run the actual LRR
   F <- c(F, rep(NA, len))
   for (i in 1:len)
-    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr)
+    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr) + b
 
   if (only.new) F[(N+1):(N+len)] else F
 }
@@ -197,7 +204,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   check.for.groups(use.group = FALSE)
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(max(unlist(groups)), min(20, L, K))
+  desired <- max(max(unlist(groups), -Inf), min(20, L, K))
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))
@@ -215,27 +222,32 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]])
 
-    Uet <- U[, group, drop = FALSE]
-    Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
+    if (length(group) == 0) {
+      out[[i]] <- double(length(if (only.new) (K+L):N.res else 1:N.res))
+    } else {
+      Uet <- U[, group, drop = FALSE]
+      Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
 
-    Z <- rbind(t(lambda[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
+      Z <- rbind(t(lambda[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
 
-    U.head <- Uet[-L, , drop = FALSE]
-    U.tail <- Uet[-1, , drop = FALSE]
-    Pi <- Uet[L, ]
-    tUhUt <- t(U.head) %*% U.tail
-    P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt)
+      U.head <- Uet[-L, , drop = FALSE]
+      U.tail <- Uet[-1, , drop = FALSE]
+      Pi <- Uet[L, ]
+      tUhUt <- t(U.head) %*% U.tail
+      P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt)
 
-    for (j in (K + 1):(K + len + L - 1)) {
-      Z[j, ] <- P %*% Z[j - 1, ]
+      for (j in (K + 1):(K + len + L - 1)) {
+        Z[j, ] <- P %*% Z[j - 1, ]
+      }
+
+      res <- double(N)
+      for (j in seq_along(group)) {
+        res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], h)
+      }
+
+      out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
     }
 
-    res <- double(N)
-    for (j in seq_along(group)) {
-      res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], h)
-    }
-
-    out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
     out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop)
   }
 
@@ -350,6 +362,9 @@ forecast.1d.ssa <- function(object,
 "bforecast.toeplitz.ssa" <- `bforecast.1d.ssa`;
 "forecast.toeplitz.ssa" <- `forecast.1d.ssa`;
 "predict.toeplitz.ssa" <- `predict.1d.ssa`;
+
+"rforecast.row.centering.ssa" <- `rforecast.1d.ssa`
+
 
 lrr <- function(x, ...)
   UseMethod("lrr")

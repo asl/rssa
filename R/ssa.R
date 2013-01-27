@@ -50,14 +50,16 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "both-centering-ssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa",
+                    "both-centering-ssa", "row-centering-ssa"),
                 svd.method = c("nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
-  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa") || identical(kind, "both-centering-ssa")) {
+  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa") ||
+      identical(kind, "both-centering-ssa") || identical(kind, "row-centering-ssa")) {
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x);
@@ -143,7 +145,8 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
     groups <- as.list(1:min(nlambda(x), nu(x)));
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups));
+  # `-Inf' added to suppress warning which raised when we pass empty groups
+  desired <- max(unlist(groups), -Inf);
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))
@@ -228,7 +231,7 @@ residuals.ssa.reconstruction <- function(object, ...) {
 
   lambda <- .get(x, "lambda");
   U <- .get(x, "U");
-  
+
   res <- numeric(prod(x$length));
 
   for (i in idx) {
