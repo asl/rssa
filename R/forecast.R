@@ -33,6 +33,9 @@ check.for.groups <- function(use.group = TRUE) {
 
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U);
+  if (ncol(U) == 0)
+    return(rep(0, N - 1))
+
   lpf <- U %*% t(U[N, , drop = FALSE]);
 
   divider <- 1 - lpf[N]
@@ -49,7 +52,7 @@ lrr.1d.ssa <- function(x, group, ...) {
   check.for.groups(use.group = TRUE)
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(group)
+  desired <- max(group, -Inf)
 
   # Continue decomposition, if necessary
   if (desired > nu(x))
