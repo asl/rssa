@@ -42,6 +42,8 @@ typedef struct {
 #endif
   R_len_t window;
   R_len_t length;
+  const double *lcv;
+  const double *rcv;
 } hankel_matrix;
 
 static unsigned hankel_nrow(const void *matrix) {
@@ -54,16 +56,24 @@ static unsigned hankel_ncol(const void *matrix) {
   return h->length - h->window + 1;
 }
 
-#if HAVE_FFTW3_H
 static void free_circulant(hankel_matrix *h) {
+#if HAVE_FFTW3_H
   fftw_free(h->circ_freq);
   fftw_destroy_plan(h->r2c_plan);
   fftw_destroy_plan(h->c2r_plan);
+#else
+  Free(h->circ_freq);
+#endif
+
+  Free(h->lcv);
+  Free(h->rcv);
 }
 
 static void initialize_circulant(hankel_matrix *h,
-                                 const double *F, R_len_t N, R_len_t L) {
+                                 const double *F, R_len_t N, R_len_t L,
+                                 const double *lcv, const double *rcv) {
   R_len_t K = N - L + 1, i;
+#if HAVE_FFTW3_H
   fftw_complex *ocirc;
   fftw_plan p1, p2;
   double *circ;
@@ -93,8 +103,56 @@ static void initialize_circulant(hankel_matrix *h,
   h->circ_freq = ocirc;
   h->r2c_plan = p1;
   h->c2r_plan = p2;
+#else
+  int *iwork, maxf, maxp;
+  double *work;
+  complex double * circ;
+
+  /* Allocate needed memory */
+  circ = Calloc(N, complex double);
+
+  /* Estimate the best plans for given input length */
+  fft_factor(N, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
+
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  /* Fill input buffer */
+  for (i = K-1; i < N; ++i)
+    circ[i - K + 1] = F[i];
+
+  for (i = 0; i < K-1; ++i) {
+    circ[L + i] = F[i];
+  }
+
+  /* Run the FFT on input data */
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+
+  /* Cleanup and return */
+  Free(work);
+  Free(iwork);
+
+  h->circ_freq = circ;
+#endif
+
   h->window = L;
   h->length = N;
+
+  if (lcv) {
+    h->lcv = Calloc(L, double);
+    memcpy((void*)(h->lcv), lcv, L * sizeof(double));
+  } else {
+    h->lcv = NULL;
+  }
+
+  if (rcv) {
+    h->rcv = Calloc(K, double);
+    memcpy((void*)(h->rcv), rcv, K * sizeof(double));
+  } else {
+    h->rcv = NULL;
+  }
 }
 
 static void hankel_matmul(double* out,
@@ -103,6 +161,7 @@ static void hankel_matmul(double* out,
   const hankel_matrix *h = matrix;
   R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
+#if HAVE_FFTW3_H
   double *circ;
   fftw_complex *ocirc;
 
@@ -131,6 +190,63 @@ static void hankel_matmul(double* out,
 
   fftw_free(circ);
   fftw_free(ocirc);
+#else
+  double *work;
+  complex double *circ;
+  int *iwork, maxf, maxp;
+
+  /* Estimate the best plans for given input length */
+  fft_factor(N, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
+
+  /* Allocate needed memory */
+  circ = Calloc(N, complex double);
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  /* Fill the arrays */
+  for (i = 0; i < K; ++i)
+    circ[i] = v[K - i - 1];
+
+  /* Compute the FFT of the reversed vector v */
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+
+  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
+  for (i = 0; i < N; ++i)
+    circ[i] = circ[i] * h->circ_freq[i];
+
+  /* Compute the reverse transform to obtain result */
+  fft_factor(N, &maxf, &maxp);
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+
+  /* Cleanup and return */
+  for (i = 0; i < L; ++i)
+    out[i] = creal(circ[i]) / N;
+
+  Free(circ);
+  Free(work);
+  Free(iwork);
+#endif
+
+  /* Add shifts */
+  if (h->rcv) {
+    double rcv_in_p_v = 0;
+    for (i = 0; i < K; ++i)
+      rcv_in_p_v += h->rcv[i] * v[i];
+
+    for (i = 0; i < L; ++i)
+      out[i] -= rcv_in_p_v;
+  }
+
+  if (h->lcv) {
+    double sum_v = 0;
+    for (i = 0; i < K; ++i)
+      sum_v += v[i];
+
+    for (i = 0; i < L; ++i)
+      out[i] -= h->lcv[i] * sum_v;
+  }
 }
 
 static void hankel_tmatmul(double* out,
@@ -139,6 +255,7 @@ static void hankel_tmatmul(double* out,
   const hankel_matrix *h = matrix;
   R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
+#if HAVE_FFTW3_H
   double *circ;
   fftw_complex *ocirc;
 
@@ -167,7 +284,65 @@ static void hankel_tmatmul(double* out,
 
   fftw_free(circ);
   fftw_free(ocirc);
+#else
+  double *work;
+  complex double *circ;
+  int *iwork, maxf, maxp;
+
+  /* Estimate the best plans for given input length */
+  fft_factor(N, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
+
+  /* Allocate needed memory */
+  circ = Calloc(N, complex double);
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  /* Fill the arrays */
+  for (i = 0; i < L; ++i)
+    circ[i + K - 1] = v[L - i - 1];
+
+  /* Compute the FFT of the reversed vector v */
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+
+  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
+  for (i = 0; i < N; ++i)
+    circ[i] = circ[i] * h->circ_freq[i];
+
+  /* Compute the reverse transform to obtain result */
+  fft_factor(N, &maxf, &maxp);
+  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+
+  /* Cleanup and return */
+  for (i = 0; i < K; ++i)
+    out[i] = creal(circ[i + L - 1]) / N;
+
+  Free(circ);
+  Free(work);
+  Free(iwork);
+#endif
+
+  /* Add shifts */
+  if (h->lcv) {
+    double lcv_in_p_v = 0;
+    for (i = 0; i < L; ++i)
+      lcv_in_p_v += h->lcv[i] * v[i];
+
+    for (i = 0; i < K; ++i)
+      out[i] -= lcv_in_p_v;
+  }
+
+  if (h->rcv) {
+    double sum_v = 0;
+    for (i = 0; i < L; ++i)
+      sum_v += v[i];
+
+    for (i = 0; i < K; ++i)
+      out[i] -= h->rcv[i] * sum_v;
+  }
 }
+
 
 static R_INLINE void hankelize_fft(double *F,
                                    const double *U, const double *V,
@@ -175,6 +350,7 @@ static R_INLINE void hankelize_fft(double *F,
   R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1;
   R_len_t i;
+#if HAVE_FFTW3_H
   double *iU, *iV;
   fftw_complex *cU, *cV;
 
@@ -218,144 +394,7 @@ static R_INLINE void hankelize_fft(double *F,
   fftw_free(iV);
   fftw_free(cU);
   fftw_free(cV);
-}
 #else
-static void free_circulant(hankel_matrix *h) {
-  Free(h->circ_freq);
-}
-
-static void initialize_circulant(hankel_matrix *h,
-                                 const double *F, R_len_t N, R_len_t L) {
-  R_len_t K = N - L + 1, i;
-  int *iwork, maxf, maxp;
-  double *work;
-  complex double * circ;
-
-  /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
-
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
-
-  /* Fill input buffer */
-  for (i = K-1; i < N; ++i)
-    circ[i - K + 1] = F[i];
-
-  for (i = 0; i < K-1; ++i) {
-    circ[L + i] = F[i];
-  }
-
-  /* Run the FFT on input data */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
-
-  /* Cleanup and return */
-  Free(work);
-  Free(iwork);
-
-  h->circ_freq = circ;
-  h->window = L;
-  h->length = N;
-}
-
-static void hankel_matmul(double* out,
-                          const double* v,
-                          const void* matrix) {
-  const hankel_matrix *h = matrix;
-  R_len_t N = h->length, L = h->window;
-  R_len_t K = N - L + 1, i;
-  double *work;
-  complex double *circ;
-  int *iwork, maxf, maxp;
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
-
-  /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
-
-  /* Fill the arrays */
-  for (i = 0; i < K; ++i)
-    circ[i] = v[K - i - 1];
-
-  /* Compute the FFT of the reversed vector v */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
-
-  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
-  for (i = 0; i < N; ++i)
-    circ[i] = circ[i] * h->circ_freq[i];
-
-  /* Compute the reverse transform to obtain result */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
-
-  /* Cleanup and return */
-  for (i = 0; i < L; ++i)
-    out[i] = creal(circ[i]) / N;
-
-  Free(circ);
-  Free(work);
-  Free(iwork);
-}
-
-static void hankel_tmatmul(double* out,
-                           const double* v,
-                           const void* matrix) {
-  const hankel_matrix *h = matrix;
-  R_len_t N = h->length, L = h->window;
-  R_len_t K = N - L + 1, i;
-  double *work;
-  complex double *circ;
-  int *iwork, maxf, maxp;
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
-
-  /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
-
-  /* Fill the arrays */
-  for (i = 0; i < L; ++i)
-    circ[i + K - 1] = v[L - i - 1];
-
-  /* Compute the FFT of the reversed vector v */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
-
-  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
-  for (i = 0; i < N; ++i)
-    circ[i] = circ[i] * h->circ_freq[i];
-
-  /* Compute the reverse transform to obtain result */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
-
-  /* Cleanup and return */
-  for (i = 0; i < K; ++i)
-    out[i] = creal(circ[i + L - 1]) / N;
-
-  Free(circ);
-  Free(work);
-  Free(iwork);
-}
-
-static R_INLINE void hankelize_fft(double *F,
-                                   const double *U, const double *V,
-                                   const hankel_matrix *h) {
-  R_len_t N = h->length, L = h->window;
-  R_len_t K = N - L + 1;
-  R_len_t i;
   int maxf, maxp, *iwork;
   double *work;
   complex double *iU, *iV;
@@ -408,8 +447,8 @@ static R_INLINE void hankelize_fft(double *F,
   Free(iV);
   Free(work);
   Free(iwork);
-}
 #endif
+}
 
 /* This is just direct R-to-C translation  */
 static R_INLINE void hankelize(double *F,
@@ -469,14 +508,11 @@ static void hmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_hmat(SEXP F, SEXP window) {
-  R_len_t N, L;
+SEXP build_centered_hmat(const double *F, R_len_t N, R_len_t L,
+                         const double *lcv, const double *rcv) {
   hankel_matrix *h;
   ext_matrix *e;
   SEXP hmat;
-
-  N = length(F);
-  L = INTEGER(window)[0];
 
   /* Allocate memory */
   e = Calloc(1, ext_matrix);
@@ -488,7 +524,7 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
 
   /* Build toeplitz circulants for hankel matrix */
   h = Calloc(1, hankel_matrix);
-  initialize_circulant(h, REAL(F), N, L);
+  initialize_circulant(h, F, N, L, lcv, rcv);
   e->matrix = h;
 
   /* Make an external pointer envelope */
@@ -496,6 +532,14 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
   R_RegisterCFinalizer(hmat, hmat_finalizer);
 
   return hmat;
+}
+
+SEXP initialize_hmat(SEXP F, SEXP window) {
+  return build_centered_hmat(REAL(F), length(F), INTEGER(window)[0], NULL, NULL);
+}
+
+SEXP initialize_chmat(SEXP F, SEXP window, SEXP lcv, SEXP rcv) {
+  return build_centered_hmat(REAL(F), length(F), INTEGER(window)[0], REAL(lcv), REAL(rcv));
 }
 
 SEXP is_hmat(SEXP ptr) {

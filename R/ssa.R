@@ -1,20 +1,20 @@
 #   R package for Singular Spectrum Analysis
 #   Copyright (c) 2008, 2009 Anton Korobeynikov <asl@math.spbu.ru>
-#   
-#   This program is free software; you can redistribute it 
-#   and/or modify it under the terms of the GNU General Public 
-#   License as published by the Free Software Foundation; 
-#   either version 2 of the License, or (at your option) 
+#
+#   This program is free software; you can redistribute it
+#   and/or modify it under the terms of the GNU General Public
+#   License as published by the Free Software Foundation;
+#   either version 2 of the License, or (at your option)
 #   any later version.
 #
-#   This program is distributed in the hope that it will be 
-#   useful, but WITHOUT ANY WARRANTY; without even the implied 
-#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+#   This program is distributed in the hope that it will be
+#   useful, but WITHOUT ANY WARRANTY; without even the implied
+#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 #   PURPOSE.  See the GNU General Public License for more details.
-#   
-#   You should have received a copy of the GNU General Public 
-#   License along with this program; if not, write to the 
-#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
+#
+#   You should have received a copy of the GNU General Public
+#   License along with this program; if not, write to the
+#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
 fix.svd.method <- function(svd.method, L, N, ...) {
@@ -50,14 +50,16 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa",
+                    "both-centering-ssa", "row-centering-ssa"),
                 svd.method = c("nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
-  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
+  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa") ||
+      identical(kind, "both-centering-ssa") || identical(kind, "row-centering-ssa")) {
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x);
@@ -75,8 +77,8 @@ ssa <- function(x,
   }
 
   # Normalized the kind to be used
-  kind <- sub("-", ".", kind, fixed = TRUE)
-  
+  kind <- gsub("-", ".", kind, fixed = TRUE)
+
   # Create information body
   this <- list(length = N,
                window = L,
@@ -93,7 +95,7 @@ ssa <- function(x,
 
   # Save attributes
   .set(this, "Fattr", xattr);
-  
+
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
 
@@ -143,7 +145,8 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
     groups <- as.list(1:min(nlambda(x), nu(x)));
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups));
+  # `-Inf' added to suppress warning which raised when we pass empty groups
+  desired <- max(unlist(groups), -Inf);
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))
@@ -169,7 +172,7 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
     } else {
       # Do actual reconstruction (depending on method, etc)
       out[[i]] <- .do.reconstruct(x, new, env = e);
-  
+
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
         .set.series(x, out[[i]], new);
