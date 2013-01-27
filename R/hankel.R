@@ -81,7 +81,7 @@ new.hmat <- function(F,
   N <- length(F);
   storage.mode(F) <- "double";
   storage.mode(L) <- "integer";
-  h <- .Call("initialize_hmat", F, L);
+  h <- .Call("initialize_hmat", F, L, NULL, NULL);
 }
 
 hcols <- function(h) {
