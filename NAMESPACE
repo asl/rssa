@@ -27,6 +27,9 @@ export(clone,
        hcols,
        hrows,
        is.hmat,
+# Centered hankel matrix' routines
+       new.chmat,
+       chankel,
 # Hankel-block hankel matrix' routines
        new.hbhmat,
        hbhmatmul,
@@ -61,6 +64,7 @@ S3method("decompose", "toeplitz.ssa.svd")
 S3method("decompose", "toeplitz.ssa.eigen")
 S3method("decompose", "toeplitz.ssa.propack")
 S3method("decompose", "toeplitz.ssa.nutrlan")
+S3method("decompose", "both.centering.ssa")
 S3method("reconstruct", ssa)
 S3method("residuals", ssa)
 S3method("residuals", "ssa.reconstruction")
@@ -69,6 +73,10 @@ S3method("calc.v", "1d.ssa.propack")
 S3method("calc.v", "1d.ssa.svd")
 S3method("calc.v", "1d.ssa.eigen")
 S3method("calc.v", "2d.ssa")
+S3method("calc.v", "both.centering.ssa.svd")
+S3method("calc.v", "both.centering.ssa.eigen")
+S3method("calc.v", "both.centering.ssa.propack")
+S3method("calc.v", "both.centering.ssa.nutrlan")
 S3method("$", ssa)
 S3method("print", ssa)
 S3method("summary", ssa)
