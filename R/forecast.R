@@ -33,13 +33,23 @@ check.for.groups <- function(use.group = TRUE) {
 
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U);
-  lpf <- U %*% t(U[N, , drop = FALSE]);
 
-  divider <- 1 - lpf[N]
-  if (divider < eps)
-    stop("Verticality coefficient equals to 1");
+  out <- if (ncol(U) == 0) {
+    rep(0, N - 1)
+  } else {
+    lpf <- U %*% t(U[N, , drop = FALSE]);
 
-  lpf[-N] / divider
+    divider <- 1 - lpf[N]
+    if (divider < eps)
+      stop("Verticality coefficient equals to 1");
+
+    out <- lpf[-N] / divider
+  }
+
+  # Set zero offset by default
+  attr(out, "offset") <- 0
+
+  out
 }
 
 lrr.1d.ssa <- function(x, group, ...) {
@@ -49,7 +59,7 @@ lrr.1d.ssa <- function(x, group, ...) {
   check.for.groups(use.group = TRUE)
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(group)
+  desired <- max(group, -Inf)
 
   # Continue decomposition, if necessary
   if (desired > nu(x))
@@ -110,10 +120,13 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   if (r > N)
     stop("Wrong length of LRR")
 
+  # Extract offset
+  b <- attr(lrr, "offset")
+
   # Run the actual LRR
   F <- c(F, rep(NA, len))
   for (i in 1:len)
-    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr)
+    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr) + b
 
   if (only.new) F[(N+1):(N+len)] else F
 }
