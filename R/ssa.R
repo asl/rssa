@@ -143,7 +143,7 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
     groups <- as.list(1:min(nlambda(x), nu(x)));
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups));
+  desired <- max(unlist(groups), -Inf);
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))

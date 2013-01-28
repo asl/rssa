@@ -219,7 +219,7 @@ decompose.1d.ssa.nutrlan <- function(x,
   U <- .get(x, "U")[, idx, drop = FALSE];
   h <- .get(x, "hmat");
 
-  invisible(sapply(1:length(idx),
+  invisible(sapply(seq_along(idx),
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
 
@@ -244,7 +244,7 @@ decompose.1d.ssa.nutrlan <- function(x,
   lambda <- .get(x, "lambda")[idx];
   U <- .get(x, "U")[, idx, drop = FALSE];
 
-  invisible(sapply(1:length(idx),
+  invisible(sapply(seq_along(idx),
                    function(i) crossprod(X, U[, i]) / lambda[i]));
 }
 
