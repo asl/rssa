@@ -360,6 +360,7 @@ forecast.1d.ssa <- function(object,
 "lrr.toeplitz.ssa" <- `lrr.1d.ssa`;
 "vforecast.toeplitz.ssa" <- `vforecast.1d.ssa`;
 "rforecast.toeplitz.ssa" <- `rforecast.1d.ssa`;
+"rforecast.row.centering.ssa" <- `rforecast.1d.ssa`
 "bforecast.toeplitz.ssa" <- `bforecast.1d.ssa`;
 "forecast.toeplitz.ssa" <- `forecast.1d.ssa`;
 "predict.toeplitz.ssa" <- `predict.1d.ssa`;

@@ -370,3 +370,17 @@ reconstruct.row.centering.ssa <- function(x, groups, ..., drop = FALSE, cache = 
 
   invisible(out);
 }
+
+lrr.row.centering.ssa <- function(x, group) {
+  # Calculate the LRR corresponding to trival group
+  SVD.group <- group[group > 0]
+  res <- lrr.1d.ssa(x, group = SVD.group)
+
+  # Calculate offset
+  L <- x$window
+  K <- x$length - L + 1
+  Eps <- .get(x, "u1") / sqrt(K) * .get(x, "lam1")
+  attr(res, "offset") <- Eps[L] - sum(Eps[-L] * res)
+
+  res
+}
