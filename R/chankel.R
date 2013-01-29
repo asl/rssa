@@ -384,3 +384,82 @@ lrr.row.centering.ssa <- function(x, group) {
 
   res
 }
+
+vforecast.row.centering.ssa <- function(x, groups, len = 1,
+                                        only.new = TRUE,
+                                        ...,
+                                        drop = FALSE) {
+  L <- x$window
+  K <- x$length - L + 1
+  N <- K + L - 1 + len + L - 1
+  N.res <- K + L - 1 + len
+
+  if (missing(groups))
+    groups <- as.list(0:min(nlambda(x), nu(x)))
+
+  check.for.groups(use.group = FALSE)
+
+  # Determine the upper bound of desired eigentriples
+  desired <- max(max(unlist(groups)), min(20, L, K))
+
+  # Continue decomposition, if necessary
+  if (desired > min(nlambda(x), nu(x)))
+    decompose(x, ..., neig = desired)
+
+  lambda <- .get(x, "lambda")
+  U <- .get(x, "U")
+
+  V <- if (nv(x) >= desired) .get(x, "V") else NULL
+  u1 <- .get(x, "u1");
+  v1 <- .get(x, "v1");
+  lambda1 <- .get(x, "lam1");
+
+  # Make hankel matrix for fast hankelization (we use it for plan)
+  h <- new.hmat(double(N), L)
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+    group[group <= 0] <- -1;
+    if (!-1 %in% group) {
+      warning("group doesn't contain centering component");
+      group <- c(group, -1);
+      # Annul component for remove it. So we will take simple vector forecast
+      lambda1 <- 0;
+    }
+    group <- unique(group);
+    SVD.group <- group[group > 0];
+
+    Uet <- cbind(u1, U[, SVD.group, drop = FALSE])
+    # Vet <- cbind(v1, if (is.null(V)) calc.v(x, idx = SVD.group) else V[, SVD.group, drop = FALSE])
+    # Some cane for group = c(0) works
+    Vet <- cbind(v1, if (is.null(V)) unlist(calc.v(x, idx = SVD.group)) else V[, SVD.group, drop = FALSE])
+
+    Z <- rbind(t(c(lambda1, lambda[SVD.group]) * t(Vet)), matrix(NA, len + L - 1, length(group)))
+
+    U.head <- Uet[-L, , drop = FALSE]
+    U.tail <- Uet[-1, , drop = FALSE]
+    Pi <- Uet[L, -1]
+    tUhUt <- t(U.head[, -1, drop = FALSE]) %*% cbind(u1[-L], U.tail)
+    pre.P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt)
+    P <- rbind(0, pre.P[ , -1, drop = FALSE])
+    b <- lambda1 / sqrt(K) * c(1, -pre.P[ , 1])
+
+    for (j in (K + 1):(K + len + L - 1)) {
+      Z[j, ] <- P %*% Z[j - 1, ] + b
+    }
+
+    res <- double(N)
+    for (j in seq_along(group)) {
+      res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], h)
+    }
+
+    out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop)
+  }
+
+  names(out) <- paste(sep = "", "F", 1:length(groups))
+
+  # Forecasted series can be pretty huge...
+  invisible(out)
+}
