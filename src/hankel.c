@@ -42,6 +42,8 @@ typedef struct {
 #endif
   R_len_t window;
   R_len_t length;
+  const double *lcv;
+  const double *rcv;
 } hankel_matrix;
 
 static unsigned hankel_nrow(const void *matrix) {
@@ -54,15 +56,88 @@ static unsigned hankel_ncol(const void *matrix) {
   return h->length - h->window + 1;
 }
 
+static void free_cvs(hankel_matrix *h) {
+  Free(h->lcv);
+  Free(h->rcv);
+}
+
+static void store_cvs(hankel_matrix *h,
+                      R_len_t L, const double *lcv,
+                      R_len_t K, const double *rcv) {
+  if (lcv) {
+    h->lcv = Calloc(L, double);
+    memcpy((void*)(h->lcv), lcv, L * sizeof(double));
+  } else {
+    h->lcv = NULL;
+  }
+
+  if (rcv) {
+    h->rcv = Calloc(K, double);
+    memcpy((void*)(h->rcv), rcv, K * sizeof(double));
+  } else {
+    h->rcv = NULL;
+  }
+}
+
+static void mul_cvs(const hankel_matrix *h, const double *v,
+                    R_len_t L, R_len_t K,
+                    double *out) {
+  if (h->rcv) {
+    double rcv_in_p_v = 0;
+    for (int j = 0; j < K; ++j)
+      rcv_in_p_v += h->rcv[j] * v[j];
+
+    for (int i = 0; i < L; ++i)
+      out[i] -= rcv_in_p_v;
+  }
+
+  if (h->lcv) {
+    double sum_v = 0;
+    for (int j = 0; j < K; ++j)
+      sum_v += v[j];
+
+    for (int i = 0; i < L; ++i)
+      out[i] -= h->lcv[i] * sum_v;
+  }
+}
+
+static void tmul_cvs(const hankel_matrix *h, const double *v,
+                     R_len_t L, R_len_t K,
+                     double *out) {
+  if (h->lcv) {
+    double lcv_in_p_v = 0;
+    for (int i = 0; i < L; ++i)
+      lcv_in_p_v += h->lcv[i] * v[i];
+
+    for (int j = 0; j < K; ++j)
+      out[j] -= lcv_in_p_v;
+  }
+
+  if (h->rcv) {
+    double sum_v = 0;
+    for (int i = 0; i < L; ++i)
+      sum_v += v[i];
+
+    for (int j = 0; j < K; ++j)
+      out[j] -= h->rcv[j] * sum_v;
+  }
+}
+
+
+
 #if HAVE_FFTW3_H
 static void free_circulant(hankel_matrix *h) {
   fftw_free(h->circ_freq);
   fftw_destroy_plan(h->r2c_plan);
   fftw_destroy_plan(h->c2r_plan);
+
+  /* Free CVs */
+  free_cvs(h);
 }
 
 static void initialize_circulant(hankel_matrix *h,
-                                 const double *F, R_len_t N, R_len_t L) {
+                                 const double *F, R_len_t N, R_len_t L,
+                                 const double *lcv, const double *rcv) {
   R_len_t K = N - L + 1, i;
   fftw_complex *ocirc;
   fftw_plan p1, p2;
@@ -95,6 +170,9 @@ static void initialize_circulant(hankel_matrix *h,
   h->c2r_plan = p2;
   h->window = L;
   h->length = N;
+
+  /* Store CVs */
+  store_cvs(h, L, lcv, K, rcv);
 }
 
 static void hankel_matmul(double* out,
@@ -131,6 +209,9 @@ static void hankel_matmul(double* out,
 
   fftw_free(circ);
   fftw_free(ocirc);
+
+  /* Add multiplications by CVs */
+  mul_cvs(h, v, L, K, out);
 }
 
 static void hankel_tmatmul(double* out,
@@ -167,6 +248,9 @@ static void hankel_tmatmul(double* out,
 
   fftw_free(circ);
   fftw_free(ocirc);
+
+  /* Add multiplications by CVs */
+   tmul_cvs(h, v, L, K, out);
 }
 
 static R_INLINE void hankelize_fft(double *F,
@@ -222,10 +306,13 @@ static R_INLINE void hankelize_fft(double *F,
 #else
 static void free_circulant(hankel_matrix *h) {
   Free(h->circ_freq);
+  /* Free CVs */
+  free_cvs(h);
 }
 
 static void initialize_circulant(hankel_matrix *h,
-                                 const double *F, R_len_t N, R_len_t L) {
+                                 const double *F, R_len_t N, R_len_t L,
+                                 const double *lcv, const double *rcv) {
   R_len_t K = N - L + 1, i;
   int *iwork, maxf, maxp;
   double *work;
@@ -260,6 +347,9 @@ static void initialize_circulant(hankel_matrix *h,
   h->circ_freq = circ;
   h->window = L;
   h->length = N;
+
+  /* Store CVs */
+  store_cvs(h, L, lcv, K, rcv);
 }
 
 static void hankel_matmul(double* out,
@@ -304,6 +394,9 @@ static void hankel_matmul(double* out,
   Free(circ);
   Free(work);
   Free(iwork);
+
+  /* Add multiplications by CVs */
+  mul_cvs(h, v, L, K, out);
 }
 
 static void hankel_tmatmul(double* out,
@@ -348,6 +441,9 @@ static void hankel_tmatmul(double* out,
   Free(circ);
   Free(work);
   Free(iwork);
+
+  /* Add multiplications by CVs */
+  tmul_cvs(h, v, L, K, out);
 }
 
 static R_INLINE void hankelize_fft(double *F,
@@ -469,7 +565,7 @@ static void hmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_hmat(SEXP F, SEXP window) {
+SEXP initialize_hmat(SEXP F, SEXP window, SEXP lcv, SEXP rcv) {
   R_len_t N, L;
   hankel_matrix *h;
   ext_matrix *e;
@@ -488,7 +584,9 @@ SEXP initialize_hmat(SEXP F, SEXP window) {
 
   /* Build toeplitz circulants for hankel matrix */
   h = Calloc(1, hankel_matrix);
-  initialize_circulant(h, REAL(F), N, L);
+  double *p_lcv = TYPEOF(lcv) == NILSXP ? NULL : REAL(lcv);
+  double *p_rcv = TYPEOF(rcv) == NILSXP ? NULL : REAL(rcv);
+  initialize_circulant(h, REAL(F), N, L, p_lcv, p_rcv);
   e->matrix = h;
 
   /* Make an external pointer envelope */

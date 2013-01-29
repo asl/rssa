@@ -5,6 +5,8 @@
 \alias{hrows}
 \alias{hankel}
 \alias{hmatmul}
+\alias{new.chmat}
+\alias{chankel}
 
 \title{Hankel matrices operations.}
 
@@ -19,6 +21,8 @@ is.hmat(h)
 hcols(h)
 hrows(h)
 hmatmul(hmat, v, transposed = FALSE)
+new.chmat(F, L, lcv, rcv)
+chankel(F, L, lcv, rcv)
 }
 
 \arguments{
@@ -28,6 +32,7 @@ hmatmul(hmat, v, transposed = FALSE)
   \item{transposed}{logical, if 'TRUE' the multiplication is performed
     with the transposed matrix.}
   \item{v}{vector to multiply with.}
+  \item{lcv, rcv}{left and right raw centering vectors.}
 }
 
 \details{
