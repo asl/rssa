@@ -46,7 +46,9 @@ export(clone,
        vforecast,
        bforecast,
 # Period estimation
-       parestimate
+       parestimate,
+# Gap filling and rank estimation
+       cadzow
        )
 
 S3method("clone", ssa)
@@ -98,3 +100,4 @@ S3method("bforecast", "1d.ssa")
 S3method("bforecast", "toeplitz.ssa")
 S3method("parestimate", "1d.ssa")
 S3method("parestimate", "toeplitz.ssa")
+S3method("cadzow", "ssa")
