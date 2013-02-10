@@ -122,7 +122,7 @@ precache <- function(x, n, ...) {
   for (idx in new) {
     # Do actual reconstruction (depending on method, etc)
     .set.series(x,
-                .do.reconstruct(x, idx, env = e), idx);
+                .elseries(x, idx, env = e), idx);
   }
 
   # Cleanup
@@ -168,7 +168,7 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
       out[[i]] <- numeric(prod(x$length));
     } else {
       # Do actual reconstruction (depending on method, etc)
-      out[[i]] <- .do.reconstruct(x, new, env = e);
+      out[[i]] <- .elseries(x, new, env = e);
   
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
@@ -190,7 +190,7 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
   rnew <- setdiff(rgroups, info)
   residuals <- residuals - .get.series(x, rcached)
   if (length(rnew))
-    residuals <- residuals - .do.reconstruct(x, rnew, env = e)
+    residuals <- residuals - .elseries(x, rnew, env = e)
 
   # Propagate attributes of residuals
   attributes(residuals) <- .get(x, "Fattr");
@@ -222,9 +222,9 @@ residuals.ssa.reconstruction <- function(object, ...) {
   attr(object, "residuals")
 }
 
-.do.reconstruct <- function(x, idx, env = .GlobalEnv) {
+.elseries.default <- function(x, idx, ..., env = .GlobalEnv) {
   if (max(idx) > nlambda(x))
-    stop("Too few eigentriples computed for this decompostion")
+    stop("Too few eigentriples computed for this decomposition")
 
   lambda <- .get(x, "lambda");
   U <- .get(x, "U");
