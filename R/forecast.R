@@ -151,7 +151,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
-    r <- reconstruct(x, groups = groups, ..., drop = FALSE, cache = cache)
+    r <- reconstruct(x, groups = groups, ..., cache = cache)
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -253,7 +253,7 @@ bforecast.1d.ssa <- function(x, groups,
   for (i in seq_along(groups)) {
     group <- groups[[i]]
     # First, perform the reconstruction and calculate the residuals.
-    r <- reconstruct(x, groups = list(group), ..., drop = FALSE, cache = cache)
+    r <- reconstruct(x, groups = list(group), ..., cache = cache)
     stopifnot(length(r) == 1)
     res <- residuals(r)
 
@@ -320,7 +320,8 @@ forecast.1d.ssa <- function(object,
   out <- list()
   for (i in seq_along(groups)) {
     # Perform the reconstruction. We cannot do all-at-once, because we need proper residuals as well.
-    r <- reconstruct(object, groups = groups[i], ..., drop = TRUE, drop.attributes = drop.attributes, cache = cache)
+    r <- reconstruct(object, groups = groups[i], ..., drop.attributes = drop.attributes, cache = cache)
+    stopifnot(length(r) == 1)
 
     res <- list(model = object,
                 method = switch(method,
@@ -328,7 +329,7 @@ forecast.1d.ssa <- function(object,
                                 recurrent = "SSA (vector)",
                                 `bootstrap-recurrent` = "SSA (bootstrap recurrent)",
                                 `bootstrap-vector` = "SSA (bootstrap vector)"),
-                fitted = r,
+                fitted = r[[1]],
                 residuals = residuals(r),
                 x = F)
     # Handle bootstrap forecast separately

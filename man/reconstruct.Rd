@@ -9,7 +9,7 @@
 }
 
 \usage{
-\method{reconstruct}{ssa}(x, groups, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{reconstruct}{ssa}(x, groups, \dots, drop.attributes = FALSE, cache = TRUE)
 }
 
 \arguments{
@@ -18,8 +18,6 @@
     used for reconstruction.}
   \item{\dots}{further arguments passed to routines (e.g. to
     \code{decompose} routine if the continuation is desired).}
-  \item{drop}{logical, if 'TRUE' then the result is coerced to series
-    itself, when possible (length of 'groups' is one)}
   \item{drop.attributes}{logical, if 'TRUE' then the attributes of the
     input series are not copied to the reconstructed ones.}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
@@ -29,9 +27,6 @@
 \value{
   List of vectors of reconstructed series. Elements of the list are
   named 'F1', 'F2', and so on.
-
-  Reconstructed series itself, if length of groups is one and 'drop
-  = TRUE'.
 }
 
 \note{

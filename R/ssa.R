@@ -137,7 +137,7 @@ cleanup <- function(x) {
 }
 
 reconstruct.ssa <- function(x, groups, ...,
-                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+                            drop.attributes = FALSE, cache = TRUE) {
   out <- list();
 
   if (missing(groups))
@@ -185,8 +185,6 @@ reconstruct.ssa <- function(x, groups, ...,
 
   # Set names and drop the dimension, if necessary
   names(out) <- paste("F", 1:length(groups), sep="");
-  if (length(out) == 1 && drop)
-    out <- out[[1]]
 
   # Calculate the residuals
   residuals <- .get(x, "F")
