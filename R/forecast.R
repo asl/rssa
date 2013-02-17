@@ -338,7 +338,7 @@ forecast.1d.ssa <- function(object,
       res$lower <- f[, seq(from = 2, by = 1, length.out = nbnd)]
       res$upper <- f[, seq(from = 2 + nbnd, by = 1, length.out = nbnd)]
       # HACK! Need to change if bforecast defaults will be changed!
-      if (is.element("level", names(dots))) res$level <- dots$level else res$level <- 0.95
+      if (is.element("level", names(dots))) res$level <- 100*dots$level else res$level <- 100*0.95
     } else {
       res$mean <- f
     }
