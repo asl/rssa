@@ -53,6 +53,8 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
 
   if (length(out) == 1 && drop)
     out <- out[[1]]
+
+  out
 }
 
 companion.matrix.lrr <- function(x) {
@@ -153,21 +155,21 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   if (identical(base, "reconstructed"))
     r <- reconstruct(x, groups = groups, ..., cache = cache)
 
+  # Calculate the LRR corresponding to groups
+  lf <- lrr(x, groups = groups, drop = FALSE)
+  stopifnot(length(lf) == length(groups))
+
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
-    # Calculate the LRR corresponding to group
-    lf <- lrr(x, group)
-
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
-                          lf, len, only.new = only.new)
+                          lf[[i]], len, only.new = only.new)
     out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop.attributes)
   }
 
   names(out) <- paste(sep = "", "F", 1:length(groups))
-
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -264,8 +266,8 @@ bforecast.1d.ssa <- function(x, groups,
       .set(s, "Fattr", attributes(F))
       do.call(forecast.fun,
               c(list(s,
-                     groups = list(group), len = len, only.new = TRUE),
-                dots))[[1]]
+                     groups = list(group), len = len, drop = TRUE, only.new = TRUE),
+                dots))
     }
 
     # Do the actual bootstrap forecast
