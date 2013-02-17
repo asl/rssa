@@ -11,21 +11,23 @@
 }
 
 \usage{
-\method{bforecast}{1d.ssa}(x, group, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), \dots, drop = FALSE, cache = TRUE)
-\method{bforecast}{toeplitz.ssa}(x, group, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), \dots, drop = FALSE, cache = TRUE)
+\method{bforecast}{1d.ssa}(x, groups, len = 1, R = 100, level = 0.95,
+          type = c("recurrent", "vector"), \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{bforecast}{toeplitz.ssa}(x, groups, len = 1, R = 100, level = 0.95,
+          type = c("recurrent", "vector"), \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
-  \item{group}{vector of integers, numbers of eigentriples to be used in the forecast}
+  \item{groups}{list, the grouping of eigentriples to be used in the forecast}
   \item{len}{the desired length of the forecasted series}
   \item{R}{number of bootstrap replications}
   \item{level}{vector of confidence levels for bounds}
   \item{type}{the type of forecast method to be used during bootstrapping}
   \item{\dots}{additional arguments passed to forecasting routines}
-  \item{drop}{logical, if 'TRUE' then the attributes of the input series
+  \item{drop}{logical, if 'TRUE' then the result is coerced to series
+    itself, when possible (length of 'groups' is one)}
+  \item{drop.attributes}{logical, if 'TRUE' then the attributes of the input series
     are not copied to the reconstructed ones}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object}
@@ -42,10 +44,12 @@
 }
 
 \value{
-  Matrix with 1 + 2*length(level) columns and 'len' rows. First
-  column contains the forecasted values, remaining columns ---
-  low and upper bootstrap confidence bounds for average forecasted
-  values.
+  List of matricies. Each matrix has 1 + 2*length(level) columns and
+  'len' rows. First column contains the forecasted values, remaining
+  columns --- low and upper bootstrap confidence bounds for average
+  forecasted values.
+
+  The matrix itself, if length of groups is one and 'drop = TRUE'.
 }
 
 \seealso{
@@ -60,6 +64,6 @@
 s <- ssa(co2)
 # Produce 24 forecasted values and confidence bounds of the series using
 # the first 3 eigentriples as a base space for the forecast.
-f <- bforecast(s, group = 1:3, len = 24, R = 50)
+f <- bforecast(s, groups = list(1:3), len = 24, R = 50)
 matplot(f, col = c("black", "red", "red"), type='l')
 }

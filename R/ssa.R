@@ -1,20 +1,20 @@
 #   R package for Singular Spectrum Analysis
 #   Copyright (c) 2008, 2009 Anton Korobeynikov <asl@math.spbu.ru>
-#   
-#   This program is free software; you can redistribute it 
-#   and/or modify it under the terms of the GNU General Public 
-#   License as published by the Free Software Foundation; 
-#   either version 2 of the License, or (at your option) 
+#
+#   This program is free software; you can redistribute it
+#   and/or modify it under the terms of the GNU General Public
+#   License as published by the Free Software Foundation;
+#   either version 2 of the License, or (at your option)
 #   any later version.
 #
-#   This program is distributed in the hope that it will be 
-#   useful, but WITHOUT ANY WARRANTY; without even the implied 
-#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+#   This program is distributed in the hope that it will be
+#   useful, but WITHOUT ANY WARRANTY; without even the implied
+#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 #   PURPOSE.  See the GNU General Public License for more details.
-#   
-#   You should have received a copy of the GNU General Public 
-#   License along with this program; if not, write to the 
-#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
+#
+#   You should have received a copy of the GNU General Public
+#   License along with this program; if not, write to the
+#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
 fix.svd.method <- function(svd.method, L, N, ...) {
@@ -76,7 +76,7 @@ ssa <- function(x,
 
   # Normalized the kind to be used
   kind <- sub("-", ".", kind, fixed = TRUE)
-  
+
   # Create information body
   this <- list(length = N,
                window = L,
@@ -93,7 +93,7 @@ ssa <- function(x,
 
   # Save attributes
   .set(this, "Fattr", xattr);
-  
+
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
 
@@ -136,7 +136,8 @@ cleanup <- function(x) {
   invisible(gc(verbose = FALSE));
 }
 
-reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
+reconstruct.ssa <- function(x, groups, ...,
+                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   out <- list();
 
   if (missing(groups))
@@ -169,7 +170,7 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
     } else {
       # Do actual reconstruction (depending on method, etc)
       out[[i]] <- .elseries(x, new, env = e);
-  
+
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
         .set.series(x, out[[i]], new);
@@ -181,6 +182,11 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
     # Propagate attributes (e.g. dimension for 2d-SSA)
     attributes(out[[i]]) <- .get(x, "Fattr");
   }
+
+  # Set names and drop the dimension, if necessary
+  names(out) <- paste("F", 1:length(groups), sep="");
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
 
   # Calculate the residuals
   residuals <- .get(x, "F")
@@ -195,7 +201,7 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
   # Propagate attributes of residuals
   attributes(residuals) <- .get(x, "Fattr");
   F <- .get(x, "F")
-  if (!drop)
+  if (!drop.attributes)
     attributes(F) <- .get(x, "Fattr")
 
   # Cleanup
@@ -203,7 +209,6 @@ reconstruct.ssa <- function(x, groups, ..., drop = FALSE, cache = TRUE) {
      envir = e, inherits = FALSE);
   gc(verbose = FALSE);
 
-  names(out) <- paste("F", 1:length(groups), sep="");
   attr(out, "residuals") <- residuals;
   attr(out, "series") <- F;
 

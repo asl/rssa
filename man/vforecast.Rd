@@ -11,8 +11,8 @@
 }
 
 \usage{
-\method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = FALSE)
-\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = FALSE)
+\method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE)
+\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE)
 }
 
 \arguments{
@@ -23,7 +23,9 @@
     whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
-  \item{drop}{logical, if 'TRUE' then the attributes of the input series
+  \item{drop}{logical, if 'TRUE' then the result is coerced to series
+    itself, when possible (length of 'groups' is one)}
+  \item{drop.attributes}{logical, if 'TRUE' then the attributes of the input series
     are not copied to the reconstructed ones.}
 }
 
@@ -41,6 +43,8 @@
 \value{
   List of vectors of forecasted series. Elements of the list are
   named 'F1', 'F2', and so on.
+
+  The series itself, if length of groups is one and 'drop = TRUE'.
 }
 
 \seealso{

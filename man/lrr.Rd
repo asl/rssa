@@ -15,8 +15,8 @@
 }
 
 \usage{
-\method{lrr}{1d.ssa}(x, group, \dots)
-\method{lrr}{toeplitz.ssa}(x, group, \dots)
+\method{lrr}{1d.ssa}(x, groups, \dots, drop = TRUE)
+\method{lrr}{toeplitz.ssa}(x, groups, \dots, drop = TRUE)
 \method{lrr}{default}(U, eps = sqrt(.Machine$double.eps), \dots)
 \method{roots}{lrr}(x, ..., method = c("companion", "polyroot"))
 \method{plot}{lrr}(x, ..., raw = FALSE)
@@ -25,9 +25,11 @@
 \arguments{
   \item{x}{SSA object holding the decomposition for \code{lrr} call or 'lrr'
     object itself for other function calls}
-  \item{group}{indices of eigenvectors used to derive the LRR}
+  \item{groups}{list, the grouping of eigentriples used to derive the LRR}
   \item{\dots}{further arguments to be passed to \code{decompose} or
     \code{plot} call, if necessary}
+  \item{drop}{logical, if 'TRUE' then the result is coerced to lrr object
+    itself, when possible (length of 'groups' is one)}
   \item{U}{Matrix containing the orthonormal basis vectors in columns}
   \item{eps}{Tolerance for verticality checking}
   \item{method}{methods used for calculation of the polynomial roots: via eigenvalues
@@ -57,7 +59,8 @@
 }
 
 \value{
-  Object of class 'lrr' for \code{lrr} function call.
+  List of object of class 'lrr' for \code{lrr} function call. Or the
+  object itself if 'drop = TRUE' and groups has length one.
 
   Vector with the roots of the of the characteristic
   polynomial of the LRR for \code{roots} function call. Roots are
@@ -68,7 +71,7 @@
 # Decompose 'co2' series with default parameters
 s <- ssa(co2, L = 24)
 # Calculate the LRR out of first 3 eigentriples
-l <- lrr(s, group = c(1:3))
+l <- lrr(s, groups = list(1:3))
 # Calculate the roots of the LRR
 r <- roots(l)
 # Moduli of the roots

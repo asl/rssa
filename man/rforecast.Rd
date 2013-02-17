@@ -12,9 +12,9 @@
 
 \usage{
 \method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, \dots, drop = FALSE, cache = TRUE)
+          only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, \dots, drop = FALSE, cache = TRUE)
+          only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 
 \arguments{
@@ -27,7 +27,9 @@
     whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}}
     routines}
-  \item{drop}{logical, if 'TRUE' then the attributes of the input series
+  \item{drop}{logical, if 'TRUE' then the result is coerced to series
+    itself, when possible (length of 'groups' is one)}
+  \item{drop.attributes}{logical, if 'TRUE' then the attributes of the input series
     are not copied to the reconstructed ones.}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}
@@ -56,6 +58,8 @@
 \value{
   List of vectors of forecasted series. Elements of the list are
   named 'F1', 'F2', and so on.
+
+  The series itself, if length of groups is one and 'drop = TRUE'.
 }
 
 \seealso{
