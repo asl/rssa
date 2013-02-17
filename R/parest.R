@@ -40,26 +40,33 @@ parestimate.esprit <- function(U) {
   list(periods=2*pi/Arg(r), moduli = Mod(r))
 }
 
-parestimate.1d.ssa <- function(x, group,
+parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
                                ...,
-                               method = c("pairs", "esprit-ls")) {
+                               drop = TRUE) {
   method <- match.arg(method)
 
   # Determine the upper bound of desired eigentriples
-  group <- unlist(group)
-  desired <- max(group)
+  desired <- max(unlist(groups))
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))
     decompose(x, ..., neig = desired)
 
-  if (identical(method, "pairs")) {
-    if (length(group) != 2)
-      stop("can estimate for pair of eigenvectors only using `pairs' method")
-    parestimate.pairs(x$U[, group])
-  } else if (identical(method, "esprit-ls")) {
-    parestimate.esprit(x$U[, group])
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+    if (identical(method, "pairs")) {
+      if (length(group) != 2)
+        stop("can estimate for pair of eigenvectors only using `pairs' method")
+      res <- parestimate.pairs(x$U[, group])
+    } else if (identical(method, "esprit-ls")) {
+      res <- parestimate.esprit(x$U[, group])
+    }
+    out[[i]] <- res
   }
+
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
 }
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`

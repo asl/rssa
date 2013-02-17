@@ -142,7 +142,7 @@ panel.series <- function(x, y, recon, ...) {
   idx <- seq_along(groups);
   d <- data.frame(A = idx, B = idx);
 
-  r <- reconstruct(x, groups = groups);
+  r <- reconstruct(x, groups = groups, drop = FALSE);
 
   # Provide convenient defaults
   dots <- .defaults(dots, "type", "l");

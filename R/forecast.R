@@ -18,19 +18,6 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-check.for.groups <- function(use.group = TRUE) {
-  # R magic to extract the call to parent function
-  call <- as.list(match.call(definition = sys.function(-1),
-                             call = sys.call(sys.parent())))
-  if (use.group) {
-    if (!is.null(call[["groups"]]))
-      stop("`groups' found in the arguments, however function expect `group'")
-  } else {
-    if (!is.null(call[["group"]]))
-      warning("`group' found in the arguments, however function expect `groups'")
-  }
-}
-
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U);
 
@@ -52,25 +39,30 @@ lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   out
 }
 
-lrr.1d.ssa <- function(x, group, ...) {
-  if (missing(group))
-    group <- 1:min(nlambda(x), nu(x))
-
-  check.for.groups(use.group = TRUE)
+lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
+  if (missing(groups))
+    groups <- 1:min(nlambda(x), nu(x))
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(group, -Inf)
+  desired <- max(unlist(groups), -Inf)
 
   # Continue decomposition, if necessary
   if (desired > nu(x))
     decompose(x, ..., neig = desired)
 
-  U <- .get(x, "U")[, group, drop = FALSE]
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+    U <- .get(x, "U")[, group, drop = FALSE]
 
-  res <- lrr.default(U, ...)
-  class(res) <- "lrr"
+    res <- lrr.default(U, ...)
+    class(res) <- "lrr"
 
-  res
+    out[[i]] <- res
+  }
+
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
 }
 
 companion.matrix.lrr <- function(x) {
@@ -155,15 +147,13 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                              base = c("reconstructed", "original"),
                              only.new = TRUE,
                              ...,
-                             drop = FALSE, cache = TRUE) {
+                             drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   L <- x$window
   K <- x$length - L + 1
 
   base <- match.arg(base)
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
-
-  check.for.groups(use.group = FALSE)
 
   # Determine the upper bound of desired eigentriples
   desired <- max(max(unlist(groups)), min(20, L, K))
@@ -186,10 +176,13 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
                           lf, len, only.new = only.new)
-    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop)
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop.attributes)
   }
 
   names(out) <- paste(sep = "", "F", 1:length(groups))
+
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
 
   # Forecasted series can be pretty huge...
   invisible(out)
@@ -198,7 +191,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
 vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...,
-                             drop = FALSE) {
+                             drop = TRUE, drop.attributes = FALSE) {
   L <- x$window
   K <- x$length - L + 1
   N <- K + L - 1 + len + L - 1
@@ -206,8 +199,6 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
 
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
-
-  check.for.groups(use.group = FALSE)
 
   # Determine the upper bound of desired eigentriples
   desired <- max(max(unlist(groups)), min(20, L, K))
@@ -249,112 +240,131 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
     }
 
     out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
-    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop)
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop.attributes)
   }
 
   names(out) <- paste(sep = "", "F", 1:length(groups))
+
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
 
   # Forecasted series can be pretty huge...
   invisible(out)
 }
 
-bforecast.1d.ssa <- function(x, group,
+bforecast.1d.ssa <- function(x, groups,
                              len = 1, R = 100, level = 0.95,
                              type = c("recurrent", "vector"),
                              ...,
-                             drop = FALSE, cache = TRUE) {
+                             drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   type <- match.arg(type)
-  check.for.groups(use.group = TRUE)
   dots <- list(...)
+  if (missing(groups))
+    groups <- list(1:min(nlambda(x), nu(x)))
 
-  # First, perform the reconstruction and calculate the residuals.
-  r <- reconstruct(x, groups = list(group), ..., cache = cache)
-  stopifnot(length(r) == 1)
-  res <- residuals(r)
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+    # First, perform the reconstruction and calculate the residuals.
+    r <- reconstruct(x, groups = list(group), ..., cache = cache)
+    stopifnot(length(r) == 1)
+    res <- residuals(r)
 
-  forecast.fun <- if (identical(type, "recurrent")) rforecast else vforecast
-  boot.forecast <- function(F, base) {
-    s <- clone(base, copy.cache = FALSE, copy.storage = FALSE)
-    .set(s, "F", F)
-    .set(s, "Fattr", attributes(F))
-    do.call(forecast.fun,
-            c(list(s,
-                   groups = list(group), len = len, only.new = TRUE),
-              dots))[[1]]
+    forecast.fun <- if (identical(type, "recurrent")) rforecast else vforecast
+    boot.forecast <- function(F, base) {
+      s <- clone(base, copy.cache = FALSE, copy.storage = FALSE)
+      .set(s, "F", F)
+      .set(s, "Fattr", attributes(F))
+      do.call(forecast.fun,
+              c(list(s,
+                     groups = list(group), len = len, only.new = TRUE),
+                dots))[[1]]
+    }
+
+    # Do the actual bootstrap forecast
+    bF <- matrix(nrow = len, ncol = R)
+    bF[] <- replicate(R,
+                      boot.forecast(r[[1]] + sample(res, replace = TRUE), x))
+
+    # Finally, calculate the statistics of interest
+    cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
+    out[[i]] <- maybe.fixup.attributes(x, cbind(Value = rowMeans(bF), t(cf)), drop = drop.attributes)
   }
 
-  # Do the actual bootstrap forecast
-  bF <- matrix(nrow = len, ncol = R)
-  bF[] <- replicate(R,
-                    boot.forecast(r[[1]] + sample(res, replace = TRUE), x))
+  names(out) <- paste(sep = "", "F", 1:length(groups))
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
 
-  # Finally, calculate the statistics of interest
-  cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
-  res <- cbind(Value = rowMeans(bF), t(cf))
-  maybe.fixup.attributes(x, res, drop = drop)
+  out
 }
 
 predict.1d.ssa <- function(object,
-                           group, len = 1,
+                           groups, len = 1,
                            method = c("recurrent", "vector", "bootstrap-recurrent", "bootstrap-vector"),
                            ...,
-                           drop = FALSE, cache = TRUE) {
+                           drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
-  check.for.groups(use.group = TRUE)
   dots <- list(...)
 
   # Calculate a forecast
   switch (method,
-          recurrent = do.call(rforecast, c(list(object, groups = list(group), len = len, cache = cache), dots))[[1]],
-          vector = do.call(vforecast, c(list(object, groups = list(group), len = len, cache = cache), dots))[[1]],
-          'bootstrap-recurrent' =  do.call(bforecast, c(list(object, type = "recurrent", group = group, len = len, cache = cache), dots)),
-          'bootstrap-vector' =  do.call(bforecast, c(list(object, type = "vector", group = group, len = len, cache = cache), dots)))
+          recurrent = do.call(rforecast, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
+          vector = do.call(vforecast, c(list(object, groups = groups, len = len, cache = cache), dots)),
+          'bootstrap-recurrent' =  do.call(bforecast, c(list(object, type = "recurrent", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
+          'bootstrap-vector' =  do.call(bforecast, c(list(object, type = "vector", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)))
 }
 
 forecast.1d.ssa <- function(object,
-                            group, len = 1,
+                            groups, len = 1,
                             method = c("recurrent", "vector", "bootstrap-recurrent", "bootstrap-vector"),
                             ...,
-                            drop = FALSE, cache = TRUE) {
+                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
-  check.for.groups(use.group = TRUE)
   dots <- list(...)
 
-  # First, perform the reconstruction.
-  r <- reconstruct(object, groups = list(group), ..., cache = cache)
-  stopifnot(length(r) == 1)
-
   # Perform the forecast
-  f <- do.call(predict, c(list(object, group = group, len = len, method = method, drop = drop, cache = cache), dots))
+  f <- do.call(predict, c(list(object, groups = groups, len = len, method = method, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
 
   # Now perform a "cast" to forecast object
   require(forecast)
   F <- .get(object, "F")
-  if (!drop)
+  if (!drop.attributes)
     attributes(F) <- .get(object, "Fattr")
-  res <- list(model = object,
-              method = switch(method,
-                              recurrent = "SSA (recurrent)",
-                              recurrent = "SSA (vector)",
-                              `bootstrap-recurrent` = "SSA (bootstrap recurrent)",
-                              `bootstrap-vector` = "SSA (bootstrap vector)"),
-              fitted = r[[1]],
-              residuals = residuals(r),
-              x = F)
-  # Handle bootstrap forecast separately
-  if (method %in% c( "bootstrap-recurrent", "bootstrap-vector")) {
-    nbnd <- (ncol(f) - 1) / 2
-    res$mean  <- f[, "Value"]
-    res$lower <- f[, seq(from = 2, by = 1, length.out = nbnd)]
-    res$upper <- f[, seq(from = 2 + nbnd, by = 1, length.out = nbnd)]
-    # HACK! Need to change if bforecast defaults will be changed!
-    if (is.element("level", names(dots))) res$level <- dots$level else res$level <- 0.95
-  } else {
-    res$mean <- f
+  out <- list()
+  for (i in seq_along(groups)) {
+    # Perform the reconstruction. We cannot do all-at-once, because we need proper residuals as well.
+    r <- reconstruct(object, groups = groups[i], ..., drop.attributes = drop.attributes, cache = cache)
+    stopifnot(length(r) == 1)
+
+    res <- list(model = object,
+                method = switch(method,
+                                recurrent = "SSA (recurrent)",
+                                recurrent = "SSA (vector)",
+                                `bootstrap-recurrent` = "SSA (bootstrap recurrent)",
+                                `bootstrap-vector` = "SSA (bootstrap vector)"),
+                fitted = r[[1]],
+                residuals = residuals(r),
+                x = F)
+    # Handle bootstrap forecast separately
+    if (method %in% c( "bootstrap-recurrent", "bootstrap-vector")) {
+      nbnd <- (ncol(f) - 1) / 2
+      res$mean  <- f[, "Value"]
+      res$lower <- f[, seq(from = 2, by = 1, length.out = nbnd)]
+      res$upper <- f[, seq(from = 2 + nbnd, by = 1, length.out = nbnd)]
+      # HACK! Need to change if bforecast defaults will be changed!
+      if (is.element("level", names(dots))) res$level <- 100*dots$level else res$level <- 100*0.95
+    } else {
+      res$mean <- f
+    }
+
+    class(res) <- "forecast"
+    out[[i]] <- res
   }
 
-  class(res) <- "forecast"
-  res
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  out
 }
 
 "lrr.toeplitz.ssa" <- `lrr.1d.ssa`;
