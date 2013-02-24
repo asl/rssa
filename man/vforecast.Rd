@@ -11,8 +11,10 @@
 }
 
 \usage{
-\method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE)
-\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE)
+\method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots,
+          drop = TRUE, drop.attributes = FALSE)
+\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots,
+          drop = TRUE, drop.attributes = FALSE)
 }
 
 \arguments{

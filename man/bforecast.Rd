@@ -12,9 +12,11 @@
 
 \usage{
 \method{bforecast}{1d.ssa}(x, groups, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+          type = c("recurrent", "vector"), \dots,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{bforecast}{toeplitz.ssa}(x, groups, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+          type = c("recurrent", "vector"), \dots,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 
 \arguments{
