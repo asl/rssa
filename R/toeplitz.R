@@ -69,6 +69,13 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   .Call("tmatmul", tmat, v, transposed);
 }
 
+.init.toeplitz.ssa <- function(x, ...) {
+  # Initialize FFT plan
+  .set(x, "fft.plan", fft.plan.1d(x$length))
+
+  x
+}
+
 decompose.toeplitz.ssa.nutrlan <- function(x,
                                            neig = min(50, L, K),
                                            ...) {
@@ -78,7 +85,8 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
 
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
-    h <- new.hmat(F, L = L);
+    fft.plan <- .get(x, "fft.plan")
+    h <- new.hmat(F, fft.plan = fft.plan, L = L)
   }
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
@@ -125,7 +133,8 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
 
   # Build hankel matrix
   F <- .get(x, "F");
-  h <- new.hmat(F, L = L);
+  fft.plan <- .get(x, "fft.plan")
+  h <- new.hmat(F, fft.plan = fft.plan, L = L);
 
   # Do decomposition
   if ("neig" %in% names(list(...)))
@@ -170,7 +179,8 @@ decompose.toeplitz.ssa.propack <- function(x,
 
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
-    h <- new.hmat(F, L = L);
+    fft.plan <- .get(x, "fft.plan")
+    h <- new.hmat(F, fft.plan = fft.plan, L = L);
   }
   
   olambda <- .get(x, "olambda", allow.null = TRUE);

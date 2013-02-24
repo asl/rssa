@@ -14,7 +14,7 @@
 }
 
 \usage{
-new.hmat(F, L = (N - 1) \%/\% 2)
+new.hmat(F, fft.plan = NULL, L = (N - 1) \%/\% 2)
 is.hmat(h)
 hcols(h)
 hrows(h)
@@ -23,6 +23,7 @@ hmatmul(hmat, v, transposed = FALSE)
 
 \arguments{
   \item{F}{series to construct the trajectory matrix for.}
+  \item{fft.plan}{internal hint argument, should be NULL in most cases}
   \item{L}{the window length.}
   \item{h, hmat}{matrix to operate on.}
   \item{transposed}{logical, if 'TRUE' the multiplication is performed
@@ -43,7 +44,7 @@ hmatmul(hmat, v, transposed = FALSE)
 
 \examples{
 # Construct the Hankel trajectory matrix for 'co2' series
-h <- new.hmat(co2, 10)
+h <- new.hmat(co2, L = 10)
 # Print number of columns and rows
 print(hrows(h))
 print(hcols(h))

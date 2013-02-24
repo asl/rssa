@@ -56,19 +56,19 @@ hankel <- function(X, L) {
   .Call("hankelize_one", U, V);
 }
 
-.hankelize.one.hankel <- function(U, V, h) {
+.hankelize.one.hankel <- function(U, V, fft.plan) {
   storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_one_fft", U, V, h);
+  .Call("hankelize_one_fft", U, V, fft.plan);
 }
 
 .hankelize.one.ssa.propack <- function(x, U, V) {
-  h <- .get(x, "hmat");
-  .hankelize.one.hankel(U, V, h);
+  fft.plan <- .get(x, "fft.plan")
+  .hankelize.one.hankel(U, V, fft.plan)
 }
 
 .hankelize.one.ssa.nutrlan <- function(x, U, V) {
-  h <- .get(x, "hmat");
-  .hankelize.one.hankel(U, V, h);
+  fft.plan <- .get(x, "fft.plan")
+  .hankelize.one.hankel(U, V, fft.plan)
 }
 
 .hankelize.multi <- function(U, V) {
@@ -76,12 +76,18 @@ hankel <- function(X, L) {
   .Call("hankelize_multi", U, V);
 }
 
+fft.plan.1d <- function(N) {
+  storage.mode(N) <- "integer"
+  .Call("initialize_fft_plan", N)
+}
+
 new.hmat <- function(F,
+                     fft.plan = NULL,
                      L = (N - 1) %/% 2) {
-  N <- length(F);
-  storage.mode(F) <- "double";
-  storage.mode(L) <- "integer";
-  h <- .Call("initialize_hmat", F, L);
+  N <- length(F)
+  storage.mode(F) <- "double"
+  storage.mode(L) <- "integer"
+  h <- .Call("initialize_hmat", F, L, if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan)
 }
 
 hcols <- function(h) {
@@ -100,6 +106,14 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   storage.mode(v) <- "double";
   storage.mode(transposed) <- "logical";
   .Call("hmatmul", hmat, v, transposed);
+}
+
+.init.1d.ssa <- function(x, ...) {
+  # Initialize FFT plan
+  print("Here!")
+  .set(x, "fft.plan", fft.plan.1d(x$length))
+
+  x
 }
 
 decompose.1d.ssa <- function(x,
@@ -143,7 +157,7 @@ decompose.1d.ssa.eigen <- function(x, ...,
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
-    stop("Continuation of decompostion is not supported for this method.")
+    stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix (this can be done more efficiently!)
   F <- .get(x, "F");
@@ -173,7 +187,8 @@ decompose.1d.ssa.propack <- function(x,
     stop("Continuation of decompostion is not yet implemented for this method.")
 
   F <- .get(x, "F");
-  h <- new.hmat(F, L = L);
+  fft.plan <- .get(x, "fft.plan")
+  h <- new.hmat(F, fft.plan = fft.plan, L = L)
 
   S <- propack.svd(h, neig = neig, ...);
 
@@ -195,8 +210,9 @@ decompose.1d.ssa.nutrlan <- function(x,
 
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
-    F <- .get(x, "F");
-    h <- new.hmat(F, L = L);
+    F <- .get(x, "F")
+    fft.plan <- .get(x, "fft.plan")
+    h <- new.hmat(F, fft.plan = fft.plan, L = L)
   }
 
   lambda <- .get(x, "lambda", allow.null = TRUE);

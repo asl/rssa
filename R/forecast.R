@@ -201,8 +201,8 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
 
   V <- if (nv(x) >= desired) .get(x, "V") else NULL
 
-  # Make hankel matrix for fast hankelization (we use it for plan)
-  h <- new.hmat(double(N), L)
+  # Grab the FFT plan
+  fft.plan <- .get(x, "fft.plan")
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -225,7 +225,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
 
     res <- double(N)
     for (j in seq_along(group)) {
-      res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], h)
+      res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], fft.plan)
     }
 
     out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]

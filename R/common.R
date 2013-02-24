@@ -62,7 +62,7 @@
     }
   }
 
-  obj;
+  .init(obj)
 }
 
 .get.series.info <- function(x) {
@@ -109,6 +109,8 @@ calc.v <- function(x, ...)
   UseMethod(".hankelize.one")
 .elseries <- function(x, ...)
   UseMethod(".elseries")
+.init <- function(x, ...)
+  UseMethod(".init")
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(x, ...) UseMethod("decompose");

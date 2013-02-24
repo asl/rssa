@@ -97,11 +97,19 @@ ssa <- function(x,
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
 
+  # Perform additional init steps, if necessary
+  .init(this)
+
   # Decompose, if necessary
   if (force.decompose)
     this <- decompose(this, ...);
 
   this;
+}
+
+.init.default <- function(x, ...) {
+  # Do nothing
+  x
 }
 
 precache <- function(x, n, ...) {
@@ -205,7 +213,7 @@ reconstruct.ssa <- function(x, groups, ...,
   # Cleanup
   rm(list = ls(envir = e, all.names = TRUE),
      envir = e, inherits = FALSE);
-  gc(verbose = FALSE);
+#  gc(verbose = FALSE);
 
   attr(out, "residuals") <- residuals;
   attr(out, "series") <- F;
