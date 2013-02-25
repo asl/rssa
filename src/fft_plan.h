@@ -35,7 +35,11 @@ typedef struct {
 #if HAVE_FFTW3_H
   fftw_plan r2c_plan;
   fftw_plan c2r_plan;
-#else
-  R_len_t dummy;
 #endif
+  R_len_t N;
 } fft_plan;
+
+static inline unsigned valid_plan(const fft_plan *f, R_len_t N) {
+  return (f-> N == N);
+}
+

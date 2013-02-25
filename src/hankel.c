@@ -73,6 +73,8 @@ static void initialize_plan(fft_plan *f, R_len_t N) {
   f->r2c_plan = fftw_plan_dft_r2c_1d(N, circ, ocirc, FFTW_ESTIMATE);
   f->c2r_plan = fftw_plan_dft_c2r_1d(N, ocirc, circ, FFTW_ESTIMATE);
 
+  f->N = N;
+
   fftw_free(circ);
   fftw_free(ocirc);
 }
@@ -87,6 +89,9 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   fftw_complex *ocirc;
   fftw_plan p1, p2;
   double *circ;
+
+  if (!valid_plan(f, N))
+    error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
   circ = (double*) fftw_malloc(N * sizeof(double));
@@ -195,6 +200,9 @@ static R_INLINE void hankelize_fft(double *F,
   double *iU, *iV;
   fftw_complex *cU, *cV;
 
+  if (!valid_plan(f, N))
+    error("invalid FFT plan for given FFT length");
+
   /* Allocate needed memory */
   iU = (double*) fftw_malloc(N * sizeof(double));
   iV = (double*) fftw_malloc(N * sizeof(double));
@@ -242,8 +250,7 @@ static void free_plan(fft_plan *f) {
 }
 
 static void initialize_plan(fft_plan *f, R_len_t N) {
-  (void)f;
-  (void)N;
+  f->N = N;
 }
 
 static void free_circulant(hankel_matrix *h) {
@@ -257,7 +264,8 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   double *work;
   complex double * circ;
 
-  (void)f;
+  if (!valid_plan(f, N))
+    error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
   circ = Calloc(N, complex double);
@@ -391,7 +399,8 @@ static R_INLINE void hankelize_fft(double *F,
   double *work;
   complex double *iU, *iV;
 
-  (void)f;
+  if (!valid_plan(f, N))
+    error("invalid FFT plan for given FFT length");
 
   /* Estimate the best plans for given input length */
   fft_factor(N, &maxf, &maxp);
