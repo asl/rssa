@@ -223,10 +223,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
       Z[j, ] <- P %*% Z[j - 1, ]
     }
 
-    res <- double(N)
-    for (j in seq_along(group)) {
-      res <- res + .hankelize.one.hankel(Uet[ , j], Z[ , j], fft.plan)
-    }
+    res <- rowSums(.hankelize.multi.hankel(Uet, Z, fft.plan))
 
     out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
     out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop.attributes)

@@ -732,6 +732,39 @@ SEXP hankelize_one_fft(SEXP U, SEXP V, SEXP fftplan) {
   return F;
 }
 
+SEXP hankelize_multi_fft(SEXP U, SEXP V, SEXP fftplan) {
+  double *rU = REAL(U), *rV = REAL(V), *rF;
+  R_len_t L, K, N, i, count;
+  SEXP F = NILSXP;
+  fft_plan *plan;
+  int *dimu, *dimv;
+
+  /* Calculate length of inputs and output */
+  dimu = INTEGER(getAttrib(U, R_DimSymbol));
+  dimv = INTEGER(getAttrib(V, R_DimSymbol));
+  L = dimu[0]; K = dimv[0];
+  if ((count = dimu[1]) != dimv[1])
+    error("Both 'U' and 'V' should have equal number of columns");
+  N = K + L - 1;
+
+  /* Grab needed data */
+  plan = R_ExternalPtrAddr(fftplan);
+
+  /* Allocate buffer for output */
+  PROTECT(F = allocMatrix(REALSXP, N, count));
+  rF = REAL(F);
+
+  /* Perform the actual hankelization */
+  for (i = 0; i < count; ++i) {
+    R_CheckUserInterrupt();
+    /* TODO: nice target for OpenMP stuff */
+    hankelize_fft(rF+i*N, rU+i*L, rV+i*K, L, K, plan);
+  }
+
+  UNPROTECT(1);
+  return F;
+}
+
 SEXP hankelize_multi(SEXP U, SEXP V) {
   double *rU = REAL(U), *rV = REAL(V), *rF;
   R_len_t L, K, N, i, count;
