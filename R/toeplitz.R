@@ -188,7 +188,7 @@ decompose.toeplitz.ssa.propack <- function(x,
   
   T <- .get(x, "tmat", allow.null = TRUE);
   if (is.null(T)) {
-    fft.plan <- .get(x, "fft.plan")
+    T <- new.tmat(F, L = L)
   }
   
   S <- propack.svd(T, neig = neig, ...);
