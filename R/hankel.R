@@ -110,7 +110,6 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
 
 .init.1d.ssa <- function(x, ...) {
   # Initialize FFT plan
-  print("Here!")
   .set(x, "fft.plan", fft.plan.1d(x$length))
 
   x

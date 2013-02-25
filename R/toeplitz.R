@@ -43,12 +43,12 @@ Lcor <- function(F, L) {
   .Call("Lcor", F, L);
 }
 
-new.tmat <- function(F, L = (N - 1) %/% 2) {
-  N <- length(F);
+new.tmat <- function(F, fft.plan = NULL, L = (N - 1) %/% 2) {
+  N <- length(F)
   R <- Lcor(F, L)
 
-  storage.mode(R) <- "double";
-  t <- .Call("initialize_tmat", R);
+  storage.mode(R) <- "double"
+  t <- .Call("initialize_tmat", R, if (is.null(fft.plan)) fft.plan.1d(2*L - 1) else fft.plan)
 }
 
 tcols <- function(t) {
@@ -188,7 +188,7 @@ decompose.toeplitz.ssa.propack <- function(x,
   
   T <- .get(x, "tmat", allow.null = TRUE);
   if (is.null(T)) {
-    T <- new.tmat(F, L = L);
+    fft.plan <- .get(x, "fft.plan")
   }
   
   S <- propack.svd(T, neig = neig, ...);
@@ -217,9 +217,9 @@ decompose.toeplitz.ssa.propack <- function(x,
 }
 
 decompose.toeplitz.ssa <- function(x,
-                             neig = min(50, L, K),
-                             ...,
-                             force.continue = FALSE) {
+                                   neig = min(50, L, K),
+                                   ...,
+                                   force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
   stop("Unsupported SVD method for Toeplitz SSA!");
 }

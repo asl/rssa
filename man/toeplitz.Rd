@@ -13,7 +13,7 @@
 }
 
 \usage{
-new.tmat(F, L = (N - 1) \%/\% 2)
+new.tmat(F, fft.plan = NULL, L = (N - 1) \%/\% 2)
 is.tmat(t)
 tcols(t)
 trows(t)
@@ -22,6 +22,7 @@ tmatmul(tmat, v, transposed = FALSE)
 
 \arguments{
   \item{F}{series to construct the trajectory matrix for.}
+  \item{fft.plan}{internal hint argument, should be NULL in most cases}
   \item{L}{the window length.}
   \item{t, tmat}{matrix to operate on.}
   \item{transposed}{logical, if 'TRUE' the multiplication is performed
@@ -42,7 +43,7 @@ tmatmul(tmat, v, transposed = FALSE)
 
 \examples{
 # Construct the Toeplitz trajectory matrix for 'co2' series
-h <- new.tmat(co2, 10)
+h <- new.tmat(co2, L = 10)
 # Print the number of columns and rows
 print(trows(h)); print(tcols(h))
 }

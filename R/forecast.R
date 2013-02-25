@@ -202,7 +202,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   V <- if (nv(x) >= desired) .get(x, "V") else NULL
 
   # Grab the FFT plan
-  fft.plan <- .get(x, "fft.plan")
+  fft.plan <- fft.plan.1d(N)
 
   out <- list()
   for (i in seq_along(groups)) {

@@ -32,14 +32,7 @@
 #include <R_ext/Applic.h>
 #endif
 
-typedef struct {
-#if HAVE_FFTW3_H
-  fftw_plan r2c_plan;
-  fftw_plan c2r_plan;
-#else
-  R_len_t dummy;
-#endif
-} fft_plan;
+#include "fft_plan.h"
 
 typedef struct {
 #if HAVE_FFTW3_H

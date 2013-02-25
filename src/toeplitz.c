@@ -32,16 +32,17 @@
 #include <R_ext/Applic.h>
 #endif
 
+#include "fft_plan.h"
+
 typedef struct {
 #if HAVE_FFTW3_H
   fftw_complex * circ_freq;
-  fftw_plan r2c_plan;
-  fftw_plan c2r_plan;
 #else
   complex double * circ_freq;
 #endif
   R_len_t window;
   R_len_t length;
+  fft_plan *fft_plan;
 } toeplitz_matrix;
 
 static unsigned toeplitz_nrow(const void *matrix) {
@@ -57,11 +58,9 @@ static unsigned toeplitz_ncol(const void *matrix) {
 #if HAVE_FFTW3_H
 static void free_circulant(toeplitz_matrix *t) {
   fftw_free(t->circ_freq);
-  fftw_destroy_plan(t->r2c_plan);
-  fftw_destroy_plan(t->c2r_plan);
 }
 
-static void initialize_circulant(toeplitz_matrix *t,
+static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
                                  const double *R, R_len_t L) {
   R_len_t N = 2*L - 1, i;
   fftw_complex *ocirc;
@@ -72,10 +71,6 @@ static void initialize_circulant(toeplitz_matrix *t,
   circ = (double*) fftw_malloc(N * sizeof(double));
   ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
 
-  /* Estimate the best plans for given input length */
-  p1 = fftw_plan_dft_r2c_1d(N, circ, ocirc, FFTW_ESTIMATE);
-  p2 = fftw_plan_dft_c2r_1d(N, ocirc, circ, FFTW_ESTIMATE);
-
   /* Fill input buffer */
   for (i = 0; i < L; ++i)
     circ[i] = R[i];
@@ -84,14 +79,13 @@ static void initialize_circulant(toeplitz_matrix *t,
     circ[L + i] = R[L-i-1];
 
   /* Run the plan on input data */
-  fftw_execute(p1);
+  fftw_execute_dft_r2c(f->r2c_plan, circ, ocirc);
 
   /* Cleanup and return */
   fftw_free(circ);
 
   t->circ_freq = ocirc;
-  t->r2c_plan = p1;
-  t->c2r_plan = p2;
+  t->fft_plan = f;
   t->window = L;
   t->length = N;
 }
@@ -100,6 +94,7 @@ static void toeplitz_matmul(double* out,
                             const double* v,
                             const void* matrix) {
   const toeplitz_matrix *t = matrix;
+  const fft_plan *f = t->fft_plan;
   R_len_t N = t->length, L = t->window;
   R_len_t K = N - L + 1, i;
   double *circ;
@@ -115,14 +110,14 @@ static void toeplitz_matmul(double* out,
   memset(circ + K, 0, (L - 1)*sizeof(double));
 
   /* Compute the FFT of the vector v */
-  fftw_execute_dft_r2c(t->r2c_plan, circ, ocirc);
+  fftw_execute_dft_r2c(f->r2c_plan, circ, ocirc);
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
   for (i = 0; i < (N/2 + 1); ++i)
     ocirc[i] = ocirc[i] * t->circ_freq[i];
 
   /* Compute the reverse transform to obtain result */
-  fftw_execute_dft_c2r(t->c2r_plan, ocirc, circ);
+  fftw_execute_dft_c2r(f->c2r_plan, ocirc, circ);
 
   /* Cleanup and return */
   for (i = 0; i < L; ++i)
@@ -136,6 +131,7 @@ static void toeplitz_tmatmul(double* out,
                              const double* v,
                              const void* matrix) {
   const toeplitz_matrix *t = matrix;
+  const fft_plan *f = t->fft_plan;
   R_len_t N = t->length, L = t->window;
   R_len_t K = N - L + 1, i;
   double *circ;
@@ -151,14 +147,14 @@ static void toeplitz_tmatmul(double* out,
     circ[i + K - 1] = v[i];
 
   /* Compute the FFT of the reversed vector v */
-  fftw_execute_dft_r2c(t->r2c_plan, circ, ocirc);
+  fftw_execute_dft_r2c(f->r2c_plan, circ, ocirc);
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
   for (i = 0; i < (N/2 + 1); ++i)
     ocirc[i] = ocirc[i] * t->circ_freq[i];
 
   /* Compute the reverse transform to obtain result */
-  fftw_execute_dft_c2r(t->c2r_plan, ocirc, circ);
+  fftw_execute_dft_c2r(f->c2r_plan, ocirc, circ);
 
   /* Cleanup and return */
   for (i = 0; i < K; ++i)
@@ -212,7 +208,7 @@ static void free_circulant(toeplitz_matrix *t) {
   Free(t->circ_freq);
 }
 
-static void initialize_circulant(toeplitz_matrix *t,
+static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
                                  const double *R, R_len_t L) {
   R_len_t N = 2*L - 1, i;
   int *iwork, maxf, maxp;
@@ -245,6 +241,7 @@ static void initialize_circulant(toeplitz_matrix *t,
   Free(iwork);
 
   t->circ_freq = circ;
+  t->fft_plan = f;
   t->window = L;
   t->length = N;
 }
@@ -401,7 +398,7 @@ static void tmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_tmat(SEXP R) {
+SEXP initialize_tmat(SEXP R, SEXP fft_plan) {
   R_len_t L;
   toeplitz_matrix *t;
   ext_matrix *e;
@@ -419,11 +416,11 @@ SEXP initialize_tmat(SEXP R) {
 
   /* Build toeplitz circulants for toeplitz matrix */
   t = Calloc(1, toeplitz_matrix);
-  initialize_circulant(t, REAL(R), L);
+  initialize_circulant(t, R_ExternalPtrAddr(fft_plan), REAL(R), L);
   e->matrix = t;
 
   /* Make an external pointer envelope */
-  tmat = R_MakeExternalPtr(e, install("external matrix"), R_NilValue);
+  tmat = R_MakeExternalPtr(e, install("external matrix"), fft_plan);
   R_RegisterCFinalizer(tmat, tmat_finalizer);
 
   return tmat;
