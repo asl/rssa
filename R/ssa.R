@@ -136,12 +136,10 @@ precache <- function(x, n, ...) {
   # Cleanup
   rm(list = ls(envir = e, all.names = TRUE),
      envir = e, inherits = FALSE);
-  invisible(gc(verbose = FALSE));
 }
 
 cleanup <- function(x) {
   .remove(x, ls(.storage(x), pattern = "series:"));
-  invisible(gc(verbose = FALSE));
 }
 
 reconstruct.ssa <- function(x, groups, ...,
@@ -213,7 +211,6 @@ reconstruct.ssa <- function(x, groups, ...,
   # Cleanup
   rm(list = ls(envir = e, all.names = TRUE),
      envir = e, inherits = FALSE);
-#  gc(verbose = FALSE);
 
   attr(out, "residuals") <- residuals;
   attr(out, "series") <- F;
