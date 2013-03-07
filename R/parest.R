@@ -67,6 +67,8 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
 
   if (length(out) == 1 && drop)
     out <- out[[1]]
+
+  out
 }
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
