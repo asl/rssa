@@ -35,7 +35,7 @@ cadzow.ssa <- function(x, rank,
     r <- reconstruct(s, groups = list(1:rank), ..., cache = cache)
     stopifnot(length(r) == 1)
     rF <- r[[1]]
-    
+
     it <- it + 1
     if ((numiter > 0 && it >= numiter) || max((F-rF)^2) < eps)
       break
