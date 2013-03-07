@@ -45,5 +45,26 @@ cadzow.ssa <- function(x, rank,
   F
 }
 
+cadzow.1d.ssa <- function(x, rank,
+                          correct = TRUE,
+                          eps = 1e-6, numiter = 0,
+                          ..., cache = TRUE) {
+  # Get the result w/o any correction
+  fcall <- match.call(expand.dots = FALSE)
+  fcall[[1]] <- cadzow.ssa
+  fcall$correct <- NULL
+  F <- eval(fcall, parent.frame())
+
+  # Correct the stuff if requested
+  if (correct) {
+    h1 <- hankel(F, x$window)
+    h2 <- hankel(.get(x, "F"), x$window)
+
+    F <- sum(h1 * h2) / sum(h2 * h2) * F
+  }
+
+  F
+}
+
 cadzow <- function(x, ...)
   UseMethod("cadzow")
