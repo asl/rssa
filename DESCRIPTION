@@ -5,6 +5,7 @@ Version: 0.9.9
 Date: 2012-12-10
 Depends: svd (>= 0.3.1), forecast
 Imports: lattice
+Suggests: testthat (>= 0.7)
 SystemRequirements: fftw (>=3.2)
 Author: Anton Korobeynikov
 Maintainer: Anton Korobeynikov <anton@korobeynikov.info>
