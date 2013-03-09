@@ -33,12 +33,8 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
   if (missing(groups))
     groups <- 1:min(nlambda(x), nu(x))
 
-  # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups))
-
   # Continue decomposition, if necessary
-  if (desired > nu(x))
-    decompose(x, ..., neig = desired)
+  .maybe.continue(x, groups = groups, ...)
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -144,13 +140,6 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
 
-  # Determine the upper bound of desired eigentriples
-  desired <- max(max(unlist(groups)), min(20, L, K))
-
-  # Continue decomposition, if necessary
-  if (desired > min(nlambda(x), nu(x)))
-    decompose(x, ..., neig = desired)
-
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
     r <- reconstruct(x, groups = groups, ..., cache = cache)
@@ -189,12 +178,8 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
 
-  # Determine the upper bound of desired eigentriples
-  desired <- max(max(unlist(groups)), min(20, L, K))
-
   # Continue decomposition, if necessary
-  if (desired > min(nlambda(x), nu(x)))
-    decompose(x, ..., neig = desired)
+  desired <- .maybe.continue(x, groups = groups, ...)
 
   lambda <- .get(x, "lambda")
   U <- .get(x, "U")

@@ -112,6 +112,24 @@ ssa <- function(x,
   x
 }
 
+.maybe.continue <- function(x, groups, ...) {
+  L <- x$window
+  K <- x$length - L + 1
+
+  # Determine the upper bound of desired eigentriples
+  desired <- max(unlist(groups))
+
+  # Sanity check
+  if (desired > min(L, K))
+    stop("Cannot decompose that much, desired elementary series index is too huge")
+
+  # Continue decomposition, if necessary
+  if (desired > min(nlambda(x), nu(x)))
+    decompose(x, ..., neig = min(desired + 1, L, K))
+
+  desired
+}
+
 precache <- function(x, n, ...) {
   if (missing(n)) {
     warning("Amount of sub-series missed, precaching EVERYTHING",
@@ -149,12 +167,8 @@ reconstruct.ssa <- function(x, groups, ...,
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)));
 
-  # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups));
-
   # Continue decomposition, if necessary
-  if (desired > min(nlambda(x), nu(x)))
-    decompose(x, ..., neig = desired);
+  .maybe.continue(x, groups = groups, ...)
 
   # Grab indices of pre-cached values
   info <- .get.series.info(x);

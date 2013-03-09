@@ -45,12 +45,11 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
                                drop = TRUE) {
   method <- match.arg(method)
 
-  # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups))
+  if (missing(groups))
+    groups <- 1:min(nlambda(x), nu(x))
 
   # Continue decomposition, if necessary
-  if (desired > min(nlambda(x), nu(x)))
-    decompose(x, ..., neig = desired)
+  .maybe.continue(x, groups = groups, ...)
 
   out <- list()
   for (i in seq_along(groups)) {
