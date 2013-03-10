@@ -147,6 +147,12 @@ decompose.1d.ssa.svd <- function(x,
   x;
 }
 
+Lcov.matrix <- function(F, L) {
+  storage.mode(F) <- "double";
+  storage.mode(L) <- "integer";
+  .Call("Lcov_matrix", F, L);
+}
+
 decompose.1d.ssa.eigen <- function(x, ...,
                                    force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1;
@@ -162,10 +168,9 @@ decompose.1d.ssa.eigen <- function(x, ...,
     fft.plan <- .get(x, "fft.plan")
     hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
   }
-  h <- hankel(F, L = L);
 
   # Do decomposition
-  S <- eigen(tcrossprod(h));
+  S <- eigen(Lcov.matrix(F, L), symmetric = TRUE);
 
   # Fix small negative values
   S$values[S$values < 0] <- 0;
