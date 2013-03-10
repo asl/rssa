@@ -87,8 +87,8 @@ fft.plan.1d <- function(N) {
 }
 
 new.hmat <- function(F,
-                     fft.plan = NULL,
-                     L = (N - 1) %/% 2) {
+                     L = (N - 1) %/% 2,
+                     fft.plan = NULL) {
   N <- length(F)
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
