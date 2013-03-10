@@ -102,4 +102,4 @@ test.test.data(test.data = fr1k.nz.td);
 #save(co2.td, fr50.td, fr1k.td, fr50k.td, fr50.nz.td, fr1k.nz.td, fr50k.nz.td,
 save(co2.td, fr50.td, fr1k.td, fr50.nz.td, fr1k.nz.td,
      file = system.file("extdata", "1dssa.testdata.rda", package = "Rssa"),
-     compress = TRUE);
+     compress = "xz", compression_level = 9);
