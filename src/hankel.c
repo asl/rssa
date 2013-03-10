@@ -499,21 +499,60 @@ static R_INLINE void hankelize_fft(double *F,
 static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
                                                    double *R,
                                                    const fft_plan *f) {
-  //FIXME Implement convolution via FFT
+  R_len_t K = N - L + 1;
+  R_len_t i;
+  int maxf, maxp, *iwork;
+  double *work;
+  complex double *iF, *iFc;
 
-  R_len_t i, j, K;
+  if (!valid_plan(f, N))
+    error("invalid FFT plan for given FFT length");
 
   /* Length's check */
   if ((L >= N) || (L < 1))
     error("must be 'N' > 'L' >= 1");
 
-  K = N - L + 1;
+  /* Estimate the best plans for given input length */
+  fft_factor(N, &maxf, &maxp);
+  if (maxf == 0)
+    error("fft factorization error");
 
-  for (i = 0; i < L; ++i) {
-    R[i] = 0;
-    for (j = 0; j < K; ++j)
-      R[i] += F[j] * F[j + i];
-  }
+  /* Allocate needed memory */
+  iF = Calloc(N, complex double);
+  iFc = Calloc(N, complex double);
+  work = Calloc(4 * maxf, double);
+  iwork = Calloc(maxp, int);
+
+  /* Fill in buffers */
+  for (i = 0; i < N; ++i)
+    iF[i] = F[i];
+
+  for (i = 0; i < K; ++i)
+    iFc[i] = F[i];
+  memset(iFc + K, 0, (N - K)*sizeof(complex double));
+
+  /* Compute the FFTs */
+  fft_factor(N, &maxf, &maxp);
+  fft_work((double*)iF, ((double*)iF)+1, 1, N, 1, -2, work, iwork);
+  fft_factor(N, &maxf, &maxp);
+  fft_work((double*)iFc, ((double*)iFc)+1, 1, N, 1, -2, work, iwork);
+
+  /* Dot-product */
+  for (i = 0; i < N; ++i)
+    iF[i] = iF[i] * conj(iFc[i]);
+
+  /* Compute the inverse FFT */
+  fft_factor(N, &maxf, &maxp);
+  fft_work((double*)iF, ((double*)iF)+1, 1, N, 1, +2, work, iwork);
+
+  /* Form the result */
+  for (i = 0; i < L; ++i)
+    R[i] = creal(iF[i]) / N;
+
+  Free(iF);
+  Free(iFc);
+  Free(work);
+  Free(iwork);
 }
 #endif
 
