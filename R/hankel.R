@@ -51,24 +51,10 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1]);
 }
 
-.hankelize.one.ssa <- function(x, U, V) {
-  storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_one", U, V);
-}
-
-.hankelize.one.hankel <- function(U, V, fft.plan) {
+.hankelize.one.1d.ssa <- function(x, U, V) {
+  fft.plan <- .get(x, "fft.plan")
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_one_fft", U, V, fft.plan);
-}
-
-.hankelize.one.ssa.propack <- function(x, U, V) {
-  fft.plan <- .get(x, "fft.plan")
-  .hankelize.one.hankel(U, V, fft.plan)
-}
-
-.hankelize.one.ssa.nutrlan <- function(x, U, V) {
-  fft.plan <- .get(x, "fft.plan")
-  .hankelize.one.hankel(U, V, fft.plan)
 }
 
 .hankelize.multi <- function(U, V) {
@@ -140,12 +126,18 @@ decompose.1d.ssa.svd <- function(x,
 
   # Build hankel matrix
   F <- .get(x, "F");
+  hmat <- .get(x, "hmat", allow.null = TRUE);
+  if (is.null(hmat)) {
+    fft.plan <- .get(x, "fft.plan")
+    hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
+  }
   h <- hankel(F, L = L);
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig);
 
   # Save results
+  .set(x, "hmat", hmat);
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -165,6 +157,11 @@ decompose.1d.ssa.eigen <- function(x, ...,
 
   # Build hankel matrix (this can be done more efficiently!)
   F <- .get(x, "F");
+  hmat <- .get(x, "hmat", allow.null = TRUE);
+  if (is.null(hmat)) {
+    fft.plan <- .get(x, "fft.plan")
+    hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
+  }
   h <- hankel(F, L = L);
 
   # Do decomposition
@@ -174,6 +171,7 @@ decompose.1d.ssa.eigen <- function(x, ...,
   S$values[S$values < 0] <- 0;
 
   # Save results
+  .set(x, "hmat", hmat);
   .set(x, "lambda", sqrt(S$values));
   .set(x, "U", S$vectors);
 
@@ -191,9 +189,11 @@ decompose.1d.ssa.propack <- function(x,
     stop("Continuation of decompostion is not yet implemented for this method.")
 
   F <- .get(x, "F");
-  fft.plan <- .get(x, "fft.plan")
-  h <- new.hmat(F, fft.plan = fft.plan, L = L)
-
+  h <- .get(x, "hmat", allow.null = TRUE);
+  if (is.null(h)) {
+    fft.plan <- .get(x, "fft.plan")
+    h <- new.hmat(F, fft.plan = fft.plan, L = L)
+  }
   S <- propack.svd(h, neig = neig, ...);
 
   # Save results
@@ -234,7 +234,7 @@ decompose.1d.ssa.nutrlan <- function(x,
   x;
 }
 
-.calc.v.hankel <- function(x, idx) {
+calc.v.1d.ssa <- function(x, idx, env = .GlobalEnv, ...) {
   lambda <- .get(x, "lambda")[idx];
   U <- .get(x, "U")[, idx, drop = FALSE];
   h <- .get(x, "hmat");
@@ -242,39 +242,6 @@ decompose.1d.ssa.nutrlan <- function(x,
   invisible(sapply(1:length(idx),
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
 }
-
-.calc.v.svd <- function(x, idx, env) {
-  # Check, if there is garbage-collected storage to hold some pre-calculated
-  # stuff.
-  if (identical(env, .GlobalEnv) ||
-      !exists(".ssa.temporary.storage", envir = env, inherits = FALSE)) {
-    F <- .get(x, "F");
-
-    # Build hankel matrix.
-    X <- hankel(F, L = x$window);
-
-    # Save to later use, if possible.
-    if (!identical(env, .GlobalEnv)) {
-      assign(".ssa.temporary.storage", X, envir = env, inherits = FALSE);
-    }
-  } else {
-    X <- get(".ssa.temporary.storage", envir = env, inherits = FALSE);
-  }
-
-  lambda <- .get(x, "lambda")[idx];
-  U <- .get(x, "U")[, idx, drop = FALSE];
-
-  invisible(sapply(1:length(idx),
-                   function(i) crossprod(X, U[, i]) / lambda[i]));
-}
-
-calc.v.1d.ssa <- function(x, idx, env = .GlobalEnv, ...)
-  stop("Unsupported SVD method for 1D SSA!")
-
-calc.v.1d.ssa.nutrlan <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
-calc.v.1d.ssa.propack <- function(x, idx, env = .GlobalEnv, ...) .calc.v.hankel(x, idx)
-calc.v.1d.ssa.svd <- function(x, idx, env = .GlobalEnv, ...) .calc.v.svd(x, idx, env)
-calc.v.1d.ssa.eigen <- function(x, idx, env = .GlobalEnv, ...) .calc.v.svd(x, idx, env)
 
 #mes <- function(N = 1000, L = (N %/% 2), n = 50) {
 #  F <- rnorm(N);

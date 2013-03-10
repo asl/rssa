@@ -76,6 +76,8 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   x
 }
 
+.hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa
+
 decompose.toeplitz.ssa.nutrlan <- function(x,
                                            neig = min(50, L, K),
                                            ...) {
