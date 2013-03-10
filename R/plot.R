@@ -238,7 +238,7 @@ plot.1d.ssa.reconstruction <- function(x, ...,
   colnames(m) <- mnames
 
   # Plot'em'all!
-  if (identical(plot.method, "matplot"))
+  if (identical(plot.method, "matplot") || !is.object(m))
     do.call(matplot, c(list(x = m), dots))
   else if (identical(plot.method, "native"))
     do.call(plot, c(list(m), dots))
