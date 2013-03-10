@@ -1,20 +1,20 @@
 #   R package for Singular Spectrum Analysis
 #   Copyright (c) 2009 Anton Korobeynikov <asl@math.spbu.ru>
-#   
-#   This program is free software; you can redistribute it 
-#   and/or modify it under the terms of the GNU General Public 
-#   License as published by the Free Software Foundation; 
-#   either version 2 of the License, or (at your option) 
+#
+#   This program is free software; you can redistribute it
+#   and/or modify it under the terms of the GNU General Public
+#   License as published by the Free Software Foundation;
+#   either version 2 of the License, or (at your option)
 #   any later version.
 #
-#   This program is distributed in the hope that it will be 
-#   useful, but WITHOUT ANY WARRANTY; without even the implied 
-#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+#   This program is distributed in the hope that it will be
+#   useful, but WITHOUT ANY WARRANTY; without even the implied
+#   warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 #   PURPOSE.  See the GNU General Public License for more details.
-#   
-#   You should have received a copy of the GNU General Public 
-#   License along with this program; if not, write to the 
-#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge, 
+#
+#   You should have received a copy of the GNU General Public
+#   License along with this program; if not, write to the
+#   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
 #   Routines for normal hankel SSA
@@ -147,10 +147,13 @@ decompose.1d.ssa.svd <- function(x,
   x;
 }
 
-Lcov.matrix <- function(F, L) {
+Lcov.matrix <- function(F,
+                        L = (N - 1) %/% 2,
+                        fft.plan = NULL) {
+  N <- length(F);
   storage.mode(F) <- "double";
   storage.mode(L) <- "integer";
-  .Call("Lcov_matrix", F, L);
+  .Call("Lcov_matrix", F, L, if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan);
 }
 
 decompose.1d.ssa.eigen <- function(x, ...,
@@ -163,14 +166,15 @@ decompose.1d.ssa.eigen <- function(x, ...,
 
   # Build hankel matrix (this can be done more efficiently!)
   F <- .get(x, "F");
+  fft.plan <- .get(x, "fft.plan")
+
   hmat <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(hmat)) {
-    fft.plan <- .get(x, "fft.plan")
     hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
   }
 
   # Do decomposition
-  S <- eigen(Lcov.matrix(F, L), symmetric = TRUE);
+  S <- eigen(Lcov.matrix(F, L = L, fft.plan = fft.plan), symmetric = TRUE);
 
   # Fix small negative values
   S$values[S$values < 0] <- 0;
