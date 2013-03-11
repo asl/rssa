@@ -164,7 +164,7 @@ decompose.1d.ssa.eigen <- function(x, ...,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix (this can be done more efficiently!)
+  # Build hankel matrix
   F <- .get(x, "F");
   fft.plan <- .get(x, "fft.plan")
 
