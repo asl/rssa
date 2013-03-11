@@ -163,8 +163,40 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
   x;
 }
 
-decompose.toeplitz.ssa.svd <- function(x, ...) {
-  stop("'SVD' method is not applicable to toeplitz SSA");
+decompose.toeplitz.ssa.svd <- function(x,
+                                       neig = min(L, K),
+                                       ...,
+                                       force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1;
+
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(x) > 0)
+    stop("Continuation of decompostion is not supported for this method.")
+
+  # Build hankel matrix
+  F <- .get(x, "F");
+  fft.plan <- .get(x, "fft.plan")
+  h <- new.hmat(F, fft.plan = fft.plan, L = L);
+
+  # Do decomposition
+  C <- toeplitz(Lcor(F, L));
+  S <- svd(C, nu = neig, nv = neig);
+
+  .set(x, "U", S$u);
+
+  lambda <- numeric(neig);
+  V <- matrix(nrow = K, ncol = neig);
+  for (i in 1:neig) {
+    Z <- hmatmul(h, S$u[,i], transposed = TRUE);
+    lambda[i] <- sqrt(sum(Z^2));
+    V[, i] <- Z / lambda[i];
+  }
+
+  # Save results
+  .set(x, "lambda", lambda);
+  .set(x, "V", V);
+
+  x;
 }
 
 decompose.toeplitz.ssa.propack <- function(x,

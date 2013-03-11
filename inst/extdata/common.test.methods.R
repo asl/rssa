@@ -76,8 +76,6 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
   kind <- match.arg(kind);
   svd.method <- match.arg(svd.method);
   svd.methods <- sapply(svd.methods, match.arg, choices = eval(formals()$svd.methods));
-  if (identical(kind, "toeplitz-ssa"))
-    svd.methods <- svd.methods[svd.methods != "svd"];
 
   out <- list(series = series);
 
@@ -146,8 +144,6 @@ test.test.data <- function(what,
   } else {
     svd.methods <- sapply(svd.methods, match.arg, choices = c("eigen", "propack", "svd", "nutrlan"));
   }
-  if (identical(kind, "toeplitz-ssa"))
-    svd.methods <- svd.methods[svd.methods != "svd"];
 
   series <- test.data$series;
   Ls <- pars$Ls;
