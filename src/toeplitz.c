@@ -64,7 +64,6 @@ static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
                                  const double *R, R_len_t L) {
   R_len_t N = 2*L - 1, i;
   fftw_complex *ocirc;
-  fftw_plan p1, p2;
   double *circ;
 
   if (!valid_plan(f, N))

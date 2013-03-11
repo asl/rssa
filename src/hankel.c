@@ -87,7 +87,6 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
                                  const double *F, R_len_t N, R_len_t L) {
   R_len_t K = N - L + 1, i;
   fftw_complex *ocirc;
-  fftw_plan p1, p2;
   double *circ;
 
   if (!valid_plan(f, N))
