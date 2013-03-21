@@ -43,7 +43,7 @@ Lcor <- function(F, L) {
   .Call("Lcor", F, L);
 }
 
-new.tmat <- function(F, fft.plan = NULL, L = (N - 1) %/% 2) {
+new.tmat <- function(F, L = (N - 1) %/% 2, fft.plan = NULL) {
   N <- length(F)
   R <- Lcor(F, L)
 
