@@ -72,6 +72,10 @@ fft.plan.1d <- function(N) {
   .Call("initialize_fft_plan", N)
 }
 
+is.fft.plan <- function(fft.plan) {
+  .Call("is_fft_plan", fft.plan)
+}
+
 new.hmat <- function(F,
                      L = (N - 1) %/% 2,
                      fft.plan = NULL) {

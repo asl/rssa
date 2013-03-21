@@ -628,6 +628,34 @@ SEXP initialize_fft_plan(SEXP rN) {
   return res;
 }
 
+SEXP is_fft_plan(SEXP ptr) {
+  SEXP ans;
+  fft_plan *f;
+
+  PROTECT(ans = allocVector(LGLSXP, 1));
+  LOGICAL(ans)[0] = 1;
+
+  /* object is an external pointer */
+  if (TYPEOF(ptr) != EXTPTRSXP)
+    LOGICAL(ans)[0] = 0;
+
+  /* tag should be 'fft plan' */
+  if (LOGICAL(ans)[0] &&
+      R_ExternalPtrTag(ptr) != install("fft plan"))
+    LOGICAL(ans)[0] = 0;
+
+  /* pointer itself should not be null */
+  if (LOGICAL(ans)[0]) {
+    f = R_ExternalPtrAddr(ptr);
+    if (!f)
+      LOGICAL(ans)[0] = 0;
+  }
+
+  UNPROTECT(1);
+
+  return ans;
+}
+
 static void hmat_finalizer(SEXP ptr) {
   ext_matrix *e;
   hankel_matrix *h;
@@ -652,6 +680,12 @@ static void hmat_finalizer(SEXP ptr) {
 }
 
 SEXP initialize_hmat(SEXP F, SEXP window, SEXP fft_plan) {
+  /* Perform a type checking */
+  if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
+    error("pointer provided is not a fft plan");
+    return NILSXP;
+  }
+
   R_len_t N, L;
   hankel_matrix *h;
   ext_matrix *e;
@@ -811,6 +845,12 @@ SEXP hankelize_one(SEXP U, SEXP V) {
 }
 
 SEXP hankelize_one_fft(SEXP U, SEXP V, SEXP fftplan) {
+  /* Perform a type checking */
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
+    error("pointer provided is not a fft plan");
+    return NILSXP;
+  }
+
   SEXP F = NILSXP;
   fft_plan *plan;
   double *rU = REAL(U), *rV = REAL(V), *rF;
@@ -835,6 +875,12 @@ SEXP hankelize_one_fft(SEXP U, SEXP V, SEXP fftplan) {
 }
 
 SEXP hankelize_multi_fft(SEXP U, SEXP V, SEXP fftplan) {
+  /* Perform a type checking */
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
+    error("pointer provided is not a fft plan");
+    return NILSXP;
+  }
+
   double *rU = REAL(U), *rV = REAL(V), *rF;
   R_len_t L, K, N, i, count;
   SEXP F = NILSXP;
@@ -897,6 +943,12 @@ SEXP hankelize_multi(SEXP U, SEXP V) {
 }
 
 SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fft_plan) {
+  /* Perform a type checking */
+  if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
+    error("pointer provided is not a fft plan");
+    return NILSXP;
+  }
+
   R_len_t intL = INTEGER(L)[0];
   R_len_t i, j;
   R_len_t K = length(F) - intL + 1;
