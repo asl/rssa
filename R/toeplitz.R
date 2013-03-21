@@ -69,11 +69,14 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   .Call("tmatmul", tmat, v, transposed);
 }
 
-.init.toeplitz.ssa <- function(x, ...) {
-  # Initialize FFT plan
-  .set(x, "fft.plan", fft.plan.1d(x$length))
+.get.tmat <- function(x, ...) {
+  tmat <- .get(x, "tmat", allow.null = TRUE)
+  if (is.null(tmat) || !is.tmat(tmat)) {
+    tmat <- new.tmat(.get(x, "F"), L = x$window)
+    .set(x, "tmat", tmat)
+  }
 
-  x
+  tmat
 }
 
 .hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa
@@ -83,28 +86,17 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
                                            ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
-  F <- .get(x, "F");
-
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, fft.plan = fft.plan, L = L)
-  }
-
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- .get(x, "tmat", allow.null = TRUE);
-  if (is.null(T)) {
-    T <- new.tmat(F, L = L);
-  }
+  # Get toeplitz matrix
+  T <- .get.tmat(x, ...);
 
+  # Do decomposition
   S <- trlan.eigen(T, neig = neig, ...,
                    lambda = olambda, U = U);
 
   # Save results
-  .set(x, "hmat", h);
-  .set(x, "tmat", T);
   .set(x, "olambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -112,6 +104,10 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   num <- length(S$d);
   lambda <- numeric(num);
   V <- matrix(nrow = K, ncol = num);
+
+  # Get hankel matrix
+  h <- .get.hmat(x, ...);
+
   for (i in 1:num) {
     Z <- hmatmul(h, S$u[, i], transposed = TRUE);
     lambda[i] <- sqrt(sum(Z^2));
@@ -133,23 +129,25 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not supported for this method.")
 
-  # Build hankel matrix
-  F <- .get(x, "F");
-  fft.plan <- .get(x, "fft.plan")
-  h <- new.hmat(F, fft.plan = fft.plan, L = L);
-
-  # Do decomposition
   if ("neig" %in% names(list(...)))
     warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
             immediate. = TRUE)
 
+  # Build toeplitz matrix
+  F <- .get(x, "F");
   C <- toeplitz(Lcor(F, L));
+
+  # Do decomposition
   S <- eigen(C, symmetric = TRUE);
 
   .set(x, "U", S$vectors);
 
   lambda <- numeric(L);
   V <- matrix(nrow = K, ncol = L);
+
+  # Get hankel matrix
+  h <- .get.hmat(x, ...);
+
   for (i in 1:L) {
     Z <- hmatmul(h, S$vectors[,i], transposed = TRUE);
     lambda[i] <- sqrt(sum(Z^2));
@@ -177,27 +175,16 @@ decompose.toeplitz.ssa.propack <- function(x,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.");
 
-  F <- .get(x, "F");
-
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, fft.plan = fft.plan, L = L);
-  }
-
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- .get(x, "tmat", allow.null = TRUE);
-  if (is.null(T)) {
-    T <- new.tmat(F, L = L)
-  }
+  # Get toeplitz matrix
+  T <- .get.tmat(x, ...);
 
+  # Do decomposition
   S <- propack.svd(T, neig = neig, ...);
 
   # Save results
-  .set(x, "hmat", h);
-  .set(x, "tmat", T);
   .set(x, "olambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -205,6 +192,10 @@ decompose.toeplitz.ssa.propack <- function(x,
   num <- length(S$d);
   lambda <- numeric(num);
   V <- matrix(nrow = K, ncol = num);
+
+  # Get hankel matrix
+  h <- .get.hmat(x, ...);
+
   for (i in 1:num) {
     Z <- hmatmul(h, S$u[, i], transposed = TRUE);
     lambda[i] <- sqrt(sum(Z^2));
