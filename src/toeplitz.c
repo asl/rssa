@@ -403,7 +403,7 @@ static void tmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_tmat(SEXP R, SEXP fft_plan) {
+SEXP initialize_tmat(SEXP R, SEXP fftplan) {
   R_len_t L;
   toeplitz_matrix *t;
   ext_matrix *e;
@@ -421,11 +421,11 @@ SEXP initialize_tmat(SEXP R, SEXP fft_plan) {
 
   /* Build toeplitz circulants for toeplitz matrix */
   t = Calloc(1, toeplitz_matrix);
-  initialize_circulant(t, R_ExternalPtrAddr(fft_plan), REAL(R), L);
+  initialize_circulant(t, R_ExternalPtrAddr(fftplan), REAL(R), L);
   e->matrix = t;
 
   /* Make an external pointer envelope */
-  tmat = R_MakeExternalPtr(e, install("external matrix"), fft_plan);
+  tmat = R_MakeExternalPtr(e, install("external matrix"), fftplan);
   R_RegisterCFinalizer(tmat, tmat_finalizer);
 
   return tmat;
