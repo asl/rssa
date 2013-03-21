@@ -52,7 +52,7 @@ hankel <- function(X, L) {
 }
 
 .hankelize.one.1d.ssa <- function(x, U, V) {
-  fft.plan <- .get(x, "fft.plan")
+  fft.plan <- .get.fft.plan(x);
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_one_fft", U, V, fft.plan);
 }
@@ -99,11 +99,24 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hmatmul", hmat, v, transposed);
 }
 
-.init.1d.ssa <- function(x, ...) {
-  # Initialize FFT plan
-  .set(x, "fft.plan", fft.plan.1d(x$length))
+.get.fft.plan <- function(x, ...) {
+  fft.plan <- .get(x, "fft.plan", allow.null = TRUE)
+  if (is.null(fft.plan) || identical(fft.plan, new("externalptr"))) {
+    fft.plan <- fft.plan.1d(x$length)
+    .set(x, "fft.plan", fft.plan)
+  }
 
-  x
+  fft.plan;
+}
+
+.get.hmat <- function(x, ...) {
+  hmat <- .get(x, "hmat", allow.null = TRUE)
+  if (is.null(hmat) || !is.hmat(hmat)) {
+    hmat <- new.hmat(.get(x, "F"), L = x$window, fft.plan = .get.fft.plan(x, ...))
+    .set(x, "hmat", hmat)
+  }
+
+  hmat
 }
 
 decompose.1d.ssa <- function(x,
@@ -126,18 +139,12 @@ decompose.1d.ssa.svd <- function(x,
 
   # Build hankel matrix
   F <- .get(x, "F");
-  hmat <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(hmat)) {
-    fft.plan <- .get(x, "fft.plan")
-    hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
-  }
   h <- hankel(F, L = L);
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig);
 
   # Save results
-  .set(x, "hmat", hmat);
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -164,23 +171,17 @@ decompose.1d.ssa.eigen <- function(x, ...,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
+  # Build L-cov matrix
   F <- .get(x, "F");
-  fft.plan <- .get(x, "fft.plan")
-
-  hmat <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(hmat)) {
-    hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
-  }
+  C <- Lcov.matrix(F, L = L, fft.plan = .get.fft.plan(x, ...));
 
   # Do decomposition
-  S <- eigen(Lcov.matrix(F, L = L, fft.plan = fft.plan), symmetric = TRUE);
+  S <- eigen(C, symmetric = TRUE);
 
   # Fix small negative values
   S$values[S$values < 0] <- 0;
 
   # Save results
-  .set(x, "hmat", hmat);
   .set(x, "lambda", sqrt(S$values));
   .set(x, "U", S$vectors);
 
@@ -197,16 +198,13 @@ decompose.1d.ssa.propack <- function(x,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
 
-  F <- .get(x, "F");
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, fft.plan = fft.plan, L = L)
-  }
+  # Get hankel matrix
+  h <- .get.hmat(x, ...);
+
+  # Do decomposition
   S <- propack.svd(h, neig = neig, ...);
 
   # Save results
-  .set(x, "hmat", h);
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -221,21 +219,17 @@ decompose.1d.ssa.nutrlan <- function(x,
                                        ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    F <- .get(x, "F")
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, fft.plan = fft.plan, L = L)
-  }
-
   lambda <- .get(x, "lambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
+  # Get hankel matrix
+  h <- .get.hmat(x, ...);
+
+  # Do decomposition
   S <- trlan.svd(h, neig = neig, ...,
                  lambda = lambda, U = U);
 
   # Save results
-  .set(x, "hmat", h);
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -246,7 +240,7 @@ decompose.1d.ssa.nutrlan <- function(x,
 calc.v.1d.ssa <- function(x, idx, env = .GlobalEnv, ...) {
   lambda <- .get(x, "lambda")[idx];
   U <- .get(x, "U")[, idx, drop = FALSE];
-  h <- .get(x, "hmat");
+  h <- .get.hmat(x, ...);
 
   invisible(sapply(1:length(idx),
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
