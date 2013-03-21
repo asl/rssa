@@ -679,9 +679,9 @@ static void hmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_hmat(SEXP F, SEXP window, SEXP fft_plan) {
+SEXP initialize_hmat(SEXP F, SEXP window, SEXP fftplan) {
   /* Perform a type checking */
-  if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
     error("pointer provided is not a fft plan");
     return NILSXP;
   }
@@ -705,11 +705,11 @@ SEXP initialize_hmat(SEXP F, SEXP window, SEXP fft_plan) {
   /* Build toeplitz circulants for hankel matrix */
   h = Calloc(1, hankel_matrix);
 
-  initialize_circulant(h, R_ExternalPtrAddr(fft_plan), REAL(F), N, L);
+  initialize_circulant(h, R_ExternalPtrAddr(fftplan), REAL(F), N, L);
   e->matrix = h;
 
   /* Make an external pointer envelope */
-  hmat = R_MakeExternalPtr(e, install("external matrix"), fft_plan);
+  hmat = R_MakeExternalPtr(e, install("external matrix"), fftplan);
   R_RegisterCFinalizer(hmat, hmat_finalizer);
 
   return hmat;
@@ -942,9 +942,9 @@ SEXP hankelize_multi(SEXP U, SEXP V) {
   return F;
 }
 
-SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fft_plan) {
+SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fftplan) {
   /* Perform a type checking */
-  if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
     error("pointer provided is not a fft plan");
     return NILSXP;
   }
@@ -957,7 +957,7 @@ SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fft_plan) {
   PROTECT(ans = allocMatrix(REALSXP, intL, intL));
   double *rans = REAL(ans);
   double *pF = REAL(F);
-  compute_L_covariation_matrix_first_row(REAL(F), length(F), intL, rans, R_ExternalPtrAddr(fft_plan));
+  compute_L_covariation_matrix_first_row(REAL(F), length(F), intL, rans, R_ExternalPtrAddr(fftplan));
 
   for (j = 1; j < intL; ++j)
     rans[intL*j] = rans[j];
