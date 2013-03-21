@@ -129,7 +129,7 @@ decompose.1d.ssa.svd <- function(x,
   hmat <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(hmat)) {
     fft.plan <- .get(x, "fft.plan")
-    hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
+    hmat <- new.hmat(F, L = L, fft.plan = fft.plan)
   }
   h <- hankel(F, L = L);
 
@@ -170,7 +170,7 @@ decompose.1d.ssa.eigen <- function(x, ...,
 
   hmat <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(hmat)) {
-    hmat <- new.hmat(F, fft.plan = fft.plan, L = L)
+    hmat <- new.hmat(F, L = L, fft.plan = fft.plan)
   }
 
   # Do decomposition
@@ -201,7 +201,7 @@ decompose.1d.ssa.propack <- function(x,
   h <- .get(x, "hmat", allow.null = TRUE);
   if (is.null(h)) {
     fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, fft.plan = fft.plan, L = L)
+    h <- new.hmat(F, L = L, fft.plan = fft.plan)
   }
   S <- propack.svd(h, neig = neig, ...);
 
@@ -225,7 +225,7 @@ decompose.1d.ssa.nutrlan <- function(x,
   if (is.null(h)) {
     F <- .get(x, "F")
     fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, fft.plan = fft.plan, L = L)
+    h <- new.hmat(F, L = L, fft.plan = fft.plan)
   }
 
   lambda <- .get(x, "lambda", allow.null = TRUE);
