@@ -43,3 +43,4 @@ static inline unsigned valid_plan(const fft_plan *f, R_len_t N) {
   return (f-> N == N);
 }
 
+SEXP is_fft_plan(SEXP ptr);
