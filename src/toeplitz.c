@@ -404,6 +404,12 @@ static void tmat_finalizer(SEXP ptr) {
 }
 
 SEXP initialize_tmat(SEXP R, SEXP fftplan) {
+  /* Perform a type checking */
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
+    error("pointer provided is not a fft plan");
+    return NILSXP;
+  }
+
   R_len_t L;
   toeplitz_matrix *t;
   ext_matrix *e;
