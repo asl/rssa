@@ -27,12 +27,22 @@
 .storage <- function(x)
   attr(x, ".env");
 
-.get <- function(x, name, allow.null = FALSE) {
-  ret <- NULL;
-  if (!allow.null || .exists(x, name))
-    ret <- get(name, envir = .storage(x));
+.get <- function(x, name, default, allow.null = FALSE) {
+  ret <- NULL
+  # Make sure default is evaluated only when necessary
+  if (.exists(x, name))
+    ret <- get(name, envir = .storage(x))
+  else if (!allow.null || !missing(default))
+    ret <- default
 
-  ret;
+  ret
+}
+
+.get.or.create <- function(x, name, default) {
+  (if (.exists(x, name))
+    get(name, envir = .storage(x))
+  else
+   assign(name, default, envir = .storage(x), inherits = FALSE))
 }
 
 .set <- function(x, name, value)

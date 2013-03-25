@@ -130,18 +130,16 @@ decompose.1d.ssa.svd <- function(x,
 
   # Build hankel matrix
   F <- .get(x, "F");
-  hmat <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(hmat)) {
-    fft.plan <- .get(x, "fft.plan")
-    hmat <- new.hmat(F, L = L, fft.plan = fft.plan)
-  }
+  hmat <-
+    .get.or.create(x, "hmat",
+                   new.hmat(F, L = L,
+                            fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(x$length))))
   h <- hankel(F, L = L);
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig);
 
   # Save results
-  .set(x, "hmat", hmat);
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -162,31 +160,25 @@ Lcov.matrix <- function(F,
 
 decompose.1d.ssa.eigen <- function(x, ...,
                                    force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F");
-  fft.plan <- .get(x, "fft.plan")
-
-  hmat <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(hmat)) {
-    hmat <- new.hmat(F, L = L, fft.plan = fft.plan)
-  }
+  F <- .get(x, "F")
+  fft.plan <- .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
 
   # Do decomposition
-  S <- eigen(Lcov.matrix(F, L = L, fft.plan = fft.plan), symmetric = TRUE);
+  S <- eigen(Lcov.matrix(F, L = L, fft.plan = fft.plan), symmetric = TRUE)
 
   # Fix small negative values
-  S$values[S$values < 0] <- 0;
+  S$values[S$values < 0] <- 0
 
   # Save results
-  .set(x, "hmat", hmat);
-  .set(x, "lambda", sqrt(S$values));
-  .set(x, "U", S$vectors);
+  .set(x, "lambda", sqrt(S$values))
+  .set(x, "U", S$vectors)
 
   x;
 }
@@ -201,16 +193,13 @@ decompose.1d.ssa.propack <- function(x,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
 
-  F <- .get(x, "F");
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, L = L, fft.plan = fft.plan)
-  }
-  S <- propack.svd(h, neig = neig, ...);
+  h <- .get.or.create(x, "hmat",
+                      new.hmat(F = .get(x, "F"),
+                               L = x$window,
+                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(x$length))))
+  S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "hmat", h);
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -225,12 +214,10 @@ decompose.1d.ssa.nutrlan <- function(x,
                                        ...) {
   N <- x$length; L <- x$window; K <- N - L + 1;
 
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    F <- .get(x, "F")
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, L = L, fft.plan = fft.plan)
-  }
+  h <- .get.or.create(x, "hmat",
+                      new.hmat(F = .get(x, "F"),
+                               L = x$window,
+                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(x$length))))
 
   lambda <- .get(x, "lambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
@@ -239,7 +226,6 @@ decompose.1d.ssa.nutrlan <- function(x,
                  lambda = lambda, U = U);
 
   # Save results
-  .set(x, "hmat", h);
   .set(x, "lambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -250,7 +236,10 @@ decompose.1d.ssa.nutrlan <- function(x,
 calc.v.1d.ssa <- function(x, idx, env = .GlobalEnv, ...) {
   lambda <- .get(x, "lambda")[idx];
   U <- .get(x, "U")[, idx, drop = FALSE];
-  h <- .get(x, "hmat");
+  h <- .get.or.create(x, "hmat",
+                      new.hmat(F = .get(x, "F"),
+                               L = x$window,
+                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(x$length))))
 
   invisible(sapply(1:length(idx),
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));

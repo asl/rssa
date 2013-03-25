@@ -84,27 +84,19 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   F <- .get(x, "F");
-
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, L = L, fft.plan = fft.plan)
-  }
+  h <- .get.or.create(x, "hmat",
+                      new.hmat(F = F, L = L,
+                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(N))))
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- .get(x, "tmat", allow.null = TRUE);
-  if (is.null(T)) {
-    T <- new.tmat(F, L = L);
-  }
+  T <- .get.or.create(x, "tmat", new.tmat(F = F, L = L))
 
   S <- trlan.eigen(T, neig = neig, ...,
                    lambda = olambda, U = U);
 
   # Save results
-  .set(x, "hmat", h);
-  .set(x, "tmat", T);
   .set(x, "olambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
@@ -134,9 +126,10 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F");
-  fft.plan <- .get(x, "fft.plan")
-  h <- new.hmat(F, L = L, fft.plan = fft.plan);
+  F <- .get(x, "F")
+  h <- .get.or.create(x, "hmat",
+                      new.hmat(F = F, L = L,
+                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(N))))
 
   # Do decomposition
   if ("neig" %in% names(list(...)))
@@ -178,26 +171,18 @@ decompose.toeplitz.ssa.propack <- function(x,
     stop("Continuation of decompostion is not yet implemented for this method.");
 
   F <- .get(x, "F");
-
-  h <- .get(x, "hmat", allow.null = TRUE);
-  if (is.null(h)) {
-    fft.plan <- .get(x, "fft.plan")
-    h <- new.hmat(F, L = L, fft.plan = fft.plan);
-  }
+  h <- .get.or.create(x, "hmat",
+                      new.hmat(F = F, L = L,
+                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(N))))
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- .get(x, "tmat", allow.null = TRUE);
-  if (is.null(T)) {
-    T <- new.tmat(F, L = L)
-  }
+  T <- .get.or.create(x, "tmat", new.tmat(F = F, L = L))
 
   S <- propack.svd(T, neig = neig, ...);
 
   # Save results
-  .set(x, "hmat", h);
-  .set(x, "tmat", T);
   .set(x, "olambda", S$d);
   if (!is.null(S$u))
     .set(x, "U", S$u);
