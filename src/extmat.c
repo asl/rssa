@@ -24,6 +24,16 @@
 
 #include "extmat.h"
 
+SEXP is_extptrnull(SEXP ptr) {
+  SEXP ans;
+
+  PROTECT(ans = allocVector(LGLSXP, 1));
+  LOGICAL(ans)[0] = (R_ExternalPtrAddr(ptr) == NULL);
+  UNPROTECT(1);
+
+  return ans;
+}
+
 SEXP is_extmat(SEXP ptr) {
   SEXP ans;
   ext_matrix *e = NULL;

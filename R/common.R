@@ -39,8 +39,8 @@
 }
 
 .get.or.create <- function(x, name, default) {
-  (if (.exists(x, name))
-    get(name, envir = .storage(x))
+  (if (.exists.non.null(x, name))
+   get(name, envir = .storage(x))
   else
    assign(name, default, envir = .storage(x), inherits = FALSE))
 }
@@ -50,6 +50,19 @@
 
 .exists <- function(x, name)
   exists(name, envir = .storage(x), inherits = FALSE);
+
+.is.extptrnull <- function(x)
+  .Call("is_extptrnull", x)
+
+.exists.non.null <- function(x, name) {
+  ret <- FALSE
+
+  if (exists(name, envir = .storage(x), inherits = FALSE)) {
+    val <- get(name, envir = .storage(x))
+    ret <- !is.null(val) && (typeof(val) != "externalptr" || !.is.extptrnull(val))
+  }
+  ret
+}
 
 .remove <- function(x, name)
   rm(list = name, envir = .storage(x), inherits = FALSE);
