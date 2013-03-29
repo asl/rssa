@@ -32,3 +32,7 @@ fft.plan.1d <- function(N) {
 is.fft.plan <- function(fft.plan) {
   .Call("is_fft_plan", fft.plan)
 }
+
+dim.fft.plan <- function(fft.plan) {
+  .Call("dim_fft_plan", fft.plan)
+}

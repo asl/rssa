@@ -141,3 +141,21 @@ SEXP is_fft_plan(SEXP ptr) {
 
   return ans;
 }
+
+
+SEXP dim_fft_plan(SEXP fftplan) {
+  /* Perform a type checking */
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
+    error("pointer provided is not a fft plan");
+    return NILSXP;
+  }
+
+  SEXP ans;
+  fft_plan *f = R_ExternalPtrAddr(fftplan);
+
+  PROTECT(ans = allocVector(INTSXP, f->d));
+  memcpy(INTEGER(ans), f->dim, f->d * sizeof(R_len_t));
+
+  UNPROTECT(1);
+  return ans;
+}
