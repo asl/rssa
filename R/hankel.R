@@ -52,7 +52,7 @@ hankel <- function(X, L) {
 }
 
 .hankelize.one.1d.ssa <- function(x, U, V) {
-  fft.plan <- .get(x, "fft.plan")
+  fft.plan <- .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
   storage.mode(U) <- storage.mode(V) <- "double";
   .Call("hankelize_one_fft", U, V, fft.plan);
 }
