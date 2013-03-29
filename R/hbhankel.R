@@ -21,42 +21,42 @@
 #   Routines for hankel-block hankel (aka 2d) SSA
 
 tcircpile <- function(F, Lx = (Nx - 1) %/% 2, Ly = (Ny - 1) %/% 2) {
-  Nx <- nrow(F); Ny <- ncol(F);
-  Kx <- Nx - Lx + 1; Ky <- Ny - Ly + 1;
+  Nx <- nrow(F); Ny <- ncol(F)
+  Kx <- Nx - Lx + 1; Ky <- Ny - Ly + 1
 
   .res <- list(Lx = Lx, Ly = Ly,
-               Kx = Kx, Ky = Ky);
+               Kx = Kx, Ky = Ky)
 
-  TF <- cbind(F[,Ky:Ny],F[,1:(Ky-1)]);
-  .res$Cblock <- fft(rbind(TF[Kx:Nx,],TF[1:(Kx-1),]));
+  TF <- cbind(F[,Ky:Ny],F[,1:(Ky-1)])
+  .res$Cblock <- fft(rbind(TF[Kx:Nx,],TF[1:(Kx-1),]))
 
-  .res;
+  .res
 }
 
 hbhmatmul.old <- function(C, v) {
-  revv <- matrix(c(rev(v), rep(0, C$Kx*(C$Ly-1))), C$Kx, ncol(C$Cblock));
-  revv <- rbind(revv, matrix(0, (C$Lx-1), ncol(revv)));
+  revv <- matrix(c(rev(v), rep(0, C$Kx*(C$Ly-1))), C$Kx, ncol(C$Cblock))
+  revv <- rbind(revv, matrix(0, (C$Lx-1), ncol(revv)))
 
-  mult <- fft(C$Cblock * fft(revv), inverse = TRUE);
+  mult <- fft(C$Cblock * fft(revv), inverse = TRUE)
 
-  Re((mult/(prod(dim(C$Cblock))))[1:C$Lx,1:C$Ly]);
+  Re((mult/(prod(dim(C$Cblock))))[1:C$Lx,1:C$Ly])
 }
 
 thbhmatmul.old <- function(C, v) {
-  revv <- matrix(c(rep(0, C$Lx*(C$Ky-1)), rev(v)), C$Lx, ncol(C$Cblock));
-  revv <- rbind(matrix(0, (C$Kx-1), ncol(revv)), revv);
+  revv <- matrix(c(rep(0, C$Lx*(C$Ky-1)), rev(v)), C$Lx, ncol(C$Cblock))
+  revv <- rbind(matrix(0, (C$Kx-1), ncol(revv)), revv)
 
-  mult <- fft(C$Cblock * fft(revv), inverse = TRUE);
+  mult <- fft(C$Cblock * fft(revv), inverse = TRUE)
 
-  Re((mult/(prod(dim(C$Cblock))))[C$Lx:(C$Lx+C$Kx-1),C$Ly:(C$Ly+C$Ky-1)]);
+  Re((mult/(prod(dim(C$Cblock))))[C$Lx:(C$Lx+C$Kx-1),C$Ly:(C$Ly+C$Ky-1)])
 }
 
 new.hbhmat <- function(F,
                        L = (N - 1) %/% 2) {
-  N <- dim(F);
-  storage.mode(F) <- "double";
-  storage.mode(L) <- "integer";
-  h <- .Call("initialize_hbhmat", F, L[1], L[2]);
+  N <- dim(F)
+  storage.mode(F) <- "double"
+  storage.mode(L) <- "integer"
+  h <- .Call("initialize_hbhmat", F, L[1], L[2])
 }
 
 hbhcols <- function(h) {
@@ -72,83 +72,83 @@ is.hbhmat <- function(h) {
 }
 
 hbhmatmul <- function(hmat, v, transposed = FALSE) {
-  storage.mode(v) <- "double";
-  storage.mode(transposed) <- "logical";
-  .Call("hbhmatmul", hmat, v, transposed);
+  storage.mode(v) <- "double"
+  storage.mode(transposed) <- "logical"
+  .Call("hbhmatmul", hmat, v, transposed)
 }
 
 decompose.2d.ssa <- function(x,
                              neig = min(50, prod(L), prod(K)),
                              ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for 2D.SSA!")
 }
 
 decompose.2d.ssa.nutrlan <- function(x,
                                      neig = min(50, prod(L), prod(K)),
                                      ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1
 
-  h <- .get(x, "hmat", allow.null = TRUE);
+  h <- .get(x, "hmat", allow.null = TRUE)
   if (is.null(h)) {
-    F <- .get(x, "F");
-    h <- new.hbhmat(F, L = L);
+    F <- .get(x, "F")
+    h <- new.hbhmat(F, L = L)
   }
 
-  lambda <- .get(x, "lambda", allow.null = TRUE);
-  U <- .get(x, "U", allow.null = TRUE);
+  lambda <- .get(x, "lambda", allow.null = TRUE)
+  U <- .get(x, "U", allow.null = TRUE)
 
   S <- trlan.svd(h, neig = neig, ...,
-                 lambda = lambda, U = U);
+                 lambda = lambda, U = U)
 
   # Save results
-  .set(x, "hmat", h);
-  .set(x, "lambda", S$d);
+  .set(x, "hmat", h)
+  .set(x, "lambda", S$d)
   if (!is.null(S$u))
-    .set(x, "U", S$u);
+    .set(x, "U", S$u)
 
-  x;
+  x
 }
 
 decompose.2d.ssa.propack <- function(x,
-                                     neig = min(50,prod(L), prod(K)),
+                                     neig = min(50, prod(L), prod(K)),
                                      ...,
                                      force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
 
-  F <- .get(x, "F");
-  h <- new.hbhmat(F, L = L);
+  F <- .get(x, "F")
+  h <- new.hbhmat(F, L = L)
 
-  S <- propack.svd(h, neig = neig, ...);
+  S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "hmat", h);
-  .set(x, "lambda", S$d);
+  .set(x, "hmat", h)
+  .set(x, "lambda", S$d)
   if (!is.null(S$u))
-    .set(x, "U", S$u);
+    .set(x, "U", S$u)
   if (!is.null(S$v))
-    .set(x, "V", S$v);
+    .set(x, "V", S$v)
 
-  x;
+  x
 }
 
 calc.v.2d.ssa <- function(x, idx, ...) {
-  lambda <- .get(x, "lambda")[idx];
-  U <- .get(x, "U")[, idx, drop = FALSE];
-  h <- .get(x, "hmat");
+  lambda <- .get(x, "lambda")[idx]
+  U <- .get(x, "U")[, idx, drop = FALSE]
+  h <- .get(x, "hmat")
 
   invisible(sapply(1:length(idx),
-                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
+                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]))
 }
 
 .hankelize.one.2d.ssa <- function(x, U, V) {
-  h <- .get(x, "hmat");
-  storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hbhankelize_one_fft", U, V, h);
+  h <- .get(x, "hmat")
+  storage.mode(U) <- storage.mode(V) <- "double"
+  .Call("hbhankelize_one_fft", U, V, h)
 }
 
 #mes <- function(Nx = 200, Ny = 90, Lx = 100, Ly = 50, n = 50) {
