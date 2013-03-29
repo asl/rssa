@@ -77,6 +77,11 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hbhmatmul", hmat, v, transposed)
 }
 
+.get.or.create.hbhmat <- function(x) {
+  .get.or.create(x, "hmat",
+                 new.hbhmat(x$F, L = x$window))
+}
+
 decompose.2d.ssa <- function(x,
                              neig = min(50, prod(L), prod(K)),
                              ...) {
@@ -89,11 +94,7 @@ decompose.2d.ssa.nutrlan <- function(x,
                                      ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
-  h <- .get(x, "hmat", allow.null = TRUE)
-  if (is.null(h)) {
-    F <- .get(x, "F")
-    h <- new.hbhmat(F, L = L)
-  }
+  h <- .get.or.create.hbhmat(x)
 
   lambda <- .get(x, "lambda", allow.null = TRUE)
   U <- .get(x, "U", allow.null = TRUE)
@@ -102,7 +103,6 @@ decompose.2d.ssa.nutrlan <- function(x,
                  lambda = lambda, U = U)
 
   # Save results
-  .set(x, "hmat", h)
   .set(x, "lambda", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
@@ -120,13 +120,11 @@ decompose.2d.ssa.propack <- function(x,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
 
-  F <- .get(x, "F")
-  h <- new.hbhmat(F, L = L)
+  h <- .get.or.create.hbhmat(x)
 
   S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "hmat", h)
   .set(x, "lambda", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
@@ -139,14 +137,14 @@ decompose.2d.ssa.propack <- function(x,
 calc.v.2d.ssa <- function(x, idx, ...) {
   lambda <- .get(x, "lambda")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
-  h <- .get(x, "hmat")
+  h <- .get.or.create.hbhmat(x)
 
   invisible(sapply(1:length(idx),
                    function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]))
 }
 
 .hankelize.one.2d.ssa <- function(x, U, V) {
-  h <- .get(x, "hmat")
+  h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hbhankelize_one_fft", U, V, h)
 }
