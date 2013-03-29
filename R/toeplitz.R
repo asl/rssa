@@ -71,12 +71,16 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 
 .init.toeplitz.ssa <- function(x, ...) {
   # Initialize FFT plan
-  .set(x, "fft.plan", fft.plan.1d(x$length))
+  .get.or.create.fft.plan(x)
 
   x
 }
 
 .hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa
+
+.get.or.create.tmat <- function(x) {
+  .get.or.create(x, "tmat", new.tmat(F = x$F, L = x$window))
+}
 
 decompose.toeplitz.ssa.nutrlan <- function(x,
                                            neig = min(50, L, K),
@@ -84,14 +88,12 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1;
 
   F <- .get(x, "F");
-  h <- .get.or.create(x, "hmat",
-                      new.hmat(F = F, L = L,
-                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(N))))
+  h <- .get.or.create.hmat(x)
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- .get.or.create(x, "tmat", new.tmat(F = F, L = L))
+  T <- .get.or.create.tmat(x)
 
   S <- trlan.eigen(T, neig = neig, ...,
                    lambda = olambda, U = U);
@@ -127,9 +129,7 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
 
   # Build hankel matrix
   F <- .get(x, "F")
-  h <- .get.or.create(x, "hmat",
-                      new.hmat(F = F, L = L,
-                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(N))))
+  h <- .get.or.create.hmat(x)
 
   # Do decomposition
   if ("neig" %in% names(list(...)))
@@ -171,14 +171,12 @@ decompose.toeplitz.ssa.propack <- function(x,
     stop("Continuation of decompostion is not yet implemented for this method.");
 
   F <- .get(x, "F");
-  h <- .get.or.create(x, "hmat",
-                      new.hmat(F = F, L = L,
-                               fft.plan = .get.or.create(x, "fft.plan", fft.plan.1d(N))))
+  h <- .get.or.create.hmat(x)
 
   olambda <- .get(x, "olambda", allow.null = TRUE);
   U <- .get(x, "U", allow.null = TRUE);
 
-  T <- .get.or.create(x, "tmat", new.tmat(F = F, L = L))
+  T <- .get.or.create.tmat(x)
 
   S <- propack.svd(T, neig = neig, ...);
 
