@@ -66,7 +66,7 @@ static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
   fftw_complex *ocirc;
   double *circ;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -217,7 +217,7 @@ static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
   double *work;
   complex double *circ;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */

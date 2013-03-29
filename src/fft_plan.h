@@ -36,11 +36,8 @@ typedef struct {
   fftw_plan r2c_plan;
   fftw_plan c2r_plan;
 #endif
-  R_len_t N;
+  R_len_t d, *dim;
 } fft_plan;
 
-static inline unsigned valid_plan(const fft_plan *f, R_len_t N) {
-  return (f-> N == N);
-}
-
+unsigned valid_plan(const fft_plan *f, R_len_t d, const R_len_t *dim);
 SEXP is_fft_plan(SEXP ptr);

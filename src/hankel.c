@@ -66,7 +66,7 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   fftw_complex *ocirc;
   double *circ;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -176,7 +176,7 @@ static R_INLINE void hankelize_fft(double *F,
   double *iU, *iV;
   fftw_complex *cU, *cV;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -276,7 +276,7 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   double *work;
   complex double * circ;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -411,7 +411,7 @@ static R_INLINE void hankelize_fft(double *F,
   double *work;
   complex double *iU, *iV;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Estimate the best plans for given input length */
@@ -473,7 +473,7 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
   double *work;
   complex double *iF, *iFc;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Length's check */

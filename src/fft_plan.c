@@ -25,10 +25,25 @@
 
 #include "fft_plan.h"
 
+unsigned valid_plan(const fft_plan *f, R_len_t d, const R_len_t *dim) {
+  if (d != f->d)
+    return 0;
+
+  int i;
+  for (i = 0; i < d; ++i) {
+    if (dim[i] != f->dim[i])
+      return 0;
+  }
+
+  return 1;
+}
+
 #if HAVE_FFTW3_H
 static void free_plan(fft_plan *f) {
   fftw_destroy_plan(f->r2c_plan);
   fftw_destroy_plan(f->c2r_plan);
+
+  Free(f->dim);
 }
 
 static void initialize_plan(fft_plan *f, R_len_t N) {
@@ -43,18 +58,22 @@ static void initialize_plan(fft_plan *f, R_len_t N) {
   f->r2c_plan = fftw_plan_dft_r2c_1d(N, circ, ocirc, FFTW_ESTIMATE);
   f->c2r_plan = fftw_plan_dft_c2r_1d(N, ocirc, circ, FFTW_ESTIMATE);
 
-  f->N = N;
+  f->d = 1;
+  f->dim = Calloc(1, R_len_t);
+  f->dim[0] = N;
 
   fftw_free(circ);
   fftw_free(ocirc);
 }
 #else
 static void initialize_plan(fft_plan *f, R_len_t N) {
-  f->N = N;
+  f->d = 1;
+  f->dim = Calloc(1, R_len_t);
+  f->dim[0] = N;
 }
 
 static void free_plan(fft_plan *f) {
-  (void)f;
+  Free(f->dim);
 }
 #endif
 
