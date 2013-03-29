@@ -20,35 +20,35 @@
 #   Routines for normal hankel SSA
 
 tcirc.old <- function(F, L = (N - 1) %/% 2) {
-  N <- length(F); K = N - L + 1;
-  .res <- list();
-  .res$C <- as.vector(fft(c(F[K:N], F[1:(K-1)])));
-  .res$L <- L;
-  return (.res);
+  N <- length(F); K = N - L + 1
+  .res <- list()
+  .res$C <- as.vector(fft(c(F[K:N], F[1:(K-1)])))
+  .res$L <- L
+  return (.res)
 }
 
 hmatmul.old <- function(C, v) {
-  v <- as.vector(fft(C$C * fft(c(rev(v), rep(0, C$L-1))), inverse = TRUE));
-  Re((v/length(C$C))[1:C$L]);
+  v <- as.vector(fft(C$C * fft(c(rev(v), rep(0, C$L-1))), inverse = TRUE))
+  Re((v/length(C$C))[1:C$L])
 }
 
 hankel <- function(X, L) {
   if (is.matrix(X) && nargs() == 1) {
-     L <- nrow(X); K <- ncol(X); N <- K + L - 1;
-     left  <- c(1:L, L*(2:K));
-     right <- c(1+L*(0:(K-1)), ((K-1)*L+2):(K*L));
-     v <- sapply(1:N, function(i) mean(X[seq.int(left[i], right[i], by = L-1)]));
-     return (v);
+     L <- nrow(X); K <- ncol(X); N <- K + L - 1
+     left  <- c(1:L, L*(2:K))
+     right <- c(1+L*(0:(K-1)), ((K-1)*L+2):(K*L))
+     v <- sapply(1:N, function(i) mean(X[seq.int(left[i], right[i], by = L-1)]))
+     return (v)
   }
 
   # Coerce output to vector, if necessary
   if (!is.vector(X))
-    X <- as.vector(X);
-  N <- length(X);
+    X <- as.vector(X)
+  N <- length(X)
   if (missing(L))
-    L <- (N - 1) %/% 2;
-  K <- N - L + 1;
-  outer(1:L, 1:K, function(x,y) X[x+y-1]);
+    L <- (N - 1) %/% 2
+  K <- N - L + 1
+  outer(1:L, 1:K, function(x,y) X[x+y-1])
 }
 
 .get.or.create.fft.plan <- function(x) {
@@ -62,19 +62,19 @@ hankel <- function(X, L) {
 }
 
 .hankelize.one.1d.ssa <- function(x, U, V) {
-  fft.plan <- .get.or.create.fft.plan(x);
-  storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_one_fft", U, V, fft.plan);
+  fft.plan <- .get.or.create.fft.plan(x)
+  storage.mode(U) <- storage.mode(V) <- "double"
+  .Call("hankelize_one_fft", U, V, fft.plan)
 }
 
 .hankelize.multi <- function(U, V) {
-  storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_multi", U, V);
+  storage.mode(U) <- storage.mode(V) <- "double"
+  .Call("hankelize_multi", U, V)
 }
 
 .hankelize.multi.hankel <- function(U, V, fft.plan) {
-  storage.mode(U) <- storage.mode(V) <- "double";
-  .Call("hankelize_multi_fft", U, V, fft.plan);
+  storage.mode(U) <- storage.mode(V) <- "double"
+  .Call("hankelize_multi_fft", U, V, fft.plan)
 }
 
 fft.plan.1d <- function(N) {
@@ -124,44 +124,44 @@ decompose.1d.ssa <- function(x,
                              neig = min(50, L, K),
                              ...,
                              force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
-  stop("Unsupported SVD method for 1D SSA!");
+  N <- x$length; L <- x$window; K <- N - L + 1
+  stop("Unsupported SVD method for 1D SSA!")
 }
 
 decompose.1d.ssa.svd <- function(x,
                                  neig = min(L, K),
                                  ...,
                                  force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F");
-  h <- hankel(F, L = L);
+  F <- .get(x, "F")
+  h <- hankel(F, L = L)
 
   # Do decomposition
-  S <- svd(h, nu = neig, nv = neig);
+  S <- svd(h, nu = neig, nv = neig)
 
   # Save results
-  .set(x, "lambda", S$d);
+  .set(x, "lambda", S$d)
   if (!is.null(S$u))
-    .set(x, "U", S$u);
+    .set(x, "U", S$u)
   if (!is.null(S$v))
-    .set(x, "V", S$v);
+    .set(x, "V", S$v)
 
-  x;
+  x
 }
 
 Lcov.matrix <- function(F,
                         L = (N - 1) %/% 2,
                         fft.plan = NULL) {
-  N <- length(F);
-  storage.mode(F) <- "double";
-  storage.mode(L) <- "integer";
-  .Call("Lcov_matrix", F, L, if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan);
+  N <- length(F)
+  storage.mode(F) <- "double"
+  storage.mode(L) <- "integer"
+  .Call("Lcov_matrix", F, L, if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan)
 }
 
 decompose.1d.ssa.eigen <- function(x, ...,
@@ -186,14 +186,14 @@ decompose.1d.ssa.eigen <- function(x, ...,
   .set(x, "lambda", sqrt(S$values))
   .set(x, "U", S$vectors)
 
-  x;
+  x
 }
 
 decompose.1d.ssa.propack <- function(x,
                                      neig = min(50, L, K),
                                      ...,
                                      force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
@@ -203,43 +203,43 @@ decompose.1d.ssa.propack <- function(x,
   S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "lambda", S$d);
+  .set(x, "lambda", S$d)
   if (!is.null(S$u))
-    .set(x, "U", S$u);
+    .set(x, "U", S$u)
   if (!is.null(S$v))
-    .set(x, "V", S$v);
+    .set(x, "V", S$v)
 
-  x;
+  x
 }
 
 decompose.1d.ssa.nutrlan <- function(x,
                                      neig = min(50, L, K),
                                        ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1;
+  N <- x$length; L <- x$window; K <- N - L + 1
 
   h <- .get.or.create.hmat(x)
 
-  lambda <- .get(x, "lambda", allow.null = TRUE);
-  U <- .get(x, "U", allow.null = TRUE);
+  lambda <- .get(x, "lambda", allow.null = TRUE)
+  U <- .get(x, "U", allow.null = TRUE)
 
   S <- trlan.svd(h, neig = neig, ...,
-                 lambda = lambda, U = U);
+                 lambda = lambda, U = U)
 
   # Save results
-  .set(x, "lambda", S$d);
+  .set(x, "lambda", S$d)
   if (!is.null(S$u))
-    .set(x, "U", S$u);
+    .set(x, "U", S$u)
 
-  x;
+  x
 }
 
 calc.v.1d.ssa <- function(x, idx, env = .GlobalEnv, ...) {
-  lambda <- .get(x, "lambda")[idx];
-  U <- .get(x, "U")[, idx, drop = FALSE];
+  lambda <- .get(x, "lambda")[idx]
+  U <- .get(x, "U")[, idx, drop = FALSE]
   h <- .get.or.create.hmat(x)
 
   invisible(sapply(1:length(idx),
-                   function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]));
+                   function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]))
 }
 
 #mes <- function(N = 1000, L = (N %/% 2), n = 50) {
