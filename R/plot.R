@@ -225,7 +225,7 @@ plot.wcor.matrix <- function(x,
 }
 
 plot.ssa <- function(x,
-                     type = c("values", "vectors", "paired", "series"),
+                     type = c("values", "vectors", "paired", "series", "wcor"),
                      ...,
                      plot.contrib = TRUE,
                      numvalues = nlambda(x),
@@ -249,6 +249,11 @@ plot.ssa <- function(x,
       groups <- as.list(1:min(nlambda(x), nu(x)));
 
     .plot.ssa.series(x, ..., groups = groups);
+  } else if (identical(type, "wcor")) {
+    if (missing(groups))
+      groups <- as.list(1:min(nlambda(x), nu(x)));
+
+    plot(wcor(x, groups = groups), ...)
   } else {
     stop("Unsupported type of SSA plot!");
   }

@@ -7,7 +7,7 @@
 }
 \usage{
 \method{plot}{ssa}(x,
-     type = c("values", "vectors", "paired", "series"),
+     type = c("values", "vectors", "paired", "series", "wcor"),
      \dots,
      plot.contrib = TRUE,
      numvalues = nlambda(x),
@@ -39,6 +39,7 @@
     \item{paired}{plot the pairs of eigenvectors (useful for the
       detection of periodic components).}
     \item{series}{plot the resconsturcted series.}
+    \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
   }
 }
 
