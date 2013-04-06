@@ -161,6 +161,69 @@ panel.series <- function(x, y, recon, ...) {
   print(res);
 }
 
+panel.levelplot.wcor <- function(x, y, z, ..., grid) {
+  panel.levelplot(x, y, z, ...)
+
+  if (!is.list(grid))
+    grid <- list(h = grid, v = grid)
+
+  panel.abline(v = grid$v - 0.5, ..., reference = TRUE)
+  panel.abline(h = grid$h - 0.5, ..., reference = TRUE)
+}
+
+plot.wcor.matrix <- function(x,
+                             grid = c(),
+                             ...,
+                             cuts = 20,
+                             zlim = c(0, 1 + .Machine$double.eps^.5)) {
+  # Provide convenient defaults
+  dots <- list(...)
+  dots <- .defaults(dots, "par.settings", list())
+  dots$par.settings <- .defaults(dots$par.settings, "regions", list(col = colorRampPalette(grey(c(1, 0)))))
+
+  dots <- .defaults(dots, "xlab", "")
+  dots <- .defaults(dots, "ylab", "")
+  dots <- .defaults(dots, "colorkey", FALSE)
+  dots <- .defaults(dots, "main", "W-correlation matrix")
+
+  if (is.list(x)) {
+    labels <- if (is.null(names(x))) rep("", length(x)) else names(x)
+    labels[labels == ""] <- paste("W", seq_len(sum(labels == "")), sep = "")
+
+    data <- lapply(seq_along(x), function(i) {
+          mx <- x[[i]]
+          grid <- expand.grid(row = seq_len(nrow(mx)), column = seq_len(ncol(mx)))
+          grid$x <- as.vector(as.numeric(mx))
+          grid$i <- i
+
+          grid
+        })
+    data <- do.call("rbind", data)
+    data$i <- factor(data$i, labels = labels)
+    formula <- abs(x) ~ row * column | i
+    dots <- .defaults(dots, "scales", list(relation = "free"))
+    dots$scales <- .defaults(dots$scales, "relation", "free")
+    dots <- .defaults(dots, "aspect", 1)
+    dots <- .defaults(dots, "xlim", lapply(x, rownames))
+    dots <- .defaults(dots, "ylim", lapply(x, colnames))
+  } else {
+    data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
+    data$x <- as.vector(as.numeric(x))
+    formula <- abs(x) ~ row * column
+    dots <- .defaults(dots, "aspect", "iso")
+    dots <- .defaults(dots, "xlim", rownames(x))
+    dots <- .defaults(dots, "ylim", colnames(x))
+  }
+
+  res <- do.call("levelplot", c(list(formula,
+                                     data = data,
+                                     at = seq(zlim[1], zlim[2], length.out = cuts),
+                                     panel = panel.levelplot.wcor,
+                                     grid = grid),
+                                dots))
+  print(res)
+}
+
 plot.ssa <- function(x,
                      type = c("values", "vectors", "paired", "series"),
                      ...,
