@@ -51,6 +51,23 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1])
 }
 
+wnorm.default <- function(x, L = (N - 1) %/% 2, ...) {
+  # TODO Implement wcor for matrices
+  N <- length(x)
+
+  K <- N - L + 1
+  Ls <- min(L, K); Ks <- max(L, K)
+
+  # Compute weights
+  w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), (Ls-1):1)
+
+  # Compute wnorm
+  sqrt(sum(w * x^2))
+}
+
+wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...)
+  wnorm.default(x$F, x$window)
+
 .get.or.create.fft.plan <- function(x) {
   .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
 }
