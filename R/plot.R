@@ -18,12 +18,19 @@
 #   MA 02139, USA.
 
 
-prepanel.eigenvectors <- function(x, y, ssaobj) {
+prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
   V <- ssaobj$U[,y];
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
 
-  prepanel.default.xyplot(U, V);
+  res <- prepanel.default.xyplot(U, V);
+  if (symmetric) {
+    res$ylim <- range(V, -V);
+    if (!identical(x, y))
+      res$xlim <- range(U, -U);
+  }
+
+  res;
 }
 
 panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
