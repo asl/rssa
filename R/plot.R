@@ -26,10 +26,16 @@ prepanel.eigenvectors <- function(x, y, ssaobj) {
   prepanel.default.xyplot(U, V);
 }
 
-panel.eigenvectors <- function(x, y, ssaobj, ...) {
+panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   V <- ssaobj$U[,y];
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
+
+  if (ref) {
+    panel.abline(h = 0, ..., reference = TRUE)
+    if (!identical(x, y))
+      panel.abline(v = 0, ..., reference = TRUE)
+  }
 
   panel.xyplot(U, V, ...);
 }
