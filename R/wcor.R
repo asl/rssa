@@ -79,6 +79,23 @@ clusterify.wcor.matrix <- function(x,
   split(1:N, h);
 }
 
+wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
+  # TODO Implement wnorm for 2dSSA
+  N <- length(x)
+
+  K <- N - L + 1
+  Ls <- min(L, K); Ks <- max(L, K)
+
+  # Compute weights
+  w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), (Ls-1):1)
+
+  # Compute wnorm
+  sqrt(sum(w * x^2))
+}
+
+wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...)
+  wnorm.default(x$F, x$window)
+
 #N = 399;
 #a = 1.005;
 #T = 200;
