@@ -127,6 +127,8 @@ clusterify <- function(x, ...)
   UseMethod("clusterify");
 calc.v <- function(x, ...)
   UseMethod("calc.v");
+wnorm <- function(x, ...)
+  UseMethod("wnorm")
 
 .hankelize.one <- function(x, ...)
   UseMethod(".hankelize.one")
