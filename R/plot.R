@@ -90,7 +90,9 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   dots <- .defaults(dots, "ylab", "");
   dots <- .defaults(dots, "main", "Eigenvectors");
   dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(relation = "free"));
+  dots <- .defaults(dots, "scales", list(draw = FALSE, relation = "free"));
+  dots <- .defaults(dots, "symmetric", TRUE);
+  dots <- .defaults(dots, "ref", TRUE);
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,
@@ -120,8 +122,10 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   dots <- .defaults(dots, "ylab", "");
   dots <- .defaults(dots, "main", "Pairs of eigenvectors");
   dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(relation = "free"));
+  dots <- .defaults(dots, "scales", list(draw = FALSE, relation = "free"));
   dots <- .defaults(dots, "aspect", "x");
+  dots <- .defaults(dots, "symmetric", TRUE);
+  dots <- .defaults(dots, "ref", TRUE);
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,
