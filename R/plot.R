@@ -47,9 +47,17 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   panel.xyplot(U, V, ...);
 }
 
-.defaults <- function(v, key, value) {
-  if (!(key %in% names(v))) v[[key]] <- value;
-  v;
+.defaults <- function(x, ...) {
+  dots <- list(...)
+
+  # For backward compability
+  if (is.null(names(dots)) && (length(dots) %% 2 == 0)) {
+    values <- dots[c(FALSE, TRUE)]
+    names(values) <- as.character(dots[c(TRUE, FALSE)])
+    dots <- values
+  }
+
+  modifyList(dots, x)
 }
 
 .plot.ssa.values <- function(x, ..., numvalues, plot.type = "b") {
@@ -59,14 +67,14 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   d <- data.frame(A = 1:numvalues, B = x$lambda[1:numvalues]);
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", plot.type);
-  dots <- .defaults(dots, "xlab", "Index");
-  dots <- .defaults(dots, "ylab", "log of eigenvalue");
-  dots <- .defaults(dots, "main", "Eigenvalues");
-  dots <- .defaults(dots, "scales", list(y = list(log = TRUE)));
-  dots <- .defaults(dots, "grid", TRUE)
-  dots <- .defaults(dots, "par.settings", list())
-  dots$par.settings <- .defaults(dots$par.settings, "plot.symbol", list(pch = 20))
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab =  "Index",
+                    ylab = "log of eigenvalue",
+                    main = "Eigenvalues",
+                    grid = TRUE,
+                    scales = list(y = list(log = TRUE)),
+                    par.settings = list(plot.symbol = list(pch = 20)));
 
   res <- do.call("xyplot",
                  c(list(x = B ~ A , data = d, ssaobj = x), dots));
