@@ -41,6 +41,12 @@
     \item{series}{plot the reconstructed series.}
     \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
   }
+
+  Additional (non-standard) graphical parameters can be transfered via \dots:
+  \describe{
+    \item{plot.type}{just lattice plot type. This parameter is introduced in order to
+      solve conflict with argument \code{type}.}
+  }
 }
 
 \examples{
