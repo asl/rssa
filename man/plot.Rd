@@ -41,6 +41,12 @@
     \item{series}{plot the reconstructed series.}
     \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
   }
+
+  Additional (non-standard) graphical parameters can be transfered via \dots:
+  \describe{
+    \item{plot.type}{lattice plot type. This argument will be transfered as \code{type}
+    argument to function \code{panel.xyplot}.}
+  }
 }
 
 \examples{
@@ -54,4 +60,6 @@ plot(s, type = "wcor", groups = 1:10)
 plot(s, type = "paired", idx = 1:6)
 # Plot the first 4 reconstructed components
 plot(s, type = "series", groups = list(1:4))
+# Plot the eigenvalues by points only
+plot(s, type = "values", plot.type = "p")
 }
