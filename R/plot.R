@@ -39,7 +39,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   v;
 }
 
-.plot.ssa.values <- function(x, ..., numvalues, plot.type = c("b", "g")) {
+.plot.ssa.values <- function(x, ..., numvalues, plot.type = "b") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
@@ -51,7 +51,9 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   dots <- .defaults(dots, "ylab", "log of eigenvalue");
   dots <- .defaults(dots, "main", "Eigenvalues");
   dots <- .defaults(dots, "scales", list(y = list(log = TRUE)));
-  dots <- .defaults(dots, "pch", 20);
+  dots <- .defaults(dots, "grid", TRUE)
+  dots <- .defaults(dots, "par.settings", list())
+  dots$par.settings <- .defaults(dots$par.settings, "plot.symbol", list(pch = 20))
 
   res <- do.call("xyplot",
                  c(list(x = B ~ A , data = d, ssaobj = x), dots));
