@@ -38,7 +38,7 @@
     \item{vectors}{plot the eigenvectors.}
     \item{paired}{plot the pairs of eigenvectors (useful for the
       detection of periodic components).}
-    \item{series}{plot the resconsturcted series.}
+    \item{series}{plot the reconstructed series.}
     \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
   }
 }
