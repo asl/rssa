@@ -39,14 +39,14 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   v;
 }
 
-.plot.ssa.values <- function(x, ..., numvalues) {
+.plot.ssa.values <- function(x, ..., numvalues, plot.type = c("b", "g")) {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   d <- data.frame(A = 1:numvalues, B = x$lambda[1:numvalues]);
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", c("b", "g"));
+  dots <- .defaults(dots, "type", plot.type);
   dots <- .defaults(dots, "xlab", "Index");
   dots <- .defaults(dots, "ylab", "log of eigenvalue");
   dots <- .defaults(dots, "main", "Eigenvalues");
@@ -58,7 +58,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   print(res)
 }
 
-.plot.ssa.vectors <- function(x, ..., plot.contrib, idx) {
+.plot.ssa.vectors <- function(x, ..., plot.contrib, idx, plot.type = "l") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
@@ -70,7 +70,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   }
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", "l");
+  dots <- .defaults(dots, "type", plot.type);
   dots <- .defaults(dots, "xlab", "");
   dots <- .defaults(dots, "ylab", "");
   dots <- .defaults(dots, "main", "Eigenvectors");
@@ -87,7 +87,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   print(res)
 }
 
-.plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy) {
+.plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy, plot.type = "l") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
@@ -100,7 +100,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   }
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", "l");
+  dots <- .defaults(dots, "type", plot.type);
   dots <- .defaults(dots, "xlab", "");
   dots <- .defaults(dots, "ylab", "");
   dots <- .defaults(dots, "main", "Pairs of eigenvectors");
@@ -135,7 +135,7 @@ panel.series <- function(x, y, recon, ...) {
   panel.xyplot(X, Y, ...);
 }
 
-.plot.ssa.series <- function(x, ..., groups) {
+.plot.ssa.series <- function(x, ..., groups, plot.type = "l") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
@@ -145,7 +145,7 @@ panel.series <- function(x, y, recon, ...) {
   r <- reconstruct(x, groups = groups, drop = FALSE);
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", "l");
+  dots <- .defaults(dots, "type", plot.type);
   dots <- .defaults(dots, "xlab", "");
   dots <- .defaults(dots, "ylab", "");
   dots <- .defaults(dots, "main", "Reconstructed series");
