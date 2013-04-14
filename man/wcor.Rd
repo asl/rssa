@@ -15,7 +15,7 @@
                            grid = c(),
                            \dots,
                            cuts = 20,
-                           zlim = c(0, 1 + .Machine$double.eps^.5))
+                           zlim = c(0, 1))
 }
 
 \arguments{

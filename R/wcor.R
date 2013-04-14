@@ -34,14 +34,19 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ...) {
   w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), seq(from = Ls-1, to = 1, by = -1));
 
   # Compute w-covariation
-  cov <- crossprod(sqrt(w) * x);
+  cov <- crossprod(w * x, x)
 
   # Convert to correlations
-  Is <- 1/sqrt(diag(cov));
-  R <- Is * cov * rep(Is, each = nrow(cov));
-  class(R) <- "wcor.matrix";
+  cor <- cov2cor(cov)
 
-  return (R);
+  # Fix possible numeric error
+  cor[cor > 1] <- 1; cor[cor < -1] <- -1
+
+  # Add class
+  class(cor) <- "wcor.matrix"
+
+  # Return
+  cor
 }
 
 wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
