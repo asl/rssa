@@ -88,7 +88,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   d <- data.frame(A = idx, B = idx);
 
   if (plot.contrib) {
-    total <- sum(x$lambda^2);
+    total <- wnorm(x$F, x$window)^2
     lambda <- round(100*x$lambda[idx]^2 / total, digits = 2);
   }
 
@@ -119,7 +119,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   d <- data.frame(A = idx, B = idy);
 
   if (plot.contrib) {
-    total <- sum(x$lambda^2);
+    total <- wnorm(x$F, x$window)^2
     lambdax <- round(100*x$lambda[idx]^2 / total, digits = 2);
     lambday <- round(100*x$lambda[idy]^2 / total, digits = 2);
   }
