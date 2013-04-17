@@ -40,3 +40,34 @@ test_that("Serialization works correctly", {
     }
   }
 });
+
+test_that("Serialization works correctly for 2d SSA", {
+  N <- c(110, 117);
+
+  set.seed(1);
+  field <- matrix(rnorm(prod(N)), N[1], N[2]);
+
+  Ls <- list(c(17, 16), c(50, 56));
+  svd.methods <- c("nutrlan", "propack");
+  groups <- list(1, 1:2, 3:5, 1:5, 1:10);
+  neig = 15;
+
+  for (svd.method in svd.methods) {
+    for (L in Ls) {
+      set.seed(1);
+      ss <- ssa(field, L = L, kind = "2d-ssa", svd.method = svd.method, neig = neig);
+
+      # Serialize ssa-object to raw vector
+      rw <- serialize(ss, connection = NULL);
+
+      # Unserialize ssa-object
+      ss.uns <- unserialize(rw);
+
+      expect_equal(ss.uns$U, ss$U);
+      expect_equal(ss.uns$V, ss$V);
+      expect_equal(ss.uns$lambda, ss$lambda);
+
+      expect_equal(reconstruct(ss.uns, groups = groups), reconstruct(ss, groups = groups));
+    }
+  }
+});
