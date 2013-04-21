@@ -90,6 +90,10 @@ tcrossprod.hbhmat <- function(x) {
   apply(diag(hbhrows(x)), 2, function(u) hbhmatmul(hmat = x, hbhmatmul(hmat = x, u, transposed = TRUE)))
 }
 
+.traj.dim.2d.ssa <- function(x) {
+  c(prod(x$window), prod(x$length - x$window + 1))
+}
+
 decompose.2d.ssa <- function(x,
                              neig = min(50, prod(L), prod(K)),
                              ...) {
