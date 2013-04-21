@@ -3,7 +3,7 @@ Type: Package
 Title: A collection of methods for singular spectrum analysis
 Version: 0.9.9
 Date: 2012-12-10
-Depends: svd (>= 0.3.1), forecast
+Depends: svd (>= 0.3.2), forecast
 Imports: lattice
 Suggests: testthat (>= 0.7)
 SystemRequirements: fftw (>=3.2)

@@ -108,7 +108,7 @@
 }
 
 .get.series <- function(x, index) {
-  F <- numeric(prod(x$length));
+  F <- numeric(.slength(x));
   for (i in index) {
     name <- paste("series:", i, sep = "");
     F <- F + .get(x, name);
@@ -134,6 +134,10 @@ calc.v <- function(x, ...)
   UseMethod(".elseries")
 .init <- function(x, ...)
   UseMethod(".init")
+.traj.dim <- function(x, ...)
+  UseMethod(".traj.dim")
+.slength <- function(x, ...)
+  UseMethod(".slength")
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(x, ...) UseMethod("decompose");

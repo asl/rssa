@@ -82,6 +82,10 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                  new.hbhmat(x$F, L = x$window))
 }
 
+.traj.dim.2d.ssa <- function(x) {
+  c(prod(x$window), prod(x$length - x$window + 1))
+}
+
 decompose.2d.ssa <- function(x,
                              neig = min(50, prod(L), prod(K)),
                              ...) {

@@ -61,8 +61,8 @@ hankel <- function(X, L) {
                           fft.plan = .get.or.create.fft.plan(x)))
 }
 
-.hankelize.one.1d.ssa <- function(x, U, V) {
-  fft.plan <- .get.or.create.fft.plan(x)
+.hankelize.one.1d.ssa <- function(x, U, V, fft.plan = NULL) {
+  fft.plan <- (if (is.null(fft.plan)) .get.or.create.fft.plan(x) else fft.plan)
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hankelize_one_fft", U, V, fft.plan)
 }
@@ -118,6 +118,10 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   .get.or.create.fft.plan(x)
 
   x
+}
+
+.traj.dim.default <- function(x) {
+  c(x$window, x$length - x$window + 1)
 }
 
 decompose.1d.ssa <- function(x,
