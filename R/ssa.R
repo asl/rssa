@@ -50,13 +50,14 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
+  # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
     # Coerce input to vector if necessary
     if (!is.vector(x))
@@ -73,9 +74,38 @@ ssa <- function(x,
       x <- as.matrix(x);
 
     N <- dim(x);
-
     if (identical(svd.method, "auto"))
       svd.method <- "nutrlan"
+  } else if (identical(kind, "mssa")) {
+    # We assume that we have mts-like object. With series in the columns.
+    # Coerce input to matrix if necessary
+    if (!is.matrix(x))
+      x <- as.matrix(x);
+
+    if (nrow(x) < ncol(x))
+      x <- t(x)
+
+    # Find the last non-full-of-NA row and trim the matrix accordingly.
+    last <- max(which(rowSums(is.na(x)) < ncol(x)))
+    if (last < nrow(x)) {
+      warning(paste("trimmed last", nrow(x) - last, " NA rows"))
+      x <- x[1:last, ]
+    }
+
+    N <- apply(!is.na(x), 2, sum)
+
+    # If L is provided it should be length 1
+    if (missing(L)) {
+      L <- (min(N) + 1) %/% 2
+    } else {
+      if (length(L) > 1)
+        warning("length of L is > 1, only the first element will be used")
+      L <- L[1]
+    }
+
+    # Fix SVD method.
+    if (identical(svd.method, "auto"))
+      svd.method <- determine.svd.method(L, min(N), ...)
   }
 
   # Normalized the kind to be used
@@ -124,12 +154,12 @@ ssa <- function(x,
   desired <- max(unlist(groups))
 
   # Sanity check
-  if (desired > min(prod(L), prod(K)))
+  if (desired > min(.traj.dim(x)))
     stop("Cannot decompose that much, desired elementary series index is too huge")
 
   # Continue decomposition, if necessary
   if (desired > min(nlambda(x), nu(x)))
-    decompose(x, ..., neig = min(desired + 1, prod(L), prod(K)))
+    decompose(x, ..., neig = min(desired + 1, min(.traj.dim(x))))
 
   desired
 }
@@ -190,10 +220,10 @@ reconstruct.ssa <- function(x, groups, ...,
 
     if (length(new) == 0) {
       # Nothing to compute, just create zero output
-      out[[i]] <- numeric(prod(x$length));
+      out[[i]] <- numeric(length(residuals))
     } else {
       # Do actual reconstruction (depending on method, etc)
-      out[[i]] <- .elseries(x, new, env = e);
+      out[[i]] <- .elseries(x, new, env = e)
 
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
@@ -248,6 +278,9 @@ residuals.ssa.reconstruction <- function(object, ...) {
   attr(object, "residuals")
 }
 
+.slength.default <- function(x)
+  prod(x$length)
+
 .elseries.default <- function(x, idx, ..., env = .GlobalEnv) {
   if (max(idx) > nlambda(x))
     stop("Too few eigentriples computed for this decomposition")
@@ -255,8 +288,8 @@ residuals.ssa.reconstruction <- function(object, ...) {
   lambda <- .get(x, "lambda");
   U <- .get(x, "U");
 
-  res <- numeric(prod(x$length));
-
+  # FIXME: Get rid of prod() here
+  res <- numeric(.slength(x));
   for (i in idx) {
     if (nv(x) >= i) {
       # FIXME: Check, whether we have factor vectors for reconstruction
@@ -335,8 +368,9 @@ clusterify.ssa <- function(x, group, nclust = length(group) / 2,
 }
 
 print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
+  clp <- (if (length(x$window) > 1) " x " else ", ")
   cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
-  cat("Series length:", paste(x$length, collapse = " x "));
+  cat("Series length:", paste(x$length, collapse = clp));
   cat(",\tWindow length:", paste(x$window, collapse = " x "));
   cat(",\tSVD method:", x$svd.method);
   cat("\n\nComputed:\n");
