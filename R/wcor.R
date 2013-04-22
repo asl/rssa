@@ -65,20 +65,6 @@ wcor <- function(x, ...) {
   UseMethod("wcor");
 }
 
-# FIXME: Add legend
-plot.wcor.matrix <- function(x, col = rev(gray(seq(0, 1, len = 20))),
-                             xlab = "", ylab = "",
-                             main = "W-correlation Matrix",
-                             ...) {
-  image(1:ncol(x), 1:nrow(x), abs(x), col = col,
-        xlab = xlab, ylab = ylab, main = main,
-        axes = FALSE,
-        ...);
-  axis(1, at = 1:ncol(x), labels = colnames(x));
-  axis(2, at = 1:nrow(x), labels = rownames(x), las = 2);
-  box();
-}
-
 clusterify.wcor.matrix <- function(x,
                                    nclust = N,
                                    ...,
