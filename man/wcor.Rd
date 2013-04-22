@@ -11,10 +11,11 @@
 \usage{
 \method{wcor}{ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots)
-\method{plot}{wcor.matrix}(x, col = rev(gray(seq(0, 1, len = 20))),
-                           xlab = "", ylab = "",
-                           main = "W-correlation Matrix",
-                           \dots)
+\method{plot}{wcor.matrix}(x,
+     grid = c(),
+     \dots,
+     cuts = 20,
+     zlim = range(abs(x), 0, 1)
 }
 
 \arguments{
@@ -28,9 +29,16 @@
   for \code{wcor} or to \code{plot} for \code{plot.wcor.matrix}}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in 'ssa' object.}
-  \item{col}{color palette to use}
-  \item{main}{plot title}
-  \item{xlab,ylab}{labels for 'x' and 'y' axis}
+  \item{grid}{numeric vector, indices of matrix blocks (groups)
+    which will be separated by grid line.
+    Lines will be drawn on the left of and under noted blocks.
+    Also this argument can be list of two numeric vectors
+    with names 'x' and 'y', for control vertical and horizontal
+    grid lines separately.}
+  \item{cuts}{integer, the number of levels the range of W-cor
+    values will be divided into.}
+  \item{zlim}{range of displaying W-cor values.
+    Values outside the range will be absolutely not shown.}
 }
 \details{
   W-correlation matrix is a standard way of checking for weak
@@ -59,7 +67,7 @@ s <- ssa(co2)
 # Calculate the w-correlation matrix between first 20 series
 # for a guess for grouping
 w <- wcor(s, groups = 1:20)
-plot(w)
+plot(w, grid = c(2,4, 5,7))
 # Calculate the w-correlation matrix for the chosen groups
 # to check separability
 w <- wcor(s, groups = list(c(1,4), c(2,3), c(5,6)))
