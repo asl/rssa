@@ -46,8 +46,8 @@
   \describe{
     \item{plot.type}{just lattice plot type. This parameter is introduced in order to
       solve conflict with argument \code{type}.}
-    \item{ref}{logical. Plot or not zero-level lines in eigenvectors-plot and paired-plot. 'TRUE' by default.}
-    \item{symmetric}{logical. Use or not symmetric scales in eigenvectors-plot and paired-plot. 'TRUE' by default.}
+    \item{ref}{logical. Plot or not zero-level lines in series-plot, eigenvectors-plot and paired-plot.}
+    \item{symmetric}{logical. Use or not symmetric scales in series-plot, eigenvectors-plot and paired-plot.}
   }
 }
 
