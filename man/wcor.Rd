@@ -55,7 +55,7 @@
 \references{
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
     Time Series Structure: SSA and related techniques.} Chapman and
-  Hall/CRC. ISBN 1584881941 
+  Hall/CRC. ISBN 1584881941
 }
 \seealso{
   \code{\link[Rssa:reconstruct.ssa]{reconstruct}}
