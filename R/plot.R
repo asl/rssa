@@ -161,6 +161,46 @@ panel.series <- function(x, y, recon, ...) {
   print(res);
 }
 
+panel.levelplot.wcor <- function(x, y, z, ..., grid) {
+  panel.levelplot(x, y, z, ...)
+
+  if (!is.list(grid))
+    grid <- list(h = grid, v = grid)
+
+  panel.abline(v = grid$v - 0.5, ..., reference = TRUE)
+  panel.abline(h = grid$h - 0.5, ..., reference = TRUE)
+}
+
+plot.wcor.matrix <- function(x,
+                             grid = c(),
+                             ...,
+                             cuts = 20,
+                             zlim = c(0, 1 + .Machine$double.eps^.5)) {
+  # Provide convenient defaults
+  dots <- list(...)
+  dots <- .defaults(dots, "par.settings", list())
+  dots$par.settings <- .defaults(dots$par.settings, "regions", list(col = colorRampPalette(grey(c(1, 0)))))
+
+  dots <- .defaults(dots, "xlab", "")
+  dots <- .defaults(dots, "ylab", "")
+  dots <- .defaults(dots, "colorkey", FALSE)
+  dots <- .defaults(dots, "main", "W-correlation matrix")
+  dots <- .defaults(dots, "aspect", "iso")
+  dots <- .defaults(dots, "xlim", rownames(x))
+  dots <- .defaults(dots, "ylim", colnames(x))
+
+  data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
+  data$x <- as.vector(as.numeric(x))
+
+  res <- do.call("levelplot", c(list(abs(x) ~ row * column,
+                                     data = data,
+                                     at = seq(zlim[1], zlim[2], length.out = cuts),
+                                     panel = panel.levelplot.wcor,
+                                     grid = grid),
+                                dots))
+  print(res)
+}
+
 plot.ssa <- function(x,
                      type = c("values", "vectors", "paired", "series"),
                      ...,
