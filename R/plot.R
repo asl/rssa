@@ -143,7 +143,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 
 prepanel.series <- function(x, y, recon, ..., symmetric = FALSE) {
   Y <- recon[[paste("F", y, sep = "")]];
-  X <- if (identical(x, y)) 1:length(Y)
+  X <- if (identical(x, y)) time(Y)
        else  recon[[paste("F", x, sep = "")]];
 
   res <- prepanel.default.xyplot(X, Y, ...);
@@ -158,7 +158,7 @@ prepanel.series <- function(x, y, recon, ..., symmetric = FALSE) {
 
 panel.series <- function(x, y, recon, ..., ref = FALSE) {
   Y <- recon[[paste("F", y, sep = "")]];
-  X <- if (identical(x, y)) 1:length(Y)
+  X <- if (identical(x, y)) time(Y)
        else  recon[[paste("F", x, sep = "")]];
 
   if (ref) {
