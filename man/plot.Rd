@@ -46,8 +46,8 @@
   \describe{
     \item{plot.type}{just lattice plot type. This parameter is introduced in order to
       solve conflict with argument \code{type}.}
-    \item{ref}{logical. Plot or not zero-level lines in eigenvectors-plot and paired-plot. 'FALSE' by default.}
-    \item{symmetric}{logical. Use or not symmetric scales in eigenvectors-plot and paired-plot. 'FALSE' by default.}
+    \item{ref}{logical. Plot or not zero-level lines in eigenvectors-plot and paired-plot. 'TRUE' by default.}
+    \item{symmetric}{logical. Use or not symmetric scales in eigenvectors-plot and paired-plot. 'TRUE' by default.}
   }
 }
 
@@ -60,6 +60,8 @@ plot(s, type = "values")
 plot(s, type = "wcor", groups = 1:10)
 # Plot the paired plot for first 6 eigenvectors
 plot(s, type = "paired", idx = 1:6)
+# Plot eigenvectors for first 6 components
+plot(s, type = "vectors", idx = 1:6)
 # Plot the first 4 reconstructed components
 plot(s, type = "series", groups = list(1:4))
 }
