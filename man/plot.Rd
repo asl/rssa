@@ -42,10 +42,12 @@
     \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
   }
 
-  Additional (non-standard) graphical parameters can be transfered via \dots:
+  Additional (non-standard) graphical parameters which can be transfered via \dots:
   \describe{
     \item{plot.type}{just lattice plot type. This parameter is introduced in order to
       solve conflict with argument \code{type}.}
+    \item{ref}{logical. Whether to plot zero-level lines in series-plot, eigenvectors-plot and paired-plot.}
+    \item{symmetric}{logical. Whether to use symmetric scales in series-plot, eigenvectors-plot and paired-plot.}
   }
 }
 

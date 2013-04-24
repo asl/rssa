@@ -18,18 +18,31 @@
 #   MA 02139, USA.
 
 
-prepanel.eigenvectors <- function(x, y, ssaobj) {
+prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
   V <- ssaobj$U[,y];
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
 
-  prepanel.default.xyplot(U, V);
+  res <- prepanel.default.xyplot(U, V);
+  if (symmetric) {
+    res$ylim <- range(V, -V);
+    if (!identical(x, y))
+      res$xlim <- range(U, -U);
+  }
+
+  res;
 }
 
-panel.eigenvectors <- function(x, y, ssaobj, ...) {
+panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   V <- ssaobj$U[,y];
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
+
+  if (ref) {
+    panel.abline(h = 0, ..., reference = TRUE)
+    if (!identical(x, y))
+      panel.abline(v = 0, ..., reference = TRUE)
+  }
 
   panel.xyplot(U, V, ...);
 }
@@ -119,18 +132,31 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   print(res)
 }
 
-prepanel.series <- function(x, y, recon, ...) {
+prepanel.series <- function(x, y, recon, ..., symmetric = FALSE) {
   Y <- recon[[paste("F", y, sep = "")]];
   X <- if (identical(x, y)) 1:length(Y)
        else  recon[[paste("F", x, sep = "")]];
 
-  prepanel.default.xyplot(X, Y, ...);
+  res <- prepanel.default.xyplot(X, Y, ...);
+  if (symmetric) {
+    res$ylim <- range(Y, -Y);
+    if (!identical(x, y))
+      res$xlim <- range(X, -X);
+  }
+
+  res;
 }
 
-panel.series <- function(x, y, recon, ...) {
+panel.series <- function(x, y, recon, ..., ref = FALSE) {
   Y <- recon[[paste("F", y, sep = "")]];
   X <- if (identical(x, y)) 1:length(Y)
        else  recon[[paste("F", x, sep = "")]];
+
+  if (ref) {
+    panel.abline(h = 0, ..., reference = TRUE)
+    if (!identical(x, y))
+      panel.abline(v = 0, ..., reference = TRUE)
+  }
 
   panel.xyplot(X, Y, ...);
 }
