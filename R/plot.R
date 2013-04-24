@@ -175,7 +175,7 @@ plot.wcor.matrix <- function(x,
                              grid = c(),
                              ...,
                              cuts = 20,
-                             zlim = c(0, 1 + .Machine$double.eps^.5)) {
+                             zlim = c(0, 1)) {
   # Provide convenient defaults
   dots <- list(...)
   dots <- .defaults(dots, "par.settings", list())
