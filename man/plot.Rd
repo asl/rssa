@@ -60,6 +60,8 @@ plot(s, type = "values")
 plot(s, type = "wcor", groups = 1:10)
 # Plot the paired plot for first 6 eigenvectors
 plot(s, type = "paired", idx = 1:6)
+# Plot eigenvectors for first 6 components
+plot(s, type = "vectors", idx = 1:6)
 # Plot the first 4 reconstructed components
 plot(s, type = "series", groups = list(1:4))
 }
