@@ -20,7 +20,7 @@
 
 #   Routines for hankel-block hankel (aka 2d) SSA
 
-tcircpile <- function(F, Lx = (Nx - 1) %/% 2, Ly = (Ny - 1) %/% 2) {
+tcircpile <- function(F, Lx = (Nx + 1) %/% 2, Ly = (Ny + 1) %/% 2) {
   Nx <- nrow(F); Ny <- ncol(F)
   Kx <- Nx - Lx + 1; Ky <- Ny - Ly + 1
 
@@ -52,7 +52,7 @@ thbhmatmul.old <- function(C, v) {
 }
 
 new.hbhmat <- function(F,
-                       L = (N - 1) %/% 2) {
+                       L = (N + 1) %/% 2) {
   N <- dim(F)
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
