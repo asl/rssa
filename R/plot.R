@@ -47,24 +47,26 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   panel.xyplot(U, V, ...);
 }
 
-.defaults <- function(v, key, value) {
-  if (!(key %in% names(v))) v[[key]] <- value;
-  v;
+.defaults <- function(x, ...) {
+  dots <- list(...)
+  modifyList(dots, x)
 }
 
-.plot.ssa.values <- function(x, ..., numvalues, plot.type = c("b", "g")) {
+.plot.ssa.values <- function(x, ..., numvalues, plot.type = "b") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   d <- data.frame(A = 1:numvalues, B = x$lambda[1:numvalues]);
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", plot.type);
-  dots <- .defaults(dots, "xlab", "Index");
-  dots <- .defaults(dots, "ylab", "log of eigenvalue");
-  dots <- .defaults(dots, "main", "Eigenvalues");
-  dots <- .defaults(dots, "scales", list(y = list(log = TRUE)));
-  dots <- .defaults(dots, "pch", 20);
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab =  "Index",
+                    ylab = "log of eigenvalue",
+                    main = "Eigenvalues",
+                    grid = TRUE,
+                    scales = list(y = list(log = TRUE)),
+                    par.settings = list(plot.symbol = list(pch = 20)))
 
   res <- do.call("xyplot",
                  c(list(x = B ~ A , data = d, ssaobj = x), dots));
@@ -83,15 +85,16 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   }
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", plot.type);
-  dots <- .defaults(dots, "xlab", "");
-  dots <- .defaults(dots, "ylab", "");
-  dots <- .defaults(dots, "main", "Eigenvectors");
-  dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(draw = FALSE, relation = "free"));
-  dots <- .defaults(dots, "aspect", 1);
-  dots <- .defaults(dots, "symmetric", TRUE);
-  dots <- .defaults(dots, "ref", TRUE);
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab = "",
+                    ylab =  "",
+                    main = "Eigenvectors",
+                    as.table = TRUE,
+                    scales = list(draw = FALSE, relation = "free"),
+                    aspect = 1,
+                    symmetric = TRUE,
+                    ref = TRUE)
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,
@@ -116,15 +119,16 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   }
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", plot.type);
-  dots <- .defaults(dots, "xlab", "");
-  dots <- .defaults(dots, "ylab", "");
-  dots <- .defaults(dots, "main", "Pairs of eigenvectors");
-  dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(draw = FALSE, relation = "free"));
-  dots <- .defaults(dots, "aspect", 1);
-  dots <- .defaults(dots, "symmetric", TRUE);
-  dots <- .defaults(dots, "ref", TRUE);
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab = "",
+                    ylab = "",
+                    main = "Pairs of eigenvectors",
+                    as.table = TRUE,
+                    scales = list(draw = FALSE, relation = "free"),
+                    aspect = 1,
+                    symmetric = TRUE,
+                    ref = TRUE)
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,
@@ -176,12 +180,13 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
   r <- reconstruct(x, groups = groups, drop = FALSE);
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", plot.type);
-  dots <- .defaults(dots, "xlab", "");
-  dots <- .defaults(dots, "ylab", "");
-  dots <- .defaults(dots, "main", "Reconstructed series");
-  dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(relation = "free"));
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab = "",
+                    ylab = "",
+                    main = "Reconstructed series",
+                    as.table = TRUE,
+                    scales = list(relation = "free"))
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A, labels = paste(groups)),
@@ -209,16 +214,15 @@ plot.wcor.matrix <- function(x,
                              zlim = range(abs(x), 0, 1)) {
   # Provide convenient defaults
   dots <- list(...)
-  dots <- .defaults(dots, "par.settings", list())
-  dots$par.settings <- .defaults(dots$par.settings, "regions", list(col = colorRampPalette(grey(c(1, 0)))))
-
-  dots <- .defaults(dots, "xlab", "")
-  dots <- .defaults(dots, "ylab", "")
-  dots <- .defaults(dots, "colorkey", FALSE)
-  dots <- .defaults(dots, "main", "W-correlation matrix")
-  dots <- .defaults(dots, "aspect", "iso")
-  dots <- .defaults(dots, "xlim", rownames(x))
-  dots <- .defaults(dots, "ylim", colnames(x))
+  dots <- .defaults(dots,
+                    xlab = "",
+                    ylab = "",
+                    colorkey = FALSE,
+                    main = "W-correlation matrix",
+                    aspect = "iso",
+                    xlim = rownames(x),
+                    ylim = colnames(x),
+                    par.settings = list(regions = list(col = colorRampPalette(grey(c(1, 0))))))
 
   data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
   data$x <- as.vector(as.numeric(x))
@@ -287,9 +291,10 @@ plot.1d.ssa.reconstruction <- function(x, ...,
 
   # Nifty defaults
   dots <- list(...)
-  dots <- .defaults(dots, "main", "Reconstructed Series");
-  dots <- .defaults(dots, "type", "l");
-  dots <- .defaults(dots, "ylab", "");
+  dots <- .defaults(dots,
+                    main = "Reconstructed Series",
+                    type = "l",
+                    ylab = "")
 
   # Prepare the matrix with all the data
   m <- matrix(unlist(x), ncol = length(x))
