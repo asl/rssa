@@ -42,10 +42,12 @@
     \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
   }
 
-  Additional (non-standard) graphical parameters can be transfered via \dots:
+  Additional (non-standard) graphical parameters which can be transfered via \dots:
   \describe{
     \item{plot.type}{lattice plot type. This argument will be transfered as \code{type}
     argument to function \code{panel.xyplot}.}
+    \item{ref}{logical. Whether to plot zero-level lines in series-plot, eigenvectors-plot and paired-plot.}
+    \item{symmetric}{logical. Whether to use symmetric scales in series-plot, eigenvectors-plot and paired-plot.}
   }
 }
 
