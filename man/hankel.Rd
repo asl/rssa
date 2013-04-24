@@ -14,7 +14,7 @@
 }
 
 \usage{
-new.hmat(F, L = (N - 1) \%/\% 2, fft.plan = NULL)
+new.hmat(F, L = (N + 1) \%/\% 2, fft.plan = NULL)
 is.hmat(h)
 hcols(h)
 hrows(h)
