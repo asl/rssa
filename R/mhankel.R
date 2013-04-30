@@ -17,7 +17,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-.get.or.create.fft.plan <- function(x) {
+.get.or.create.mfft.plan <- function(x) {
   .get.or.create(x, "fft.plan", lapply(x$length, fft.plan.1d))
 }
 
@@ -40,10 +40,10 @@
   extmat(matmul, tmatmul, nrow = L, ncol = sum(K))
 }
 
-.get.or.create.hmat <- function(x) {
-  fft.plan <- .get.or.create.fft.plan(x)
+.get.or.create.mhmat <- function(x) {
+  fft.plan <- .get.or.create.mfft.plan(x)
   .get.or.create(x, "hmat",
-                 .hmat.striped(x, fft.plan = .get.or.create.fft.plan(x)))
+                 .hmat.striped(x, fft.plan = fft.plan))
 }
 
 decompose.mssa.svd <- function(x,
@@ -83,7 +83,7 @@ decompose.mssa.eigen <- function(x, ...,
 
   # Build hankel matrix
   F <- .get(x, "F")
-  fft.plan <- .get.or.create.fft.plan(x)
+  fft.plan <- .get.or.create.mfft.plan(x)
   h <- do.call(cbind, apply(x$F, 2, hankel, L = L))
 
   # Do decomposition
@@ -110,7 +110,7 @@ decompose.mssa.propack <- function(x,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
 
-  h <- .get.or.create.hmat(x)
+  h <- .get.or.create.mhmat(x)
   S <- propack.svd(h, neig = neig, ...)
 
   # Save results
@@ -128,7 +128,7 @@ decompose.mssa.nutrlan <- function(x,
                                    ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
-  h <- .get.or.create.hmat(x)
+  h <- .get.or.create.mhmat(x)
 
   lambda <- .get(x, "lambda", allow.null = TRUE)
   U <- .get(x, "U", allow.null = TRUE)
@@ -146,9 +146,9 @@ decompose.mssa.nutrlan <- function(x,
 
 .init.mssa <- function(x, ...) {
   # Initialize FFT plan
-  .get.or.create.fft.plan(x)
+  .get.or.create.mfft.plan(x)
 
-  .get.or.create.hmat(x)
+  .get.or.create.mhmat(x)
 
   x
 }
@@ -156,7 +156,7 @@ decompose.mssa.nutrlan <- function(x,
 calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
   lambda <- .get(x, "lambda")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
-  h <- .get.or.create.hmat(x)
+  h <- .get.or.create.mhmat(x)
 
   invisible(sapply(1:length(idx),
                    function(i) ematmul(h, U[, i], transposed = TRUE) / lambda[i]))
@@ -166,7 +166,7 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
   b <- c(0, cumsum(K))
-  fft.plan <- .get.or.create.fft.plan(x)
+  fft.plan <- .get.or.create.mfft.plan(x)
 
   # FIXME: All these apply's are really ugly. Switch to C version...
   unlist(lapply(1:length(K),
