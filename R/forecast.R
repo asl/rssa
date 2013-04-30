@@ -116,7 +116,6 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   L <- x$window
-  K <- x$length - L + 1
 
   base <- match.arg(base)
   if (missing(groups))
@@ -327,6 +326,8 @@ forecast.1d.ssa <- function(object,
 "bforecast.toeplitz.ssa" <- `bforecast.1d.ssa`;
 "forecast.toeplitz.ssa" <- `forecast.1d.ssa`;
 "predict.toeplitz.ssa" <- `predict.1d.ssa`;
+
+"lrr.mssa" <- `lrr.1d.ssa`
 
 lrr <- function(x, ...)
   UseMethod("lrr")
