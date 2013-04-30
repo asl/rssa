@@ -12,7 +12,7 @@ ssa(x,
     L = (N + 1) \%/\% 2,
     neig = NULL,
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
