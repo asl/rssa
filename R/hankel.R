@@ -19,7 +19,7 @@
 
 #   Routines for normal hankel SSA
 
-tcirc.old <- function(F, L = (N - 1) %/% 2) {
+tcirc.old <- function(F, L = (N + 1) %/% 2) {
   N <- length(F); K = N - L + 1
   .res <- list()
   .res$C <- as.vector(fft(c(F[K:N], F[1:(K-1)])))
@@ -87,7 +87,7 @@ is.fft.plan <- function(fft.plan) {
 }
 
 new.hmat <- function(F,
-                     L = (N - 1) %/% 2,
+                     L = (N + 1) %/% 2,
                      fft.plan = NULL) {
   N <- length(F)
   storage.mode(F) <- "double"
@@ -156,7 +156,7 @@ decompose.1d.ssa.svd <- function(x,
 }
 
 Lcov.matrix <- function(F,
-                        L = (N - 1) %/% 2,
+                        L = (N + 1) %/% 2,
                         fft.plan = NULL) {
   N <- length(F)
   storage.mode(F) <- "double"

@@ -34,14 +34,19 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ...) {
   w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), seq(from = Ls-1, to = 1, by = -1));
 
   # Compute w-covariation
-  cov <- crossprod(sqrt(w) * x);
+  cov <- crossprod(w * x, x)
 
   # Convert to correlations
-  Is <- 1/sqrt(diag(cov));
-  R <- Is * cov * rep(Is, each = nrow(cov));
-  class(R) <- "wcor.matrix";
+  cor <- cov2cor(cov)
 
-  return (R);
+  # Fix possible numeric error
+  cor[cor > 1] <- 1; cor[cor < -1] <- -1
+
+  # Add class
+  class(cor) <- "wcor.matrix"
+
+  # Return
+  cor
 }
 
 wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
@@ -65,20 +70,6 @@ wcor <- function(x, ...) {
   UseMethod("wcor");
 }
 
-# FIXME: Add legend
-plot.wcor.matrix <- function(x, col = rev(gray(seq(0, 1, len = 20))),
-                             xlab = "", ylab = "",
-                             main = "W-correlation Matrix",
-                             ...) {
-  image(1:ncol(x), 1:nrow(x), abs(x), col = col,
-        xlab = xlab, ylab = ylab, main = main,
-        axes = FALSE,
-        ...);
-  axis(1, at = 1:ncol(x), labels = colnames(x));
-  axis(2, at = 1:nrow(x), labels = rownames(x), las = 2);
-  box();
-}
-
 clusterify.wcor.matrix <- function(x,
                                    nclust = N,
                                    ...,
@@ -87,6 +78,23 @@ clusterify.wcor.matrix <- function(x,
   h <- cutree(hclust(as.dist(dist(x)), ...), k = nclust);
   split(1:N, h);
 }
+
+wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
+  # TODO Implement wnorm for 2dSSA
+  N <- length(x)
+
+  K <- N - L + 1
+  Ls <- min(L, K); Ks <- max(L, K)
+
+  # Compute weights
+  w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), (Ls-1):1)
+
+  # Compute wnorm
+  sqrt(sum(w * x^2))
+}
+
+wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...)
+  wnorm.default(x$F, x$window)
 
 #N = 399;
 #a = 1.005;

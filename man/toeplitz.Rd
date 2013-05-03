@@ -13,7 +13,7 @@
 }
 
 \usage{
-new.tmat(F, L = (N - 1) \%/\% 2, fft.plan = NULL)
+new.tmat(F, L = (N + 1) \%/\% 2, fft.plan = NULL)
 is.tmat(t)
 tcols(t)
 trows(t)
