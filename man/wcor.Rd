@@ -11,10 +11,11 @@
 \usage{
 \method{wcor}{ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots)
-\method{plot}{wcor.matrix}(x, col = rev(gray(seq(0, 1, len = 20))),
-                           xlab = "", ylab = "",
-                           main = "W-correlation Matrix",
-                           \dots)
+\method{plot}{wcor.matrix}(x,
+                           grid = c(),
+                           \dots,
+                           cuts = 20,
+                           zlim = c(0, 1))
 }
 
 \arguments{
@@ -28,9 +29,13 @@
   for \code{wcor} or to \code{plot} for \code{plot.wcor.matrix}}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in 'ssa' object.}
-  \item{col}{color palette to use}
-  \item{main}{plot title}
-  \item{xlab,ylab}{labels for 'x' and 'y' axis}
+  \item{grid}{numeric vector or list of two numeric vectors
+    with names 'x' and 'y', numbers of groups which will be marked
+    by reference line.}
+  \item{cuts}{integer, the number of levels the range of W-cor
+    values will be divided into.}
+  \item{zlim}{range of displaying W-cor values.
+    Values outside the range will be absolutely not shown.}
 }
 \details{
   W-correlation matrix is a standard way of checking for weak
@@ -47,7 +52,7 @@
 \references{
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
     Time Series Structure: SSA and related techniques.} Chapman and
-  Hall/CRC. ISBN 1584881941 
+  Hall/CRC. ISBN 1584881941
 }
 \seealso{
   \code{\link[Rssa:reconstruct.ssa]{reconstruct}}

@@ -51,6 +51,19 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1])
 }
 
+wnorm <- function(F, L = (N + 1) %/% 2) {
+  N <- length(F)
+
+  K <- N - L + 1
+  Ls <- min(L, K); Ks <- max(L, K)
+
+  # Compute weights
+  w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), seq(from = Ls-1, to = 1, by = -1))
+
+  # Compute wnorm
+  sqrt(sum(w * F^2))
+}
+
 .get.or.create.fft.plan <- function(x) {
   .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
 }
