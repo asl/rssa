@@ -10,7 +10,6 @@ co2.td <- make.test.data(series = co2,
                          len = 100,
                          kind = "toeplitz-ssa",
                          svd.method = "e",
-                         svd.methods = c("e", "n", "p"),
                          neig = 10);
 test.test.data(test.data = co2.td);
 
