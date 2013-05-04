@@ -13,7 +13,7 @@
 }
 
 \usage{
-new.hbhmat(F, L = (N - 1) \%/\% 2)
+new.hbhmat(F, L = (N + 1) \%/\% 2)
 is.hbhmat(h)
 hbhcols(h)
 hbhrows(h)
