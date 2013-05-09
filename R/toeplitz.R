@@ -19,7 +19,7 @@
 
 #   Routines for toeplitz SSA
 
-tcirc.old <- function(F, L = (N - 1) %/% 2) {
+tcirc.old <- function(F, L = (N + 1) %/% 2) {
   N <- length(F)
 
   f <- fft(c(F, rep(0, L-1)))
@@ -43,7 +43,7 @@ Lcor <- function(F, L) {
   .Call("Lcor", F, L)
 }
 
-new.tmat <- function(F, L = (N - 1) %/% 2, fft.plan = NULL) {
+new.tmat <- function(F, L = (N + 1) %/% 2, fft.plan = NULL) {
   N <- length(F)
   R <- Lcor(F, L)
 
