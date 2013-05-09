@@ -18,64 +18,83 @@
 #   MA 02139, USA.
 
 
-prepanel.eigenvectors <- function(x, y, ssaobj) {
+prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
   V <- ssaobj$U[,y];
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
 
-  prepanel.default.xyplot(U, V);
+  res <- prepanel.default.xyplot(U, V);
+  if (symmetric) {
+    res$ylim <- range(V, -V);
+    if (!identical(x, y))
+      res$xlim <- range(U, -U);
+  }
+
+  res;
 }
 
-panel.eigenvectors <- function(x, y, ssaobj, ...) {
+panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   V <- ssaobj$U[,y];
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
+
+  if (ref) {
+    panel.abline(h = 0, ..., reference = TRUE)
+    if (!identical(x, y))
+      panel.abline(v = 0, ..., reference = TRUE)
+  }
 
   panel.xyplot(U, V, ...);
 }
 
-.defaults <- function(v, key, value) {
-  if (!(key %in% names(v))) v[[key]] <- value;
-  v;
+.defaults <- function(x, ...) {
+  dots <- list(...)
+  modifyList(dots, x)
 }
 
-.plot.ssa.values <- function(x, ..., numvalues) {
+.plot.ssa.values <- function(x, ..., numvalues, plot.type = "b") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   d <- data.frame(A = 1:numvalues, B = x$lambda[1:numvalues]);
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", c("b", "g"));
-  dots <- .defaults(dots, "xlab", "Index");
-  dots <- .defaults(dots, "ylab", "log of eigenvalue");
-  dots <- .defaults(dots, "main", "Eigenvalues");
-  dots <- .defaults(dots, "scales", list(y = list(log = TRUE)));
-  dots <- .defaults(dots, "pch", 20);
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab =  "Index",
+                    ylab = "log of eigenvalue",
+                    main = "Eigenvalues",
+                    grid = TRUE,
+                    scales = list(y = list(log = TRUE)),
+                    par.settings = list(plot.symbol = list(pch = 20)))
 
   res <- do.call("xyplot",
                  c(list(x = B ~ A , data = d, ssaobj = x), dots));
   print(res)
 }
 
-.plot.ssa.vectors <- function(x, ..., plot.contrib, idx) {
+.plot.ssa.vectors <- function(x, ..., plot.contrib, idx, plot.type = "l") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idx);
 
   if (plot.contrib) {
-    total <- sum(x$lambda);
-    lambda <- round(100*x$lambda[idx] / total, digits = 2);
+    total <- wnorm(x)^2
+    lambda <- round(100*x$lambda[idx]^2 / total, digits = 2);
   }
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", "l");
-  dots <- .defaults(dots, "xlab", "");
-  dots <- .defaults(dots, "ylab", "");
-  dots <- .defaults(dots, "main", "Eigenvectors");
-  dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(relation = "free"));
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab = "",
+                    ylab =  "",
+                    main = "Eigenvectors",
+                    as.table = TRUE,
+                    scales = list(draw = FALSE, relation = "free"),
+                    aspect = 1,
+                    symmetric = TRUE,
+                    ref = TRUE)
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,
@@ -87,26 +106,29 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   print(res)
 }
 
-.plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy) {
+.plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy, plot.type = "l") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idy);
 
   if (plot.contrib) {
-    total <- sum(x$lambda);
-    lambdax <- round(100*x$lambda[idx] / total, digits = 2);
-    lambday <- round(100*x$lambda[idy] / total, digits = 2);
+    total <- wnorm(x)^2
+    lambdax <- round(100*x$lambda[idx]^2 / total, digits = 2);
+    lambday <- round(100*x$lambda[idy]^2 / total, digits = 2);
   }
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", "l");
-  dots <- .defaults(dots, "xlab", "");
-  dots <- .defaults(dots, "ylab", "");
-  dots <- .defaults(dots, "main", "Pairs of eigenvectors");
-  dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(relation = "free"));
-  dots <- .defaults(dots, "aspect", "x");
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab = "",
+                    ylab = "",
+                    main = "Pairs of eigenvectors",
+                    as.table = TRUE,
+                    scales = list(draw = FALSE, relation = "free"),
+                    aspect = 1,
+                    symmetric = TRUE,
+                    ref = TRUE)
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A,
@@ -119,23 +141,36 @@ panel.eigenvectors <- function(x, y, ssaobj, ...) {
   print(res)
 }
 
-prepanel.series <- function(x, y, recon, ...) {
+prepanel.series <- function(x, y, recon, ..., symmetric = FALSE) {
   Y <- recon[[paste("F", y, sep = "")]];
-  X <- if (identical(x, y)) 1:length(Y)
+  X <- if (identical(x, y)) time(Y)
        else  recon[[paste("F", x, sep = "")]];
 
-  prepanel.default.xyplot(X, Y, ...);
+  res <- prepanel.default.xyplot(X, Y, ...);
+  if (symmetric) {
+    res$ylim <- range(Y, -Y);
+    if (!identical(x, y))
+      res$xlim <- range(X, -X);
+  }
+
+  res;
 }
 
-panel.series <- function(x, y, recon, ...) {
+panel.series <- function(x, y, recon, ..., ref = FALSE) {
   Y <- recon[[paste("F", y, sep = "")]];
-  X <- if (identical(x, y)) 1:length(Y)
+  X <- if (identical(x, y)) time(Y)
        else  recon[[paste("F", x, sep = "")]];
+
+  if (ref) {
+    panel.abline(h = 0, ..., reference = TRUE)
+    if (!identical(x, y))
+      panel.abline(v = 0, ..., reference = TRUE)
+  }
 
   panel.xyplot(X, Y, ...);
 }
 
-.plot.ssa.series <- function(x, ..., groups) {
+.plot.ssa.series <- function(x, ..., groups, plot.type = "l") {
   dots <- list(...);
 
   # FIXME: check for proper lengths
@@ -145,12 +180,13 @@ panel.series <- function(x, y, recon, ...) {
   r <- reconstruct(x, groups = groups, drop = FALSE);
 
   # Provide convenient defaults
-  dots <- .defaults(dots, "type", "l");
-  dots <- .defaults(dots, "xlab", "");
-  dots <- .defaults(dots, "ylab", "");
-  dots <- .defaults(dots, "main", "Reconstructed series");
-  dots <- .defaults(dots, "as.table", TRUE);
-  dots <- .defaults(dots, "scales", list(relation = "free"));
+  dots <- .defaults(dots,
+                    type = plot.type,
+                    xlab = "",
+                    ylab = "",
+                    main = "Reconstructed series",
+                    as.table = TRUE,
+                    scales = list(relation = "free"))
 
   res <- do.call("xyplot",
                  c(list(x = A ~ B | factor(A, labels = paste(groups)),
@@ -161,8 +197,47 @@ panel.series <- function(x, y, recon, ...) {
   print(res);
 }
 
+panel.levelplot.wcor <- function(x, y, z, ..., grid) {
+  panel.levelplot(x, y, z, ...)
+
+  if (!is.list(grid))
+    grid <- list(h = grid, v = grid)
+
+  panel.abline(v = grid$v - 0.5, ..., reference = TRUE)
+  panel.abline(h = grid$h - 0.5, ..., reference = TRUE)
+}
+
+plot.wcor.matrix <- function(x,
+                             grid = c(),
+                             ...,
+                             cuts = 20,
+                             zlim = range(abs(x), 0, 1)) {
+  # Provide convenient defaults
+  dots <- list(...)
+  dots <- .defaults(dots,
+                    xlab = "",
+                    ylab = "",
+                    colorkey = FALSE,
+                    main = "W-correlation matrix",
+                    aspect = "iso",
+                    xlim = rownames(x),
+                    ylim = colnames(x),
+                    par.settings = list(regions = list(col = colorRampPalette(grey(c(1, 0))))))
+
+  data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
+  data$x <- as.vector(as.numeric(x))
+
+  res <- do.call("levelplot", c(list(abs(x) ~ row * column,
+                                     data = data,
+                                     at = seq(zlim[1], zlim[2], length.out = cuts),
+                                     panel = panel.levelplot.wcor,
+                                     grid = grid),
+                                dots))
+  print(res)
+}
+
 plot.ssa <- function(x,
-                     type = c("values", "vectors", "paired", "series"),
+                     type = c("values", "vectors", "paired", "series", "wcor"),
                      ...,
                      plot.contrib = TRUE,
                      numvalues = nlambda(x),
@@ -186,6 +261,11 @@ plot.ssa <- function(x,
       groups <- as.list(1:min(nlambda(x), nu(x)));
 
     .plot.ssa.series(x, ..., groups = groups);
+  } else if (identical(type, "wcor")) {
+    if (missing(groups))
+      groups <- as.list(1:min(nlambda(x), nu(x)));
+
+    plot(wcor(x, groups = groups), ...)
   } else {
     stop("Unsupported type of SSA plot!");
   }
@@ -211,9 +291,10 @@ plot.1d.ssa.reconstruction <- function(x, ...,
 
   # Nifty defaults
   dots <- list(...)
-  dots <- .defaults(dots, "main", "Reconstructed Series");
-  dots <- .defaults(dots, "type", "l");
-  dots <- .defaults(dots, "ylab", "");
+  dots <- .defaults(dots,
+                    main = "Reconstructed Series",
+                    type = "l",
+                    ylab = "")
 
   # Prepare the matrix with all the data
   m <- matrix(unlist(x), ncol = length(x))

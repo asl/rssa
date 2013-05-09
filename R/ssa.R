@@ -353,3 +353,6 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 
 summary.ssa <- function(object, digits = max(3, getOption("digits") - 3), ...)
   print.ssa(x = object, digits = digits, ...)
+
+wnorm.ssa <- function(x, ...)
+  stop("`wnorm' is not implemented for this kind of SSA")

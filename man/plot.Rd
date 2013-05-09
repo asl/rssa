@@ -7,7 +7,7 @@
 }
 \usage{
 \method{plot}{ssa}(x,
-     type = c("values", "vectors", "paired", "series"),
+     type = c("values", "vectors", "paired", "series", "wcor"),
      \dots,
      plot.contrib = TRUE,
      numvalues = nlambda(x),
@@ -38,7 +38,16 @@
     \item{vectors}{plot the eigenvectors.}
     \item{paired}{plot the pairs of eigenvectors (useful for the
       detection of periodic components).}
-    \item{series}{plot the resconsturcted series.}
+    \item{series}{plot the reconstructed series.}
+    \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
+  }
+
+  Additional (non-standard) graphical parameters which can be transfered via \dots:
+  \describe{
+    \item{plot.type}{lattice plot type. This argument will be transfered as \code{type}
+    argument to function \code{panel.xyplot}.}
+    \item{ref}{logical. Whether to plot zero-level lines in series-plot, eigenvectors-plot and paired-plot.}
+    \item{symmetric}{logical. Whether to use symmetric scales in series-plot, eigenvectors-plot and paired-plot.}
   }
 }
 
@@ -47,8 +56,14 @@
 s <- ssa(co2)
 # Plot the eigenvalues
 plot(s, type = "values")
+# Plot W-cor matrix for first 10 reconstructed components
+plot(s, type = "wcor", groups = 1:10)
 # Plot the paired plot for first 6 eigenvectors
 plot(s, type = "paired", idx = 1:6)
+# Plot eigenvectors for first 6 components
+plot(s, type = "vectors", idx = 1:6)
 # Plot the first 4 reconstructed components
 plot(s, type = "series", groups = list(1:4))
+# Plot the eigenvalues by points only
+plot(s, type = "values", plot.type = "p")
 }
