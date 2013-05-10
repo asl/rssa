@@ -48,6 +48,13 @@ hankel <- function(X, L) {
                           fft.plan = .get.or.create.fft.plan(x)))
 }
 
+.hankelize.one.default <- function(U, V, fft.plan = NULL) {
+  L <- length(U); K <- length(V); N = K + L - 1
+  fft.plan <- (if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan)
+  storage.mode(U) <- storage.mode(V) <- "double"
+  .Call("hankelize_one_fft", U, V, fft.plan)
+}
+
 .hankelize.one.1d.ssa <- function(x, U, V, fft.plan = NULL) {
   fft.plan <- (if (is.null(fft.plan)) .get.or.create.fft.plan(x) else fft.plan)
   storage.mode(U) <- storage.mode(V) <- "double"

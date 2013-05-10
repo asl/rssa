@@ -19,12 +19,12 @@
 #   MA 02139, USA.
 
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
-  N <- nrow(U);
-  lpf <- U %*% t(U[N, , drop = FALSE]);
+  N <- nrow(U)
+  lpf <- U %*% Conj(t(U[N, , drop = FALSE]))
 
   divider <- 1 - lpf[N]
-  if (divider < eps)
-    stop("Verticality coefficient equals to 1");
+  if (Mod(divider) < eps)
+    stop("Verticality coefficient equals to 1")
 
   lpf[-N] / divider
 }
@@ -146,6 +146,46 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   # Forecasted series can be pretty huge...
   invisible(out)
 }
+
+rforecast.mssa <- function(x, groups, len = 1,
+                           base = c("reconstructed", "original"),
+                           only.new = TRUE,
+                           ...,
+                           drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  L <- x$window
+
+  base <- match.arg(base)
+  if (missing(groups))
+    groups <- as.list(1:min(nlambda(x), nu(x)))
+
+  # Grab the reconstructed series if we're basing on them
+  if (identical(base, "reconstructed"))
+    r <- reconstruct(x, groups = groups, ..., cache = cache)
+
+  # Calculate the LRR corresponding to groups
+  lf <- lrr(x, groups = groups, drop = FALSE)
+  stopifnot(length(lf) == length(groups))
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+
+    # Calculate the forecasted values
+    out[[i]] <- apply(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
+                      2,
+                      apply.lrr,
+                      lrr = lf[[i]], len = len, only.new = only.new)
+    out[[i]] <- maybe.fixup.attributes(x, out[[i]], only.new = only.new, drop = drop.attributes)
+  }
+
+  names(out) <- paste(sep = "", "F", 1:length(groups))
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  # Forecasted series can be pretty huge...
+  invisible(out)
+}
+
 
 vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
@@ -328,6 +368,9 @@ forecast.1d.ssa <- function(object,
 "predict.toeplitz.ssa" <- `predict.1d.ssa`;
 
 "lrr.mssa" <- `lrr.1d.ssa`
+
+"lrr.cssa" <- `lrr.1d.ssa`
+"rforecast.cssa" <- `rforecast.1d.ssa`;
 
 lrr <- function(x, ...)
   UseMethod("lrr")
