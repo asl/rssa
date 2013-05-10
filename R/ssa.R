@@ -49,7 +49,7 @@ ssa <- function(x,
                 L = (N + 1) %/% 2,
                 neig = NULL,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
@@ -112,6 +112,16 @@ ssa <- function(x,
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, min(N), ...)
+
+  } else if (identical(kind, "cssa")) {
+    # Sanity check - the input series should be complex
+    if (!is.complex(x))
+      stop("complex SSA should be performed on complex time series")
+    N <- length(x)
+
+    # Fix SVD method.
+    if (identical(svd.method, "auto"))
+      svd.method <- determine.svd.method(L, N, ...)
   }
   stopifnot(!is.null(neig))
 
@@ -279,7 +289,6 @@ residuals.ssa.reconstruction <- function(object, ...) {
   lambda <- .get(x, "lambda");
   U <- .get(x, "U");
 
-  # FIXME: Get rid of prod() here
   res <- numeric(.slength(x));
   for (i in idx) {
     if (nv(x) >= i) {
