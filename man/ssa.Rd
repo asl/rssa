@@ -14,7 +14,7 @@ ssa(x,
     mask = NULL,
     wmask = NULL,
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa"),
+    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
@@ -32,8 +32,9 @@ ssa(x,
   \item{wmask}{for shaped 2d SSA case only. Logical matrix which specifies window form.
     See `Details' for more information about the window shape selection}
   \item{\dots}{further arguments passed to \code{\link[Rssa:decompose.ssa]{decompose}} }
-  \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA and
-    Toeplitz variant of 1d SSA.}
+  \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA,
+    Toeplitz variant of 1d SSA, multichannel variant of SSA and complex
+    SSA}
   \item{svd.method}{singular value decomposition method. See 'Details'
     for more info.}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
