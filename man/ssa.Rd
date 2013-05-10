@@ -11,7 +11,7 @@
 ssa(x,
     L = (N + 1) \%/\% 2,
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa"),
+    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
@@ -24,8 +24,9 @@ ssa(x,
     default. Should be vector of length 2 for 2d SSA}
   \item{\dots}{further arguments passed to
     \code{\link[Rssa:decompose.ssa]{decompose}} (e.g. \code{neig}).}
-  \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA and
-    Toeplitz variant of 1d SSA.}
+  \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA,
+    Toeplitz variant of 1d SSA, multichannel variant of SSA and complex
+    SSA}
   \item{svd.method}{singular value decomposition method. See 'Details'
     for more info.}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is

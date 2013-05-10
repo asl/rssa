@@ -40,6 +40,6 @@ typedef struct {
 } fft_plan;
 
 static inline unsigned valid_plan(const fft_plan *f, R_len_t N) {
-  return (f-> N == N);
+  return (f->N == N);
 }
 
