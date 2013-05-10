@@ -50,7 +50,7 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 svd.method = c("nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
@@ -99,6 +99,14 @@ ssa <- function(x,
         warning("length of L is > 1, only the first element will be used")
       L <- L[1]
     }
+  } else if (identical(kind, "cssa")) {
+    # Sanity check - the input series should be complex
+    if (!is.complex(x))
+      stop("complex SSA should be performed on complex time series")
+    N <- length(x)
+
+     # Fix svd method, if needed
+    svd.method <- fix.svd.method(svd.method, L, N, ...)
   }
 
   # Normalized the kind to be used
@@ -281,7 +289,6 @@ residuals.ssa.reconstruction <- function(object, ...) {
   lambda <- .get(x, "lambda");
   U <- .get(x, "U");
 
-  # FIXME: Get rid of prod() here
   res <- numeric(.slength(x));
   for (i in idx) {
     if (nv(x) >= i) {
