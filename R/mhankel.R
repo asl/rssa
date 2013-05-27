@@ -293,7 +293,7 @@ decompose.cssa.eigen <- function(x, ...,
 }
 
 decompose.cssa.propack <- function(x,
-                                   neig = 2*min(50, L, K),
+                                   neig = min(50, L, K),
                                    ...,
                                    force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
@@ -303,7 +303,7 @@ decompose.cssa.propack <- function(x,
     stop("Continuation of decompostion is not yet implemented for this method.")
 
   h <- .get.or.create.chmat(x)
-  S <- propack.svd(h, neig = neig, ...)
+  S <- propack.svd(h, neig = 2*neig, ...)
 
   S <- cssa.to.complex(S$d, S$u)
 
@@ -318,7 +318,7 @@ decompose.cssa.propack <- function(x,
 }
 
 decompose.cssa.nutrlan <- function(x,
-                                   neig = 2*min(50, L, K),
+                                   neig = min(50, L, K),
                                    ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
@@ -327,7 +327,7 @@ decompose.cssa.nutrlan <- function(x,
   lambda <- .get(x, "lambda", allow.null = TRUE)
   U <- .get(x, "U", allow.null = TRUE)
 
-  S <- trlan.svd(h, neig = neig, ...,
+  S <- trlan.svd(h, neig = 2*neig, ...,
                  lambda = lambda, U = U)
 
   S <- cssa.to.complex(S$d, S$u)
