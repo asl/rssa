@@ -230,7 +230,7 @@ plot.wcor.matrix <- function(x,
   res <- do.call("levelplot",
                  c(list(x = abs(x) ~ row * column,
                         data = data,
-                        at = seq(zlim[1], zlim[2], length.out = cuts),
+                        at = seq(zlim[1], zlim[2], length.out = cuts + 2),
                         panel = panel.levelplot.wcor,
                         grid = grid),
                  dots))
