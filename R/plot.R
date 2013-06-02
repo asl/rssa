@@ -19,9 +19,9 @@
 
 
 prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
-  V <- ssaobj$U[,y]
+  V <- ssaobj$U[, y]
   U <- if (identical(x, y)) 1:length(V)
-       else ssaobj$U[,x]
+       else ssaobj$U[, x]
 
   res <- prepanel.default.xyplot(U, V)
   if (symmetric) {
@@ -34,9 +34,9 @@ prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
 }
 
 panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
-  V <- ssaobj$U[,y]
+  V <- ssaobj$U[, y]
   U <- if (identical(x, y)) 1:length(V)
-       else ssaobj$U[,x]
+       else ssaobj$U[, x]
 
   if (ref) {
     panel.abline(h = 0, ..., reference = TRUE)
