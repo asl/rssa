@@ -19,22 +19,22 @@
 
 
 prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
-  V <- ssaobj$U[,y];
+  V <- ssaobj$U[,y]
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
 
-  res <- prepanel.default.xyplot(U, V);
+  res <- prepanel.default.xyplot(U, V)
   if (symmetric) {
-    res$ylim <- range(V, -V);
+    res$ylim <- range(V, -V)
     if (!identical(x, y))
-      res$xlim <- range(U, -U);
+      res$xlim <- range(U, -U)
   }
 
-  res;
+  res
 }
 
 panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
-  V <- ssaobj$U[,y];
+  V <- ssaobj$U[,y]
   U <- if (identical(x, y)) 1:length(V)
        else ssaobj$U[,x]
 
@@ -44,7 +44,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
       panel.abline(v = 0, ..., reference = TRUE)
   }
 
-  panel.xyplot(U, V, ...);
+  panel.xyplot(U, V, ...)
 }
 
 .defaults <- function(x, ...) {
@@ -53,10 +53,10 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 }
 
 .plot.ssa.values <- function(x, ..., numvalues, plot.type = "b") {
-  dots <- list(...);
+  dots <- list(...)
 
   # FIXME: check for proper lengths
-  d <- data.frame(A = 1:numvalues, B = x$lambda[1:numvalues]);
+  d <- data.frame(A = 1:numvalues, B = x$lambda[1:numvalues])
 
   # Provide convenient defaults
   dots <- .defaults(dots,
@@ -69,19 +69,19 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     par.settings = list(plot.symbol = list(pch = 20)))
 
   res <- do.call("xyplot",
-                 c(list(x = B ~ A , data = d, ssaobj = x), dots));
+                 c(list(x = B ~ A , data = d, ssaobj = x), dots))
   print(res)
 }
 
 .plot.ssa.vectors <- function(x, ..., plot.contrib, idx, plot.type = "l") {
-  dots <- list(...);
+  dots <- list(...)
 
   # FIXME: check for proper lengths
-  d <- data.frame(A = idx, B = idx);
+  d <- data.frame(A = idx, B = idx)
 
   if (plot.contrib) {
     total <- wnorm(x)^2
-    lambda <- round(100*x$lambda[idx]^2 / total, digits = 2);
+    lambda <- round(100*x$lambda[idx]^2 / total, digits = 2)
   }
 
   # Provide convenient defaults
@@ -102,20 +102,20 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                         data = d, ssaobj = x,
                         panel = panel.eigenvectors,
                         prepanel = prepanel.eigenvectors),
-                   dots));
+                   dots))
   print(res)
 }
 
 .plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy, plot.type = "l") {
-  dots <- list(...);
+  dots <- list(...)
 
   # FIXME: check for proper lengths
-  d <- data.frame(A = idx, B = idy);
+  d <- data.frame(A = idx, B = idy)
 
   if (plot.contrib) {
     total <- wnorm(x)^2
-    lambdax <- round(100*x$lambda[idx]^2 / total, digits = 2);
-    lambday <- round(100*x$lambda[idy]^2 / total, digits = 2);
+    lambdax <- round(100*x$lambda[idx]^2 / total, digits = 2)
+    lambday <- round(100*x$lambda[idy]^2 / total, digits = 2)
   }
 
   # Provide convenient defaults
@@ -137,29 +137,29 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                         data = d, ssaobj = x,
                         panel = panel.eigenvectors,
                         prepanel = prepanel.eigenvectors),
-                   dots));
+                   dots))
   print(res)
 }
 
 prepanel.series <- function(x, y, recon, ..., symmetric = FALSE) {
-  Y <- recon[[paste("F", y, sep = "")]];
+  Y <- recon[[paste("F", y, sep = "")]]
   X <- if (identical(x, y)) time(Y)
-       else  recon[[paste("F", x, sep = "")]];
+       else  recon[[paste("F", x, sep = "")]]
 
-  res <- prepanel.default.xyplot(X, Y, ...);
+  res <- prepanel.default.xyplot(X, Y, ...)
   if (symmetric) {
-    res$ylim <- range(Y, -Y);
+    res$ylim <- range(Y, -Y)
     if (!identical(x, y))
-      res$xlim <- range(X, -X);
+      res$xlim <- range(X, -X)
   }
 
-  res;
+  res
 }
 
 panel.series <- function(x, y, recon, ..., ref = FALSE) {
-  Y <- recon[[paste("F", y, sep = "")]];
+  Y <- recon[[paste("F", y, sep = "")]]
   X <- if (identical(x, y)) time(Y)
-       else  recon[[paste("F", x, sep = "")]];
+       else  recon[[paste("F", x, sep = "")]]
 
   if (ref) {
     panel.abline(h = 0, ..., reference = TRUE)
@@ -167,17 +167,17 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
       panel.abline(v = 0, ..., reference = TRUE)
   }
 
-  panel.xyplot(X, Y, ...);
+  panel.xyplot(X, Y, ...)
 }
 
 .plot.ssa.series <- function(x, ..., groups, plot.type = "l") {
-  dots <- list(...);
+  dots <- list(...)
 
   # FIXME: check for proper lengths
-  idx <- seq_along(groups);
-  d <- data.frame(A = idx, B = idx);
+  idx <- seq_along(groups)
+  d <- data.frame(A = idx, B = idx)
 
-  r <- reconstruct(x, groups = groups, drop = FALSE);
+  r <- reconstruct(x, groups = groups, drop = FALSE)
 
   # Provide convenient defaults
   dots <- .defaults(dots,
@@ -193,8 +193,8 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
                         data = d, recon = r,
                         panel = panel.series,
                         prepanel = prepanel.series),
-                   dots));
-  print(res);
+                   dots))
+  print(res)
 }
 
 panel.levelplot.wcor <- function(x, y, z, ..., grid) {
@@ -245,29 +245,29 @@ plot.ssa <- function(x,
                      idx = 1:numvectors,
                      idy,
                      groups) {
-  type <- match.arg(type);
+  type <- match.arg(type)
 
   if (identical(type, "values")) {
-    .plot.ssa.values(x, ..., numvalues = numvalues);
+    .plot.ssa.values(x, ..., numvalues = numvalues)
   } else if (identical(type, "vectors")) {
-    .plot.ssa.vectors(x, ..., plot.contrib = plot.contrib, idx = idx);
+    .plot.ssa.vectors(x, ..., plot.contrib = plot.contrib, idx = idx)
   } else if (identical(type, "paired")) {
     if (missing(idy))
-      idy <- idx + 1;
+      idy <- idx + 1
 
-    .plot.ssa.paired(x, ..., plot.contrib = plot.contrib, idx = idx, idy = idy);
+    .plot.ssa.paired(x, ..., plot.contrib = plot.contrib, idx = idx, idy = idy)
   } else if (identical(type, "series")) {
     if (missing(groups))
-      groups <- as.list(1:min(nlambda(x), nu(x)));
+      groups <- as.list(1:min(nlambda(x), nu(x)))
 
-    .plot.ssa.series(x, ..., groups = groups);
+    .plot.ssa.series(x, ..., groups = groups)
   } else if (identical(type, "wcor")) {
     if (missing(groups))
-      groups <- as.list(1:min(nlambda(x), nu(x)));
+      groups <- as.list(1:min(nlambda(x), nu(x)))
 
     plot(wcor(x, groups = groups), ...)
   } else {
-    stop("Unsupported type of SSA plot!");
+    stop("Unsupported type of SSA plot!")
   }
 }
 
@@ -277,7 +277,7 @@ plot.1d.ssa.reconstruction <- function(x, ...,
                                        base.series = NULL,
                                        add.original = TRUE,
                                        add.residuals = TRUE) {
-  type <- match.arg(type);
+  type <- match.arg(type)
   plot.method <- match.arg(plot.method)
   original <- attr(x, "series")
   res <- attr(x, "residuals")
