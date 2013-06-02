@@ -335,3 +335,129 @@ plot.1d.ssa.reconstruction <- function(x, ...,
 }
 
 plot.toeplitz.ssa.reconstruction <- `plot.1d.ssa.reconstruction`
+
+prepanel.reconstruction.2d.ssa <- function(z, subscripts, recon, ...) {
+  N <- dim(recon[[z[subscripts]]])
+  x <- c(seq_len(N[1]), rep(1, N[2]))
+  y <- c(seq_len(N[2]), rep(1, N[1]))
+  prepanel.default.levelplot(x, y, subscripts = seq_along(x))
+}
+
+panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
+                                        ref = FALSE,
+                                        symmetric = FALSE,
+                                        .cuts = 20,
+                                        .useRaster = FALSE,
+                                        region, contour) {
+  panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
+  N <- dim(recon[[subscripts]])
+  data <- expand.grid(x = seq_len(N[1]), y = seq_len(N[2]))
+  data$z <- as.vector(recon[[z[subscripts]]])
+
+  if (identical(at, "free")) {
+    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z)
+    at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
+  }
+
+  panel(data$x, data$y, data$z, subscripts = seq_len(nrow(data)),
+        at = at, contour = FALSE, region = TRUE, ...)
+
+  if (ref) {
+    # Draw zerolevel isoline
+    par <- trellis.par.get("reference.line")
+    panel.contourplot(data$x, data$y, data$z, subscripts = seq_len(nrow(data)),
+                      at = 0, contour = TRUE, region = FALSE,
+                      col = par$col, lty = par$lty, lwd = par$lwd)
+  }
+}
+
+plot.2d.ssa.reconstruction <- function(x, ...,
+                                       type = c("raw", "cumsum"),
+                                       base.series = NULL,
+                                       add.original = TRUE,
+                                       add.residuals = TRUE,
+                                       add.ranges,
+                                       at) {
+  dots <- list(...)
+  type <- match.arg(type)
+
+  if (missing(at))
+    at <- if (identical(type, "cumsum")) "same" else "free"
+  if (is.character(at))
+    at <- match.arg(at, c("same", "free"))
+
+  if (missing(add.ranges))
+    add.ranges <- identical(at, "free")
+
+  if (identical(type, "cumsum") && (length(x) > 1)) {
+    for (i in 2:length(x))
+      x[[i]] <- x[[i]] + x[[i - 1]]
+
+    names(x)[2:length(x)] <- paste(names(x)[1], names(x)[2:length(x)], sep = ":")
+  }
+
+  original <- attr(x, "series")
+  residuals <- attr(x, "residuals")
+
+  # Handle base series, if any
+  if (!is.null(base.series)) {
+    stopifnot(inherits(base.series, "ssa.reconstruction"))
+    original <- attr(base.series, "series")
+    names(base.series) <- paste("base", names(base.series), sep = " ")
+    x <- c(base.series, x)
+  }
+
+  if (add.original)
+    x <- c(list(Original = original), x)
+  if (add.residuals)
+    x <- c(x, list(Residuals = residuals))
+
+
+  idx <- seq_along(x)
+  d <- data.frame(row = idx, column = idx, z = idx)
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    xlab = "i",
+                    ylab =  "j",
+                    main = "Reconstructions",
+                    as.table = TRUE,
+                    scales = list(draw = FALSE, relation = "same"),
+                    aspect = "iso",
+                    par.settings = list(regions = list(col = colorRampPalette(grey(c(0, 1))))),
+                    cuts = 20,
+                    colorkey = !identical(at, "free"),
+                    symmetric = FALSE,
+                    ref = FALSE,
+                    useRaster = TRUE)
+
+  # Disable colorkey if subplots are drawing in different scales
+  if (identical(at, "free"))
+    dots$colorkey <- FALSE
+
+  if (identical(at, "same")) {
+    all.values <- unlist(x)
+    at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
+  }
+
+  # Rename args for transfer to panel function
+  names(dots)[names(dots) == "cuts"] <- ".cuts"
+  names(dots)[names(dots) == "useRaster"] <- ".useRaster"
+
+  labels <- names(x)
+  if (add.ranges) {
+    ranges <- sapply(x, range, na.rm = TRUE)
+    ranges <- signif(ranges, 2)
+    labels <- paste(labels, " [", ranges[1, ],", ", ranges[2, ], "]", sep = "")
+  }
+
+  res <- do.call("levelplot",
+                 c(list(x = z ~ row * column | factor(z, labels = labels),
+                        data = d, recon = x,
+                        at = at,
+                        useRaster = dots$.useRaster,
+                        panel = panel.reconstruction.2d.ssa,
+                        prepanel = prepanel.reconstruction.2d.ssa),
+                   dots))
+  print(res)
+}
