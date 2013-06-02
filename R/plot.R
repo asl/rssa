@@ -227,12 +227,13 @@ plot.wcor.matrix <- function(x,
   data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
   data$x <- as.vector(as.numeric(x))
 
-  res <- do.call("levelplot", c(list(abs(x) ~ row * column,
-                                     data = data,
-                                     at = seq(zlim[1], zlim[2], length.out = cuts),
-                                     panel = panel.levelplot.wcor,
-                                     grid = grid),
-                                dots))
+  res <- do.call("levelplot",
+                 c(list(x = abs(x) ~ row * column,
+                        data = data,
+                        at = seq(zlim[1], zlim[2], length.out = cuts),
+                        panel = panel.levelplot.wcor,
+                        grid = grid),
+                 dots))
   print(res)
 }
 
