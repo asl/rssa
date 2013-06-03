@@ -44,5 +44,5 @@
 s <- ssa(co2)
 r <- reconstruct(s, groups = list(c(1, 4), c(2, 3), c(5, 6)))
 # Plot full 'co2' reconstruction into trend, periodic components and noise
-plot(r) 
+plot(r)
 }
