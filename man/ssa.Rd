@@ -10,9 +10,11 @@
 \usage{
 ssa(x,
     L = (N + 1) \%/\% 2,
+    mask,
+    umask,
     neig = NULL,
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+    kind = c("1d-ssa", "2d-ssa", "shaped2d-ssa", "toeplitz-ssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
@@ -23,6 +25,10 @@ ssa(x,
     object for 2d SSA.}
   \item{L}{integer, window length. Fixed to half of the series length by
     default. Should be vector of length 2 for 2d SSA}
+  \item{mask}{for shaped 2d SSA case only. Logical matrix with same dimension as
+    \code{x}. Specifies form of decomposed field. If missing, then all non-NA elements will be used}
+  \item{umask}{for shaped 2d SSA case only. Logical matrix which specifies window form. If missing,
+    then standart rectangular window (specified by \code{L}) will be used}
   \item{neig}{integer, number of desired eigentriples. If 'NULL', then
     sane default value will be used}
   \item{\dots}{further arguments passed to \code{\link[Rssa:decompose.ssa]{decompose}} }
@@ -56,6 +62,8 @@ ssa(x,
       and Usevich, 2009) for more information. The so-called M-SSA method
       (aka multichannel SSA) is a special version of 2d SSA with window
       length having one component set to one.
+      \item Shaped 2d SSA, common case of previous variant. Field and window
+      can have random forms which specified by logical masks (\code{mask} and \code{umask}).
       \item Toeplitz variant of 1d SSA. See Section 1.7.2 in (Golyandina
       et al, 2001). This is also knows as Vatuard-Gill varian of SSA or
       VG-SSA for analysis of stationary time series, see (Vautard and

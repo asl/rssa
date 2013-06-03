@@ -47,9 +47,11 @@ new.ssa <- function(...) {
 
 ssa <- function(x,
                 L = (N + 1) %/% 2,
+                mask,
+                umask,
                 neig = NULL,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+                kind = c("1d-ssa", "2d-ssa", "shaped2d-ssa", "toeplitz-ssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
@@ -81,6 +83,36 @@ ssa <- function(x,
 
     if (identical(svd.method, "auto"))
       svd.method <- "nutrlan"
+  } else if (identical(kind, "shaped2d-ssa")) {
+    # Coerce input to matrix if necessary
+    if (!is.matrix(x))
+      x <- as.matrix(x);
+
+    N <- dim(x)
+
+    if (missing(mask))
+      mask <- !is.na(x)
+    x[!mask] <- NA ##TODO ??????
+
+    if (missing(umask)) {
+      umask <- matrix(TRUE, L[1], L[2])
+    } else {
+      L <- dim(umask)
+    }
+
+    if (is.null(neig))
+      neig <- min(50, prod(L), prod(N - L + 1))
+
+    if (identical(svd.method, "auto"))
+      svd.method <- "nutrlan"
+
+    vmask <- factor.mask(mask, umask)
+    weights <- field.weights(umask, vmask)
+    ommited <- sum(mask & (weights == 0))
+
+    if (ommited > 0) {
+      warning(sprintf("Some field elements haven't been covered by shaped window. %d elements will be ommited", ommited))
+    }
   }
   stopifnot(!is.null(neig))
 
@@ -103,6 +135,18 @@ ssa <- function(x,
 
   # Save attributes
   .set(this, "Fattr", xattr);
+
+  if (identical(kind, "shaped2d.ssa")) {
+    # Set masks
+    .set(this, "umask", umask)
+    .set(this, "vmask", vmask)
+    .set(this, "weights", weights)
+  } else {
+    # Set NULLs
+    .set(this, "umask", NULL)
+    .set(this, "vmask", NULL)
+    .set(this, "weights", NULL)
+  }
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
