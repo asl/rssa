@@ -197,8 +197,9 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
   print(res)
 }
 
-panel.levelplot.wcor <- function(x, y, z, ..., grid) {
-  panel.levelplot(x, y, z, ...)
+panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
+  panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
+  panel(x, y, z, ...)
 
   if (!is.list(grid))
     grid <- list(h = grid, v = grid)
@@ -222,17 +223,22 @@ plot.wcor.matrix <- function(x,
                     aspect = "iso",
                     xlim = rownames(x),
                     ylim = colnames(x),
-                    par.settings = list(regions = list(col = colorRampPalette(grey(c(1, 0))))))
+                    par.settings = list(regions = list(col = colorRampPalette(grey(c(1, 0))))),
+                    useRaster = TRUE)
 
   data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
   data$x <- as.vector(as.numeric(x))
+
+  # Rename args for transfer to panel function
+  names(dots)[names(dots) == "useRaster"] <- ".useRaster"
 
   res <- do.call("levelplot",
                  c(list(x = abs(x) ~ row * column,
                         data = data,
                         at = seq(zlim[1], zlim[2], length.out = cuts + 2),
                         panel = panel.levelplot.wcor,
-                        grid = grid),
+                        grid = grid,
+                        useRaster = dots$.useRaster),
                  dots))
   print(res)
 }

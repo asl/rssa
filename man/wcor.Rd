@@ -46,6 +46,12 @@
   strongly correlated elementary series should be placed into the same
   group.The function calculates such a matrix either directly from 'ssa'
   object or from the matrix of elementary series.
+
+  Additional (non-standard) graphical parameters which can be transfered via \dots:
+  \describe{
+    \item{useRaster}{logical. For wcor-plot, indicating whether raster representations
+      should be used. 'TRUE' by default.}
+  }
 }
 
 \value{
