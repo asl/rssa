@@ -469,3 +469,95 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                    dots))
   print(res)
 }
+
+prepanel.eigenvectors.2d.ssa <- function(x, y, subscripts, ssaobj, ...) {
+  L <- ssaobj$window
+  x <- c(seq_len(L[1]), rep(1, L[2]))
+  y <- c(seq_len(L[2]), rep(1, L[1]))
+  prepanel.default.levelplot(x, y, subscripts = seq_along(x))
+}
+
+panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
+                                      ref = FALSE,
+                                      symmetric = FALSE,
+                                      .cuts = 20,
+                                      .useRaster = FALSE,
+                                      region, contour) {
+  panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
+  L <- ssaobj$window
+
+  data <- expand.grid(x = seq_len(L[1]), y = seq_len(L[2]))
+  data$z <- ssaobj$U[, z[subscripts]]
+
+  if (identical(at, "free")) {
+    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z)
+    at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
+  }
+  panel.levelplot(data$x, data$y, data$z, subscripts = seq_len(nrow(data)), at = at, ...)
+
+  panel(data$x, data$y, data$z, subscripts = seq_len(nrow(data)),
+        at = at, contour = FALSE, region = TRUE, ...)
+
+  if (ref) {
+    # Draw zerolevel isoline
+    par <- trellis.par.get("reference.line")
+    panel.contourplot(data$x, data$y, data$z, subscripts = seq_len(nrow(data)),
+                      at = 0, contour = TRUE, region = FALSE,
+                      col = par$col, lty = par$lty, lwd = par$lwd)
+  }
+}
+
+.plot.ssa.vectors.2d.ssa <- function(x, ..., plot.contrib = FALSE, idx, at) {
+  dots <- list(...)
+
+  if (missing(at))
+    at <- "free"
+  if (is.character(at))
+    at <- match.arg(at, c("free", "same"))
+
+  # FIXME: check for proper lengths
+  d <- data.frame(row = idx, column = idx, z = idx)
+
+  if (plot.contrib) {
+    total <- wnorm(x)^2
+    lambda <- round(100*x$lambda[idx]^2 / total, digits = 2);
+  }
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    xlab = "i",
+                    ylab =  "j",
+                    main = "Eigenvectors",
+                    as.table = TRUE,
+                    scales = list(draw = FALSE, relation = "same"),
+                    aspect = "iso",
+                    par.settings = list(regions = list(col = colorRampPalette(grey(c(0, 1))))),
+                    cuts = 20,
+                    symmetric = FALSE,
+                    ref = FALSE,
+                    useRaster = TRUE)
+
+  # Disable colorkey if subplots are drawed in different scales
+  if (identical(at, "free"))
+    dots$colorkey <- FALSE
+
+  if (identical(at, "same")) {
+    all.values <- x$U[, idx]
+    at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
+  }
+
+  # Rename args for transfer to panel function
+  names(dots)[names(dots) == "cuts"] <- ".cuts"
+  names(dots)[names(dots) == "useRaster"] <- ".useRaster"
+
+  res <- do.call("levelplot",
+                 c(list(x = z ~ row * column | factor(z,
+                                                      labels = if (!plot.contrib) z else paste(z, " (", lambda, "%)", sep = "")),
+                        data = d, ssaobj = x,
+                        at = at,
+                        useRaster = dots$.useRaster,
+                        panel = panel.eigenvectors.2d.ssa,
+                        prepanel = prepanel.eigenvectors.2d.ssa),
+                   dots));
+  print(res)
+}
