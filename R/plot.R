@@ -73,7 +73,13 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   print(res)
 }
 
-.plot.ssa.vectors <- function(x, ..., plot.contrib, idx, plot.type = "l") {
+.plot.ssa.vectors <- function(x, ...)
+  UseMethod(".plot.ssa.vectors")
+
+.plot.ssa.vectors.ssa <- function(x, ...)
+  stop("`.plot.ssa.vectors' is not implemented for this kind of SSA")
+
+.plot.ssa.vectors.1d.ssa <- function(x, ..., plot.contrib, idx, plot.type = "l") {
   dots <- list(...)
 
   # FIXME: check for proper lengths
@@ -105,6 +111,8 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                    dots))
   print(res)
 }
+
+.plot.ssa.vectors.toeplitz.ssa <- `.plot.ssa.vectors.1d.ssa`
 
 .plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy, plot.type = "l") {
   dots <- list(...)
