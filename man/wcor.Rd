@@ -15,7 +15,7 @@
      grid = c(),
      \dots,
      cuts = 20,
-     zlim = range(abs(x), 0, 1)
+     zlim = range(abs(x), 0, 1))
 }
 
 \arguments{
