@@ -46,8 +46,17 @@
   \describe{
     \item{plot.type}{lattice plot type. This argument will be transfered as \code{type}
     argument to function \code{panel.xyplot}.}
-    \item{ref}{logical. Whether to plot zero-level lines in series-plot, eigenvectors-plot and paired-plot.}
+    \item{ref}{logical. Whether to plot zero-level lines in series-plot, eigenvectors-plot and paired-plot.
+      Zero-level isolines will be plotted for 2d-eigenvectors-plot.}
     \item{symmetric}{logical. Whether to use symmetric scales in series-plot, eigenvectors-plot and paired-plot.}
+    \item{useRaster}{logical. For 2d-eigenvector-plot and wcor-plot, indicating whether raster representations
+      should be used. 'TRUE' by default.}
+    \item{at}{for 2d-eigenvectors-plot, a numeric vector giving breakpoints along the range of \code{z}.
+      Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
+      special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
+      argument in 'Details') for each component. 'same' means one breakpoints' vector for all
+      component (will be evaluated automatically too).}
+    \item{cuts}{for 2d-reconstruction-plot, the number of levels the range of \code{z} would be divided into.}
   }
 }
 
@@ -66,4 +75,17 @@ plot(s, type = "vectors", idx = 1:6)
 plot(s, type = "series", groups = list(1:4))
 # Plot the eigenvalues by points only
 plot(s, type = "values", plot.type = "p")
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with default parameters
+s <- ssa(mx, kind = "2d-ssa")
+# Plot the eigenvalues
+plot(s, type = "values")
+# Plot eigenvectors for first 6 components
+plot(s, type = "vectors", idx = 1:6,
+     ref = TRUE, at = "same", cuts = 50,
+     plot.contrib = FALSE, symmetric = TRUE)
 }
