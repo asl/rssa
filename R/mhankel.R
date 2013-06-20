@@ -33,8 +33,15 @@
               function(idx) new.hmat(x$F[, idx], L = L,
                                      fft.plan = fft.plan[[idx]]))
   b <- c(0, cumsum(K))
-  matmul <- function(v) rowSums(sapply(1:length(h),
-                                       function(idx) hmatmul(h[[idx]], v[(b[idx]+1):b[idx+1]], transposed = FALSE)))
+  matmul <- function(v) {
+    res <- numeric(L)
+    for (idx in 1:length(h)) {
+      res <- res + hmatmul(h[[idx]], v[(b[idx]+1):b[idx+1]], transposed = FALSE)
+    }
+    res
+  }
+  #matmul <- function(v) rowSums(sapply(1:length(h),
+  #                                     function(idx) hmatmul(h[[idx]], v[(b[idx]+1):b[idx+1]], transposed = FALSE)))
   tmatmul <- function(v) unlist(lapply(h, hmatmul, v = v, transposed = TRUE))
 
   extmat(matmul, tmatmul, nrow = L, ncol = sum(K))
