@@ -38,7 +38,7 @@ typedef struct {
 #if HAVE_FFTW3_H
   fftw_complex * circ_freq;
 #else
-  complex double * circ_freq;
+  SEXP circ_freq;
 #endif
   R_len_t window;
   R_len_t length;
@@ -207,45 +207,39 @@ static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
 #else
 
 static void free_circulant(toeplitz_matrix *t) {
-  Free(t->circ_freq);
+  R_ReleaseObject(t->circ_freq);
 }
 
 static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
                                  const double *R, R_len_t L) {
   R_len_t N = 2*L - 1, i;
-  int *iwork, maxf, maxp;
-  double *work;
-  complex double *circ;
+  Rcomplex *circ;
+  SEXP rcirc;
 
   if (!valid_plan(f, N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
-
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rcirc = allocVector(CPLXSXP, N));
+  circ = COMPLEX(rcirc);
 
   /* Fill input buffer */
-  for (i = 0; i < L; ++i)
-    circ[i] = R[i];
+  for (i = 0; i < L; ++i) {
+    circ[i].r = R[i];
+    circ[i].i = 0;
+  }
 
-  for (i = 0; i < L-1; ++i)
-    circ[L + i] = R[L-i-1];
+  for (i = 0; i < L - 1; ++i) {
+    circ[L + i].r = R[L - i - 1];
+    circ[L + i].i = 0;
+  }
 
   /* Run the plan on input data */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+  R_PreserveObject(t->circ_freq = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
 
   /* Cleanup and return */
-  Free(work);
-  Free(iwork);
+  UNPROTECT(1);
 
-  t->circ_freq = circ;
   t->fft_plan = f;
   t->window = L;
   t->length = N;
@@ -257,42 +251,36 @@ static void toeplitz_matmul(double* out,
   const toeplitz_matrix *t = matrix;
   R_len_t N = t->length, L = t->window;
   R_len_t K = N - L + 1, i;
-  double *work;
-  complex double *circ;
-  int *iwork, maxf, maxp;
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
+  SEXP rcirc, res, rV1, rTrue;
 
   /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rcirc = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rcirc), 0, N * sizeof(Rcomplex));
 
   /* Fill the arrays */
   for (i = 0; i < K; ++i)
-    circ[i] = v[i];
+    COMPLEX(rcirc)[i].r = v[i];
 
   /* Compute the FFT of the vector v */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+  PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
-  for (i = 0; i < N; ++i)
-    circ[i] = circ[i] * t->circ_freq[i];
+  for (i = 0; i < N; ++i) {
+    Rcomplex x1 = COMPLEX(rV1)[i], x2 = COMPLEX(t->circ_freq)[i];
+    COMPLEX(rV1)[i].r = x1.r * x2.r - x1.i * x2.i;
+    COMPLEX(rV1)[i].i = x1.r * x2.i + x1.i * x2.r;
+  }
 
   /* Compute the reverse transform to obtain result */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+  PROTECT(rTrue = allocVector(LGLSXP, 1));
+  LOGICAL(rTrue)[0] = 1;
+  PROTECT(res = eval(lang3(install("fft"), rV1, rTrue), R_GlobalEnv));
 
   /* Cleanup and return */
   for (i = 0; i < L; ++i)
-    out[i] = creal(circ[i]) / N;
+    out[i] = COMPLEX(res)[i].r / N;
 
-  Free(circ);
-  Free(work);
-  Free(iwork);
+  UNPROTECT(4);
 }
 
 static void toeplitz_tmatmul(double* out,
@@ -301,82 +289,70 @@ static void toeplitz_tmatmul(double* out,
   const toeplitz_matrix *t = matrix;
   R_len_t N = t->length, L = t->window;
   R_len_t K = N - L + 1, i;
-  double *work;
-  complex double *circ;
-  int *iwork, maxf, maxp;
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
+  SEXP rcirc, res, rV1, rTrue;
 
   /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rcirc = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rcirc), 0, N * sizeof(Rcomplex));
 
   /* Fill the arrays */
   for (i = 0; i < L; ++i)
-    circ[i + K - 1] = v[i];
+    COMPLEX(rcirc)[i + K - 1].r = v[i];
 
-  /* Compute the FFT of the reversed vector v */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+  /* Compute the FFT of the vector v */
+  PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
-  for (i = 0; i < N; ++i)
-    circ[i] = circ[i] * t->circ_freq[i];
+  for (i = 0; i < N; ++i) {
+    Rcomplex x1 = COMPLEX(rV1)[i], x2 = COMPLEX(t->circ_freq)[i];
+    COMPLEX(rV1)[i].r = x1.r * x2.r - x1.i * x2.i;
+    COMPLEX(rV1)[i].i = x1.r * x2.i + x1.i * x2.r;
+  }
 
   /* Compute the reverse transform to obtain result */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+  PROTECT(rTrue = allocVector(LGLSXP, 1));
+  LOGICAL(rTrue)[0] = 1;
+  PROTECT(res = eval(lang3(install("fft"), rV1, rTrue), R_GlobalEnv));
 
   /* Cleanup and return */
   for (i = 0; i < K; ++i)
-    out[i] = creal(circ[i + L - 1]) / N;
+    out[i] = COMPLEX(res)[i + L - 1].r / N;
 
-  Free(circ);
-  Free(work);
-  Free(iwork);
+  UNPROTECT(4);
 }
 
 static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
   R_len_t No = N + L - 1, i;
-  complex double *circ;
-  double *work;
-  int *iwork, maxf, maxp;
-
-  /* Estimate the best plans for given input length */
-  fft_factor(No, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
+  SEXP rcirc, res, rV1, rTrue;
 
   /* Allocate needed memory */
-  circ = Calloc(No, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rcirc = allocVector(CPLXSXP, No));
+  memset(COMPLEX(rcirc), 0, No * sizeof(Rcomplex));
 
   for (i = 0; i < N; ++i)
-    circ[i] = F[i];
+    COMPLEX(rcirc)[i].r = F[i];
 
   /* Compute the FFT of the padded input vector */
-  fft_work((double*)circ, ((double*)circ)+1, 1, No, 1, -2, work, iwork);
+  PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
 
   /* Auto dot-product */
-  for (i = 0; i < No; ++i)
-    circ[i] = circ[i] * conj(circ[i]);
+  for (i = 0; i < No; ++i) {
+    Rcomplex x = COMPLEX(rV1)[i];
+    COMPLEX(rV1)[i].r = x.r * x.r + x.i * x.i;
+    COMPLEX(rV1)[i].i = -x.r * x.i + x.i * x.r;
+  }
 
   /* Compute the reverse transform to obtain result */
-  fft_factor(No, &maxf, &maxp);
-  fft_work((double*)circ, ((double*)circ)+1, 1, No, 1, +2, work, iwork);
+  PROTECT(rTrue = allocVector(LGLSXP, 1));
+  LOGICAL(rTrue)[0] = 1;
+  PROTECT(res = eval(lang3(install("fft"), rV1, rTrue), R_GlobalEnv));
 
   /* Return */
   for (i = 0; i < L; ++i)
-    R[i] = creal(circ[i]) / (N - i) / No;
+    R[i] = COMPLEX(res)[i].r / (N - i) / No;
 
   /* Cleanup */
-  Free(circ);
-  Free(work);
-  Free(iwork);
+  UNPROTECT(4);
 }
 #endif
 

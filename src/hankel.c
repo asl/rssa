@@ -29,6 +29,7 @@
 #if HAVE_FFTW3_H
 #include <fftw3.h>
 #else
+#include <R_ext/Complex.h>
 #include <R_ext/Applic.h>
 #endif
 
@@ -38,7 +39,7 @@ typedef struct {
 #if HAVE_FFTW3_H
   fftw_complex * circ_freq;
 #else
-  complex double * circ_freq;
+  SEXP circ_freq;
 #endif
   R_len_t window;
   R_len_t length;
@@ -258,7 +259,6 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
   K = N - L + 1;
 
   /* Allocate needed memory */
-
   oF = (double*) fftw_malloc(N * sizeof(double));
   iF = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
   iFc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
@@ -297,48 +297,38 @@ static void initialize_plan(fft_plan *f, R_len_t N) {
 }
 
 static void free_circulant(hankel_matrix *h) {
-  Free(h->circ_freq);
+  R_ReleaseObject(h->circ_freq);
 }
 
 static void initialize_circulant(hankel_matrix *h, fft_plan *f,
                                  const double *F, R_len_t N, R_len_t L) {
   R_len_t K = N - L + 1, i;
-  int *iwork, maxf, maxp;
-  double *work;
-  complex double * circ;
+  Rcomplex* circ;
+  SEXP rcirc;
 
   if (!valid_plan(f, N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-
-  /* Estimate the best plans for given input length */
-  /* No, we cannot move this to plan object, because fft_factor
-   * has side effects :( */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
-
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rcirc = allocVector(CPLXSXP, N));
+  circ = COMPLEX(rcirc);
 
   /* Fill input buffer */
-  for (i = K-1; i < N; ++i)
-    circ[i - K + 1] = F[i];
+  for (i = K - 1; i < N; ++i) {
+    circ[i - K + 1].r = F[i];
+    circ[i - K + 1].i = 0;
+  }
 
-  for (i = 0; i < K-1; ++i) {
-    circ[L + i] = F[i];
+  for (i = 0; i < K - 1; ++i) {
+    circ[L + i].r = F[i];
+    circ[L + i].i = 0;
   }
 
   /* Run the FFT on input data */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+  R_PreserveObject(h->circ_freq = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
 
-  /* Cleanup and return */
-  Free(work);
-  Free(iwork);
+  UNPROTECT(1);
 
-  h->circ_freq = circ;
   h->window = L;
   h->length = N;
   h->fft_plan = f;
@@ -350,42 +340,36 @@ static void hankel_matmul(double* out,
   const hankel_matrix *h = matrix;
   R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
-  double *work;
-  complex double *circ;
-  int *iwork, maxf, maxp;
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
+  SEXP rcirc, rV1, res, rTrue;
 
   /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rcirc = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rcirc), 0, N * sizeof(Rcomplex));
 
   /* Fill the arrays */
   for (i = 0; i < K; ++i)
-    circ[i] = v[K - i - 1];
+    COMPLEX(rcirc)[i].r = v[K - i - 1];
 
   /* Compute the FFT of the reversed vector v */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+  PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
-  for (i = 0; i < N; ++i)
-    circ[i] = circ[i] * h->circ_freq[i];
+  for (i = 0; i < N; ++i) {
+    Rcomplex x1 = COMPLEX(rV1)[i], x2 = COMPLEX(h->circ_freq)[i];
+    COMPLEX(rV1)[i].r = x1.r * x2.r - x1.i * x2.i;
+    COMPLEX(rV1)[i].i = x1.r * x2.i + x1.i * x2.r;
+  }
 
   /* Compute the reverse transform to obtain result */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+  PROTECT(rTrue = allocVector(LGLSXP, 1));
+  LOGICAL(rTrue)[0] = 1;
+  PROTECT(res = eval(lang3(install("fft"), rV1, rTrue), R_GlobalEnv));
 
   /* Cleanup and return */
   for (i = 0; i < L; ++i)
-    out[i] = creal(circ[i]) / N;
+    out[i] = COMPLEX(res)[i].r / N;
 
-  Free(circ);
-  Free(work);
-  Free(iwork);
+  UNPROTECT(4);
 }
 
 static void hankel_tmatmul(double* out,
@@ -394,42 +378,39 @@ static void hankel_tmatmul(double* out,
   const hankel_matrix *h = matrix;
   R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
-  double *work;
-  complex double *circ;
-  int *iwork, maxf, maxp;
-
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
+  SEXP rcirc, rV1, res, rTrue;
 
   /* Allocate needed memory */
-  circ = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rcirc = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rcirc), 0, N * sizeof(Rcomplex));
 
   /* Fill the arrays */
-  for (i = 0; i < L; ++i)
-    circ[i + K - 1] = v[L - i - 1];
+  for (i = 0; i < L; ++i) {
+    COMPLEX(rcirc)[i + K - 1].r = v[L - i - 1];
+    COMPLEX(rcirc)[i + K - 1].i = 0;
+  }
 
   /* Compute the FFT of the reversed vector v */
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, -2, work, iwork);
+  PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
-  for (i = 0; i < N; ++i)
-    circ[i] = circ[i] * h->circ_freq[i];
+  /* FIXME! => rV1 */
+  for (i = 0; i < N; ++i) {
+    Rcomplex x1 = COMPLEX(rV1)[i], x2 = COMPLEX(h->circ_freq)[i];
+    COMPLEX(rV1)[i].r = x1.r * x2.r - x1.i * x2.i;
+    COMPLEX(rV1)[i].i = x1.r * x2.i + x1.i * x2.r;
+  }
 
   /* Compute the reverse transform to obtain result */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)circ, ((double*)circ)+1, 1, N, 1, +2, work, iwork);
+  PROTECT(rTrue = allocVector(LGLSXP, 1));
+  LOGICAL(rTrue)[0] = 1;
+  PROTECT(res = eval(lang3(install("fft"), rV1, rTrue), R_GlobalEnv));
 
   /* Cleanup and return */
   for (i = 0; i < K; ++i)
-    out[i] = creal(circ[i + L - 1]) / N;
+    out[i] = COMPLEX(res)[i + L - 1].r / N;
 
-  Free(circ);
-  Free(work);
-  Free(iwork);
+  UNPROTECT(4);
 }
 
 static R_INLINE void hankelize_fft(double *F,
@@ -440,42 +421,39 @@ static R_INLINE void hankelize_fft(double *F,
   R_len_t i;
   int maxf, maxp, *iwork;
   double *work;
-  complex double *iU, *iV;
+  SEXP rU, rU1, rV, rV1, res, rTrue;
 
   if (!valid_plan(f, N))
     error("invalid FFT plan for given FFT length");
 
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
-
   /* Allocate needed memory */
-  iU = Calloc(N, complex double);
-  iV = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rU = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rU), 0, N * sizeof(Rcomplex));
+  PROTECT(rV = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rV), 0, N * sizeof(Rcomplex));
 
   /* Fill in buffers */
   for (i = 0; i < L; ++i)
-    iU[i] = U[i];
+    COMPLEX(rU)[i].r = U[i];
 
   for (i = 0; i < K; ++i)
-    iV[i] = V[i];
+    COMPLEX(rV)[i].r = V[i];
 
   /* Compute the FFTs */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)iU, ((double*)iU)+1, 1, N, 1, -2, work, iwork);
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)iV, ((double*)iV)+1, 1, N, 1, -2, work, iwork);
+  PROTECT(rU1 = eval(lang2(install("fft"), rU), R_GlobalEnv));
+  PROTECT(rV1 = eval(lang2(install("fft"), rV), R_GlobalEnv));
 
   /* Dot-multiply */
-  for (i = 0; i < N; ++i)
-    iU[i] = iU[i] * iV[i];
+  for (i = 0; i < N; ++i) {
+    Rcomplex x1 = COMPLEX(rU1)[i], x2 = COMPLEX(rV1)[i];
+    COMPLEX(rU1)[i].r = x1.r * x2.r - x1.i * x2.i;
+    COMPLEX(rU1)[i].i = x1.r * x2.i + x1.i * x2.r;
+  }
 
   /* Compute the inverse FFT */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)iU, ((double*)iU)+1, 1, N, 1, +2, work, iwork);
+  PROTECT(rTrue = allocVector(LGLSXP, 1));
+  LOGICAL(rTrue)[0] = 1;
+  PROTECT(res = eval(lang3(install("fft"), rU1, rTrue), R_GlobalEnv));
 
   /* Form the result */
   for (i = 0; i < N; ++i) {
@@ -486,13 +464,10 @@ static R_INLINE void hankelize_fft(double *F,
 
     l = (leftu - rightu + 1);
 
-    F[i] = creal(iU[i]) / l / N;
+    F[i] = COMPLEX(res)[i].r / l / N;
   }
 
-  Free(iU);
-  Free(iV);
-  Free(work);
-  Free(iwork);
+  UNPROTECT(6);
 }
 
 static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
@@ -500,58 +475,49 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
                                                    const fft_plan *f) {
   R_len_t K = N - L + 1;
   R_len_t i;
-  int maxf, maxp, *iwork;
-  double *work;
-  complex double *iF, *iFc;
+  SEXP rF, rFc, rF1, rFc1, rTrue, res;
 
   if (!valid_plan(f, N))
     error("invalid FFT plan for given FFT length");
 
-  /* Length's check */
+  /* Length check */
   if ((L >= N) || (L < 1))
     error("must be 'N' > 'L' >= 1");
 
-  /* Estimate the best plans for given input length */
-  fft_factor(N, &maxf, &maxp);
-  if (maxf == 0)
-    error("fft factorization error");
-
   /* Allocate needed memory */
-  iF = Calloc(N, complex double);
-  iFc = Calloc(N, complex double);
-  work = Calloc(4 * maxf, double);
-  iwork = Calloc(maxp, int);
+  PROTECT(rF = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rF), 0, N * sizeof(Rcomplex));
+  PROTECT(rFc = allocVector(CPLXSXP, N));
+  memset(COMPLEX(rFc), 0, N * sizeof(Rcomplex));
 
   /* Fill in buffers */
   for (i = 0; i < N; ++i)
-    iF[i] = F[i];
+    COMPLEX(rF)[i].r = F[i];
 
   for (i = 0; i < K; ++i)
-    iFc[i] = F[i];
-  memset(iFc + K, 0, (N - K)*sizeof(complex double));
+    COMPLEX(rFc)[i].r = F[i];
 
   /* Compute the FFTs */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)iF, ((double*)iF)+1, 1, N, 1, -2, work, iwork);
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)iFc, ((double*)iFc)+1, 1, N, 1, -2, work, iwork);
+  PROTECT(rF1 = eval(lang2(install("fft"), rF), R_GlobalEnv));
+  PROTECT(rFc1 = eval(lang2(install("fft"), rFc), R_GlobalEnv));
 
   /* Dot-product */
-  for (i = 0; i < N; ++i)
-    iF[i] = iF[i] * conj(iFc[i]);
+  for (i = 0; i < N; ++i) {
+    Rcomplex x1 = COMPLEX(rF1)[i], x2 = COMPLEX(rFc1)[i];
+    COMPLEX(rF1)[i].r = x1.r * x2.r + x1.i * x2.i;
+    COMPLEX(rF1)[i].i = -x1.r * x2.i + x1.i * x2.r;
+  }
 
   /* Compute the inverse FFT */
-  fft_factor(N, &maxf, &maxp);
-  fft_work((double*)iF, ((double*)iF)+1, 1, N, 1, +2, work, iwork);
+  PROTECT(rTrue = allocVector(LGLSXP, 1));
+  LOGICAL(rTrue)[0] = 1;
+  PROTECT(res = eval(lang3(install("fft"), rF1, rTrue), R_GlobalEnv));
 
   /* Form the result */
   for (i = 0; i < L; ++i)
-    R[i] = creal(iF[i]) / N;
+    R[i] = COMPLEX(res)[i].r / N;
 
-  Free(iF);
-  Free(iFc);
-  Free(work);
-  Free(iwork);
+  UNPROTECT(6);
 }
 #endif
 
