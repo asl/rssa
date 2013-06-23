@@ -17,6 +17,17 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
+roots2pars <- function(roots) {
+  out <- list(roots = roots,
+              periods = 2*pi / Arg(roots),
+              frequencies = Arg(roots) / (2*pi),
+              moduli = Mod(roots),
+              rate = log(Mod(roots)))
+
+  class(out) <- "fdimpars.1d"
+  out
+}
+
 parestimate.pairs <- function(U) {
   # Sanity check
   stopifnot(ncol(U) == 2)
@@ -31,13 +42,14 @@ parestimate.pairs <- function(U) {
   if (mres > 1)
     warning("too big deviation of estimates, period estimates might be unreliable")
 
-  list(periods=2*pi/acos(median(scos)))
+  r <- exp(1i * acos(median(scos)))
+  roots2pars(r)
 }
 
 parestimate.esprit <- function(U) {
   Z <- qr.solve(U[-nrow(U),], U[-1, ])
   r <- eigen(Z, only.values = TRUE)$values
-  list(periods=2*pi/Arg(r), moduli = Mod(r))
+  roots2pars(r)
 }
 
 parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
