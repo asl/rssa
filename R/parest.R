@@ -17,6 +17,33 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
+roots2pars <- function(roots) {
+  out <- list(roots = roots,
+              periods = 2*pi / Arg(roots),
+              frequencies = Arg(roots) / (2*pi),
+              moduli = Mod(roots),
+              rates = log(Mod(roots)))
+
+  # Fix erroneous BIG period in case of real root
+  out$periods[abs(Arg(roots)) < .Machine$double.eps^.5] <- Inf
+
+  class(out) <- "fdimpars.1d"
+  out
+}
+
+print.fdimpars.1d <- function(x, ...) {
+  cat("   period     rate   |    Mod     Arg  |     Re        Im\n")
+  for (i in seq_along(x$roots)) {
+    cat(sprintf("% 9.3f  % 8.6f | % 7.5f  % 3.2f | % 7.5f  % 7.5f\n",
+                x$periods[i],
+                x$rates[i],
+                x$moduli[i],
+                x$frequencies[i] * 2*pi,
+                Re(x$roots[i]),
+                Im(x$roots[i])))
+  }
+}
+
 parestimate.pairs <- function(U) {
   # Sanity check
   stopifnot(ncol(U) == 2)
@@ -31,13 +58,14 @@ parestimate.pairs <- function(U) {
   if (mres > 1)
     warning("too big deviation of estimates, period estimates might be unreliable")
 
-  list(periods=2*pi/acos(median(scos)))
+  r <- exp(1i * acos(median(scos)))
+  roots2pars(r)
 }
 
 parestimate.esprit <- function(U) {
   Z <- qr.solve(U[-nrow(U),], U[-1, ])
   r <- eigen(Z, only.values = TRUE)$values
-  list(periods=2*pi/Arg(r), moduli = Mod(r))
+  roots2pars(r)
 }
 
 parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),

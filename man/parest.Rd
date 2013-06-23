@@ -25,9 +25,14 @@
 }
 
 \value{
-  a list of lists. Each element is a 'list' with 2 components named
-  'periods' containing the periods and 'moduli' containing the moduli of
-  roots (may not be present).
+  a list of objects of S3-class `fdimpars.1d'. Each object is a list with 5 components:
+  'roots' - complex roots of minimal LRR characteristic polynom,
+  'periods' - periods of dumped sinusoids,
+  'frequencies' - frequencies of dumped sinusoids,
+  'moduli' - moduli of roots and
+  'rates' - rates of exponential trend (\code{rates == log(moduli)}).
+
+  For 'method' = 'pairs' all moduli equal to 1 and all rates equal to 0.
 
   If 'drop = TRUE' and length of 'groups' is one, then the list of
   periods itself.
@@ -45,6 +50,8 @@
   The return value are the estimated moduli and arguments of complex
   \eqn{\mu_k}, more precisely, \eqn{\rho_k} ('moduli') and \eqn{T_k =
   1/\omega_k} ('periods').
+
+  Also `print' and `plot' methods are implemented for class `fdimpars.1d'.
 }
 
 \references{
@@ -62,6 +69,8 @@ s <- ssa(co2, neig = 20)
 # 'pairs' method
 print(parestimate(s, groups = list(c(2, 3))))
 # Estimate the peroids from 2nd, 3rd, 5th and 6th eigenvectors using ESPRIT
-print(parestimate(s, groups = list(c(2, 3, 5, 6)), method = "esprit-ls"))
+pe <- parestimate(s, groups = list(c(2, 3, 5, 6)), method = "esprit-ls")
+print(pe)
+plot(pe)
 }
 
