@@ -59,7 +59,7 @@ decompose.mssa.svd <- function(x,
 
   # Build hankel matrix
   F <- .get(x, "F")
-  h <- do.call(cbind, apply(x$F, 2, hankel, L = L))
+  h <- do.call(cbind, lapply(seq_along(N), function(idx) hankel(F[seq_len(N[idx]), idx], L = L)))
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
@@ -82,14 +82,16 @@ decompose.mssa.eigen <- function(x, ...,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
+  # Build L-cov matrix
   F <- .get(x, "F")
   fft.plan <- .get.or.create.mfft.plan(x)
-  h <- do.call(cbind, apply(x$F, 2, hankel, L = L))
+  C <- matrix(0.0, L, L)
+  for (idx in seq_along(N)) {
+    C <- C + Lcov.matrix(F[seq_len(N[idx]), idx], L = L, fft.plan = fft.plan[[idx]])
+  }
 
   # Do decomposition
-  # FIXME: Build the L-covariance matrix properly
-  S <- eigen(tcrossprod(h, h), symmetric = TRUE)
+  S <- eigen(C, symmetric = TRUE)
 
   # Fix small negative values
   S$values[S$values < 0] <- 0
