@@ -50,10 +50,10 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
 wcor.2d.ssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
   N <- prod(x$length)
   if (missing(groups))
-    groups <- as.list(1:nlambda(x));
+    groups <- as.list(1:nlambda(x))
 
   # Compute reconstruction.
-  F <- reconstruct(x, groups, ..., cache = cache);
+  F <- reconstruct(x, groups, ..., cache = cache)
   mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
   colnames(mx) <- names(F)
 
@@ -62,19 +62,19 @@ wcor.2d.ssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cach
 }
 
 wcor.ssa <- function(x, groups, ..., cache = TRUE)
-  stop("Unsupported SVD method for SSA!");
+  stop("Unsupported SVD method for SSA!")
 
 wcor <- function(x, ...) {
-  UseMethod("wcor");
+  UseMethod("wcor")
 }
 
 clusterify.wcor.matrix <- function(x,
                                    nclust = N,
                                    ...,
                                    dist = function(X) (1 - X) / 2) {
-  N <- nrow(x);
-  h <- cutree(hclust(as.dist(dist(x)), ...), k = nclust);
-  split(1:N, h);
+  N <- nrow(x)
+  h <- cutree(hclust(as.dist(dist(x)), ...), k = nclust)
+  split(1:N, h)
 }
 
 .hweights <- function(x, ...) {
