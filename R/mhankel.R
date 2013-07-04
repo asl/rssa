@@ -59,7 +59,7 @@ decompose.mssa.svd <- function(x,
 
   # Build hankel matrix
   F <- .get(x, "F")
-  h <- do.call(cbind, apply(x$F, 2, hankel, L = L))
+  h <- do.call(cbind, lapply(seq_along(N), function(idx) hankel(F[seq_len(N[idx]), idx], L = L)))
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
