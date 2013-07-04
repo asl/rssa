@@ -79,22 +79,53 @@ clusterify.wcor.matrix <- function(x,
   split(1:N, h);
 }
 
-wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
-  # TODO Implement wnorm for 2dSSA
-  N <- length(x)
+.hweights <- function(x, ...) {
+  UseMethod(".hweights")
+}
 
+.hweights.default <- function(x, L = (N + 1) %/% 2, ...) {
+  N <- if (length(x) == 1) x else length(x)
   K <- N - L + 1
   Ls <- min(L, K); Ks <- max(L, K)
 
+  # Compute and return weights
+  c(1:(Ls-1), rep(Ls, Ks-Ls+1), (Ls-1):1)
+}
+
+.hweights.matrix <- function(x, L = (N + 1) %/% 2, ...) {
+  N <- nrow(x)
+
+  .hweights.default(N, L)
+}
+
+.hweights.1d.ssa <- .hweights.toeplitz.ssa <- function(x, ...) {
+  .hweights.default(x$length, x$window)
+}
+
+.hweights.2d.ssa <- function(x, ...) {
+  N <- x$length; L <- x$window
+
+  as.vector(tcrossprod(.hweights.default(N[1], L[1]),
+                       .hweights.default(N[2], L[2])))
+}
+
+wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
+  N <- length(x)
+
   # Compute weights
-  w <- c(1:(Ls-1), rep(Ls, Ks-Ls+1), (Ls-1):1)
+  w <- .hweights.default(x, L)
 
   # Compute wnorm
   sqrt(sum(w * x^2))
 }
 
-wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...)
-  wnorm.default(x$F, x$window)
+wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.2d.ssa <- function(x, ...) {
+  # Compute weights
+  w <- .hweights(x)
+
+  # Compute wnorm
+  sqrt(sum(w * as.vector(x$F)^2))
+}
 
 #N = 399;
 #a = 1.005;
