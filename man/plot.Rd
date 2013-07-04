@@ -87,5 +87,5 @@ plot(s, type = "values")
 # Plot eigenvectors for first 6 components
 plot(s, type = "vectors", idx = 1:6,
      ref = TRUE, at = "same", cuts = 50,
-     plot.contrib = FALSE, symmetric = TRUE)
+     plot.contrib = TRUE, symmetric = TRUE)
 }
