@@ -41,7 +41,7 @@
 
 \seealso{
   \code{\link[Rssa:hankel]{hankel}}
-  \code{\link[Rssa:wcor.ssa]{wcor}}
+  \code{\link[Rssa:wcor]{wcor}}
 }
 
 \examples{

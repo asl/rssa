@@ -39,7 +39,8 @@
     \item{paired}{plot the pairs of eigenvectors (useful for the
       detection of periodic components).}
     \item{series}{plot the reconstructed series.}
-    \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
+    \item{wcor}{plot the W-correlation matrix for the reconstructed series
+    (or fields, for 2dSSA case).}
   }
 
   Additional (non-standard) graphical parameters which can be transfered via \dots:
