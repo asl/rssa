@@ -82,5 +82,14 @@ plot(w, grid = c(2,4, 5,7))
 # Calculate the w-correlation matrix for the chosen groups
 # to check separability
 w <- wcor(s, groups = list(c(1,4), c(2,3), c(5,6)))
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with default parameters
+s <- ssa(mx, kind = "2d-ssa")
+# Plot wcor for first 12 components
+plot(wcor(s, groups = 1:12))
 }
 
