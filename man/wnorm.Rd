@@ -48,4 +48,12 @@
 wnorm(co2, 20)
 ss <- ssa(co2)
 wnorm(ss)
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with default parameters
+s <- ssa(mx, kind = "2d-ssa")
+wnorm(s)
 }
