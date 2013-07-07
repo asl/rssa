@@ -1,6 +1,8 @@
 \name{wcor}
 \alias{wcor}
-\alias{wcor.ssa}
+\alias{wcor.1d.ssa}
+\alias{wcor.2d.ssa}
+\alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
 \alias{plot.wcor.matrix}
 
@@ -9,8 +11,10 @@
   Function calculates the W-correlation matrix for the series.
 }
 \usage{
-\method{wcor}{ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots)
+\method{wcor}{1d.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{2d.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
      grid = c(),
      \dots,
@@ -23,6 +27,7 @@
     method, or just a matrix with elementary series in columns for
   \emph{default} implementation.}
   \item{L}{window length.}
+  \item{weights}{user specified weights for special cases (e.g. for 2d SSA)}
   \item{groups}{list of numeric vectors, indices of elementary series
     used for reconstruction.}
   \item{\dots}{further arguments passed to \code{reconstruct} routine

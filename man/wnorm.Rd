@@ -1,6 +1,7 @@
 \name{wnorm}
 \alias{wnorm}
 \alias{wnorm.1d.ssa}
+\alias{wnorm.2d.ssa}
 \alias{wnorm.toeplitz.ssa}
 \alias{wnorm.default}
 
@@ -10,6 +11,7 @@
 }
 \usage{
 \method{wnorm}{1d.ssa}(x, ...)
+\method{wnorm}{2d.ssa}(x, ...)
 \method{wnorm}{toeplitz.ssa}(x, ...)
 \method{wnorm}{default}(x, L = (N + 1) \%/\% 2, ...)
 }
@@ -27,7 +29,8 @@
   would be evaluated much more efficiently.
   For 1d SSA and Toeplitz SSA \code{wnorm(x)} calculates weighted norm for stored original input series and stored window length.
 
-  For 2d SSA this method is not implemented yet.
+  \code{L}-weighted norm of 2d-image is Frobenius norm of its \code{L[1] * L[2]}-trajectory hankel-block-hankel matrix.
+  For 2d SSA this method calculates weighted norm for stored original input image and stored 2d-window lengths.
 }
 
 \references{
