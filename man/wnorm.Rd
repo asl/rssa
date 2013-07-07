@@ -1,6 +1,7 @@
 \name{wnorm}
 \alias{wnorm}
 \alias{wnorm.1d.ssa}
+\alias{wnorm.2d.ssa}
 \alias{wnorm.toeplitz.ssa}
 \alias{wnorm.default}
 
@@ -10,6 +11,7 @@
 }
 \usage{
 \method{wnorm}{1d.ssa}(x, ...)
+\method{wnorm}{2d.ssa}(x, ...)
 \method{wnorm}{toeplitz.ssa}(x, ...)
 \method{wnorm}{default}(x, L = (N + 1) \%/\% 2, ...)
 }
@@ -27,7 +29,8 @@
   would be evaluated much more efficiently.
   For 1d SSA and Toeplitz SSA \code{wnorm(x)} calculates weighted norm for stored original input series and stored window length.
 
-  For 2d SSA this method is not implemented yet.
+  \code{L}-weighted norm of 2d-field is Frobenius norm of its \code{L[1] * L[2]}-trajectory hankel-block-hankel matrix.
+  For 2d SSA this method calculates weighted norm for stored original input field and stored 2d-window lengths.
 }
 
 \references{
@@ -38,11 +41,19 @@
 
 \seealso{
   \code{\link[Rssa:hankel]{hankel}}
-  \code{\link[Rssa:wcor.ssa]{wcor}}
+  \code{\link[Rssa:wcor]{wcor}}
 }
 
 \examples{
 wnorm(co2, 20)
 ss <- ssa(co2)
 wnorm(ss)
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with default parameters
+s <- ssa(mx, kind = "2d-ssa")
+wnorm(s)
 }

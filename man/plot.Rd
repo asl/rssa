@@ -39,7 +39,8 @@
     \item{paired}{plot the pairs of eigenvectors (useful for the
       detection of periodic components).}
     \item{series}{plot the reconstructed series.}
-    \item{wcor}{plot the W-correlation matrix for the reconstructed series.}
+    \item{wcor}{plot the W-correlation matrix for the reconstructed series
+    (or fields, for 2dSSA case).}
   }
 
   Additional (non-standard) graphical parameters which can be transfered via \dots:
@@ -87,5 +88,7 @@ plot(s, type = "values")
 # Plot eigenvectors for first 6 components
 plot(s, type = "vectors", idx = 1:6,
      ref = TRUE, at = "same", cuts = 50,
-     plot.contrib = FALSE, symmetric = TRUE)
+     plot.contrib = TRUE, symmetric = TRUE)
+# Plot wcor for first 12 components
+plot(s, type = "wcor", groups = 1:12)
 }
