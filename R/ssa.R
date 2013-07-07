@@ -17,7 +17,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-fix.svd.method <- function(svd.method, L, N, ...) {
+determine.svd.method <- function(L, N, ..., svd.method = "nutrlan") {
   dots <- list(...)
   neig <- dots$neig
   truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
@@ -51,7 +51,7 @@ ssa <- function(x,
                 L = (N + 1) %/% 2,
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
-                svd.method = c("nutrlan", "propack", "svd", "eigen"),
+                svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
@@ -65,13 +65,17 @@ ssa <- function(x,
     N <- length(x);
 
     # Fix svd method, if needed
-    svd.method <- fix.svd.method(svd.method, L, N, ...)
+    if (identical(svd.method, "auto"))
+      svd.method <- determine.svd.method(L, N, ...)
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
       x <- as.matrix(x);
 
     N <- dim(x);
+
+    if (identical(svd.method, "auto"))
+      svd.method <- "nutrlan"
   }
 
   # Normalized the kind to be used

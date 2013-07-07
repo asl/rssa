@@ -12,7 +12,7 @@ ssa(x,
     L = (N + 1) \%/\% 2,
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
-    svd.method = c("nutrlan", "propack", "svd", "eigen"),
+    svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
 
@@ -67,6 +67,8 @@ ssa(x,
     implementations of this procedure (corresponds to different values of
     \code{svd.method}) argument:
     \describe{
+      \item{auto}{Automatic method selection depending on the series length,
+        window length, SSA kind and number of eigenvalues requested.}
       \item{nutrlan}{Thick-restart Lanczos eigensolver which operates on
         cross-product matrix. This methods exploits the Hankel structure of
         the trajectory matrix efficiently and is really fast. The method
