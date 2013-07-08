@@ -77,7 +77,7 @@ parestimate.esprit <- function(U, method = c("esprit-ls", "esprit-tls")) {
         tls.solve
       }
 
-  Z <- solver(U[-nrow(U), ], U[-1, ])
+  Z <- solver(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE])
   r <- eigen(Z, only.values = TRUE)$values
   roots2pars(r)
 }
@@ -101,7 +101,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
         stop("can estimate for pair of eigenvectors only using `pairs' method")
       res <- parestimate.pairs(x$U[, group])
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
-      res <- parestimate.esprit(x$U[, group], method = method)
+      res <- parestimate.esprit(x$U[, group, drop = FALSE], method = method)
     }
     out[[i]] <- res
   }
