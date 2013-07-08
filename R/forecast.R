@@ -64,14 +64,14 @@ companion.matrix.lrr <- function(x) {
 roots.lrr <- function(x, ..., method = c("companion", "polyroot")) {
   method <- match.arg(method)
 
-  res <-
-    if (identical(method, "polyroot")) {
-      polyroot(c(-x, 1))
-    } else {
-      eigen(companion.matrix.lrr(x), only.values = TRUE)$values
-    }
+  res <- if (identical(method, "polyroot")) {
+        r <- polyroot(c(-x, 1))
+        r[order(Mod(r), decreasing = TRUE)]
+      } else if (identical(method, "companion")) {
+        eigen(companion.matrix.lrr(x), only.values = TRUE)$values
+      }
 
-  res[order(abs(res), decreasing = TRUE)]
+  res
 }
 
 plot.lrr <- function(x, ..., raw = FALSE) {
