@@ -593,3 +593,13 @@ plot.fdimpars.1d <- function(x, ...) {
                    dots))
   print(res)
 }
+
+plot.lrr <- function(x, ...) {
+  dots <- list(...)
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    main = "Roots of Linear Recurrence Formula")
+
+  do.call("plot", c(list(roots2pars(roots(x))), dots))
+}
