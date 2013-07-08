@@ -71,11 +71,22 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
                            svd.method = c("eigen", "propack", "svd", "nutrlan"),
                            neig = NULL,
                            tolerance = 1e-7,
-                           svd.methods = c("eigen", "propack", "svd", "nutrlan")) {
+                           svd.methods = c("eigen", "propack", "svd", "nutrlan"),
+                           svd.methods.forecast = c("eigen", "propack", "svd", "nutrlan")) {
   what <- sapply(what, match.arg, choices = eval(formals()$what));
   kind <- match.arg(kind);
   svd.method <- match.arg(svd.method);
-  svd.methods <- sapply(svd.methods, match.arg, choices = eval(formals()$svd.methods));
+
+  if (!is.list(svd.methods)) {
+    svd.methods <- rep(list(svd.methods), length(Ls))
+  }
+
+  if (!is.list(svd.methods.forecast)) {
+    svd.methods.forecast <- rep(list(svd.methods.forecast), length(Ls.forecast))
+  }
+
+  svd.methods <- lapply(svd.methods, function(svd.methods.v) sapply(svd.methods.v, match.arg, choices = c("eigen", "propack", "svd", "nutrlan")))
+  svd.methods.forecast <- lapply(svd.methods.forecast, function(svd.methods.v) sapply(svd.methods.v, match.arg, choices = c("eigen", "propack", "svd", "nutrlan")))
 
   out <- list(series = series);
 
@@ -111,6 +122,7 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
                             neig = neig);
   attr(out, "tolerance") <- tolerance;
   attr(out, "svd.methods") <- svd.methods;
+  attr(out, "svd.methods.forecast") <- svd.methods.forecast;
 
   out;
 }
@@ -118,7 +130,10 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
 test.test.data <- function(what,
                            test.data,
                            name = attr(test.data, "name"),
+                           Ls,
                            svd.methods,
+                           Ls.forecast,
+                           svd.methods.forecast,
                            neig,
                            tolerance,
                            ...) {
@@ -139,54 +154,87 @@ test.test.data <- function(what,
     what <- intersect(what, attr(test.data, "what"));
   }
 
-  if (missing(svd.methods)) {
-    svd.methods <- attr(test.data, "svd.methods");
-  } else {
-    svd.methods <- sapply(svd.methods, match.arg, choices = c("eigen", "propack", "svd", "nutrlan"));
+  if (missing(Ls)) {
+    Ls <- pars$Ls
   }
 
+  if (missing(svd.methods)) {
+    svd.methods <- attr(test.data, "svd.methods");
+  }
+
+  if (missing(svd.methods.forecast)) {
+    svd.methods.forecast <- attr(test.data, "svd.methods.forecast")
+    if (is.null(svd.methods.forecast)) {
+      svd.methods.forecast <- svd.methods
+    }
+  }
+
+  if (!is.list(svd.methods)) {
+    svd.methods <- rep(list(svd.methods), length(Ls))
+  }
+
+  if (missing(Ls.forecast)) {
+    Ls.forecast <- pars$Ls.forecast
+  }
+
+  if (!is.list(svd.methods.forecast)) {
+    svd.methods.forecast <- rep(list(svd.methods.forecast), length(Ls.forecast))
+  }
+
+  svd.methods <- lapply(svd.methods, function(svd.methods.v) sapply(svd.methods.v, match.arg, choices = c("eigen", "propack", "svd", "nutrlan")))
+  svd.methods.forecast <- lapply(svd.methods.forecast, function(svd.methods.v) sapply(svd.methods.v, match.arg, choices = c("eigen", "propack", "svd", "nutrlan")))
+
+
   series <- test.data$series;
-  Ls <- pars$Ls;
   groups <- pars$groups;
   groups.forecast <- pars$groups.forecast;
-  Ls.forecast <- pars$Ls.forecast;
+
   len <- pars$len;
 
-  for (svd.method in svd.methods) {
-    if ("reconstruct" %in% what) {
-      reconstruction <- compute.reconstructions(series, Ls, groups = groups,
-                                                kind,
-                                                svd.method = svd.method, neig = neig);
+  for (iL in seq_along(Ls)) {
+    L <- Ls[[iL]]
+    Lname <- paste("L", L, sep = "")
+    for (svd.method in svd.methods[[iL]]) {
+      if ("reconstruct" %in% what) {
+        reconstruction <- compute.reconstructions(series, L, groups = groups,
+                                                  kind,
+                                                  svd.method = svd.method, neig = neig)
 
-      expect_equal(reconstruction, test.data$reconstruction,
-                   label = sprintf("%s, %s: %s$reconstruction", name, kind, svd.method),
-                   tolerance = tolerance, ...);
+        expect_equal(reconstruction[[Lname]], test.data$reconstruction[[Lname]],
+                     label = sprintf("%s, %s: %s$reconstruction, L = %d", name, kind, svd.method, L),
+                     tolerance = tolerance, ...)
+      }
     }
+  }
 
-    if ("rforecast" %in% what) {
-      rforecast.orig <- compute.forecasts(series, Ls.forecast, groups = groups.forecast, len = len,
-                                          kind = kind, forecast.method = "recurent", base = "original",
-                                          svd.method = svd.method, neig = neig);
-      rforecast.rec <- compute.forecasts(series, Ls.forecast, groups = groups.forecast, len = len,
-                                         kind = kind, forecast.method = "recurent", base = "reconstructed",
-                                         svd.method = svd.method, neig = neig);
+  for (iL in seq_along(Ls.forecast)) {
+    L <- Ls.forecast[[iL]]
+    Lname <- paste("L", L, sep = "")
+    for (svd.method in svd.methods.forecast[[iL]]) {
+      if ("rforecast" %in% what) {
+        rforecast.orig <- compute.forecasts(series, L, groups = groups.forecast, len = len,
+                                            kind = kind, forecast.method = "recurent", base = "original",
+                                            svd.method = svd.method, neig = neig)
+        rforecast.rec <- compute.forecasts(series, L, groups = groups.forecast, len = len,
+                                           kind = kind, forecast.method = "recurent", base = "reconstructed",
+                                           svd.method = svd.method, neig = neig)
 
-      expect_equal(rforecast.orig, test.data$rforecast.orig,
-                   label = sprintf("%s, %s: %s$rforecast.orig", name, kind, svd.method),
-                   tolerance = tolerance, ...);
-      expect_equal(rforecast.rec, test.data$rforecast.rec,
-                   label = sprintf("%s, %s: %s$rforecast.rec", name, kind, svd.method),
-                   tolerance = tolerance, ...);
-    }
+        expect_equal(rforecast.orig[[Lname]], test.data$rforecast.orig[[Lname]],
+                     label = sprintf("%s, %s: %s$rforecast.orig, L = %d", name, kind, svd.method, L),
+                     tolerance = tolerance, ...)
+        expect_equal(rforecast.rec[[Lname]], test.data$rforecast.rec[[Lname]],
+                     label = sprintf("%s, %s: %s$rforecast.rec, L = %d", name, kind, svd.method, L),
+                     tolerance = tolerance, ...)
+      }
 
-    if ("vforecast" %in% what) {
-      vforecast <- compute.forecasts(series, Ls.forecast, groups = groups.forecast, len = len,
-                                     kind = kind, forecast.method = "vector",
-                                     svd.method = svd.method, neig = neig);
-
-      expect_equal(vforecast, test.data$vforecast,
-                   label = sprintf("%s, %s: %s$vforecast", name, kind, svd.method),
-                   tolerance = tolerance, ...);
+      if ("vforecast" %in% what) {
+        vforecast <- compute.forecasts(series, L, groups = groups.forecast, len = len,
+                                       kind = kind, forecast.method = "vector",
+                                       svd.method = svd.method, neig = neig)
+        expect_equal(vforecast[[Lname]], test.data$vforecast[[Lname]],
+                     label = sprintf("%s, %s: %s$vforecast, L = %d", name, kind, svd.method, L),
+                     tolerance = tolerance, ...)
+      }
     }
   }
 }

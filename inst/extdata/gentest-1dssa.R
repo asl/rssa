@@ -2,6 +2,9 @@ library(testthat);
 library(Rssa);
 source(system.file("extdata", "common.test.methods.R", package = "Rssa"));
 
+all.svd <- c("svd", "eigen", "propack", "nutrlan")
+svd.wo.nutrlan <- c("svd", "eigen", "propack")
+
 co2.td <- make.test.data(series = co2,
                          Ls = c(17, 234, 235, 300, 400),
                          Ls.forecast = c(17, 100, 222, 234),
@@ -10,6 +13,9 @@ co2.td <- make.test.data(series = co2,
                          len = 100,
                          kind = "1d-ssa",
                          svd.method = "e",
+                         svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
+                         svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
+                         tolerance = 2e-7,
                          neig = 20);
 test.test.data(test.data = co2.td);
 
@@ -31,6 +37,8 @@ fr50.td <- make.test.data(series = fr50,
                           len = 100,
                           kind = "1d-ssa",
                           svd.method = "e",
+                          svd.methods = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
+                          svd.methods.forecast = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
                           neig = 5);
 test.test.data(test.data = fr50.td);
 
@@ -42,6 +50,8 @@ fr1k.td <- make.test.data(series = fr1k,
                           len = 100,
                           kind = "1d-ssa",
                           svd.method = "e",
+                          svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
+                          svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
                           neig = 5);
 test.test.data(test.data = fr1k.td);
 
@@ -68,6 +78,8 @@ fr50.nz.td <- make.test.data(series = fr50 + rnorm(fr50),
                              len = 100,
                              kind = "1d-ssa",
                              svd.method = "e",
+                             svd.methods = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
+                             svd.methods.forecast = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
                              neig = 15);
 test.test.data(test.data = fr50.nz.td);
 
@@ -81,6 +93,8 @@ fr1k.nz.td <- make.test.data(series = fr1k + rnorm(fr1k),
                              len = 100,
                              kind = "1d-ssa",
                              svd.method = "e",
+                             svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
+                             svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
                              neig = 15);
 test.test.data(test.data = fr1k.nz.td);
 
