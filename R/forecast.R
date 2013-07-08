@@ -64,32 +64,14 @@ companion.matrix.lrr <- function(x) {
 roots.lrr <- function(x, ..., method = c("companion", "polyroot")) {
   method <- match.arg(method)
 
-  res <-
-    if (identical(method, "polyroot")) {
-      polyroot(c(-x, 1))
-    } else {
-      eigen(companion.matrix.lrr(x), only.values = TRUE)$values
-    }
+  res <- if (identical(method, "polyroot")) {
+        r <- polyroot(c(-x, 1))
+        r[order(Mod(r), decreasing = TRUE)]
+      } else if (identical(method, "companion")) {
+        eigen(companion.matrix.lrr(x), only.values = TRUE)$values
+      }
 
-  res[order(abs(res), decreasing = TRUE)]
-}
-
-plot.lrr <- function(x, ..., raw = FALSE) {
-  r <- roots(x)
-  if (raw) {
-    plot(r, ...)
-  } else {
-    xlim <- range(c(Re(r), +1, -1))
-    ylim <- range(c(Im(r), +1, -1))
-
-    plot(r, ...,
-         xlim = xlim, ylim = ylim,
-         main = "Roots of Linear Recurrence Formula",
-         xlab = "Real Part",
-         ylab = "Imaginary Part",
-         asp = 1)
-    symbols(0, 0, circles = 1, add = TRUE, inches = FALSE)
-  }
+  res
 }
 
 apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {

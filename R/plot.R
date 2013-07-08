@@ -561,3 +561,69 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                    dots));
   print(res)
 }
+
+prepanel.roots <- function(x, y, ...) {
+  lim <- range(x, y, -x, -y, 1, -1)
+  list(xlim = lim, ylim = lim)
+}
+
+panel.roots <- function(...) {
+  tt <- seq(0, 2 * pi, length.out = 100)
+  par <- trellis.par.get("reference.line")
+  panel.lines(sin(tt), cos(tt), col = par$col, lty = par$lty, lwd = par$lwd) # TODO MB use `TeachingDemos' package here?
+  panel.xyplot(...)
+}
+
+plot.fdimpars.1d <- function(x, ...) {
+  dots <- list(...)
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    main = "Roots",
+                    xlab = "Real part",
+                    ylab = "Imaginary part",
+                    aspect = "iso",
+                    pch = 19)
+
+  res <- do.call("xyplot",
+                 c(list(Im(roots) ~ Re(roots),
+                        data = x,
+                        panel = panel.roots,
+                        prepanel = prepanel.roots),
+                   dots))
+  print(res)
+}
+
+plot.fdimpars.2d <- function(x, ...) {
+  dots <- list(...)
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    main = "Roots",
+                    xlab = "Real part",
+                    ylab = "Imaginary part",
+                    aspect = 1,
+                    pch = 19)
+
+  data <- list()
+  data$root <- c(x[[1]]$roots, x[[2]]$roots)
+  data$ind <- rep(c("lambda", "mu"), each = length(res[[1]]$roots))
+
+  res <- do.call("xyplot",
+                 c(list(Im(root) ~ Re(root) | ind,
+                        data = data,
+                        panel = panel.roots,
+                        prepanel = prepanel.roots),
+                   dots))
+  print(res)
+}
+
+plot.lrr <- function(x, ...) {
+  dots <- list(...)
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    main = "Roots of Linear Recurrence Formula")
+
+  do.call("plot", c(list(roots2pars(roots(x))), dots))
+}
