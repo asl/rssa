@@ -85,7 +85,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
         stop("can estimate for pair of eigenvectors only using `pairs' method")
       res <- parestimate.pairs(x$U[, group])
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
-      res <- parestimate.esprit(x$U[, group], method = method)
+      res <- parestimate.esprit(x$U[, group, drop = FALSE], method = method)
     }
     out[[i]] <- res
   }
