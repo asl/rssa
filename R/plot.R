@@ -593,3 +593,19 @@ plot.fdimpars.1d <- function(x, ...) {
                    dots))
   print(res)
 }
+
+plot.lrr <- function(x, ..., raw = FALSE) {
+  if (!raw) {
+    r <- roots(x)
+    res <- xyplot(Im(r) ~ Re(r), ...)
+    return(print(res))
+  }
+
+  dots <- list(...)
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    main = "Roots of Linear Recurrence Formula")
+
+  do.call("plot", c(list(roots2pars(roots(x))), dots))
+}
