@@ -98,5 +98,109 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
 
+shift.matrices.2d <- function(U, umask, solve.method = c("ls", "tls")) {
+  solve.method <- match.arg(solve.method)
+  solver <- if (identical(solve.method, "ls")) {
+        qr.solve
+      } else if (identical(solve.method, "tls")) {
+        tls.solve
+      }
+
+  lm.mask <- umask[-1, , drop = FALSE] & umask[-nrow(umask),, drop = FALSE]
+  lm1.mask <- as.vector(rbind(lm.mask, FALSE)[umask])
+  lm2.mask <- as.vector(rbind(FALSE, lm.mask)[umask])
+
+  mu.mask <- umask[, -1, drop = FALSE] & umask[, -ncol(umask), drop = FALSE]
+  mu1.mask <- as.vector(cbind(mu.mask, FALSE)[umask])
+  mu2.mask <- as.vector(cbind(FALSE, mu.mask)[umask])
+
+
+  lmA <- U[lm1.mask,, drop = FALSE]
+  lmB <- U[lm2.mask,, drop = FALSE]
+
+
+  muA <- U[mu1.mask,, drop = FALSE]
+  muB <- U[mu2.mask,, drop = FALSE]
+
+
+  Zx = solver(lmA, lmB)
+  Zy = solver(muA, muB)
+
+  list(Zx = Zx, Zy = Zy)
+}
+
+est_exp_2desprit <- function(Zs, beta = 8) {
+  Z <- (1-beta) * Zs$Zx + beta * Zs$Zy
+  Ze <- eigen(Z, symmetric = FALSE)
+  Tinv <- Ze$vectors
+
+  list(diag(qr.solve(Tinv, Zs$Zx %*% Tinv)), diag(qr.solve(Tinv, Zs$Zy %*% Tinv)))
+}
+
+est_exp_memp_new <- function(Zs, beta = 8) {
+  Z <- (1-beta) * Zs$Zx + beta * Zs$Zy
+  Ze <- eigen(Z)
+  Zxe <- eigen(Zs$Zx)
+  Zye <- eigen(Zs$Zy)
+  Px <- max.col(t(abs(qr.solve(Ze$vectors, Zxe$vectors))))
+  Py <- max.col(t(abs(qr.solve(Ze$vectors, Zxe$vectors))))
+
+  list(Zxe$values[Px], Zye$values[Py])
+}
+
+parestimate.esprit2d <- function(U, umask,
+                                 method = c("esprit-diag-ls", "esprit-diag-tls",
+                                            "esprit-memp-ls", "esprit-memp-tls"),
+                                 beta = 8) {
+  method <- match.arg(method)
+  solve.method <- if (identical(method, "esprit-diag-ls") || identical(method, "esprit-memp-ls")) {
+        "ls"
+      } else if (identical(method, "esprit-diag-tls") || identical(method, "esprit-memp-tls")) {
+        "tls"
+      }
+
+  Zs <- shift.matrices.2d(U, umask, solve.method = solve.method)
+
+  r <- if (identical(method, "esprit-diag-ls") || identical(method, "esprit-diag-tls")) {
+        est_exp_2desprit(Zs, beta = beta)
+      } else if (identical(method = "esprit-memp-ls") || identical(method = "esprit-memp-tls")) {
+        est_exp_memp_new(Zs, beta = beta)
+      }
+
+  out <- lapply(r, roots2pars)
+  class(out) <- "fdimpars.2d"
+  out
+}
+
+parestimate.2d.ssa <- function(x, groups,
+                               method = c("esprit-diag-ls", "esprit-diag-tls",
+                                          "esprit-memp-ls", "esprit-memp-tls"),
+                               ...,
+                               beta = 8,
+                               drop = TRUE) {
+  method <- match.arg(method)
+  if (missing(groups))
+    groups <- 1:min(nlambda(x), nu(x))
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+
+    umask <- matrix(TRUE, x$window[1], x$window[2])
+    out[[i]] <- parestimate.esprit2d(x$U[, group, drop = FALSE],
+                                     umask,
+                                     method = method,
+                                     beta = beta)
+  }
+
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  out
+}
+
 parestimate <- function(x, ...)
   UseMethod("parestimate")
