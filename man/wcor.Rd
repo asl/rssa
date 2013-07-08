@@ -1,6 +1,8 @@
 \name{wcor}
 \alias{wcor}
-\alias{wcor.ssa}
+\alias{wcor.1d.ssa}
+\alias{wcor.2d.ssa}
+\alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
 \alias{plot.wcor.matrix}
 
@@ -9,8 +11,10 @@
   Function calculates the W-correlation matrix for the series.
 }
 \usage{
-\method{wcor}{ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots)
+\method{wcor}{1d.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{2d.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
      grid = c(),
      \dots,
@@ -23,6 +27,7 @@
     method, or just a matrix with elementary series in columns for
   \emph{default} implementation.}
   \item{L}{window length.}
+  \item{weights}{user specified weights for special cases (e.g. for 2d SSA)}
   \item{groups}{list of numeric vectors, indices of elementary series
     used for reconstruction.}
   \item{\dots}{further arguments passed to \code{reconstruct} routine
@@ -77,5 +82,14 @@ plot(w, grid = c(2,4, 5,7))
 # Calculate the w-correlation matrix for the chosen groups
 # to check separability
 w <- wcor(s, groups = list(c(1,4), c(2,3), c(5,6)))
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with default parameters
+s <- ssa(mx, kind = "2d-ssa")
+# Plot wcor for first 12 components
+plot(wcor(s, groups = 1:12))
 }
 
