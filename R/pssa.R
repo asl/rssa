@@ -152,3 +152,5 @@ calc.v.pssa <- function(x, idx, ...) {
   invisible(sapply(1:length(idx),
                    function(i) ematmul(ph, U[, i], transposed = TRUE) / lambda[i]))
 }
+
+.hankelize.one.pssa <- .hankelize.one.1d.ssa
