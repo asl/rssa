@@ -240,5 +240,5 @@ decompose.toeplitz.ssa <- function(x,
   stop("Unsupported SVD method for Toeplitz SSA!")
 }
 
-calc.v.toeplitz.ssa <- function(x, idx, env = .GlobalEnv, ...)
+calc.v.toeplitz.ssa <- function(x, idx, ...)
   x$V[, idx]

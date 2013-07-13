@@ -13,15 +13,14 @@
 }
 
 \usage{
-\method{calc.v}{1d.ssa}(x, idx, env = .GlobalEnv, \dots)
-\method{calc.v}{toeplitz.ssa}(x, idx, env = .GlobalEnv, \dots)
+\method{calc.v}{1d.ssa}(x, idx, \dots)
+\method{calc.v}{toeplitz.ssa}(x, idx, \dots)
 \method{calc.v}{2d.ssa}(x, idx, \dots)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition.}
   \item{idx}{indices of the factor vectors to compute.}
-  \item{env}{temporary environment used for precalculation.}
   \item{\dots}{additional arguments to 'calc.v'.}
 }
 
@@ -45,9 +44,6 @@
   the user responsibility to ensure that the environment is valid
   (e.g. it was populated via the call of calc.v with the same `ssa'
   object as an argument).
-  
-  Temporary environment is not required for fast FFT-based SVD method
-  (`propack' and `nutrlan').
 }
 
 \value{

@@ -233,7 +233,7 @@ decompose.1d.ssa.nutrlan <- function(x,
   x
 }
 
-calc.v.1d.ssa <- function(x, idx, env = .GlobalEnv, ...) {
+calc.v.1d.ssa <- function(x, idx, ...) {
   lambda <- .get(x, "lambda")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
   h <- .get.or.create.hmat(x)

@@ -145,19 +145,11 @@ precache <- function(x, n, ...) {
   info <- .get.series.info(x);
   new <- setdiff(1:n, info);
 
-  # Hack-hack-hack! Some routines will work much more efficiently if we'll
-  # pass space to store some data which is needed to be calculated only once.
-  e <- new.env();
-
   for (idx in new) {
     # Do actual reconstruction (depending on method, etc)
     .set.series(x,
-                .elseries(x, idx, env = e), idx);
+                .elseries(x, idx), idx);
   }
-
-  # Cleanup
-  rm(list = ls(envir = e, all.names = TRUE),
-     envir = e, inherits = FALSE);
 }
 
 cleanup <- function(x) {
@@ -226,10 +218,6 @@ reconstruct.ssa <- function(x, groups, ...,
   if (!drop.attributes)
     attributes(F) <- .get(x, "Fattr")
 
-  # Cleanup
-  rm(list = ls(envir = e, all.names = TRUE),
-     envir = e, inherits = FALSE);
-
   attr(out, "residuals") <- residuals;
   attr(out, "series") <- F;
 
@@ -248,7 +236,7 @@ residuals.ssa.reconstruction <- function(object, ...) {
   attr(object, "residuals")
 }
 
-.elseries.default <- function(x, idx, ..., env = .GlobalEnv) {
+.elseries.default <- function(x, idx, ...) {
   if (max(idx) > nlambda(x))
     stop("Too few eigentriples computed for this decomposition")
 
@@ -264,7 +252,7 @@ residuals.ssa.reconstruction <- function(object, ...) {
       V <- .get(x, "V")[, i];
     } else {
       # No factor vectors available. Calculate them on-fly.
-      V <- calc.v(x, i, env = env);
+      V <- calc.v(x, i);
     }
 
     res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V);
