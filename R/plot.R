@@ -594,6 +594,30 @@ plot.fdimpars.1d <- function(x, ...) {
   print(res)
 }
 
+plot.fdimpars.2d <- function(x, ...) {
+  dots <- list(...)
+
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    main = "Roots",
+                    xlab = "Real part",
+                    ylab = "Imaginary part",
+                    aspect = 1,
+                    pch = 19)
+
+  data <- list()
+  data$root <- c(x[[1]]$roots, x[[2]]$roots)
+  data$ind <- rep(c("lambda", "mu"), each = length(x[[1]]$roots))
+
+  res <- do.call("xyplot",
+                 c(list(Im(root) ~ Re(root) | ind,
+                        data = data,
+                        panel = panel.roots,
+                        prepanel = prepanel.roots),
+                   dots))
+  print(res)
+}
+
 plot.lrr <- function(x, ...) {
   dots <- list(...)
 
