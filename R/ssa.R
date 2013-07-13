@@ -169,10 +169,6 @@ reconstruct.ssa <- function(x, groups, ...,
   # Grab indices of pre-cached values
   info <- .get.series.info(x);
 
-  # Hack-hack-hack! Some routines will work much more efficiently if we'll
-  # pass space to store some data which is needed to be calculated only once.
-  e <- new.env();
-
   # Do actual reconstruction. Calculate the residuals on the way
   residuals <- .get(x, "F")
   for (i in seq_along(groups)) {
@@ -185,7 +181,7 @@ reconstruct.ssa <- function(x, groups, ...,
       out[[i]] <- numeric(prod(x$length));
     } else {
       # Do actual reconstruction (depending on method, etc)
-      out[[i]] <- .elseries(x, new, env = e);
+      out[[i]] <- .elseries(x, new);
 
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
@@ -210,7 +206,7 @@ reconstruct.ssa <- function(x, groups, ...,
   rnew <- setdiff(rgroups, info)
   residuals <- residuals - .get.series(x, rcached)
   if (length(rnew))
-    residuals <- residuals - .elseries(x, rnew, env = e)
+    residuals <- residuals - .elseries(x, rnew)
 
   # Propagate attributes of residuals
   attributes(residuals) <- .get(x, "Fattr");
