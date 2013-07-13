@@ -49,14 +49,16 @@ ssa <- function(x,
                 L = (N + 1) %/% 2,
                 neig = NULL,
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
+                left.projector = "constant",
+                right.projector = "constant",
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method);
   kind <- match.arg(kind);
   xattr <- attributes(x);
 
-  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
+  if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa") || identical(kind, "pssa")) {
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x);
@@ -103,6 +105,20 @@ ssa <- function(x,
 
   # Save attributes
   .set(this, "Fattr", xattr);
+
+  # Compute and store projectors
+  if (identical(kind, "pssa")) {
+    K <- N - L + 1
+
+    if (is.character(left.projector) || !is.matrix(left.projector))
+      left.projector <- orthopoly(left.projector, L)
+    if (is.character(right.projector) || !is.matrix(right.projector))
+      right.projector <- orthopoly(right.projector, K)
+
+
+    .set(this, "left.projector", left.projector)
+    .set(this, "right.projector", right.projector)
+  }
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
