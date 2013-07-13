@@ -1,5 +1,7 @@
 #   R package for Singular Spectrum Analysis
 #   Copyright (c) 2012 Anton Korobeynikov <asl@math.spbu.ru>
+#   Copyright (c) 2013 Alex Shlemov <shlemovalex@gmail.com>
+#   Copyright (c) 2013 Konstantin Usevich <konstantin.usevich@statmod.ru>
 #
 #   This program is free software; you can redistribute it
 #   and/or modify it under the terms of the GNU General Public
@@ -17,6 +19,33 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
+roots2pars <- function(roots) {
+  out <- list(roots = roots,
+              periods = 2*pi / Arg(roots),
+              frequencies = Arg(roots) / (2*pi),
+              moduli = Mod(roots),
+              rates = log(Mod(roots)))
+
+  # Fix erroneous BIG period in case of real root
+  out$periods[abs(Arg(roots)) < .Machine$double.eps^.5] <- Inf
+
+  class(out) <- "fdimpars.1d"
+  out
+}
+
+print.fdimpars.1d <- function(x, ...) {
+  cat("   period     rate   |    Mod     Arg  |     Re        Im\n")
+  for (i in seq_along(x$roots)) {
+    cat(sprintf("% 9.3f  % 8.6f | % 7.5f  % 3.2f | % 7.5f  % 7.5f\n",
+                x$periods[i],
+                x$rates[i],
+                x$moduli[i],
+                x$frequencies[i] * 2*pi,
+                Re(x$roots[i]),
+                Im(x$roots[i])))
+  }
+}
+
 parestimate.pairs <- function(U) {
   # Sanity check
   stopifnot(ncol(U) == 2)
@@ -31,16 +60,31 @@ parestimate.pairs <- function(U) {
   if (mres > 1)
     warning("too big deviation of estimates, period estimates might be unreliable")
 
-  list(periods=2*pi/acos(median(scos)))
+  r <- exp(1i * acos(median(scos)))
+  roots2pars(r)
 }
 
-parestimate.esprit <- function(U) {
-  Z <- qr.solve(U[-nrow(U),], U[-1, ])
+tls.solve <- function(A, B) {
+  stopifnot(ncol(A) == ncol(B))
+  r <- ncol(A)
+  V <- svd(cbind(A, B))$v[, 1:r, drop = FALSE]
+  qr.solve(V[1:r,, drop = FALSE], V[-(1:r),, drop = FALSE])
+}
+
+parestimate.esprit <- function(U, method = c("esprit-ls", "esprit-tls")) {
+  method <- match.arg(method)
+  solver <- if (identical(method, "esprit-ls")) {
+        qr.solve
+      } else if (identical(method, "esprit-tls")) {
+        tls.solve
+      }
+
+  Z <- solver(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE])
   r <- eigen(Z, only.values = TRUE)$values
-  list(periods=2*pi/Arg(r), moduli = Mod(r))
+  roots2pars(r)
 }
 
-parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
+parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
                                ...,
                                drop = TRUE) {
   method <- match.arg(method)
@@ -58,8 +102,8 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
       if (length(group) != 2)
         stop("can estimate for pair of eigenvectors only using `pairs' method")
       res <- parestimate.pairs(x$U[, group])
-    } else if (identical(method, "esprit-ls")) {
-      res <- parestimate.esprit(x$U[, group])
+    } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
+      res <- parestimate.esprit(x$U[, group, drop = FALSE], method = method)
     }
     out[[i]] <- res
   }
@@ -71,6 +115,116 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
 }
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
+
+shift.matrices.2d <- function(U, L,
+                              solve.method = c("ls", "tls")) {
+  solve.method <- match.arg(solve.method)
+  solver <- if (identical(solve.method, "ls")) {
+        qr.solve
+      } else if (identical(solve.method, "tls")) {
+        tls.solve
+      }
+
+  lm1.mask <- as.vector(rbind(matrix(TRUE, L[1] - 1, L[2]), FALSE))
+  lm2.mask <- as.vector(rbind(FALSE, matrix(TRUE, L[1] - 1, L[2])))
+
+  mu1.mask <- as.vector(cbind(matrix(TRUE, L[1], L[2] - 1), FALSE))
+  mu2.mask <- as.vector(cbind(FALSE, matrix(TRUE, L[1], L[2] - 1)))
+
+  lmA <- U[lm1.mask,, drop = FALSE]
+  lmB <- U[lm2.mask,, drop = FALSE]
+
+  muA <- U[mu1.mask,, drop = FALSE]
+  muB <- U[mu2.mask,, drop = FALSE]
+
+  Zx = solver(lmA, lmB)
+  Zy = solver(muA, muB)
+
+  list(Zx = Zx, Zy = Zy)
+}
+
+est_exp_2desprit <- function(Zs, beta = 8) {
+  Z <- (1-beta) * Zs$Zx + beta * Zs$Zy
+  Ze <- eigen(Z, symmetric = FALSE)
+  Tinv <- Ze$vectors
+
+  list(diag(qr.solve(Tinv, Zs$Zx %*% Tinv)), diag(qr.solve(Tinv, Zs$Zy %*% Tinv)))
+}
+
+est_exp_memp_new <- function(Zs, beta = 8) {
+  Z <- (1-beta) * Zs$Zx + beta * Zs$Zy
+  Ze <- eigen(Z)
+  Zxe <- eigen(Zs$Zx)
+  Zye <- eigen(Zs$Zy)
+  Px <- max.col(t(abs(qr.solve(Ze$vectors, Zxe$vectors))))
+  Py <- max.col(t(abs(qr.solve(Ze$vectors, Zxe$vectors))))
+
+  list(Zxe$values[Px], Zye$values[Py])
+}
+
+parestimate.esprit2d <- function(U, L,
+                                 method = c("esprit-diag-ls", "esprit-diag-tls",
+                                            "esprit-memp-ls", "esprit-memp-tls"),
+                                 beta = 8) {
+  method <- match.arg(method)
+  solve.method <- if (identical(method, "esprit-diag-ls") || identical(method, "esprit-memp-ls")) {
+        "ls"
+      } else if (identical(method, "esprit-diag-tls") || identical(method, "esprit-memp-tls")) {
+        "tls"
+      }
+
+  Zs <- shift.matrices.2d(U, L = L, solve.method = solve.method)
+
+  r <- if (identical(method, "esprit-diag-ls") || identical(method, "esprit-diag-tls")) {
+        est_exp_2desprit(Zs, beta = beta)
+      } else if (identical(method, "esprit-memp-ls") || identical(method, "esprit-memp-tls")) {
+        est_exp_memp_new(Zs, beta = beta)
+      }
+
+  out <- lapply(r, roots2pars)
+  class(out) <- "fdimpars.2d"
+  out
+}
+
+parestimate.2d.ssa <- function(x, groups,
+                               method = c("esprit-diag-ls", "esprit-diag-tls",
+                                          "esprit-memp-ls", "esprit-memp-tls"),
+                               ...,
+                               beta = 8,
+                               drop = TRUE) {
+  method <- match.arg(method)
+  if (missing(groups))
+    groups <- 1:min(nlambda(x), nu(x))
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+
+    out[[i]] <- parestimate.esprit2d(x$U[, group, drop = FALSE],
+                                     L = x$window,
+                                     method = method,
+                                     beta = beta)
+  }
+
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  out
+}
+
+print.fdimpars.2d <- function(x, ...) {
+  cat("x: period     rate   | y: period     rate\n")
+  for (i in seq_along(x[[1]]$roots)) {
+    cat(sprintf("% 9.3f  % 8.6f | % 9.3f  % 8.6f \n",
+                x[[1]]$periods[i],
+                x[[1]]$rate[i],
+                x[[2]]$periods[i],
+                x[[2]]$rate[i]))
+  }
+}
 
 parestimate <- function(x, ...)
   UseMethod("parestimate")

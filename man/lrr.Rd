@@ -19,7 +19,7 @@
 \method{lrr}{toeplitz.ssa}(x, groups, \dots, drop = TRUE)
 \method{lrr}{default}(U, eps = sqrt(.Machine$double.eps), \dots)
 \method{roots}{lrr}(x, ..., method = c("companion", "polyroot"))
-\method{plot}{lrr}(x, ..., raw = FALSE)
+\method{plot}{lrr}(x, ...)
 }
 
 \arguments{
@@ -34,8 +34,6 @@
   \item{eps}{Tolerance for verticality checking}
   \item{method}{methods used for calculation of the polynomial roots: via eigenvalues
     of companion matrix or R's standard polyroot routine}
-  \item{raw}{logical, if 'TRUE' then \code{plot} routine will not add any
-    additional plot components (e.g. unit circle)}
 }
 
 \details{
