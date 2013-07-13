@@ -63,7 +63,7 @@ parestimate.pairs <- function(U) {
 }
 
 parestimate.esprit <- function(U) {
-  Z <- qr.solve(U[-nrow(U),], U[-1, ])
+  Z <- qr.solve(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE])
   r <- eigen(Z, only.values = TRUE)$values
   roots2pars(r)
 }
@@ -87,7 +87,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
         stop("can estimate for pair of eigenvectors only using `pairs' method")
       res <- parestimate.pairs(x$U[, group])
     } else if (identical(method, "esprit-ls")) {
-      res <- parestimate.esprit(x$U[, group])
+      res <- parestimate.esprit(x$U[, group, drop = FALSE])
     }
     out[[i]] <- res
   }
