@@ -2,6 +2,7 @@
 \alias{parestimate}
 \alias{parestimate.1d.ssa}
 \alias{parestimate.toeplitz.ssa}
+\alias{parestimate.2d.ssa}
 \title{Estimate periods from (set of) eigenvectors}
 
 \description{
@@ -11,6 +12,12 @@
 \usage{
 \method{parestimate}{1d.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"), \dots, drop = TRUE)
 \method{parestimate}{toeplitz.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"), \dots, drop = TRUE)
+\method{parestimate}{2d.ssa}(x, groups,
+            method = c("esprit-diag-ls", "esprit-diag-tls",
+                       "esprit-memp-ls", "esprit-memp-tls"),
+            \dots,
+            beta = 8,
+            drop = TRUE)
 }
 
 \arguments{
@@ -20,13 +27,18 @@
     necessary}
   \item{drop}{logical, if 'TRUE' then the result is coerced to lowest
     dimension, when possible (length of 'groups' is one)}
-  \item{method}{estimation method, 'pairs' for rough estimation based on
-    pair of eigenvectors, 'esprit-ls' for least-squares ESPRIT and
-    'esprit-tls' for total-least-squares ESPRIT}
+  \item{method}{estimation method. For 1dSSA: 'pairs' for rough estimation based on
+    pair of eigenvectors, 'esprit-ls' for least-squares 1D-ESPRIT and
+    'esprit-tls' for total-least-squares 1D-ESPRIT.
+    For 2dSSA: 'esprit-diag-ls' or 'esprit-diag-tls' for `Two-Dimensional ESPRIT Method'
+    (2D-ESPRIT diagonalization) and
+    'esprit-memp-ls' or `esprit-memp-tls' for `MEMP with an improved pairing step'.
+    Suffix '-ls' or '-tls' means approximate matrix equation solve method, as in 1D-ESPRIT case.}
+  \item{beta}{In 2D-ESPRIT, coefficient in considered shift matrices convex linear combination.}
 }
 
 \value{
-  a list of objects of S3-class `fdimpars.1d'. Each object is a list with 5 components:
+  For 1D-SSA (and Toeplitz), a list of objects of S3-class `fdimpars.1d'. Each object is a list with 5 components:
   'roots' - complex roots of minimal LRR characteristic polynom,
   'periods' - periods of dumped sinusoids,
   'frequencies' - frequencies of dumped sinusoids,
@@ -34,6 +46,9 @@
   'rates' - rates of exponential trend (\code{rates == log(moduli)}).
 
   For 'method' = 'pairs' all moduli equal to 1 and all rates equal to 0.
+
+  For 2D-SSA, a list of objects of S3-class `fdimpars.2d'. Each object is unnamed list of two
+  `fdimpars.1d' objects, each for corresponding spatial coordinate.
 
   If 'drop = TRUE' and length of 'groups' is one, then the list of
   periods itself.
@@ -52,7 +67,7 @@
   \eqn{\mu_k}, more precisely, \eqn{\rho_k} ('moduli') and \eqn{T_k =
   1/\omega_k} ('periods').
 
-  Also `print' and `plot' methods are implemented for class `fdimpars.1d'.
+  Also `print' and `plot' methods are implemented for classes `fdimpars.1d' and `fdimpars.2d'.
 }
 
 \references{
@@ -61,6 +76,13 @@
 
   Roy, R., Kailath, T., (1989): \emph{ESPRIT: estimation of signal parameters via
   rotational invariance techniques}. IEEE Trans. Acoust. 37, 984--995.
+
+  Rouquette, S., Najim, M. (2001): \emph{Estimation of frequencies and damping factors by two-
+   dimensional esprit type methods}. IEEE Transactions on Signal Processing 49(1), 237--245.
+
+  Wang, Y., Chan, J-W., Liu, Zh. (2005): \emph{Comments on ``estimation of frequencies and
+    damping factors by two-dimensional esprit type methods''}.
+    IEEE Transactions on Signal Processing 53(8), 3348--3349.
 }
 
 \examples{
@@ -71,6 +93,17 @@ s <- ssa(co2, neig = 20)
 print(parestimate(s, groups = list(c(2, 3))))
 # Estimate the peroids from 2nd, 3rd, 5th and 6th eigenvectors using ESPRIT
 pe <- parestimate(s, groups = list(c(2, 3, 5, 6)), method = "esprit-ls")
+print(pe)
+plot(pe)
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with default parameters
+s <- ssa(mx, kind = "2d-ssa")
+# Estimate parameters
+pe <- parestimate(s, groups = list(1:5))
 print(pe)
 plot(pe)
 }
