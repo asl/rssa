@@ -17,7 +17,7 @@
   \item{x}{SSA object}
   \item{groups}{list of indices of eigenvectors to estimate from}
   \item{\dots}{further arguments passed to 'decompose' routine, if
-    necessary}l
+    necessary}
   \item{drop}{logical, if 'TRUE' then the result is coerced to lowest
     dimension, when possible (length of 'groups' is one)}
   \item{method}{estimation method, 'pairs' for rough estimation based on
