@@ -9,8 +9,8 @@
 }
 
 \usage{
-\method{parestimate}{1d.ssa}(x, groups, method = c("pairs", "esprit-ls"), \dots, drop = TRUE)
-\method{parestimate}{toeplitz.ssa}(x, groups, method = c("pairs", "esprit-ls"), \dots, drop = TRUE)
+\method{parestimate}{1d.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"), \dots, drop = TRUE)
+\method{parestimate}{toeplitz.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"), \dots, drop = TRUE)
 }
 
 \arguments{
@@ -21,7 +21,8 @@
   \item{drop}{logical, if 'TRUE' then the result is coerced to lowest
     dimension, when possible (length of 'groups' is one)}
   \item{method}{estimation method, 'pairs' for rough estimation based on
-    pair of eigenvectors, 'esprit-ls' for least-squares ESPRIT}
+    pair of eigenvectors, 'esprit-ls' for least-squares ESPRIT and
+    'esprit-tls' for total-least-squares ESPRIT}
 }
 
 \value{

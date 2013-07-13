@@ -62,13 +62,25 @@ parestimate.pairs <- function(U) {
   roots2pars(r)
 }
 
-parestimate.esprit <- function(U) {
-  Z <- qr.solve(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE])
+tls.solve <- function(A, B) {
+  stopifnot(ncol(A) == ncol(B))
+  r <- ncol(A)
+  V <- svd(cbind(A, B))$v[, 1:r, drop = FALSE]
+  qr.solve(V[1:r,, drop = FALSE], V[-(1:r),, drop = FALSE])
+}
+
+parestimate.esprit <- function(U, method = c("esprit-ls", "esprit-tls")) {
+  method <- match.arg(method)
+  solver <- switch(method,
+                   `esprit-ls` = qr.solve,
+                   `esprit-tls` = tls.solve)
+
+  Z <- solver(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE])
   r <- eigen(Z, only.values = TRUE)$values
   roots2pars(r)
 }
 
-parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
+parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
                                ...,
                                drop = TRUE) {
   method <- match.arg(method)
@@ -86,8 +98,8 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls"),
       if (length(group) != 2)
         stop("can estimate for pair of eigenvectors only using `pairs' method")
       res <- parestimate.pairs(x$U[, group])
-    } else if (identical(method, "esprit-ls")) {
-      res <- parestimate.esprit(x$U[, group, drop = FALSE])
+    } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
+      res <- parestimate.esprit(x$U[, group, drop = FALSE], method = method)
     }
     out[[i]] <- res
   }
