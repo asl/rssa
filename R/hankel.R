@@ -164,7 +164,9 @@ Lcov.matrix <- function(F,
   .Call("Lcov_matrix", F, L, if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan)
 }
 
-decompose.1d.ssa.eigen <- function(x, ...,
+decompose.1d.ssa.eigen <- function(x,
+                                   neig = min(50, L, K),
+                                   ...,
                                    force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
@@ -183,8 +185,8 @@ decompose.1d.ssa.eigen <- function(x, ...,
   S$values[S$values < 0] <- 0
 
   # Save results
-  .set(x, "lambda", sqrt(S$values))
-  .set(x, "U", S$vectors)
+  .set(x, "lambda", sqrt(S$values[1:neig]))
+  .set(x, "U", S$vectors[, 1:neig])
 
   x
 }

@@ -17,9 +17,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-determine.svd.method <- function(L, N, ..., svd.method = "nutrlan") {
-  dots <- list(...)
-  neig <- dots$neig
+determine.svd.method <- function(L, N, neig = NULL, ..., svd.method = "nutrlan") {
   truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
 
   if (is.null(neig)) neig <- min(50, L, N - L + 1)
@@ -49,6 +47,7 @@ new.ssa <- function(...) {
 
 ssa <- function(x,
                 L = (N + 1) %/% 2,
+                neig = NULL,
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
@@ -64,9 +63,12 @@ ssa <- function(x,
 
     N <- length(x);
 
+    if (is.null(neig))
+      neig <- min(50, L, N - L + 1)
+
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N, ...)
+      svd.method <- determine.svd.method(L, N, neig, ...)
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
@@ -74,9 +76,13 @@ ssa <- function(x,
 
     N <- dim(x);
 
+    if (is.null(neig))
+      neig <- min(50, prod(L), prod(N - L + 1))
+
     if (identical(svd.method, "auto"))
       svd.method <- "nutrlan"
   }
+  stopifnot(!is.null(neig))
 
   # Normalized the kind to be used
   kind <- sub("-", ".", kind, fixed = TRUE)
@@ -106,7 +112,7 @@ ssa <- function(x,
 
   # Decompose, if necessary
   if (force.decompose)
-    this <- decompose(this, ...);
+    this <- decompose(this, neig = neig, ...);
 
   this;
 }

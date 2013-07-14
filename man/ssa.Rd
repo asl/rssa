@@ -10,6 +10,7 @@
 \usage{
 ssa(x,
     L = (N + 1) \%/\% 2,
+    neig = NULL,
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
@@ -22,8 +23,9 @@ ssa(x,
     object for 2d SSA.}
   \item{L}{integer, window length. Fixed to half of the series length by
     default. Should be vector of length 2 for 2d SSA}
-  \item{\dots}{further arguments passed to
-    \code{\link[Rssa:decompose.ssa]{decompose}} (e.g. \code{neig}).}
+  \item{neig}{integer, number of desired eigentriples. If 'NULL', then
+    sane default value will be used}
+  \item{\dots}{further arguments passed to \code{\link[Rssa:decompose.ssa]{decompose}} }
   \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA and
     Toeplitz variant of 1d SSA.}
   \item{svd.method}{singular value decomposition method. See 'Details'

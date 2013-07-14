@@ -119,7 +119,9 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   x
 }
 
-decompose.toeplitz.ssa.eigen <- function(x, ...,
+decompose.toeplitz.ssa.eigen <- function(x,
+                                         neig = min(50, L, K),
+                                         ...,
                                          force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
@@ -132,14 +134,10 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
   h <- .get.or.create.hmat(x)
 
   # Do decomposition
-  if ("neig" %in% names(list(...)))
-    warning("'neig' option ignored for SSA method 'eigen', computing EVERYTHING",
-            immediate. = TRUE)
-
   C <- toeplitz(Lcor(F, L))
   S <- eigen(C, symmetric = TRUE)
 
-  .set(x, "U", S$vectors)
+  .set(x, "U", S$vectors[, 1:neig])
 
   lambda <- numeric(L)
   V <- matrix(nrow = K, ncol = L)
@@ -150,14 +148,14 @@ decompose.toeplitz.ssa.eigen <- function(x, ...,
   }
 
   # Save results
-  .set(x, "lambda", lambda)
-  .set(x, "V", V)
+  .set(x, "lambda", lambda[1:neig])
+  .set(x, "V", V[, 1:neig])
 
   x
 }
 
 decompose.toeplitz.ssa.svd <- function(x,
-                                       neig = min(L, K),
+                                       neig = min(50, L, K),
                                        ...,
                                        force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
