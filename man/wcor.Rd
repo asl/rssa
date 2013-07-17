@@ -2,6 +2,7 @@
 \alias{wcor}
 \alias{wcor.1d.ssa}
 \alias{wcor.2d.ssa}
+\alias{wcor.shaped2d.ssa}
 \alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
 \alias{plot.wcor.matrix}
@@ -13,6 +14,7 @@
 \usage{
 \method{wcor}{1d.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{2d.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{shaped2d.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
