@@ -3,6 +3,7 @@
 \alias{parestimate.1d.ssa}
 \alias{parestimate.toeplitz.ssa}
 \alias{parestimate.2d.ssa}
+\alias{parestimate.shaped2d.ssa}
 \title{Estimate periods from (set of) eigenvectors}
 
 \description{
@@ -13,6 +14,12 @@
 \method{parestimate}{1d.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"), \dots, drop = TRUE)
 \method{parestimate}{toeplitz.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"), \dots, drop = TRUE)
 \method{parestimate}{2d.ssa}(x, groups,
+            method = c("esprit-diag-ls", "esprit-diag-tls",
+                       "esprit-memp-ls", "esprit-memp-tls"),
+            \dots,
+            beta = 8,
+            drop = TRUE)
+\method{parestimate}{shaped2d.ssa}(x, groups,
             method = c("esprit-diag-ls", "esprit-diag-tls",
                        "esprit-memp-ls", "esprit-memp-tls"),
             \dots,
@@ -47,7 +54,7 @@
 
   For 'method' = 'pairs' all moduli equal to 1 and all rates equal to 0.
 
-  For 2D-SSA, a list of objects of S3-class `fdimpars.2d'. Each object is unnamed list of two
+  For 2d SSA and Shaped 2d SSA, a list of objects of S3-class `fdimpars.2d'. Each object is unnamed list of two
   `fdimpars.1d' objects, each for corresponding spatial coordinate.
 
   If 'drop = TRUE' and length of 'groups' is one, then the list of
@@ -104,6 +111,14 @@ mx <- outer(1:50, 1:50,
 s <- ssa(mx, kind = "2d-ssa")
 # Estimate parameters
 pe <- parestimate(s, groups = list(1:5))
+print(pe)
+plot(pe)
+
+# Decompose 'mx' with circular window
+circle <- 5
+s <- ssa(mx, kind = "shaped2d-ssa", umask = circle(I(circle)), neig = 10)
+# Estimate parameters
+pe <- parestimate(s, groups = list(1:5), method = "esprit-memp-tls")
 print(pe)
 plot(pe)
 }
