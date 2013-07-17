@@ -186,7 +186,7 @@ decompose.1d.ssa.eigen <- function(x,
 
   # Save results
   .set(x, "lambda", sqrt(S$values[1:neig]))
-  .set(x, "U", S$vectors[, 1:neig])
+  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
   x
 }

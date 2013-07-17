@@ -149,7 +149,7 @@ decompose.toeplitz.ssa.eigen <- function(x,
 
   # Save results
   .set(x, "lambda", lambda[1:neig])
-  .set(x, "V", V[, 1:neig])
+  .set(x, "V", V[, 1:neig, drop = FALSE])
 
   x
 }
