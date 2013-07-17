@@ -62,6 +62,13 @@ field.weights <- function(window.mask, factor.mask) {
   res
 }
 
+circle.mask <- function(R) {
+    I <- matrix(seq_len(2*R - 1), 2*R - 1, 2*R - 1)
+    J <- t(I)
+
+    (I - R)^2 + (J - R)^2 < R^2
+}
+
 fmatmul <- function(field, X, umask, vmask, transposed = FALSE) {
   if (transposed) {
     tmp <- umask; umask <- vmask; vmask <- tmp
