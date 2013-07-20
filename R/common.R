@@ -108,12 +108,51 @@
 }
 
 .get.series <- function(x, index) {
-  F <- numeric(.slength(x));
-  for (i in index) {
-    name <- paste("series:", i, sep = "");
-    F <- F + .get(x, name);
+  name <- paste("series:", index[1], sep = "")
+  F <- .get(x, name)
+  for (i in index[-1]) {
+    name <- paste("series:", i, sep = "")
+    F <- F + .get(x, name)
   }
-  F;
+  F
+}
+
+.to.series.list <- function(x, na.rm = TRUE) {
+  # Note that this will correctly remove leading and trailing NA, but will fail for internal NA's
+  NA.fun <- (if (na.rm) na.omit else identity)
+  if (is.vector(x))
+    res <- as.list(NA.fun(x))
+  else if (is.matrix(x))
+    res <- lapply(seq_len(ncol(x)), function(i) NA.fun(x[, i]))
+  else if (is.list(x))
+    res <- lapply(x, NA.fun)
+
+  class(res) <- "series.list"
+
+  res
+}
+
+Ops.series.list <- function(e1, e2 = NULL) {
+  unary <- nargs() == 1L
+  lclass <- nzchar(.Method[1L])
+  rclass <- !unary && (nzchar(.Method[2L]))
+
+  FUN <- get(.Generic, envir = parent.frame(), mode = "function")
+
+  if (lclass && rclass) {
+    if (length(e1) != length(e2))
+      stop("series list should have equal number of elements")
+
+    res <- lapply(seq_len(length(e1)), function(i) FUN(e1[[i]], e2[[i]]))
+  } else if (lclass) {
+    res <- (if (unary) lapply(e1, FUN) else lapply(e1, function(x) FUN(x, e2)))
+  } else {
+    res <- (if (unary) lapply(e2, FUN) else lapply(e2, function(x) FUN(e1, x)))
+  }
+
+  class(res) <- "series.list"
+
+  res
 }
 
 # Generics
@@ -138,8 +177,8 @@ wnorm <- function(x, ...)
   UseMethod(".init")
 .traj.dim <- function(x, ...)
   UseMethod(".traj.dim")
-.slength <- function(x, ...)
-  UseMethod(".slength")
+.apply.attributes <- function(x, ...)
+  UseMethod(".apply.attributes")
 
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(x, ...) UseMethod("decompose");
