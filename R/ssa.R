@@ -54,17 +54,17 @@ ssa <- function(x,
                 kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
-  svd.method <- match.arg(svd.method);
-  kind <- match.arg(kind);
-  xattr <- attributes(x);
+  svd.method <- match.arg(svd.method)
+  kind <- match.arg(kind)
+  xattr <- attributes(x)
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
     # Coerce input to vector if necessary
     if (!is.vector(x))
-      x <- as.vector(x);
+      x <- as.vector(x)
 
-    N <- length(x);
+    N <- length(x)
 
     if (is.null(neig))
       neig <- min(50, L, N - L + 1)
@@ -77,7 +77,7 @@ ssa <- function(x,
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
-      x <- as.matrix(x);
+      x <- as.matrix(x)
 
     N <- dim(x);
 
@@ -121,21 +121,11 @@ ssa <- function(x,
       fmask <- NULL
   } else if (identical(kind, "mssa")) {
     # We assume that we have mts-like object. With series in the columns.
-    # Coerce input to matrix if necessary
-    if (!is.matrix(x))
-      x <- as.matrix(x);
+    # Coerce input to series.list object
+    # Note that this will correctly remove leading and trailing NA's
+    x <- .to.series.list(x, na.rm = TRUE)
 
-    if (nrow(x) < ncol(x))
-      x <- t(x)
-
-    # Find the last non-full-of-NA row and trim the matrix accordingly.
-    last <- max(which(rowSums(is.na(x)) < ncol(x)))
-    if (last < nrow(x)) {
-      warning(paste("trimmed last", nrow(x) - last, " NA rows"))
-      x <- x[1:last, ]
-    }
-
-    N <- apply(!is.na(x), 2, sum)
+    N <- sapply(x, length)
 
     # If L is provided it should be length 1
     if (missing(L)) {
@@ -171,7 +161,7 @@ ssa <- function(x,
                call = match.call(),
                kind = kind,
                series = deparse(substitute(x)),
-               svd.method = svd.method);
+               svd.method = svd.method)
 
   # Create data storage
   this <- .create.storage(this);
@@ -245,6 +235,28 @@ cleanup <- function(x) {
   .remove(x, ls(.storage(x), pattern = "series:"));
 }
 
+.apply.attributes.default <- function(x, F,
+                                      fixup = FALSE,
+                                      only.new = TRUE, drop = FALSE) {
+  a <- (if (drop) NULL else .get(x, "Fattr"))
+
+  if (fixup) {
+     # Try to guess the indices of known time series classes
+    if ("ts" %in% a$class) {
+      tsp <- a$tsp
+      return (ts(F,
+                 start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
+                 frequency = tsp[3]))
+    } else if (!is.null(a$class)) {
+      warning("do not know how to fixup attributes for this input")
+    }
+  } else {
+    attributes(F) <- a
+  }
+
+  F
+}
+
 reconstruct.ssa <- function(x, groups, ...,
                             drop.attributes = FALSE, cache = TRUE) {
   out <- list();
@@ -265,23 +277,25 @@ reconstruct.ssa <- function(x, groups, ...,
     new <- setdiff(group, info);
     cached <- intersect(group, info);
 
-    if (length(new) == 0) {
-      # Nothing to compute, just create zero output
-      out[[i]] <- numeric(length(residuals))
-    } else {
+    if (length(new)) {
       # Do actual reconstruction (depending on method, etc)
       out[[i]] <- .elseries(x, new);
 
       # Cache the reconstructed series, if this was requested
       if (cache && length(new) == 1)
         .set.series(x, out[[i]], new);
+
+       # Add pre-cached series
+      if (length(cached))
+        out[[i]] <- out[[i]] + .get.series(x, cached);
+    } else if (length(cached)) {
+      out[[i]] <- .get.series(x, cached)
+    } else {
+      stop("group cannot be empty")
     }
 
-    # Add pre-cached series
-    out[[i]] <- out[[i]] + .get.series(x, cached);
-
     # Propagate attributes (e.g. dimension for 2d-SSA)
-    attributes(out[[i]]) <- .get(x, "Fattr");
+    out[[i]] <- .apply.attributes(x, out[[i]], fixup = FALSE, drop = drop.attributes)
   }
 
   # Set names and drop the dimension, if necessary
@@ -293,15 +307,14 @@ reconstruct.ssa <- function(x, groups, ...,
   info <- .get.series.info(x);
   rcached <- intersect(rgroups, info)
   rnew <- setdiff(rgroups, info)
-  residuals <- residuals - .get.series(x, rcached)
+  if (length(rcached))
+    residuals <- residuals - .get.series(x, rcached)
   if (length(rnew))
     residuals <- residuals - .elseries(x, rnew)
 
   # Propagate attributes of residuals
-  attributes(residuals) <- .get(x, "Fattr");
-  F <- .get(x, "F")
-  if (!drop.attributes)
-    attributes(F) <- .get(x, "Fattr")
+  residuals <- .apply.attributes(x, residuals, fixup = FALSE, drop = drop.attributes)
+  F <- .apply.attributes(x, .get(x, "F"), fixup = FALSE, drop = drop.attributes)
 
   attr(out, "residuals") <- residuals;
   attr(out, "series") <- F;
@@ -321,9 +334,6 @@ residuals.ssa.reconstruction <- function(object, ...) {
   attr(object, "residuals")
 }
 
-.slength.default <- function(x)
-  prod(x$length)
-
 .elseries.default <- function(x, idx, ...) {
   if (max(idx) > nlambda(x))
     stop("Too few eigentriples computed for this decomposition")
@@ -331,7 +341,7 @@ residuals.ssa.reconstruction <- function(object, ...) {
   lambda <- .get(x, "lambda");
   U <- .get(x, "U");
 
-  res <- numeric(.slength(x));
+  res <- numeric(prod(x$length));
   for (i in idx) {
     if (nv(x) >= i) {
       # FIXME: Check, whether we have factor vectors for reconstruction
