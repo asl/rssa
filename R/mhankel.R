@@ -29,19 +29,18 @@
   # FIXME: think about NA's in the end
   N <- x$length; L <- x$window; K <- N - L + 1
 
-  h <- lapply(1:length(N),
-              function(idx) new.hmat(x$F[, idx], L = L,
+  F <- .get(x, "F")
+  h <- lapply(seq_along(N),
+              function(idx) new.hmat(F[[idx]], L = L,
                                      fft.plan = fft.plan[[idx]]))
   b <- c(0, cumsum(K))
   matmul <- function(v) {
     res <- numeric(L)
-    for (idx in 1:length(h)) {
+    for (idx in seq_along(h)) {
       res <- res + hmatmul(h[[idx]], v[(b[idx]+1):b[idx+1]], transposed = FALSE)
     }
     res
   }
-  #matmul <- function(v) rowSums(sapply(1:length(h),
-  #                                     function(idx) hmatmul(h[[idx]], v[(b[idx]+1):b[idx+1]], transposed = FALSE)))
   tmatmul <- function(v) unlist(lapply(h, hmatmul, v = v, transposed = TRUE))
 
   extmat(matmul, tmatmul, nrow = L, ncol = sum(K))
@@ -66,7 +65,7 @@ decompose.mssa.svd <- function(x,
 
   # Build hankel matrix
   F <- .get(x, "F")
-  h <- do.call(cbind, lapply(seq_along(N), function(idx) hankel(F[, idx], L = L)))
+  h <- do.call(cbind, lapply(seq_along(N), function(idx) hankel(F[[idx]], L = L)))
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
@@ -94,7 +93,7 @@ decompose.mssa.eigen <- function(x, ...,
   fft.plan <- .get.or.create.mfft.plan(x)
   C <- matrix(0, L, L)
   for (idx in seq_along(N)) {
-    C <- C + Lcov.matrix(F[, idx], L = L, fft.plan = fft.plan[[idx]])
+    C <- C + Lcov.matrix(F[[idx]], L = L, fft.plan = fft.plan[[idx]])
   }
 
   # Do decomposition
@@ -175,12 +174,77 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
   fft.plan <- .get.or.create.mfft.plan(x)
 
   # FIXME: All these apply's are really ugly. Switch to C version...
-  unlist(lapply(1:length(K),
+  unlist(lapply(seq_along(K),
                 function(idx) .hankelize.one.1d.ssa(x, U, V[(b[idx]+1):b[idx+1]], fft.plan[[idx]])))
 }
 
-.slength.mssa <- function(x)
-  sum(x$length)
+.elseries.mssa <- function(x, idx, ..., env = .GlobalEnv) {
+  if (max(idx) > nlambda(x))
+    stop("Too few eigentriples computed for this decomposition")
+
+  N <- x$length
+  lambda <- .get(x, "lambda")
+  U <- .get(x, "U")
+  F <- .get(x, "F")
+
+  res <- numeric(sum(N))
+  for (i in idx) {
+    if (nv(x) >= i) {
+      # FIXME: Check, whether we have factor vectors for reconstruction
+      # FIXME: Get rid of .get call
+      V <- .get(x, "V")[, i]
+    } else {
+      # No factor vectors available. Calculate them on-fly.
+      V <- calc.v(x, i, env = env)
+    }
+
+    res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V)
+  }
+
+  cN <- c(0, cumsum(N))
+  sres <- list()
+  for (i in seq_along(N)) {
+    sres[[i]] <- res[(cN[i]+1):cN[i+1]]
+    attr(sres[[i]], "na.action") <- attr(F[[i]], "na.action")
+  }
+  class(sres) <- "series.list"
+
+  sres
+}
+
+.apply.attributes.mssa <- function(x, F,
+                                   fixup = FALSE,
+                                   only.new = TRUE, drop = FALSE) {
+  a <- (if (drop) NULL else .get(x, "Fattr"))
+
+  if (fixup) {
+    stop("Do not know how to fixup for MSSA yet")
+  } else {
+    # MSSA is a bit different from the default case. We need to convert (if
+    # possible) to original object
+    stopifnot(inherits(F, "series.list"))
+    # First, pad with NA's if necessary
+    F <- lapply(F,
+                function(x) {
+                  removed <- attr(x, "na.action")
+                  if (!is.null(removed)) {
+                    res <- numeric(length(x) + length(removed))
+                    res[setdiff(seq_along(res), removed)] <- x
+                    res[removed] <- NA
+                    res
+                  } else
+                    x
+                })
+    # Optionaly convert to matrix
+    if ("matrix" %in% a$class)
+      F <- simplify2array(F)
+    # Restore attributes
+    attributes(F) <- a
+  }
+
+  F
+}
+
 
 .get.or.create.cfft.plan <- function(x) {
   .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
