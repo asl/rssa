@@ -299,8 +299,8 @@ reconstruct.ssa <- function(x, groups, ...,
     attributes(out[[i]]) <- .get(x, "Fattr");
   }
 
-  # Set names and drop the dimension, if necessary
-  names(out) <- paste("F", 1:length(groups), sep="");
+  # Set names
+  names(out) <- names(groups)
 
   # Calculate the residuals
   rgroups <- union.groups(groups)
