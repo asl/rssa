@@ -130,14 +130,32 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   invisible(out)
 }
 
+.na.bind <- function(original, new) {
+  removed <- attr(original, "na.action")
+  res <- c(original, new)
+  if (!is.null(removed)) {
+    all.old <- seq_len(length(removed) + length(original))
+    full.old <- setdiff(all.old, removed)
+    full.new <- c(full.old, max(full.old) + seq_along(new))
+    attr(res, "na.action") <- setdiff(all.old, full.new)
+  }
+  res
+}
+
 rforecast.mssa <- function(x, groups, len = 1,
                            base = c("reconstructed", "original"),
+                           direction = c("row", "column"),
                            only.new = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
-  L <- x$window
+  L <- x$window; N <- x$length; K <- N - L + 1
+
+  cK <- cumsum(K)
+  cKr <- cumsum(K - 1)
+  cKl <- cKr - (K - 1) + 1
 
   base <- match.arg(base)
+  direction <- match.arg(direction)
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
 
@@ -145,19 +163,51 @@ rforecast.mssa <- function(x, groups, len = 1,
   if (identical(base, "reconstructed"))
     r <- reconstruct(x, groups = groups, ..., cache = cache)
 
-  # Calculate the LRR corresponding to groups
-  lf <- lrr(x, groups = groups, drop = FALSE)
-  stopifnot(length(lf) == length(groups))
-
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
+    F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]]) else .get(x, "F")
+
     # Calculate the forecasted values
-    out[[i]] <- apply(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
-                      2,
-                      apply.lrr,
-                      lrr = lf[[i]], len = len, only.new = only.new)
+    if (identical(direction, "row")) {
+      # Calculate the LRR corresponding to group
+      lf <- lrr(x, groups = list(group), drop = FALSE)
+      stopifnot(length(lf) == 1)
+      R <- sapply(F,
+                  apply.lrr,
+                  lrr = lf[[1]], len = len, only.new = TRUE)
+    } else {
+      V <- calc.v(x, idx = group)
+
+      # Build W
+      W <- V[cK, ]
+      # Build Q
+      Q <- V[-cK, ]
+
+      # Calculate the forecasted values
+      qIWWt <- qr(diag(length(N)) - tcrossprod(W))
+      WtQ <- W %*% t(Q)
+
+      R <- matrix(NA, nrow = len, ncol = length(N))
+      # Build initial Z
+      Z <- unlist(lapply(seq_along(F), function(idx) F[[idx]][seq(to = N[[idx]], length.out = K[[idx]] -1)]))
+      for (idx in seq_len(len)) {
+        # Calculate the projection
+        cR <- t(qr.coef(qIWWt, WtQ %*% Z))
+        R[idx, ] <- cR
+
+        # Shift the Z vector
+        Z[-cKr] <- Z[-cKl]
+        Z[cKr] <- cR
+      }
+    }
+
+    out[[i]] <- if (only.new) .to.series.list(R) else {
+      res <- lapply(seq_along(F), function(idx) .na.bind(F[[idx]], R[, idx]))
+      class(res) <- "series.list"
+      res
+    }
     out[[i]] <- .apply.attributes(x, out[[i]],
                                   fixup = TRUE,
                                   only.new = only.new, drop = drop.attributes)
@@ -170,7 +220,6 @@ rforecast.mssa <- function(x, groups, len = 1,
   # Forecasted series can be pretty huge...
   invisible(out)
 }
-
 
 vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
