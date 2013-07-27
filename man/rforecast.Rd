@@ -4,6 +4,7 @@
 \alias{rforecast.ssa}
 \alias{rforecast.1d.ssa}
 \alias{rforecast.toeplitz.ssa}
+\alias{rforecast.mssa}
 \title{Perform recurrent SSA forecasting of the series}
 
 \description{
@@ -15,6 +16,9 @@
           only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{rforecast}{mssa}(x, groups, len = 1, base = c("reconstructed", "original"),
+          direction = c("row", "column"), only.new = TRUE, \dots, drop = TRUE,
+          drop.attributes = FALSE, cache = TRUE)
 }
 
 \arguments{
@@ -23,6 +27,8 @@
   \item{len}{integer, the desired length of the forecasted series}
   \item{base}{series used as a 'seed' of forecast: original or
     reconstructed according to the value of \code{groups} argument}
+  \item{direction}{direction of forecast in multichannel SSA case, "row"
+    stands for so-called L-forecast and "column" stands for K-forecast}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}}
