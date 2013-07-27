@@ -57,29 +57,6 @@ static unsigned hankel_ncol(const void *matrix) {
 }
 
 #if HAVE_FFTW3_H
-static void free_plan(fft_plan *f) {
-  fftw_destroy_plan(f->r2c_plan);
-  fftw_destroy_plan(f->c2r_plan);
-}
-
-static void initialize_plan(fft_plan *f, R_len_t N) {
-  fftw_complex *ocirc;
-  double *circ;
-
-  /* Allocate needed memory */
-  circ = (double*) fftw_malloc(N * sizeof(double));
-  ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
-
-  /* Estimate the best plans for given input length */
-  f->r2c_plan = fftw_plan_dft_r2c_1d(N, circ, ocirc, FFTW_ESTIMATE);
-  f->c2r_plan = fftw_plan_dft_c2r_1d(N, ocirc, circ, FFTW_ESTIMATE);
-
-  f->N = N;
-
-  fftw_free(circ);
-  fftw_free(ocirc);
-}
-
 static void free_circulant(hankel_matrix *h) {
   fftw_free(h->circ_freq);
 }
@@ -90,7 +67,7 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   fftw_complex *ocirc;
   double *circ;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -200,7 +177,7 @@ static R_INLINE void hankelize_fft(double *F,
   double *iU, *iV;
   fftw_complex *cU, *cV;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -288,14 +265,6 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
   fftw_free(iFc);
 }
 #else
-static void free_plan(fft_plan *f) {
-  (void)f;
-}
-
-static void initialize_plan(fft_plan *f, R_len_t N) {
-  f->N = N;
-}
-
 static void free_circulant(hankel_matrix *h) {
   R_ReleaseObject(h->circ_freq);
 }
@@ -306,7 +275,7 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   Rcomplex* circ;
   SEXP rcirc;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -423,7 +392,7 @@ static R_INLINE void hankelize_fft(double *F,
   double *work;
   SEXP rU, rU1, rV, rV1, res, rTrue;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -477,7 +446,7 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
   R_len_t i;
   SEXP rF, rFc, rF1, rFc1, rTrue, res;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Length check */
@@ -556,72 +525,6 @@ static R_INLINE void hankelize(double *F,
   }
 }
 
-
-static void fft_plan_finalizer(SEXP ptr) {
-  fft_plan *f;
-
-  if (TYPEOF(ptr) != EXTPTRSXP)
-    return;
-
-  f = R_ExternalPtrAddr(ptr);
-  if (!f)
-    return;
-
-  free_plan(f);
-  Free(f);
-
-  R_ClearExternalPtr(ptr);
-}
-
-SEXP initialize_fft_plan(SEXP rN) {
-  R_len_t N;
-  fft_plan *f;
-  SEXP res;
-
-  N = INTEGER(rN)[0];
-
-  /* Allocate memory */
-  f = Calloc(1, fft_plan);
-
-  /* Do actual plan initialization */
-  initialize_plan(f, N);
-
-  /* Make an external pointer envelope */
-  PROTECT(res = R_MakeExternalPtr(f, install("fft plan"), R_NilValue));
-  R_RegisterCFinalizer(res, fft_plan_finalizer);
-  UNPROTECT(1);
-
-  return res;
-}
-
-SEXP is_fft_plan(SEXP ptr) {
-  SEXP ans;
-  fft_plan *f;
-
-  PROTECT(ans = allocVector(LGLSXP, 1));
-  LOGICAL(ans)[0] = 1;
-
-  /* object is an external pointer */
-  if (TYPEOF(ptr) != EXTPTRSXP)
-    LOGICAL(ans)[0] = 0;
-
-  /* tag should be 'fft plan' */
-  if (LOGICAL(ans)[0] &&
-      R_ExternalPtrTag(ptr) != install("fft plan"))
-    LOGICAL(ans)[0] = 0;
-
-  /* pointer itself should not be null */
-  if (LOGICAL(ans)[0]) {
-    f = R_ExternalPtrAddr(ptr);
-    if (!f)
-      LOGICAL(ans)[0] = 0;
-  }
-
-  UNPROTECT(1);
-
-  return ans;
-}
-
 static void hmat_finalizer(SEXP ptr) {
   ext_matrix *e;
   hankel_matrix *h;
@@ -645,9 +548,9 @@ static void hmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_hmat(SEXP F, SEXP window, SEXP fft_plan) {
+SEXP initialize_hmat(SEXP F, SEXP window, SEXP fftplan) {
   /* Perform a type checking */
-  if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
     error("pointer provided is not a fft plan");
     return NILSXP;
   }
@@ -671,11 +574,11 @@ SEXP initialize_hmat(SEXP F, SEXP window, SEXP fft_plan) {
   /* Build toeplitz circulants for hankel matrix */
   h = Calloc(1, hankel_matrix);
 
-  initialize_circulant(h, R_ExternalPtrAddr(fft_plan), REAL(F), N, L);
+  initialize_circulant(h, R_ExternalPtrAddr(fftplan), REAL(F), N, L);
   e->matrix = h;
 
   /* Make an external pointer envelope */
-  hmat = R_MakeExternalPtr(e, install("external matrix"), fft_plan);
+  hmat = R_MakeExternalPtr(e, install("external matrix"), fftplan);
   R_RegisterCFinalizer(hmat, hmat_finalizer);
 
   return hmat;
@@ -908,9 +811,9 @@ SEXP hankelize_multi(SEXP U, SEXP V) {
   return F;
 }
 
-SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fft_plan) {
+SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fftplan) {
   /* Perform a type checking */
-  if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
     error("pointer provided is not a fft plan");
     return NILSXP;
   }
@@ -923,7 +826,7 @@ SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fft_plan) {
   PROTECT(ans = allocMatrix(REALSXP, intL, intL));
   double *rans = REAL(ans);
   double *pF = REAL(F);
-  compute_L_covariation_matrix_first_row(REAL(F), length(F), intL, rans, R_ExternalPtrAddr(fft_plan));
+  compute_L_covariation_matrix_first_row(REAL(F), length(F), intL, rans, R_ExternalPtrAddr(fftplan));
 
   for (j = 1; j < intL; ++j)
     rans[intL*j] = rans[j];

@@ -66,7 +66,7 @@ static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
   fftw_complex *ocirc;
   double *circ;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -216,7 +216,7 @@ static void initialize_circulant(toeplitz_matrix *t, fft_plan *f,
   Rcomplex *circ;
   SEXP rcirc;
 
-  if (!valid_plan(f, N))
+  if (!valid_plan(f, 1, &N))
     error("invalid FFT plan for given FFT length");
 
   /* Allocate needed memory */
@@ -379,7 +379,13 @@ static void tmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_tmat(SEXP R, SEXP fft_plan) {
+SEXP initialize_tmat(SEXP R, SEXP fftplan) {
+  /* Perform a type checking */
+  if (!LOGICAL(is_fft_plan(fftplan))[0]) {
+    error("pointer provided is not a fft plan");
+    return NILSXP;
+  }
+
   R_len_t L;
   toeplitz_matrix *t;
   ext_matrix *e;
@@ -397,11 +403,11 @@ SEXP initialize_tmat(SEXP R, SEXP fft_plan) {
 
   /* Build toeplitz circulants for toeplitz matrix */
   t = Calloc(1, toeplitz_matrix);
-  initialize_circulant(t, R_ExternalPtrAddr(fft_plan), REAL(R), L);
+  initialize_circulant(t, R_ExternalPtrAddr(fftplan), REAL(R), L);
   e->matrix = t;
 
   /* Make an external pointer envelope */
-  tmat = R_MakeExternalPtr(e, install("external matrix"), fft_plan);
+  tmat = R_MakeExternalPtr(e, install("external matrix"), fftplan);
   R_RegisterCFinalizer(tmat, tmat_finalizer);
 
   return tmat;

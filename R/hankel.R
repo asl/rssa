@@ -51,10 +51,6 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1])
 }
 
-.get.or.create.fft.plan <- function(x) {
-  .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
-}
-
 .get.or.create.hmat <- function(x) {
   .get.or.create(x, "hmat",
                  new.hmat(x$F, L = x$window,
@@ -75,15 +71,6 @@ hankel <- function(X, L) {
 .hankelize.multi.hankel <- function(U, V, fft.plan) {
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hankelize_multi_fft", U, V, fft.plan)
-}
-
-fft.plan.1d <- function(N) {
-  storage.mode(N) <- "integer"
-  .Call("initialize_fft_plan", N)
-}
-
-is.fft.plan <- function(fft.plan) {
-  .Call("is_fft_plan", fft.plan)
 }
 
 new.hmat <- function(F,
