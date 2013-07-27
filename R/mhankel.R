@@ -217,27 +217,37 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
                                    only.new = TRUE, drop = FALSE) {
   a <- (if (drop) NULL else .get(x, "Fattr"))
 
+  # MSSA is a bit different from the default case. We need to convert (if
+  # possible) to original object
+  stopifnot(inherits(F, "series.list"))
+
+  # First, pad with NA's if necessary
+  F <- lapply(F,
+              function(x) {
+                removed <- attr(x, "na.action")
+                if (!is.null(removed)) {
+                  res <- numeric(length(x) + length(removed))
+                  res[removed] <- NA
+                  res[-removed] <- x
+                  res
+                } else
+                x
+              })
+  # Optionaly convert to matrix
+  if ("matrix" %in% a$class)
+    F <- simplify2array(F)
+
   if (fixup) {
-    stop("Do not know how to fixup for MSSA yet")
+     # Try to guess the indices of known time series classes
+    if ("ts" %in% a$class) {
+      tsp <- a$tsp
+      return (ts(F,
+                 start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
+                 frequency = tsp[3]))
+    } else if (!is.null(a$class)) {
+      warning("do not know how to fixup attributes for this input")
+    }
   } else {
-    # MSSA is a bit different from the default case. We need to convert (if
-    # possible) to original object
-    stopifnot(inherits(F, "series.list"))
-    # First, pad with NA's if necessary
-    F <- lapply(F,
-                function(x) {
-                  removed <- attr(x, "na.action")
-                  if (!is.null(removed)) {
-                    res <- numeric(length(x) + length(removed))
-                    res[setdiff(seq_along(res), removed)] <- x
-                    res[removed] <- NA
-                    res
-                  } else
-                    x
-                })
-    # Optionaly convert to matrix
-    if ("matrix" %in% a$class)
-      F <- simplify2array(F)
     # Restore attributes
     attributes(F) <- a
   }
