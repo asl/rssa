@@ -55,6 +55,7 @@ ssa <- function(x,
   svd.method <- match.arg(svd.method)
   kind <- match.arg(kind)
   xattr <- attributes(x)
+  xclass <- class(x)
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
@@ -134,6 +135,7 @@ ssa <- function(x,
 
   # Save attributes
   .set(this, "Fattr", xattr);
+  .set(this, "Fclass", xclass)
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
