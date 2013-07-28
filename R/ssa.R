@@ -91,6 +91,9 @@ ssa <- function(x,
 
     N <- sapply(x, length)
 
+    if (is.null(neig))
+      neig <- min(50, L, min(N) - L + 1)
+
     # If L is provided it should be length 1
     if (missing(L)) {
       L <- (min(N) + 1) %/% 2
@@ -109,6 +112,9 @@ ssa <- function(x,
     if (!is.complex(x))
       stop("complex SSA should be performed on complex time series")
     N <- length(x)
+
+    if (is.null(neig))
+      neig <- min(50, L, N - L + 1)
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
