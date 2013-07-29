@@ -100,6 +100,8 @@ ssa <- function(x,
     if (is.null(umask)) {
       umask <- matrix(TRUE, L[1], L[2])
     } else {
+      umask <- .fiface.eval(substitute(umask), envir = parent.frame(),
+                            circle = circle.mask)
       L <- dim(umask)
     }
 
