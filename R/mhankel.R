@@ -234,7 +234,7 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
                 x
               })
   # Optionaly convert to matrix
-  if ("matrix" %in% a$class)
+  if ("matrix" %in% x$Fclass)
     F <- simplify2array(F)
 
   if (fixup) {
@@ -250,6 +250,7 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
   } else {
     # Restore attributes
     attributes(F) <- a
+    class(F) <- x$Fclass
   }
 
   F

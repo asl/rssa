@@ -55,6 +55,7 @@ ssa <- function(x,
   svd.method <- match.arg(svd.method)
   kind <- match.arg(kind)
   xattr <- attributes(x)
+  xclass <- class(x)
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
@@ -90,6 +91,9 @@ ssa <- function(x,
 
     N <- sapply(x, length)
 
+    if (is.null(neig))
+      neig <- min(50, L, min(N) - L + 1)
+
     # If L is provided it should be length 1
     if (missing(L)) {
       L <- (min(N) + 1) %/% 2
@@ -108,6 +112,9 @@ ssa <- function(x,
     if (!is.complex(x))
       stop("complex SSA should be performed on complex time series")
     N <- length(x)
+
+    if (is.null(neig))
+      neig <- min(50, L, N - L + 1)
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
@@ -134,6 +141,7 @@ ssa <- function(x,
 
   # Save attributes
   .set(this, "Fattr", xattr);
+  .set(this, "Fclass", xclass)
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
