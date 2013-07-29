@@ -29,8 +29,8 @@ ssa(x,
     sane default value will be used}
   \item{mask}{for shaped 2d SSA case only. Logical matrix with same dimension as
     \code{x}. Specifies form of decomposed field. If 'NULL', then all non-NA elements will be used}
-  \item{umask}{for shaped 2d SSA case only. Logical matrix which specifies window form. If 'NULL',
-    then standart rectangular window (specified by \code{L}) will be used}
+  \item{umask}{for shaped 2d SSA case only. Logical matrix which specifies window form.
+    See `Details' for move information about the window shape selection}
   \item{\dots}{further arguments passed to \code{\link[Rssa:decompose.ssa]{decompose}} }
   \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA and
     Toeplitz variant of 1d SSA.}
@@ -69,6 +69,14 @@ ssa(x,
       VG-SSA for analysis of stationary time series, see (Vautard and
       Ghil, 1989).
     }
+  }
+
+  \subsection{Window shape selection (for shaped 2d SSA)}{
+    Window shape may be specified by argument \code{umask}. If \code{umask} is 'NULL',
+    then standart rectangular window (specified by \code{L}) will be used.
+    Also \code{umask} may be expression like \code{umask = circle(R)},
+    where \code{R} is radius of circular window (Someone can use
+    function \code{I()} for avoid this interpretation)
   }
 
   \subsection{SVD methods}{
@@ -149,5 +157,17 @@ s <- ssa(co2)
 summary(s)
 # Reconstruct the series, with suitable grouping
 r <- reconstruct(s, groups = list(c(1, 4), c(2, 3), c(5, 6)))
+plot(r)
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with circular window
+circle <- 5
+s <- ssa(mx, kind = "shaped2d-ssa", umask = circle(I(circle)), neig = 10)
+# Reconstruct
+r <- reconstruct(s, groups = list(1, 2:5, 6))
+# Plot components, original field and residuals
 plot(r)
 }
