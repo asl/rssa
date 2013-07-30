@@ -20,7 +20,7 @@
 
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U)
-  lpf <- U %*% Conj(t(U[N, , drop = FALSE]))
+  lpf <- Conj(U) %*% t(U[N, , drop = FALSE])
 
   divider <- 1 - lpf[N]
   if (Mod(divider) < eps)
