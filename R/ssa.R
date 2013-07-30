@@ -99,19 +99,24 @@ ssa <- function(x,
       L <- L[1]
     }
 
+    if (is.null(neig))
+      neig <- min(50, L, N - L + 1)
+
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, min(N), ...)
-
   } else if (identical(kind, "cssa")) {
     # Sanity check - the input series should be complex
     if (!is.complex(x))
       stop("complex SSA should be performed on complex time series")
     N <- length(x)
 
+    if (is.null(neig))
+      neig <- min(50, L, N - L + 1)
+
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N, ...)
+      svd.method <- determine.svd.method(L, N, ..., svd.mehod = "propack")
   }
   stopifnot(!is.null(neig))
 
