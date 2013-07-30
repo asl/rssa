@@ -103,8 +103,8 @@ decompose.mssa.eigen <- function(x, ...,
   S$values[S$values < 0] <- 0
 
   # Save results
-  .set(x, "lambda", sqrt(S$values))
-  .set(x, "U", S$vectors)
+  .set(x, "lambda", sqrt(S$values[1:neig]))
+  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
   x
 }
@@ -369,8 +369,8 @@ decompose.cssa.eigen <- function(x, ...,
   S <- cssa.to.complex(sqrt(S$values), S$vectors)
 
   # Save results
-  .set(x, "lambda", S$d)
-  .set(x, "U", S$u)
+  .set(x, "lambda", sqrt(S$values[1:neig]))
+  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
   x
 }
