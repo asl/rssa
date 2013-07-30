@@ -170,7 +170,7 @@ rforecast.mssa <- function(x, groups, len = 1,
     F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]]) else .get(x, "F")
 
     # Calculate the forecasted values
-    if (identical(direction, "row")) {
+    if (identical(direction, "column")) {
       # Calculate the LRR corresponding to group
       lf <- lrr(x, groups = list(group), drop = FALSE)
       stopifnot(length(lf) == 1)
