@@ -27,8 +27,8 @@
   \item{len}{integer, the desired length of the forecasted series}
   \item{base}{series used as a 'seed' of forecast: original or
     reconstructed according to the value of \code{groups} argument}
-  \item{direction}{direction of forecast in multichannel SSA case, "row"
-    stands for so-called L-forecast and "column" stands for K-forecast}
+  \item{direction}{direction of forecast in multichannel SSA case, "column"
+    stands for so-called L-forecast and "row" stands for K-forecast}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}}
