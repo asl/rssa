@@ -216,6 +216,7 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
                                    fixup = FALSE,
                                    only.new = TRUE, drop = FALSE) {
   a <- (if (drop) NULL else .get(x, "Fattr"))
+  cls <- (if (drop) NULL else .get(x, "Fclass"))
 
   # MSSA is a bit different from the default case. We need to convert (if
   # possible) to original object
@@ -234,17 +235,17 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
                 x
               })
   # Optionaly convert to matrix
-  if ("matrix" %in% a$class)
+  if ("matrix" %in% cls)
     F <- simplify2array(F)
 
   if (fixup) {
      # Try to guess the indices of known time series classes
-    if ("ts" %in% a$class) {
+    if ("ts" %in% cls) {
       tsp <- a$tsp
       return (ts(F,
                  start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
                  frequency = tsp[3]))
-    } else if (!is.null(a$class)) {
+    } else if (!is.null(cls)) {
       warning("do not know how to fixup attributes for this input")
     }
   } else {

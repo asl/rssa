@@ -57,6 +57,8 @@ ssa <- function(x,
   svd.method <- match.arg(svd.method)
   kind <- match.arg(kind)
   xattr <- attributes(x)
+  # Grab class separately. This way we will capture the inherit class as well
+  xclass <- class(x)
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
@@ -180,7 +182,8 @@ ssa <- function(x,
   .set(this, "weights", weights)
 
   # Save attributes
-  .set(this, "Fattr", xattr);
+  .set(this, "Fattr", xattr)
+  .set(this, "Fclass", xclass)
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
@@ -244,15 +247,16 @@ cleanup <- function(x) {
                                       fixup = FALSE,
                                       only.new = TRUE, drop = FALSE) {
   a <- (if (drop) NULL else .get(x, "Fattr"))
+  cls <- (if (drop) NULL else .get(x, "Fclass"))
 
   if (fixup) {
      # Try to guess the indices of known time series classes
-    if ("ts" %in% a$class) {
+    if ("ts" %in% cls) {
       tsp <- a$tsp
       return (ts(F,
                  start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
                  frequency = tsp[3]))
-    } else if (!is.null(a$class)) {
+    } else if (!is.null(cls)) {
       warning("do not know how to fixup attributes for this input")
     }
   } else {
