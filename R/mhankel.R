@@ -80,8 +80,9 @@ decompose.mssa.svd <- function(x,
 }
 
 decompose.mssa.eigen <- function(x, ...,
+                                 neig = min(L, K),
                                  force.continue = FALSE) {
-  N <- x$length; L <- x$window
+  N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nlambda(x) > 0)
