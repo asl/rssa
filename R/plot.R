@@ -346,8 +346,8 @@ plot.toeplitz.ssa.reconstruction <- `plot.1d.ssa.reconstruction`
 
 prepanel.reconstruction.2d.ssa <- function(z, subscripts, recon, ...) {
   N <- dim(recon[[z[subscripts]]])
-  x <- c(seq_len(N[1]), rep(1, N[2]))
-  y <- c(seq_len(N[2]), rep(1, N[1]))
+  y <- c(seq_len(N[1]), rep(1, N[2]))
+  x <- c(seq_len(N[2]), rep(1, N[1]))
   prepanel.default.levelplot(x, y, subscripts = seq_along(x))
 }
 
@@ -359,7 +359,7 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
                                         region, contour) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   N <- dim(recon[[subscripts]])
-  data <- expand.grid(x = seq_len(N[1]), y = seq_len(N[2]))
+  data <- expand.grid(y = rev(seq_len(N[1])), x = seq_len(N[2]))
   data$z <- as.vector(recon[[z[subscripts]]])
 
   if (identical(at, "free")) {
@@ -472,8 +472,8 @@ plot.2d.ssa.reconstruction <- function(x, ...,
 
 prepanel.eigenvectors.2d.ssa <- function(x, y, subscripts, ssaobj, ...) {
   L <- ssaobj$window
-  x <- c(seq_len(L[1]), rep(1, L[2]))
-  y <- c(seq_len(L[2]), rep(1, L[1]))
+  y <- c(seq_len(L[1]), rep(1, L[2]))
+  x <- c(seq_len(L[2]), rep(1, L[1]))
   prepanel.default.levelplot(x, y, subscripts = seq_along(x))
 }
 
@@ -486,7 +486,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   L <- ssaobj$window
 
-  data <- expand.grid(x = seq_len(L[1]), y = seq_len(L[2]))
+  data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))
   data$z <- ssaobj$U[, z[subscripts]]
 
   if (identical(at, "free")) {
