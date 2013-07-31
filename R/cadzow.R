@@ -32,6 +32,7 @@ cadzow.ssa <- function(x, rank,
     s <- clone(x, copy.cache = FALSE, copy.storage = FALSE)
     .set(s, "F", F)
     .set(s, "Fattr", attributes(F))
+    .set(s, "Fclass", class(F))
     r <- reconstruct(s, groups = list(1:rank), ..., cache = cache)
     stopifnot(length(r) == 1)
     rF <- r[[1]]
