@@ -243,3 +243,89 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
   F
 }
 
+plot.mssa.reconstruction <- function(x,
+                                     slice = list(),
+                                     ...,
+                                     type = c("raw", "cumsum"),
+                                     plot.method = c("native", "matplot"),
+                                     na.pad = c("left", "right"),
+                                     base.series = NULL,
+                                     add.original = TRUE,
+                                     add.residuals = TRUE) {
+  type <- match.arg(type)
+  plot.method <- match.arg(plot.method)
+  na.pad <- match.arg(na.pad)
+  original <- attr(x, "series")
+  res <- attr(x, "residuals")
+
+  # Handle base series, if any
+  if (!is.null(base.series)) {
+    stop("Base series are not supported yet")
+    # stopifnot(inherits(base.series, "ssa.reconstruction"))
+    # m0 <- matrix(unlist(base.series), ncol = length(base.series))
+    # original <- attr(base.series, "series")
+  }
+
+  # Nifty defaults
+  dots <- list(...)
+  dots <- .defaults(dots,
+                    main = "Reconstructed Series",
+                    type = "l",
+                    ylab = "")
+
+  # Prepare the array with all the data
+  m <- lapply(x, .to.series.list, na.rm = FALSE)
+  # Fix the slices
+  if (is.null(slice$series))
+    slice$series <- seq_along(m[[1]])
+  if (is.null(slice$component))
+    slice$component <- seq_along(m)
+
+  # Slice it
+  m <- sapply(m,
+              .from.series.list, pad = na.pad, simplify. = "array",
+              simplify = "array")
+
+  m <- m[, slice$series, slice$component]
+
+  # Transform the matrix, if necessary
+  if (identical(type, "cumsum"))
+    m <- aperm(apply(m, c(1, 2), cumsum), c(2, 3, 1))
+
+  m <- matrix(unlist(m), ncol = length(slice$series) * length(slice$component))
+
+  # if (!is.null(base.series)) m <- cbind(m0, m)
+
+  # Fix the attributes
+  a <- attributes(original)
+  odimnames <- (if (is.null(a$dimnames[[2]])) paste("F", seq_along(original), sep = "") else a$dimnames[[2]])
+  rdimnames <- odimnames[slice$series]
+
+  # Get rid of dim and dimnames attribute
+  a$dim <- NULL
+  a$dimnames <- NULL
+
+  # Merge the attributes in
+  attributes(m) <- append(attributes(m), a)
+
+  mnames <- sapply(slice$component, function(x) paste(rdimnames, x))
+  if (add.original) {
+    original <- .from.series.list(.to.series.list(original), pad = na.pad, simplify. = "array")
+    m <- cbind(original[, slice$series], m)
+    mnames <- c(paste("Original", rdimnames), mnames)
+  }
+  if (add.residuals) {
+    res <- .from.series.list(.to.series.list(res), pad = na.pad, simplify. = "array")
+    m <- cbind(res[, slice$series], m)
+    mnames <- c(paste("Residuals", rdimnames), mnames)
+  }
+  colnames(m) <- mnames
+
+  # Plot'em'all!
+  if (identical(plot.method, "matplot") || !is.object(m))
+    do.call(matplot, c(list(x = m), dots))
+  else if (identical(plot.method, "native"))
+    do.call(plot, c(list(m), dots))
+  else
+    stop("Unknown plot method")
+}
