@@ -120,16 +120,52 @@
 .to.series.list <- function(x, na.rm = TRUE) {
   # Note that this will correctly remove leading and trailing NA, but will fail for internal NA's
   NA.fun <- (if (na.rm) na.omit else identity)
-  if (is.vector(x))
-    res <- as.list(NA.fun(x))
-  else if (is.matrix(x))
+  if (is.matrix(x))
     res <- lapply(seq_len(ncol(x)), function(i) NA.fun(x[, i]))
   else if (is.list(x))
     res <- lapply(x, NA.fun)
+  else
+    res <- list(as.vector(NA.fun(x)))
 
   class(res) <- "series.list"
 
   res
+}
+
+.from.series.list <- function(x,
+                              pad = c("none", "left", "right"),
+                              simplify. = TRUE) {
+  pad <- match.arg(pad)
+
+  # First, get rid of "na.omit attribute"
+  res <- sapply(x,
+                function(x) {
+                  removed <- attr(x, "na.action")
+                  if (!is.null(removed)) {
+                    res <- numeric(length(x) + length(removed))
+                    res[removed] <- NA
+                    res[-removed] <- x
+                    res
+                  } else
+                  x
+                },
+                simplify = (if (identical(pad, "none")) simplify. else FALSE))
+
+  # If no padding is required, return
+  if (identical(pad, "none"))
+    return(res)
+
+  # Pad with NA's
+  ml <- max(sapply(res, length))
+  sapply(res,
+         function(x) {
+           l <- length(x)
+           if (identical(pad, "left"))
+             c(rep.int(NA, ml - l), x)
+           else
+             c(x, rep.int(NA, ml - l))
+         },
+         simplify = simplify.)
 }
 
 Ops.series.list <- function(e1, e2 = NULL) {
