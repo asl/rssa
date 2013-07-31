@@ -82,11 +82,71 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                  new.hbhmat(x$F, L = x$window))
 }
 
+as.matrix.hbhmat <- function(x) {
+  apply(diag(hbhcols(x)), 2, hbhmatmul, hmat = x)
+}
+
+tcrossprod.hbhmat <- function(x) {
+  apply(diag(hbhrows(x)), 2, function(u) hbhmatmul(hmat = x, hbhmatmul(hmat = x, u, transposed = TRUE)))
+}
+
 decompose.2d.ssa <- function(x,
                              neig = min(50, prod(L), prod(K)),
                              ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for 2D.SSA!")
+}
+
+decompose.2d.ssa.svd <- function(x,
+                                 neig = min(50, prod(L), prod(K)),
+                                 ...,
+                                 force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1
+
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(x) > 0)
+    stop("Continuation of decomposition is not yet implemented for this method.")
+
+  # Create circulant and convert it to ordinary matrix
+  h <- as.matrix.hbhmat(.get.or.create.hbhmat(x))
+
+  # Do decompostion
+  S <- svd(h, nu = neig, nv = neig)
+
+  # Save results
+  .set(x, "lambda", S$d)
+  if (!is.null(S$u))
+    .set(x, "U", S$u)
+  if (!is.null(S$v))
+    .set(x, "V", S$v)
+
+  x
+}
+
+decompose.2d.ssa.eigen <- function(x,
+                                   neig = min(50, prod(L), prod(K)),
+                                   ...,
+                                   force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1
+
+  # Check, whether continuation of decomposition is requested
+  if (!force.continue && nlambda(x) > 0)
+    stop("Continuation of decomposition is not yet implemented for this method.")
+
+  # Create circulant and compute XX^T in form of ordinary matrix
+  C <- tcrossprod.hbhmat(.get.or.create.hbhmat(x))
+
+  # Do decompostion
+  S <- eigen(C, symmetric = TRUE)
+
+  # Fix small negative values
+  S$values[S$values < 0] <- 0
+
+  # Save results
+  .set(x, "lambda", sqrt(S$values[1:neig]))
+  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
+
+  x
 }
 
 decompose.2d.ssa.nutrlan <- function(x,
