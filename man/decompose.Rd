@@ -4,6 +4,7 @@
 \alias{decompose.ssa}
 \alias{decompose.1d.ssa}
 \alias{decompose.2d.ssa}
+\alias{decompose.shaped2d.ssa}
 \alias{decompose.toeplitz.ssa}
 \title{Calculate SSA decomposition of the series}
 
@@ -15,6 +16,7 @@
 \method{decompose}{1d.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
 \method{decompose}{toeplitz.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
 \method{decompose}{2d.ssa}(x, neig = min(50, prod(L), prod(K)), \dots)
+\method{decompose}{shaped2d.ssa}(x, neig = min(50, prod(L), prod(K)), \dots)
 }
 
 \arguments{
