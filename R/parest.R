@@ -115,17 +115,24 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
 
 shift.matrices.2d <- function(U, L,
-                              solve.method = c("ls", "tls")) {
+                              solve.method = c("ls", "tls"),
+                              umask = NULL) {
   solve.method <- match.arg(solve.method)
   solver <- switch(solve.method,
                    ls = qr.solve,
                    tls = tls.solve)
 
-  lm1.mask <- as.vector(rbind(matrix(TRUE, L[1] - 1, L[2]), FALSE))
-  lm2.mask <- as.vector(rbind(FALSE, matrix(TRUE, L[1] - 1, L[2])))
+  if (is.null(umask)) {
+    umask <- matrix(TRUE, L[1], L[2])
+  }
 
-  mu1.mask <- as.vector(cbind(matrix(TRUE, L[1], L[2] - 1), FALSE))
-  mu2.mask <- as.vector(cbind(FALSE, matrix(TRUE, L[1], L[2] - 1)))
+  lm.mask <- umask[-1, , drop = FALSE] & umask[-nrow(umask),, drop = FALSE]
+  lm1.mask <- as.vector(rbind(lm.mask, FALSE)[umask])
+  lm2.mask <- as.vector(rbind(FALSE, lm.mask)[umask])
+
+  mu.mask <- umask[, -1, drop = FALSE] & umask[, -ncol(umask), drop = FALSE]
+  mu1.mask <- as.vector(cbind(mu.mask, FALSE)[umask])
+  mu2.mask <- as.vector(cbind(FALSE, mu.mask)[umask])
 
   lmA <- U[lm1.mask,, drop = FALSE]
   lmB <- U[lm2.mask,, drop = FALSE]
@@ -161,13 +168,18 @@ est_exp_memp_new <- function(Zs, beta = 8) {
 parestimate.esprit2d <- function(U, L,
                                  method = c("esprit-diag-ls", "esprit-diag-tls",
                                             "esprit-memp-ls", "esprit-memp-tls"),
-                                 beta = 8) {
+                                 beta = 8,
+                                 umask = NULL) {
   method <- match.arg(method)
   solve.method <- switch(method,
                          `esprit-diag-ls`  =, `esprit-memp-ls`  = "ls",
                          `esprit-diag-tls` =, `esprit-memp-tls` = "tls")
 
-  Zs <- shift.matrices.2d(U, L = L, solve.method = solve.method)
+  if (is.null(umask)) {
+    umask <- matrix(TRUE, L[1], L[2])
+  }
+
+  Zs <- shift.matrices.2d(U, umask = umask, solve.method = solve.method)
 
   r <- switch(method,
               `esprit-diag-ls` =, `esprit-diag-tls` = est_exp_2desprit(Zs, beta = beta),
@@ -195,8 +207,12 @@ parestimate.2d.ssa <- function(x, groups,
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
+    umask <- .get(x, "umask", allow.null = TRUE)
+    if (is.null(umask)) {
+      umask <- matrix(TRUE, x$window[1], x$window[2])
+    }
     out[[i]] <- parestimate.esprit2d(x$U[, group, drop = FALSE],
-                                     L = x$window,
+                                     umask = umask,
                                      method = method,
                                      beta = beta)
   }
@@ -206,6 +222,8 @@ parestimate.2d.ssa <- function(x, groups,
 
   out
 }
+
+parestimate.shaped2d.ssa <- parestimate.2d.ssa
 
 print.fdimpars.2d <- function(x, ...) {
   cat("x: period     rate   | y: period     rate\n")

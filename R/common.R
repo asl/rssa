@@ -116,6 +116,20 @@
   F;
 }
 
+# Formula-like interface
+.fiface.eval <- function(expr, envir = parent.frame(), ...) {
+  env <- new.env(parent = envir)
+
+  env$I <- function(expr) eval(substitute(expr), envir = envir)
+
+  dots <- list(...)
+  for (name in names(dots)) {
+    env[[name]] <- dots[[name]]
+  }
+
+  eval(expr, envir = env)
+}
+
 # Generics
 
 # 'ssa' object
