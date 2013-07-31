@@ -4,6 +4,7 @@
 \alias{plot.1d.ssa.reconstruction}
 \alias{plot.toeplitz.ssa.reconstruction}
 \alias{plot.2d.ssa.reconstruction}
+\alias{plot.shaped2d.ssa.reconstruction}
 
 \title{Plot the results of SSA reconstruction}
 \description{
@@ -23,6 +24,13 @@
     add.original = TRUE,
     add.residuals = TRUE)
 \method{plot}{2d.ssa.reconstruction}(x, \dots,
+    type = c("raw", "cumsum"),
+    base.series = NULL,
+    add.original = TRUE,
+    add.residuals = TRUE,
+    add.ranges,
+    at)
+\method{plot}{shaped2d.ssa.reconstruction}(x, \dots,
     type = c("raw", "cumsum"),
     base.series = NULL,
     add.original = TRUE,
@@ -58,9 +66,9 @@
   Additional (non-standard) graphical parameters which can be transfered via \dots:
   \describe{
     \item{cuts}{the number of levels the range of \code{z} would be divided into.}
-    \item{ref}{logical. Whether to plot zero-level isolines in 2d-reconstruction-plots.}
-    \item{symmetric}{logical. Whether to use symmetric \code{z}-scale in 2d-reconstruction-plots.}
-    \item{useRaster}{logical. For 2d-reconstruction-plot, indicating whether raster representations
+    \item{ref}{logical. Whether to plot zero-level isolines in 2d-reconstruction-plot and shaped2d-reconstruction-plot.}
+    \item{symmetric}{logical. Whether to use symmetric \code{z}-scale in 2d-reconstruction-plot and shaped2d-reconstruction-plot.}
+    \item{useRaster}{logical. For 2d-reconstruction-plot and shaped2d-reconstructon-plot, indicating whether raster representations
       should be used. 'TRUE' by default.}
   }
 }
