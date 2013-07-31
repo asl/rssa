@@ -221,21 +221,9 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
   # possible) to original object
   stopifnot(inherits(F, "series.list"))
 
-  # First, pad with NA's if necessary
-  F <- lapply(F,
-              function(x) {
-                removed <- attr(x, "na.action")
-                if (!is.null(removed)) {
-                  res <- numeric(length(x) + length(removed))
-                  res[removed] <- NA
-                  res[-removed] <- x
-                  res
-                } else
-                x
-              })
-  # Optionaly convert to matrix
-  if ("matrix" %in% cls)
-    F <- simplify2array(F)
+  # Pad with NA's if necessary and optionaly convert to matrix
+  F <- .from.series.list(F, pad = "none",
+                         simplify. = !("list" %in% cls))
 
   if (fixup) {
      # Try to guess the indices of known time series classes
