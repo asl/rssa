@@ -426,8 +426,8 @@ plot.2d.ssa.reconstruction <- function(x, ...,
 
   # Provide convenient defaults
   dots <- .defaults(dots,
-                    xlab = "i",
-                    ylab =  "j",
+                    xlab = "",
+                    ylab = "",
                     main = "Reconstructions",
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "same"),
@@ -525,8 +525,8 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
   # Provide convenient defaults
   dots <- .defaults(dots,
-                    xlab = "i",
-                    ylab =  "j",
+                    xlab = "",
+                    ylab = "",
                     main = "Eigenvectors",
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "same"),
