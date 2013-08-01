@@ -11,8 +11,10 @@
 ssa(x,
     L = (N + 1) \%/\% 2,
     neig = NULL,
+    mask = NULL,
+    umask = NULL,
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
+    kind = c("1d-ssa", "2d-ssa", "shaped2d-ssa", "toeplitz-ssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
@@ -25,6 +27,10 @@ ssa(x,
     default. Should be vector of length 2 for 2d SSA}
   \item{neig}{integer, number of desired eigentriples. If 'NULL', then
     sane default value will be used}
+  \item{mask}{for shaped 2d SSA case only. Logical matrix with same dimension as
+    \code{x}. Specifies form of decomposed field. If 'NULL', then all non-NA elements will be used}
+  \item{umask}{for shaped 2d SSA case only. Logical matrix which specifies window form.
+    See `Details' for move information about the window shape selection}
   \item{\dots}{further arguments passed to \code{\link[Rssa:decompose.ssa]{decompose}} }
   \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA and
     Toeplitz variant of 1d SSA.}
@@ -56,11 +62,21 @@ ssa(x,
       and Usevich, 2009) for more information. The so-called M-SSA method
       (aka multichannel SSA) is a special version of 2d SSA with window
       length having one component set to one.
+      \item Shaped 2d SSA, common case of previous variant. Field and window
+      can have random forms which specified by logical masks (\code{mask} and \code{umask}).
       \item Toeplitz variant of 1d SSA. See Section 1.7.2 in (Golyandina
       et al, 2001). This is also knows as Vatuard-Gill varian of SSA or
       VG-SSA for analysis of stationary time series, see (Vautard and
       Ghil, 1989).
     }
+  }
+
+  \subsection{Window shape selection (for shaped 2d SSA)}{
+    Window shape may be specified by argument \code{umask}. If \code{umask} is 'NULL',
+    then standart rectangular window (specified by \code{L}) will be used.
+    Also \code{umask} may be expression like \code{umask = circle(R)},
+    where \code{R} is radius of circular window (Someone can use
+    function \code{I()} for avoid this interpretation)
   }
 
   \subsection{SVD methods}{
@@ -115,7 +131,7 @@ ssa(x,
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
     Time Series Structure: SSA and related techniques.} Chapman and
   Hall/CRC. ISBN 1584881941
- 
+
   Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
   Methods: Theory, Algorithms, Applications. World Scientific
@@ -123,7 +139,7 @@ ssa(x,
 
   Korobeynikov, A. (2010) \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
-    Pp. 257-268  
+    Pp. 257-268
 }
 \seealso{
   \code{\link[svd:svd]{svd}},
@@ -141,5 +157,17 @@ s <- ssa(co2)
 summary(s)
 # Reconstruct the series, with suitable grouping
 r <- reconstruct(s, groups = list(c(1, 4), c(2, 3), c(5, 6)))
+plot(r)
+
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
+      rnorm(50^2, sd = 0.1)
+# Decompose 'mx' with circular window
+circle <- 5
+s <- ssa(mx, kind = "shaped2d-ssa", umask = circle(I(circle)), neig = 10)
+# Reconstruct
+r <- reconstruct(s, groups = list(1, 2:5, 6))
+# Plot components, original field and residuals
 plot(r)
 }

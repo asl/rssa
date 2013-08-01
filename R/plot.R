@@ -363,7 +363,7 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
   data$z <- as.vector(recon[[z[subscripts]]])
 
   if (identical(at, "free")) {
-    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z)
+    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z, na.rm = TRUE)
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
 
@@ -470,6 +470,8 @@ plot.2d.ssa.reconstruction <- function(x, ...,
   print(res)
 }
 
+plot.shaped2d.ssa.reconstruction <- plot.2d.ssa.reconstruction
+
 prepanel.eigenvectors.2d.ssa <- function(x, y, subscripts, ssaobj, ...) {
   L <- ssaobj$window
   x <- c(seq_len(L[1]), rep(1, L[2]))
@@ -485,8 +487,11 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       region, contour) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   L <- ssaobj$window
+  umask <- .get(ssaobj, "umask", allow.null = TRUE)
+  if (is.null(umask))
+    umask <- matrix(TRUE, L[1], L[2])
 
-  data <- expand.grid(x = seq_len(L[1]), y = seq_len(L[2]))
+  data <- expand.grid(x = seq_len(L[1]), y = seq_len(L[2]))[as.vector(umask), ]
   data$z <- ssaobj$U[, z[subscripts]]
 
   if (identical(at, "free")) {
@@ -561,6 +566,8 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                    dots));
   print(res)
 }
+
+.plot.ssa.vectors.shaped2d.ssa <- .plot.ssa.vectors.2d.ssa
 
 prepanel.roots <- function(x, y, ...) {
   lim <- range(x, y, -x, -y, 1, -1)
