@@ -322,8 +322,8 @@ plot.mssa.reconstruction <- function(x,
   }
   if (add.residuals) {
     res <- .from.series.list(.to.series.list(res), pad = na.pad, simplify. = "array")
-    m <- cbind(res[, slice$series], m)
-    mnames <- c(paste("Residuals", rdimnames), mnames)
+    m <- cbind(m, res[, slice$series])
+    mnames <- c(mnames, paste("Residuals", rdimnames))
   }
   colnames(m) <- mnames
 
