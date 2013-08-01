@@ -61,6 +61,21 @@ wcor.2d.ssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cach
   wcor.default(mx, weights = .hweights(x))
 }
 
+wcor.mssa <- function(x, groups, ..., cache = TRUE) {
+  N <- sum(x$length)
+  if (missing(groups))
+    groups <- as.list(1:nlambda(x))
+
+  # Compute reconstruction.
+  F <- reconstruct(x, groups, ..., cache = cache)
+  F <- unlist(.to.series.list(F))
+  mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
+  colnames(mx) <- names(F)
+
+  # Finally, compute w-correlations and return
+  wcor.default(mx, weights = .hweights(x))
+}
+
 wcor.ssa <- function(x, groups, ..., cache = TRUE)
   stop("Unsupported SVD method for SSA!")
 
@@ -107,6 +122,10 @@ clusterify.wcor.matrix <- function(x,
                        .hweights.default(N[2], L[2])))
 }
 
+.hweights.mssa <- function(x, ...) {
+  unlist(lapply(x$length, .hweights.default, L = x$window))
+}
+
 wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
   N <- length(x)
 
@@ -123,6 +142,17 @@ wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.2d.ssa <- function(x, ...) {
 
   # Compute wnorm
   sqrt(sum(w * as.vector(x$F)^2))
+}
+
+wnorm.mssa <- function(x, ...) {
+  # Compute weights
+  w <- .hweights(x)
+
+  # Get series
+  F <- .get(x, "F")
+
+  # Compute wnorm
+  sqrt(sum(w * unlist(F)))
 }
 
 #N = 399;
