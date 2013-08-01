@@ -174,9 +174,10 @@ rforecast.mssa <- function(x, groups, len = 1,
       # Calculate the LRR corresponding to group
       lf <- lrr(x, groups = list(group), drop = FALSE)
       stopifnot(length(lf) == 1)
-      R <- sapply(F,
-                  apply.lrr,
-                  lrr = lf[[1]], len = len, only.new = TRUE)
+      R <- matrix(NA, nrow = len, ncol = length(N))
+      R[] <- sapply(F,
+                    apply.lrr,
+                    lrr = lf[[1]], len = len, only.new = TRUE)
     } else {
       V <- calc.v(x, idx = group)
 
