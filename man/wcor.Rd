@@ -4,6 +4,7 @@
 \alias{wcor.2d.ssa}
 \alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
+\alias{wcor.mssa}
 \alias{plot.wcor.matrix}
 
 \title{Calculate the W-correlation matrix}
@@ -14,6 +15,7 @@
 \method{wcor}{1d.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{2d.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{mssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
      grid = c(),
