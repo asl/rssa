@@ -287,11 +287,16 @@ plot.mssa.reconstruction <- function(x,
               .from.series.list, pad = na.pad, simplify. = "array",
               simplify = "array")
 
-  m <- m[, slice$series, slice$component]
+  m <- m[, slice$series, slice$component, drop = FALSE]
 
   # Transform the matrix, if necessary
-  if (identical(type, "cumsum"))
-    m <- aperm(apply(m, c(1, 2), cumsum), c(2, 3, 1))
+  if (identical(type, "cumsum")) {
+    m <- apply(m, c(1, 2), cumsum)
+    if (length(dim(m)) == 2)
+      dim(m) <- c(1, dim(m))
+
+    m <- aperm(m, c(2, 3, 1))
+  }
 
   m <- matrix(unlist(m), ncol = length(slice$series) * length(slice$component))
 
