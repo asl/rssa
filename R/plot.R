@@ -343,6 +343,7 @@ plot.1d.ssa.reconstruction <- function(x, ...,
 }
 
 plot.toeplitz.ssa.reconstruction <- `plot.1d.ssa.reconstruction`
+plot.pssa.reconstruction <- `plot.1d.ssa.reconstruction`
 
 prepanel.reconstruction.2d.ssa <- function(z, subscripts, recon, ...) {
   N <- dim(recon[[z[subscripts]]])
