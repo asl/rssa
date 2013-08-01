@@ -113,6 +113,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 }
 
 .plot.ssa.vectors.toeplitz.ssa <- `.plot.ssa.vectors.1d.ssa`
+.plot.ssa.vectors.mssa <- `.plot.ssa.vectors.1d.ssa`
 
 .plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy, plot.type = "l") {
   dots <- list(...)
