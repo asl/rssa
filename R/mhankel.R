@@ -158,7 +158,7 @@ decompose.mssa.nutrlan <- function(x,
   .get.or.create.mfft.plan(x)
 }
 
-calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
+calc.v.mssa<- function(x, idx, ...) {
   lambda <- .get(x, "lambda")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
   h <- .get.or.create.mhmat(x)
@@ -178,7 +178,7 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
                 function(idx) .hankelize.one.1d.ssa(x, U, V[(b[idx]+1):b[idx+1]], fft.plan[[idx]])))
 }
 
-.elseries.mssa <- function(x, idx, ..., env = .GlobalEnv) {
+.elseries.mssa <- function(x, idx, ...) {
   if (max(idx) > nlambda(x))
     stop("Too few eigentriples computed for this decomposition")
 
@@ -195,7 +195,7 @@ calc.v.mssa<- function(x, idx, env = .GlobalEnv, ...) {
       V <- .get(x, "V")[, i]
     } else {
       # No factor vectors available. Calculate them on-fly.
-      V <- calc.v(x, i, env = env)
+      V <- calc.v(x, i)
     }
 
     res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V)
