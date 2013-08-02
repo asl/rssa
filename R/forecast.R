@@ -288,6 +288,107 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   invisible(out)
 }
 
+vforecast.mssa <- function(x, groups, len = 1,
+                           direction = c("row", "column"),
+                           only.new = TRUE,
+                           ...,
+                           drop = TRUE, drop.attributes = FALSE) {
+  direction <- match.arg(direction)
+  if (missing(groups))
+    groups <- as.list(1:min(nlambda(x), nu(x)))
+
+  # Continue decomposition, if necessary
+  desired <- .maybe.continue(x, groups = groups, ...)
+
+  F <- .get(x, "F")
+
+  lambda <- .get(x, "lambda")
+  U <- .get(x, "U")
+
+  V <- if (nv(x) >= desired) .get(x, "V") else NULL
+
+  L <- x$window
+  K <- x$length - L + 1
+  N.res <- K + L - 1 + len
+  N <- N.res + switch(direction, column = L, row = K) - 1
+
+  # Grab the FFT plan
+  fft.plan <- lapply(N, fft.plan.1d)
+
+  cK <- cumsum(K)
+  cKs <- cK - K + 1
+
+  out <- list()
+
+  for (i in seq_along(groups)) {
+    group <- unique(groups[[i]])
+
+    Uet <- U[, group, drop = FALSE]
+    Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
+
+    if (identical(direction, "column")) {
+      U.head <- Uet[-L, , drop = FALSE]
+      U.tail <- Uet[-1, , drop = FALSE]
+      Pi <- Uet[L, ]
+      tUhUt <- crossprod(U.head, U.tail)
+      P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt)
+
+      R <- lapply(seq_along(N), function(idx) {
+          Z <- rbind(t(lambda[group] * t(Vet[cKs[idx] : cK[idx], , drop = FALSE])), matrix(NA, len + L - 1, length(group)))
+
+          for (j in (K[idx] + 1) : (K[idx] + len + L - 1)) {
+            Z[j, ] <- P %*% Z[j - 1, ]
+          }
+
+          rowSums(.hankelize.multi.hankel(Uet,
+                                          Z,
+                                          fft.plan[[idx]]))
+        })
+    } else if (identical(direction, "row")) {
+      V.head <- Vet[-cK, , drop = FALSE]
+      V.tail <- Vet[-cKs, , drop = FALSE]
+      Pi <- Vet[cK, , drop = FALSE]
+      tVhVt <- crossprod(V.head, V.tail)
+      P <- tVhVt + t(Pi) %*% (solve(diag(length(N)) - tcrossprod(Pi), Pi) %*% tVhVt)
+
+      Z <- rbind(t(lambda[group] * t(Uet)), matrix(NA, len + max(K) - 1, length(group)))
+
+      for (j in (L + 1) : (L + len + max(K) - 1)) {
+        Z[j, ] <- P %*% Z[j - 1, ]
+      }
+
+      R <- lapply(seq_along(N), function(idx) {
+          rowSums(.hankelize.multi.hankel(Z[1 : (L + len + K[idx] - 1), , drop = FALSE],
+                                          Vet[cKs[idx] : cK[idx], , drop = FALSE],
+                                          fft.plan[[idx]]))
+        })
+    }
+
+    out[[i]] <- if (only.new) {
+      .to.series.list(lapply(seq_along(N), function(idx) R[[idx]][seq(to = N.res[idx], length.out = len)]))
+    } else {
+      for (idx in seq_along(N)) {
+        length(R[[idx]]) <- N.res[idx]
+        R[[idx]] <- .na.bind(F[[idx]], R[[idx]], update.method = "replace")
+      }
+
+      class(R) <- "series.list"
+      R
+    }
+    out[[i]] <- .apply.attributes(x, out[[i]],
+                                  fixup = TRUE,
+                                  only.new = only.new, drop = drop.attributes)
+
+  }
+
+  names(out) <- paste(sep = "", "F", 1:length(groups))
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  # Forecasted series can be pretty huge...
+  invisible(out)
+}
+
 bforecast.1d.ssa <- function(x, groups,
                              len = 1, R = 100, level = 0.95,
                              type = c("recurrent", "vector"),
