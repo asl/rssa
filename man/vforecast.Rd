@@ -4,6 +4,7 @@
 \alias{vforecast.ssa}
 \alias{vforecast.1d.ssa}
 \alias{vforecast.toeplitz.ssa}
+\alias{vforecast.mssa}
 \title{Perform vector SSA forecasting of the series}
 
 \description{
@@ -15,12 +16,18 @@
           drop = TRUE, drop.attributes = FALSE)
 \method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots,
           drop = TRUE, drop.attributes = FALSE)
+\method{vforecast}{mssa}(x, groups, len = 1,
+          direction = c("row", "column"),
+          only.new = TRUE, \dots,
+          drop = TRUE, drop.attributes = FALSE)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
   \item{groups}{list, the grouping of eigentriples to be used in the forecast}
   \item{len}{integer, the desired length of the forecasted series}
+  \item{direction}{direction of forecast in multichannel SSA case, "column"
+    stands for so-called L-forecast and "row" stands for K-forecast}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
