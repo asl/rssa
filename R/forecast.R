@@ -130,9 +130,16 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   invisible(out)
 }
 
-.na.bind <- function(original, new) {
+.na.bind <- function(original, new,
+                     update.method = c("append", "replace")) {
+  update.method <- match.arg(update.method)
+
   removed <- attr(original, "na.action")
-  res <- c(original, new)
+
+  res <- switch(update.method,
+                append = c(original, new),
+                replace = new)
+
   if (!is.null(removed)) {
     all.old <- seq_len(length(removed) + length(original))
     full.old <- setdiff(all.old, removed)
@@ -205,7 +212,7 @@ rforecast.mssa <- function(x, groups, len = 1,
     }
 
     out[[i]] <- if (only.new) .to.series.list(R) else {
-      res <- lapply(seq_along(F), function(idx) .na.bind(F[[idx]], R[, idx]))
+      res <- lapply(seq_along(F), function(idx) .na.bind(F[[idx]], R[, idx]), update.method = "append")
       class(res) <- "series.list"
       res
     }
