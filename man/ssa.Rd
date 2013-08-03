@@ -11,6 +11,8 @@
 ssa(x,
     L = (N + 1) \%/\% 2,
     neig = NULL,
+    mask = NULL,
+    umask = NULL,
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
@@ -25,6 +27,10 @@ ssa(x,
     default. Should be vector of length 2 for 2d SSA}
   \item{neig}{integer, number of desired eigentriples. If 'NULL', then
     sane default value will be used}
+  \item{mask}{for shaped 2d SSA case only. Logical matrix with same dimension as
+    \code{x}. Specifies form of decomposed field. If 'NULL', then all non-NA elements will be used}
+  \item{umask}{for shaped 2d SSA case only. Logical matrix which specifies window form. If 'NULL',
+    then standart rectangular window (specified by \code{L}) will be used}
   \item{\dots}{further arguments passed to \code{\link[Rssa:decompose.ssa]{decompose}} }
   \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA and
     Toeplitz variant of 1d SSA.}
