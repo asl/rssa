@@ -48,6 +48,8 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 neig = NULL,
+                mask = NULL,
+                wmask = NULL,
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
@@ -69,6 +71,8 @@ ssa <- function(x,
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, N, neig, ...)
+
+    wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
@@ -76,11 +80,42 @@ ssa <- function(x,
 
     N <- dim(x);
 
+    if (is.null(mask)) {
+      mask <- !is.na(x)
+    } else {
+      mask <- mask & !is.na(x)
+    }
+
+    if (is.null(wmask)) {
+      wmask <- matrix(TRUE, L[1], L[2])
+    } else {
+      L <- dim(wmask)
+    }
+
     if (is.null(neig))
       neig <- min(50, prod(L), prod(N - L + 1))
 
     if (identical(svd.method, "auto"))
       svd.method <- "nutrlan"
+
+    fmask <- factor.mask(mask, wmask)
+
+    if (!all(wmask) || !all(fmask)) {
+      weights <- field.weights(wmask, fmask)
+      ommited <- sum(mask & (weights == 0))
+      if (ommited > 0) {
+        warning(sprintf("Some field elements haven't been covered by shaped window. %d elements will be ommited", ommited))
+      }
+    } else {
+      weights <- NULL
+    }
+
+    if (all(wmask)) {
+      wmask <- NULL
+    }
+    if (all(fmask)) {
+      fmask <- NULL
+    }
   }
   stopifnot(!is.null(neig))
 
@@ -100,6 +135,11 @@ ssa <- function(x,
 
   # Save series
   .set(this, "F", x);
+
+  # Save masks and weights
+  .set(this, "wmask", wmask)
+  .set(this, "fmask", fmask)
+  .set(this, "weights", weights)
 
   # Save attributes
   .set(this, "Fattr", xattr);
