@@ -106,7 +106,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, min(N), ...)
+      svd.method <- determine.svd.method(L, sum(N), ...)
   } else if (identical(kind, "cssa")) {
     # Sanity check - the input series should be complex
     if (!is.complex(x))
