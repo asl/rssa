@@ -11,8 +11,10 @@
 ssa(x,
     L = (N + 1) \%/\% 2,
     neig = NULL,
+    column.projector = "constant",
+    row.projector = "constant",
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
@@ -31,6 +33,8 @@ ssa(x,
     SSA}
   \item{svd.method}{singular value decomposition method. See 'Details'
     for more info.}
+  \item{column.projector, row.projector}{column and row signal subspaces projectors for
+    SSA with projection. See `Details' for information about methods of projectors specification.}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
     performed before return.}
 }
@@ -61,7 +65,20 @@ ssa(x,
       et al, 2001). This is also knows as Vatuard-Gill varian of SSA or
       VG-SSA for analysis of stationary time series, see (Vautard and
       Ghil, 1989).
+      \item SSA with projection, common case of `SSA with centering' (Golyandina
+      et al, 2001). Rows and columns of series trajectory matrix is projected
+      in some subspaces and projection is subtracted from initial
+      trajectory matrix, then SVD-decomposition provided.
     }
+  }
+
+  \subsection{Projectors specification for SSA with projection}{
+    Projectors are specified by arguments \code{column.projector} and \code{row.projector}.
+    Each may be a matrix of orthonormal (unless QR orthonormalization process will be perfomed)
+    basis of projection subspace, or single integer, which will be interpreted
+    as degree of orthogonal polynomial basis, or one of following character strings (or unique prefix):
+    'none', 'constant', 'linear', 'quadratic' or 'qubic' --- such orthopolynomial basis
+    will be used. 'constant' for both bases (by default) means `double centering SSA'
   }
 
   \subsection{SVD methods}{

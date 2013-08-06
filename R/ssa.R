@@ -48,8 +48,10 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 neig = NULL,
+                column.projector = "constant",
+                row.projector = "constant",
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method)
@@ -72,6 +74,8 @@ ssa <- function(x,
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, N, neig, ...)
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
@@ -84,6 +88,8 @@ ssa <- function(x,
 
     if (identical(svd.method, "auto"))
       svd.method <- "nutrlan"
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "mssa")) {
     # We assume that we have mts-like object. With series in the columns.
     # Coerce input to series.list object
@@ -107,6 +113,8 @@ ssa <- function(x,
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, sum(N), ...)
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "cssa")) {
     # Sanity check - the input series should be complex
     if (!is.complex(x))
@@ -119,6 +127,42 @@ ssa <- function(x,
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, N, ..., svd.mehod = "propack")
+
+    column.projector <- row.projector <- NULL
+  } else if (identical(kind, "pssa")) {
+    # Coerce input to vector if necessary
+    if (!is.vector(x))
+      x <- as.vector(x)
+
+    N <- length(x)
+    K <- N - L + 1
+
+    if (is.null(neig))
+      neig <- min(50, L, K)
+
+    # Compute projectors
+    if (is.character(column.projector) || !is.matrix(column.projector)) {
+      column.projector <- orthopoly(column.projector, L)
+    } else {
+      # Perform orthogonalization
+      column.projector <- qr.Q(qr(column.projector))
+    }
+
+    if (is.character(row.projector) || !is.matrix(row.projector)) {
+      row.projector <- orthopoly(row.projector, K)
+    } else {
+      # Perform orthogonalization
+      row.projector <- qr.Q(qr(row.projector))
+    }
+
+    # Check dimension
+    stopifnot(nrow(column.projector) == L)
+    stopifnot(nrow(row.projector) == K)
+
+
+    # Fix svd method, if needed
+    if (identical(svd.method, "auto"))
+      svd.method <- determine.svd.method(L, N, neig, ...)
   }
   stopifnot(!is.null(neig))
 
@@ -142,6 +186,14 @@ ssa <- function(x,
   # Save attributes
   .set(this, "Fattr", xattr)
   .set(this, "Fclass", xclass)
+
+  # Store projectors
+  .set(this, "column.projector", column.projector)
+  .set(this, "row.projector", row.projector)
+
+  # Initialize row and column special triples
+  .set(this, "column.proj.triples", NULL)
+  .set(this, "row.proj.triples", NULL)
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
