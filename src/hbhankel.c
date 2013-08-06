@@ -90,8 +90,6 @@ static void initialize_circulant(hbhankel_matrix *h,
   p2 = fftw_plan_dft_c2r_2d(Ny, Nx, ocirc, circ, FFTW_ESTIMATE);
 
   /* Fill input buffer */
-  /* TF <- cbind(F[,Ky:Ny],F[,1:(Ky-1)]);
-     TF <- rbind(TF[Kx:Nx,],TF[1:(Kx-1),]); */
   for (j = 0; j < Ny; ++j)
     for (i = 0; i < Nx; ++i)
       /* This is pretty ad-hoc solution and needs to be fixed in the future */
@@ -144,14 +142,6 @@ static void hbhankel_matmul(double* out,
   /* Allocate needed memory */
   circ = (double*) fftw_malloc(Nx * Ny * sizeof(double));
 
-  /*
-  revv <- matrix(c(rev(v), rep(0, C$Kx*(C$Ly-1))), C$Kx, ncol(C$Cblock));
-  revv <- rbind(revv, matrix(0, (C$Lx-1), ncol(revv)));
-
-  mult <- fft(C$Cblock * fft(revv), inverse = TRUE);
-
-  Re((mult/(prod(dim(C$Cblock))))[1:C$Lx,1:C$Ly]);*/
-
   /* Fill the arrays */
   memset(circ, 0, Nx * Ny * sizeof(double));
   if (h->col_ind == NULL) {
@@ -191,14 +181,6 @@ static void hbhankel_tmatmul(double* out,
 
   /* Allocate needed memory */
   circ = (double*) fftw_malloc(Nx * Ny * sizeof(double));
-
-  /*
-  revv <- matrix(c(rep(0, C$Lx*(C$Ky-1)), rev(v)), C$Lx, ncol(C$Cblock));
-  revv <- rbind(matrix(0, (C$Kx-1), ncol(revv)), revv);
-
-  mult <- fft(C$Cblock * fft(revv), inverse = TRUE);
-
-  Re((mult/(prod(dim(C$Cblock))))[C$Lx:(C$Lx+C$Kx-1),C$Ly:(C$Ly+C$Ky-1)]); */
 
   /* Fill the arrays */
   memset(circ, 0, Nx * Ny * sizeof(double));
