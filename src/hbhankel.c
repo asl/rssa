@@ -140,7 +140,7 @@ static void hbhankel_matmul(double* out,
 
   /* Allocate needed memory */
   circ = (double*) fftw_malloc(Nx * Ny * sizeof(double));
-  ocirc = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+  ocirc = (fftw_complex*) fftw_malloc(Ny*(Nx/2 + 1) * sizeof(fftw_complex));
 
   /*
   revv <- matrix(c(rev(v), rep(0, C$Kx*(C$Ly-1))), C$Kx, ncol(C$Cblock));
@@ -158,7 +158,7 @@ static void hbhankel_matmul(double* out,
         circ[i + j*Nx] = v[Kx*Ky - i - j*Kx - 1];
   } else {
     for (i = 0; i < h->col_ind->num; ++i) {
-      circ[(Kx-1) + (Ky-1)*Nx - h->col_ind->ind[i]] = v[i];
+      circ[(Kx - 1) + (Ky - 1)*Nx - h->col_ind->ind[i]] = v[i];
     }
   }
 
@@ -191,7 +191,7 @@ static void hbhankel_tmatmul(double* out,
 
   /* Allocate needed memory */
   circ = (double*) fftw_malloc(Nx * Ny * sizeof(double));
-  ocirc = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+  ocirc = (fftw_complex*) fftw_malloc(Ny*(Nx/2 + 1) * sizeof(fftw_complex));
 
   /*
   revv <- matrix(c(rep(0, C$Lx*(C$Ky-1)), rev(v)), C$Lx, ncol(C$Cblock));
@@ -209,7 +209,7 @@ static void hbhankel_tmatmul(double* out,
         circ[(i + Kx - 1) + (j + Ky - 1)*Nx] = v[Lx*Ly - i - j*Lx - 1];
   } else {
     for (i = 0; i < h->row_ind->num; ++i) {
-      circ[Nx*Ny-1-h->row_ind->ind[i]] = v[i];
+      circ[Nx*Ny - 1 - h->row_ind->ind[i]] = v[i];
     }
   }
 
@@ -312,8 +312,8 @@ static void hbhankel_matmul(double* out,
 }
 
 static void hbhankel_tmatmul(double* out,
-                            const double* v,
-                            const void* matrix) {
+                             const double* v,
+                             const void* matrix) {
   error("FFTW-less version of 2D-SSA is not implemented yet!");
 }
 
