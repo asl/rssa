@@ -86,6 +86,9 @@ ssa <- function(x,
       mask <- mask & !is.na(x)
     }
 
+    umask <- .fiface.eval(substitute(umask),
+                          envir = parent.frame(),
+                          circle = circle.mask)
     if (is.null(umask)) {
       umask <- matrix(TRUE, L[1], L[2])
     } else {
