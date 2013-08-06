@@ -160,4 +160,9 @@ summary(s)
 # Reconstruct the series, with suitable grouping
 r <- reconstruct(s, groups = list(c(1, 4), c(2, 3), c(5, 6)))
 plot(r)
+
+# Decompose `co2' series with double centering
+s <- ssa(co2, kind = "pssa", row.projector = "constant", column.projector = "constant")
+r <- reconstruct(s, groups = list(rowp(), columnp(), svd(1:4)))
+plot(r)
 }
