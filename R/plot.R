@@ -363,7 +363,7 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
   data$z <- as.vector(recon[[z[subscripts]]])
 
   if (identical(at, "free")) {
-    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z)
+    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z, na.rm = TRUE)
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
 
@@ -485,8 +485,9 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       region, contour) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   L <- ssaobj$window
+  wmask <- .get(ssaobj, "wmask", default = matrix(TRUE, L[1], L[2]))
 
-  data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))
+  data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))[as.vector(wmask), ]
   data$z <- ssaobj$U[, z[subscripts]]
 
   if (identical(at, "free")) {
