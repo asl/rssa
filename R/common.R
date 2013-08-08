@@ -156,16 +156,20 @@
     return(res)
 
   # Pad with NA's
-  ml <- max(sapply(res, length))
-  sapply(res,
-         function(x) {
-           l <- length(x)
-           if (identical(pad, "left"))
-             c(rep.int(NA, ml - l), x)
+  if (any(sapply(res, is.ts))) {
+    do.call(ts.union, res)
+  } else {
+    ml <- max(sapply(res, length))
+    sapply(res,
+           function(x) {
+             l <- length(x)
+             if (identical(pad, "left"))
+               c(rep.int(NA, ml - l), x)
            else
              c(x, rep.int(NA, ml - l))
-         },
-         simplify = simplify.)
+           },
+           simplify = simplify.)
+  }
 }
 
 Ops.series.list <- function(e1, e2 = NULL) {
