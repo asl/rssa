@@ -1,0 +1,10 @@
+*.o
+*~
+R/init.R
+*.Rcheck
+.gitignore
+config.status
+src/Makevars
+src/Rssa.so
+src/config.h
+src/symbols.rds
