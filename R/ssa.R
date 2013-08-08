@@ -255,8 +255,6 @@ cleanup <- function(x) {
       return (ts(F,
                  start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
                  frequency = tsp[3]))
-    } else if (!is.null(a$class)) { # Ignore implicit classes
-      warning("do not know how to fixup attributes for this input")
     }
   } else {
     attributes(F) <- a
