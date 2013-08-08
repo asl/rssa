@@ -48,8 +48,10 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 neig = NULL,
+                column.projector = "constant",
+                row.projector = "constant",
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method)
@@ -72,6 +74,8 @@ ssa <- function(x,
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, N, neig, ...)
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
@@ -84,6 +88,8 @@ ssa <- function(x,
 
     if (identical(svd.method, "auto"))
       svd.method <- "nutrlan"
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "mssa")) {
     # We assume that we have mts-like object. With series in the columns.
     # Coerce input to series.list object
@@ -107,6 +113,8 @@ ssa <- function(x,
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, sum(N), ...)
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "cssa")) {
     # Sanity check - the input series should be complex
     if (!is.complex(x))
@@ -119,6 +127,42 @@ ssa <- function(x,
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, N, ..., svd.mehod = "propack")
+
+    column.projector <- row.projector <- NULL
+  } else if (identical(kind, "pssa")) {
+    # Coerce input to vector if necessary
+    if (!is.vector(x))
+      x <- as.vector(x)
+
+    N <- length(x)
+    K <- N - L + 1
+
+    if (is.null(neig))
+      neig <- min(50, L, K)
+
+    # Compute projectors
+    if (is.character(column.projector) || !is.matrix(column.projector)) {
+      column.projector <- orthopoly(column.projector, L)
+    } else {
+      # Perform orthogonalization
+      column.projector <- qr.Q(qr(column.projector))
+    }
+
+    if (is.character(row.projector) || !is.matrix(row.projector)) {
+      row.projector <- orthopoly(row.projector, K)
+    } else {
+      # Perform orthogonalization
+      row.projector <- qr.Q(qr(row.projector))
+    }
+
+    # Check dimension
+    stopifnot(nrow(column.projector) == L)
+    stopifnot(nrow(row.projector) == K)
+
+
+    # Fix svd method, if needed
+    if (identical(svd.method, "auto"))
+      svd.method <- determine.svd.method(L, N, neig, ...)
   }
   stopifnot(!is.null(neig))
 
@@ -142,6 +186,14 @@ ssa <- function(x,
   # Save attributes
   .set(this, "Fattr", xattr)
   .set(this, "Fclass", xclass)
+
+  # Store projectors
+  .set(this, "column.projector", column.projector)
+  .set(this, "row.projector", row.projector)
+
+  # Initialize row and column special triples
+  .set(this, "column.proj.triples", NULL)
+  .set(this, "row.proj.triples", NULL)
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
@@ -224,60 +276,128 @@ cleanup <- function(x) {
   F
 }
 
+union.groups <- function(groups) {
+  triple.kinds <- unique(do.call("c", lapply(groups, names)))
+  res <- list()
+  for (triple.kind in triple.kinds)
+    res[[triple.kind]] <- unique(do.call("c", lapply(groups, function(group) group[[triple.kind]])))
+
+  res
+}
+
+explode.group <- function(group) {
+  res <- lapply(names(group), function(name) lapply(group[[name]], function(el) {res <- list(); res[[name]] <- el; res}))
+  # TODO Assign names more accurate
+  names(res) <- group.names <- c(svd = "F", columnp = "C", rowp = "R")[names(group)]
+  do.call("c", res)
+}
+
+.prepare.groups <- function(x, groups.expression, envir = parent.frame(), ...) {
+  .columnp <- function(idx = "all") {
+    if (is.character(idx)) {
+      proj.triples <- .get(x, "column.proj.triples")
+      idx <- if (!is.null(proj.triples)) seq_len(length(proj.triples$lambda)) else NULL
+    }
+
+    if (!is.null(idx)) attr(idx, "triple.kind") <- "columnp"
+    idx
+  }
+
+  .rowp <- function(idx = "all") {
+    if (is.character(idx)) {
+      proj.triples <- .get(x, "row.proj.triples")
+      idx <- if (!is.null(proj.triples)) seq_len(length(proj.triples$lambda)) else NULL
+    }
+
+    if (!is.null(idx)) attr(idx, "triple.kind") <- "rowp"
+    idx
+  }
+
+ .svd <- function(idx = "all") {
+    if (is.character(idx)) {
+      idx <- seq_len(min(nlambda(x), nu(x)))
+    }
+
+    attr(idx, "triple.kind") <- "svd"
+    idx
+  }
+
+  groups <- .fiface.eval(groups.expression, envir = envir,
+                         columnp = .columnp,
+                         rowp = .rowp,
+                         svd = .svd)
+
+  .get.triple.kind <- function(subgroup, default = "svd") {
+    triple.kind.attr <- attr(subgroup, "triple.kind")
+    if (!is.null(triple.kind.attr)) triple.kind.attr else default
+  }
+
+  groups <- lapply(groups, function(group) {
+      if (is.numeric(group)) {
+        res <- list(unique(group))
+        names(res) <- .get.triple.kind(group)
+        res
+      } else if (is.list(group)) {
+        names.group <- names(group)
+        if (is.null(names.group)) names.group <- rep("", length(group))
+        triple.kinds <- ifelse(names.group %in% c("columnp", "rowp", "svd"),
+                               names.group,
+                               sapply(group, .get.triple.kind))
+        res <- list()
+        for (name in unique(triple.kinds)) {
+          res[[name]] <- unique(do.call("c", group[triple.kinds == name]))
+        }
+        res
+      } else {
+        stop("Each `group' must be numeric vector or list of numeric vectors")
+      }
+   })
+
+  # Drop empty subgroups
+  groups <- lapply(groups, function(group) group[sapply(group, length) > 0])
+
+  # Assign names
+  groups.names <- names(groups)
+  if (is.null(groups.names)) groups.names <- rep("", length(groups))
+  names(groups) <- ifelse(groups.names != "",
+                          groups.names,
+                          paste("F", seq_along(groups), sep = ""))
+
+  groups
+}
+
 reconstruct.ssa <- function(x, groups, ...,
                             drop.attributes = FALSE, cache = TRUE) {
   out <- list();
 
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(x), nu(x)));
+    groups <- explode.group(.prepare.groups(x, expression(list(ALL = list(rowp("all"),
+                                                                          columnp("all"),
+                                                                          svd("all")))),
+                                            envir = parent.frame())[[1]])
+  else
+    groups <- .prepare.groups(x, substitute(groups), envir = parent.frame())
 
   # Continue decomposition, if necessary
-  .maybe.continue(x, groups = groups, ...)
-
-  # Grab indices of pre-cached values
-  info <- .get.series.info(x);
+  svd.groups <- unique(do.call("c", lapply(groups, function(group) group$svd)))
+  if (length(svd.groups) > 0)
+    .maybe.continue(x, groups = svd.groups, ...)
 
   # Do actual reconstruction. Calculate the residuals on the way
-  residuals <- .get(x, "F")
   for (i in seq_along(groups)) {
     group <- groups[[i]];
-    new <- setdiff(group, info);
-    cached <- intersect(group, info);
-
-    if (length(new)) {
-      # Do actual reconstruction (depending on method, etc)
-      out[[i]] <- .elseries(x, new);
-
-      # Cache the reconstructed series, if this was requested
-      if (cache && length(new) == 1)
-        .set.series(x, out[[i]], new);
-
-       # Add pre-cached series
-      if (length(cached))
-        out[[i]] <- out[[i]] + .get.series(x, cached);
-    } else if (length(cached)) {
-      out[[i]] <- .get.series(x, cached)
-    } else {
-      stop("group cannot be empty")
-    }
+    out[[i]] <- .elseries(x, group, cache = cache);
 
     # Propagate attributes (e.g. dimension for 2d-SSA)
     out[[i]] <- .apply.attributes(x, out[[i]], fixup = FALSE, drop = drop.attributes)
   }
 
-  # Set names and drop the dimension, if necessary
-  names(out) <- paste("F", 1:length(groups), sep="");
+  # Set names
+  names(out) <- names(groups)
 
   # Calculate the residuals
-  residuals <- .get(x, "F")
-  rgroups <- unique(unlist(groups))
-  info <- .get.series.info(x);
-  rcached <- intersect(rgroups, info)
-  rnew <- setdiff(rgroups, info)
-  if (length(rcached))
-    residuals <- residuals - .get.series(x, rcached)
-  if (length(rnew))
-    residuals <- residuals - .elseries(x, rnew)
+  rgroups <- union.groups(groups)
+  residuals <- .get(x, "F") - .elseries(x, rgroups, cache = cache)
 
   # Propagate attributes of residuals
   residuals <- .apply.attributes(x, residuals, fixup = FALSE, drop = drop.attributes)
@@ -292,7 +412,12 @@ reconstruct.ssa <- function(x, groups, ...,
 }
 
 residuals.ssa <- function(object, groups, ..., cache = TRUE) {
-  groups <- list(if (missing(groups)) 1:min(nlambda(object), nu(object)) else unlist(groups))
+  if (missing(groups)) {
+    groups.expression <- expression(list(columnp("all"), rowp("all"), svd("all")))
+  } else {
+    groups.expression <- substitute(groups)
+  }
+  groups <- .prepare.groups(object, groups.expression, envir = parent.frame())
 
   residuals(reconstruct(object, groups = groups, ..., cache = cache))
 }
@@ -301,28 +426,68 @@ residuals.ssa.reconstruction <- function(object, ...) {
   attr(object, "residuals")
 }
 
-.elseries.default <- function(x, idx, ...) {
-  if (max(idx) > nlambda(x))
-    stop("Too few eigentriples computed for this decomposition")
-
-  lambda <- .get(x, "lambda");
-  U <- .get(x, "U");
+.elseries.default <- function(x, idx, ..., cache = TRUE) {
+  if (is.numeric(idx))
+    idx <- list(svd = idx)
 
   res <- numeric(prod(x$length));
-  for (i in idx) {
-    if (nv(x) >= i) {
-      # FIXME: Check, whether we have factor vectors for reconstruction
-      # FIXME: Get rid of .get call
-      V <- .get(x, "V")[, i];
-    } else {
-      # No factor vectors available. Calculate them on-fly.
-      V <- calc.v(x, i);
-    }
+  if ("svd" %in% names(idx)) {
+    if (max(idx$svd) > nlambda(x))
+      stop("Too few eigentriples computed for this decomposition")
 
-    res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V);
+    lambda <- .get(x, "lambda")
+    U <- .get(x, "U")
+
+
+    # Grab indices of pre-cached values
+    info <- .get.series.info(x);
+
+    for (i in idx$svd) {
+      if (i %in% info) {
+        elcomponent <- .get.series(x, i)
+      } else {
+        if (nv(x) >= i) {
+          # FIXME: Check, whether we have factor vectors for reconstruction
+          # FIXME: Get rid of .get call
+          V <- .get(x, "V")[, i]
+        } else {
+          # No factor vectors available. Calculate them on-fly.
+          V <- calc.v(x, i)
+        }
+
+        elcomponent <- lambda[i] * .hankelize.one(x, U = U[, i], V = V)
+        if (cache) .set.series(x, elcomponent, i)
+      }
+
+      res <- res + elcomponent
+    }
   }
 
-  res;
+  if ("columnp" %in% names(idx)) {
+    triples <- .get(x, "column.proj.triples")
+    stopifnot(!is.null(triples))
+    lambda <- triples$lambda
+    U <- triples$U
+    V <- triples$V
+    stopifnot(max(idx$columnp) <= length(lambda))
+
+    for (i in idx$columnp)
+      res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V[, i])
+  }
+
+  if ("rowp" %in% names(idx)) {
+    triples <- .get(x, "row.proj.triples")
+    stopifnot(!is.null(triples))
+    lambda <- triples$lambda
+    U <- triples$U
+    V <- triples$V
+    stopifnot(max(idx$rowp) <= length(lambda))
+
+    for (i in idx$rowp)
+      res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V[, i])
+  }
+
+  res
 }
 
 nu <- function(x) {
