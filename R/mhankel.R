@@ -224,7 +224,8 @@ calc.v.mssa<- function(x, idx, ...) {
 
   # Pad with NA's if necessary and optionaly convert to matrix
   F <- .from.series.list(F, pad = "none",
-                         simplify. = !("list" %in% cls))
+                         simplify. = ("matrix" %in% cls ||
+                                      "numeric" %in% cls))
 
   if (fixup) {
      # Try to guess the indices of known time series classes
@@ -233,8 +234,6 @@ calc.v.mssa<- function(x, idx, ...) {
       return (ts(F,
                  start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
                  frequency = tsp[3]))
-    } else if (!is.null(a$class)) { # Ignore implicit classes
-      warning("do not know how to fixup attributes for this input")
     }
   } else {
     # Restore attributes
@@ -310,6 +309,7 @@ plot.mssa.reconstruction <- function(x,
   # Get rid of dim and dimnames attribute
   a$dim <- NULL
   a$dimnames <- NULL
+  a$names <- NULL
 
   # Merge the attributes in
   attributes(m) <- append(attributes(m), a)
@@ -317,12 +317,18 @@ plot.mssa.reconstruction <- function(x,
   mnames <- sapply(slice$component, function(x) paste(rdimnames, x))
   if (add.original) {
     original <- .from.series.list(.to.series.list(original), pad = na.pad, simplify. = "array")
-    m <- ts.union(original[, slice$series], m)
+    if (is.ts(m))
+      m <- ts.union(original[, slice$series], m)
+    else
+      m <- cbind(original[, slice$series], m)
     mnames <- c(paste("Original", rdimnames), mnames)
   }
   if (add.residuals) {
     res <- .from.series.list(.to.series.list(res), pad = na.pad, simplify. = "array")
-    m <- ts.union(m, res[, slice$series])
+    if (is.ts(m))
+      m <- ts.union(m, res[, slice$series])
+    else
+      m <- cbind(original[, slice$series], m)
     mnames <- c(mnames, paste("Residuals", rdimnames))
   }
   colnames(m) <- mnames
