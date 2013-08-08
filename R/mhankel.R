@@ -317,12 +317,12 @@ plot.mssa.reconstruction <- function(x,
   mnames <- sapply(slice$component, function(x) paste(rdimnames, x))
   if (add.original) {
     original <- .from.series.list(.to.series.list(original), pad = na.pad, simplify. = "array")
-    m <- cbind(original[, slice$series], m)
+    m <- ts.union(original[, slice$series], m)
     mnames <- c(paste("Original", rdimnames), mnames)
   }
   if (add.residuals) {
     res <- .from.series.list(.to.series.list(res), pad = na.pad, simplify. = "array")
-    m <- cbind(m, res[, slice$series])
+    m <- ts.union(m, res[, slice$series])
     mnames <- c(mnames, paste("Residuals", rdimnames))
   }
   colnames(m) <- mnames
