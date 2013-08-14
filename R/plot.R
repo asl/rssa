@@ -356,11 +356,17 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
                                         symmetric = FALSE,
                                         .cuts = 20,
                                         .useRaster = FALSE,
-                                        region, contour) {
+                                        region, contour,
+                                        fill.NA = FALSE) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   N <- dim(recon[[subscripts]])
   data <- expand.grid(y = rev(seq_len(N[1])), x = seq_len(N[2]))
   data$z <- as.vector(recon[[z[subscripts]]])
+
+  if (fill.NA) {
+    # TODO Document it
+    data$z[is.na(data$z)] <- attr(recon, "series")[is.na(data$z)]
+  }
 
   if (identical(at, "free")) {
     z.range <- range(if (symmetric) c(data$z, -data$z) else data$z, na.rm = TRUE)
@@ -437,7 +443,8 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                     colorkey = !identical(at, "free"),
                     symmetric = FALSE,
                     ref = FALSE,
-                    useRaster = TRUE)
+                    useRaster = TRUE,
+                    fill.NA = FALSE)
 
   # Disable colorkey if subplots are drawing in different scales
   if (identical(at, "free"))
