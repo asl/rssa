@@ -29,7 +29,7 @@ igapfill <- function(x, L,
   N <- length(x)
   # Determine the indices of missing values
   na.idx <- which(is.na(x))
-  
+
   # Obtain the initial approximation
   F <- x
   F[na.idx] <- (if (length(fill) > 1) fill[na.idx] else fill)
@@ -38,7 +38,7 @@ igapfill <- function(x, L,
   r <- reconstruct(s, groups = list(groups), cache = cache)
   stopifnot(length(r) == 1)
   F[na.idx] <- r[[1]][na.idx]
-  
+
   # Do the actual iterations until the convergence (or stoppping due to number
   # of iterations)
   it <- 0
