@@ -526,7 +526,7 @@ static R_INLINE void hankelize(double *F,
                                double *U, double *V,
                                R_len_t L, R_len_t K) {
   R_len_t i, N = K + L - 1;
-  R_len_t leftu, rightu, leftv, rightv, l, j;
+  R_len_t leftu, rightu, leftv, l, j;
 
   for (i = 0; i < N; ++i) {
     double s = 0;
@@ -540,10 +540,8 @@ static R_INLINE void hankelize(double *F,
     }
     if (i < K) {
       rightu = 0;
-      rightv = i;
     } else {
       rightu = i - K + 1;
-      rightv = K - 1;
     }
 
     l = leftu - rightu + 1;
