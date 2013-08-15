@@ -198,7 +198,7 @@ wnorm.mssa <- function(x, ...) {
   F <- .get(x, "F")
 
   # Compute wnorm
-  sqrt(sum(w * unlist(F)))
+  sqrt(sum(w * unlist(F)^2))
 }
 
 #N = 399;
