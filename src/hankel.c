@@ -521,40 +521,6 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
 }
 #endif
 
-/* This is just direct R-to-C translation  */
-static R_INLINE void hankelize(double *F,
-                               double *U, double *V,
-                               R_len_t L, R_len_t K) {
-  R_len_t i, N = K + L - 1;
-  R_len_t leftu, rightu, leftv, l, j;
-
-  for (i = 0; i < N; ++i) {
-    double s = 0;
-
-    if (i < L) {
-      leftu = i;
-      leftv = 0;
-    } else {
-      leftu = L - 1;
-      leftv = i - L + 1;
-    }
-    if (i < K) {
-      rightu = 0;
-    } else {
-      rightu = i - K + 1;
-    }
-
-    l = leftu - rightu + 1;
-
-    for (j = 0; j < l; ++j) {
-      s += U[leftu - j] * V[leftv + j];
-    }
-
-    F[i] = s / (double) l;
-  }
-}
-
-
 static void fft_plan_finalizer(SEXP ptr) {
   fft_plan *f;
 
@@ -789,25 +755,6 @@ SEXP hmatmul(SEXP hmat, SEXP v, SEXP transposed) {
   return Y;
 }
 
-SEXP hankelize_one(SEXP U, SEXP V) {
-  double *rU = REAL(U), *rV = REAL(V), *rF;
-  R_len_t L, K;
-  SEXP F;
-
-  /* Calculate length of inputs */
-  L = length(U); K = length(V);
-
-  /* Allocate buffer for output */
-  PROTECT(F = allocVector(REALSXP, K + L - 1));
-  rF = REAL(F);
-
-  /* Perform the actual hankelization */
-  hankelize(rF, rU, rV, L, K);
-
-  UNPROTECT(1);
-  return F;
-}
-
 SEXP hankelize_one_fft(SEXP U, SEXP V, SEXP fftplan) {
   /* Perform a type checking */
   if (!LOGICAL(is_fft_plan(fftplan))[0]) {
@@ -871,35 +818,6 @@ SEXP hankelize_multi_fft(SEXP U, SEXP V, SEXP fftplan) {
     R_CheckUserInterrupt();
     /* TODO: nice target for OpenMP stuff */
     hankelize_fft(rF+i*N, rU+i*L, rV+i*K, L, K, plan);
-  }
-
-  UNPROTECT(1);
-  return F;
-}
-
-SEXP hankelize_multi(SEXP U, SEXP V) {
-  double *rU = REAL(U), *rV = REAL(V), *rF;
-  R_len_t L, K, N, i, count;
-  SEXP F;
-  int *dimu, *dimv;
-
-  /* Calculate length of inputs and output */
-  dimu = INTEGER(getAttrib(U, R_DimSymbol));
-  dimv = INTEGER(getAttrib(V, R_DimSymbol));
-  L = dimu[0]; K = dimv[0];
-  if ((count = dimu[1]) != dimv[1])
-    error("Both 'U' and 'V' should have equal number of columns");
-  N = K + L - 1;
-
-  /* Allocate buffer for output */
-  PROTECT(F = allocMatrix(REALSXP, N, count));
-  rF = REAL(F);
-
-  /* Perform the actual hankelization */
-  for (i = 0; i < count; ++i) {
-    R_CheckUserInterrupt();
-    /* TODO: nice target for OpenMP stuff */
-    hankelize(rF+i*N, rU+i*L, rV+i*K, L, K);
   }
 
   UNPROTECT(1);
