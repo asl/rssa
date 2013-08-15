@@ -32,6 +32,7 @@ lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
 lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
   if (missing(groups))
     groups <- 1:min(nlambda(x), nu(x))
+  groups <- .assign.group.names(groups)
 
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
@@ -47,6 +48,7 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
     out[[i]] <- res
   }
 
+  names(out) <- names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -101,6 +103,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   base <- match.arg(base)
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
+  groups <- .assign.group.names(groups)
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
@@ -122,7 +125,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                                   only.new = only.new, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -165,6 +168,7 @@ rforecast.mssa <- function(x, groups, len = 1,
   direction <- match.arg(direction)
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
+  groups <- .assign.group.names(groups)
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
@@ -221,7 +225,7 @@ rforecast.mssa <- function(x, groups, len = 1,
                                   only.new = only.new, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -240,6 +244,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
 
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
+  groups <- .assign.group.names(groups)
 
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
@@ -279,8 +284,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
                                   only.new = only.new, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
-
+  names(out) <- names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -296,6 +300,7 @@ vforecast.mssa <- function(x, groups, len = 1,
   direction <- match.arg(direction)
   if (missing(groups))
     groups <- as.list(1:min(nlambda(x), nu(x)))
+  groups <- .assign.group.names(groups)
 
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
@@ -381,7 +386,7 @@ vforecast.mssa <- function(x, groups, len = 1,
 
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -398,6 +403,7 @@ bforecast.1d.ssa <- function(x, groups,
   dots <- list(...)
   if (missing(groups))
     groups <- list(1:min(nlambda(x), nu(x)))
+  groups <- .assign.group.names(groups)
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -430,7 +436,7 @@ bforecast.1d.ssa <- function(x, groups,
                                   fixup = TRUE, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
