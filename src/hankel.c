@@ -419,8 +419,6 @@ static R_INLINE void hankelize_fft(double *F,
                                    const fft_plan *f) {
   R_len_t N = K + L - 1;
   R_len_t i;
-  int maxf, maxp, *iwork;
-  double *work;
   SEXP rU, rU1, rV, rV1, res, rTrue;
 
   if (!valid_plan(f, N))
