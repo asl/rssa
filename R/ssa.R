@@ -226,6 +226,13 @@ cleanup <- function(x) {
   F
 }
 
+.group.names <- function(groups) {
+  group.names <- names(groups)
+  if (is.null(group.names)) group.names <- rep("", length(groups))
+
+  ifelse(group.names != "", group.names, paste0("F", seq_along(groups)))
+}
+
 reconstruct.ssa <- function(x, groups, ...,
                             drop.attributes = FALSE, cache = TRUE) {
   out <- list();
@@ -267,8 +274,8 @@ reconstruct.ssa <- function(x, groups, ...,
     out[[i]] <- .apply.attributes(x, out[[i]], fixup = FALSE, drop = drop.attributes)
   }
 
-  # Set names and drop the dimension, if necessary
-  names(out) <- paste("F", 1:length(groups), sep="");
+  # Set names
+  names(out) <- .group.names(groups)
 
   # Calculate the residuals
   residuals <- .get(x, "F")
