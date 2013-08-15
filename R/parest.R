@@ -106,6 +106,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
     out[[i]] <- res
   }
 
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -211,6 +212,7 @@ parestimate.2d.ssa <- function(x, groups,
                                      beta = beta)
   }
 
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
