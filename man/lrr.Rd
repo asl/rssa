@@ -59,8 +59,11 @@
 }
 
 \value{
-  List of object of class 'lrr' for \code{lrr} function call. Or the
-  object itself if 'drop = TRUE' and groups has length one.
+  Named list of object of class 'lrr' for \code{lrr} function call,
+  where elements have the same names as elements of \code{groups}
+  (if group is unnamed, corresponding component gets name `Fn',
+  where `n' is its index in \code{groups} list).
+  Or the object itself if 'drop = TRUE' and groups has length one.
 
   Vector with the roots of the of the characteristic
   polynomial of the LRR for \code{roots} function call. Roots are

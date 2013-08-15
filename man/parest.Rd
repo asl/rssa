@@ -52,8 +52,11 @@
   For 2D-SSA, a list of objects of S3-class `fdimpars.2d'. Each object is unnamed list of two
   `fdimpars.1d' objects, each for corresponding spatial coordinate.
 
-  If 'drop = TRUE' and length of 'groups' is one, then the list of
-  periods itself.
+  In all cases elements of the list have
+  the same names as elements of \code{groups}. If group is unnamed,
+  corresponding component gets name `Fn', where `n' is its index in \code{groups} list.
+  If 'drop = TRUE' and length of 'groups' is one, then
+  corresponding list of estimated parameters is returned.
 }
 
 \details{
