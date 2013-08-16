@@ -113,6 +113,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
 }
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
+parestimate.mssa <- parestimate.1d.ssa
 
 shift.matrices.2d <- function(U, L,
                               solve.method = c("ls", "tls")) {
