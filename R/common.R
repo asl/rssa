@@ -120,12 +120,15 @@
 .to.series.list <- function(x, na.rm = TRUE) {
   # Note that this will correctly remove leading and trailing NA, but will fail for internal NA's
   NA.fun <- (if (na.rm) na.omit else identity)
-  if (is.matrix(x))
-    res <- lapply(seq_len(ncol(x)), function(i) NA.fun(x[, i]))
-  else if (is.list(x))
+  if (is.list(x)) {
     res <- lapply(x, NA.fun)
-  else
-    res <- list(as.vector(NA.fun(x)))
+  } else {
+    # Coerce input to matrix. This will "normalize" cases like vector / data frame as input
+    if (!is.matrix(x))
+      x <- as.matrix(x)
+
+    res <- lapply(seq_len(ncol(x)), function(i) NA.fun(x[, i]))
+  }
 
   class(res) <- "series.list"
 
