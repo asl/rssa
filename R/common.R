@@ -117,9 +117,42 @@
   F
 }
 
+.na.omit <- function(x, ...) {
+  # Drop initial and final NAs
+  good <- which(!is.na(x))
+  if (!length(good))
+    stop("all times contain an NA")
+
+  omit <- integer()
+  n <- length(x)
+  st <- min(good)
+  if (st > 1)
+    omit <- c(omit, 1L:(st-1))
+  en <- max(good)
+  if (en < n)
+    omit <- c(omit, (en+1):n)
+  cl <- attr(x, "class")
+  if (length(omit)) {
+    x <- x[st:en]
+    attr(omit, "class") <- "omit"
+    attr(x, "na.action") <- omit
+    if (is.ts(x)) {
+      tm <- time(x)
+      xfreq <- frequency(x)
+      tsp(x) <- c(tm[st], tm[en], xfreq)
+    }
+    if (!is.null(cl)) class(x) <- cl
+  }
+
+  if (any(is.na(x)))
+    stop("time series contains internal NAs")
+
+  x
+}
+
 .to.series.list <- function(x, na.rm = TRUE) {
   # Note that this will correctly remove leading and trailing NA, but will fail for internal NA's
-  NA.fun <- (if (na.rm) na.omit else identity)
+  NA.fun <- (if (na.rm) .na.omit else identity)
   if (is.list(x)) {
     res <- lapply(x, NA.fun)
   } else {
