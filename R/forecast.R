@@ -189,9 +189,9 @@ rforecast.mssa <- function(x, groups, len = 1,
       V <- calc.v(x, idx = group)
 
       # Build W
-      W <- V[cK, ]
+      W <- V[cK,, drop = FALSE]
       # Build Q
-      Q <- V[-cK, ]
+      Q <- V[-cK,, drop = FALSE]
 
       # Calculate the forecasted values
       qIWWt <- qr(diag(length(N)) - tcrossprod(W))
@@ -212,7 +212,7 @@ rforecast.mssa <- function(x, groups, len = 1,
     }
 
     out[[i]] <- if (only.new) .to.series.list(R) else {
-      res <- lapply(seq_along(F), function(idx) .na.bind(F[[idx]], R[, idx]), update.method = "append")
+      res <- lapply(seq_along(F), function(idx) .na.bind(F[[idx]], R[, idx], update.method = "append"))
       class(res) <- "series.list"
       res
     }
