@@ -224,8 +224,7 @@ calc.v.mssa<- function(x, idx, ...) {
 
   # Pad with NA's if necessary and optionaly convert to matrix
   F <- .from.series.list(F, pad = "none",
-                         simplify. = ("matrix" %in% cls ||
-                                      "numeric" %in% cls))
+                         simplify. = !("list" %in% cls))
 
   if (fixup) {
      # Try to guess the indices of known time series classes
@@ -237,6 +236,12 @@ calc.v.mssa<- function(x, idx, ...) {
     }
   } else {
     # Restore attributes
+
+    # HACK: We need to handle data frames as a special case, because we cannot
+    # convert to them just applying the attributes :(
+    if ("data.frame" %in% cls)
+      F <- as.data.frame(F)
+
     attributes(F) <- a
   }
 
@@ -269,9 +274,7 @@ plot.mssa.reconstruction <- function(x,
   # Nifty defaults
   dots <- list(...)
   dots <- .defaults(dots,
-                    main = "Reconstructed Series",
-                    type = "l",
-                    ylab = "")
+                    main = "Reconstructed Series")
 
   # Prepare the array with all the data
   m <- lapply(x, .to.series.list, na.rm = FALSE)
@@ -301,10 +304,12 @@ plot.mssa.reconstruction <- function(x,
 
   # if (!is.null(base.series)) m <- cbind(m0, m)
 
+  # Fill in the column names
+  odimnames <- colnames(original, do.NULL = FALSE, prefix = "F")
+  rdimnames <- odimnames[slice$series]
+
   # Fix the attributes
   a <- attributes(original)
-  odimnames <- (if (is.null(a$dimnames[[2]])) paste("F", seq_along(original), sep = "") else a$dimnames[[2]])
-  rdimnames <- odimnames[slice$series]
 
   # Get rid of dim and dimnames attribute
   a$dim <- NULL
@@ -312,12 +317,16 @@ plot.mssa.reconstruction <- function(x,
   a$names <- NULL
 
   # Merge the attributes in
+  # HACK: We need to handle data frames as a special case, because we cannot
+  # convert to them just applying the attributes :(
+  if (is.data.frame(original))
+    m <- as.data.frame(m)
   attributes(m) <- append(attributes(m), a)
 
   mnames <- sapply(slice$component, function(x) paste(rdimnames, x))
   if (add.original) {
     original <- .from.series.list(.to.series.list(original), pad = na.pad, simplify. = "array")
-    if (is.ts(m))
+    if (is.ts(original))
       m <- ts.union(original[, slice$series], m)
     else
       m <- cbind(original[, slice$series], m)
@@ -325,10 +334,10 @@ plot.mssa.reconstruction <- function(x,
   }
   if (add.residuals) {
     res <- .from.series.list(.to.series.list(res), pad = na.pad, simplify. = "array")
-    if (is.ts(m))
+    if (is.ts(original))
       m <- ts.union(m, res[, slice$series])
     else
-      m <- cbind(original[, slice$series], m)
+      m <- cbind(m, res[, slice$series])
     mnames <- c(mnames, paste("Residuals", rdimnames))
   }
   colnames(m) <- mnames
