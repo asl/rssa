@@ -131,17 +131,18 @@
   en <- max(good)
   if (en < n)
     omit <- c(omit, (en+1):n)
-  cl <- attr(x, "class")
+  cls <- attr(x, "class")
   if (length(omit)) {
+    if ("ts" %in% cls) {
+      tm <- time(x)
+      xfreq <- frequency(x)
+    }
     x <- x[st:en]
     attr(omit, "class") <- "omit"
     attr(x, "na.action") <- omit
-    if (is.ts(x)) {
-      tm <- time(x)
-      xfreq <- frequency(x)
+    if ("ts" %in% cls)
       tsp(x) <- c(tm[st], tm[en], xfreq)
-    }
-    if (!is.null(cl)) class(x) <- cl
+    if (!is.null(cls)) class(x) <- cls
   }
 
   if (any(is.na(x)))
