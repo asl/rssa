@@ -217,10 +217,16 @@ calc.v.mssa<- function(x, idx, ...) {
                                    only.new = TRUE, drop = FALSE) {
   a <- (if (drop) NULL else .get(x, "Fattr"))
   cls <- (if (drop) NULL else .get(x, "Fclass"))
+  ia <- (if (drop) NULL else .get(x, "Iattr"))
 
   # MSSA is a bit different from the default case. We need to convert (if
   # possible) to original object
   stopifnot(inherits(F, "series.list"))
+
+  # Restore the inner attributes, if any
+  for (idx in seq_along(F))
+    if (!is.null(ia[[idx]]))
+      attributes(F[[idx]]) <- ia[[idx]]
 
   # Pad with NA's if necessary and optionaly convert to matrix
   F <- .from.series.list(F, pad = "none",
@@ -305,7 +311,13 @@ plot.mssa.reconstruction <- function(x,
   # if (!is.null(base.series)) m <- cbind(m0, m)
 
   # Fill in the column names
-  odimnames <- colnames(original, do.NULL = FALSE, prefix = "F")
+  if (is.list(original)) {
+    odimnames <- names(original)
+    if (is.null(odimnames))
+      odimnames <- paste0("F", seq_along(original))
+  } else {
+    odimnames <- colnames(original, do.NULL = FALSE, prefix = "F")
+  }
   rdimnames <- odimnames[slice$series]
 
   # Fix the attributes
