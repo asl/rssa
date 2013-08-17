@@ -57,6 +57,7 @@ ssa <- function(x,
   svd.method <- match.arg(svd.method)
   kind <- match.arg(kind)
   xattr <- attributes(x)
+  iattr <- NULL
   # Grab class separately. This way we will capture the inherit class as well
   xclass <- class(x)
 
@@ -126,6 +127,8 @@ ssa <- function(x,
     # Coerce input to series.list object
     # Note that this will correctly remove leading and trailing NA's
     x <- .to.series.list(x, na.rm = TRUE)
+    # Grab the inner attributes, if any
+    iattr <- lapply(x, attributes)
 
     N <- sapply(x, length)
 
@@ -159,7 +162,7 @@ ssa <- function(x,
   }
   stopifnot(!is.null(neig))
 
-  # Normalized the kind to be used
+  # Normalize the kind to be used
   kind <- sub("-", ".", kind, fixed = TRUE)
 
   # Create information body
@@ -184,6 +187,7 @@ ssa <- function(x,
   # Save attributes
   .set(this, "Fattr", xattr)
   .set(this, "Fclass", xclass)
+  .set(this, "Iattr", iattr)
 
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
