@@ -19,24 +19,6 @@
 
 #   Routines for toeplitz SSA
 
-tcirc.old <- function(F, L = (N + 1) %/% 2) {
-  N <- length(F)
-
-  f <- fft(c(F, rep(0, L-1)))
-  R <- fft(f * Conj(f), inverse = TRUE)[1:L] / (N+L-1) / seq(from = N, to = N-L+1, by = -1)
-
-  .res <- list()
-  .res$C <- as.vector(fft(c(R, rev(R[-1]))))
-  .res$L <- L
-  return (.res)
-}
-
-tmatmul.old <- function(C, v) {
-  v <- as.vector(fft(C$C * fft(c(v, rep(0, C$L-1))), inverse = TRUE))
-  Re((v/length(C$C))[1:C$L])
-}
-
-
 Lcor <- function(F, L) {
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"

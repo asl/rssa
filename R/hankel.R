@@ -19,19 +19,6 @@
 
 #   Routines for normal hankel SSA
 
-tcirc.old <- function(F, L = (N + 1) %/% 2) {
-  N <- length(F); K = N - L + 1
-  .res <- list()
-  .res$C <- as.vector(fft(c(F[K:N], F[1:(K-1)])))
-  .res$L <- L
-  return (.res)
-}
-
-hmatmul.old <- function(C, v) {
-  v <- as.vector(fft(C$C * fft(c(rev(v), rep(0, C$L-1))), inverse = TRUE))
-  Re((v/length(C$C))[1:C$L])
-}
-
 hankel <- function(X, L) {
   if (is.matrix(X) && nargs() == 1) {
      L <- nrow(X); K <- ncol(X); N <- K + L - 1
@@ -65,11 +52,6 @@ hankel <- function(X, L) {
   fft.plan <- .get.or.create.fft.plan(x)
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hankelize_one_fft", U, V, fft.plan)
-}
-
-.hankelize.multi <- function(U, V) {
-  storage.mode(U) <- storage.mode(V) <- "double"
-  .Call("hankelize_multi", U, V)
 }
 
 .hankelize.multi.hankel <- function(U, V, fft.plan) {
@@ -243,25 +225,3 @@ calc.v.1d.ssa <- function(x, idx, ...) {
   invisible(sapply(1:length(idx),
                    function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]))
 }
-
-#mes <- function(N = 1000, L = (N %/% 2), n = 50) {
-#  F <- rnorm(N);
-#  v <- rnorm(N - L + 1);
-#  C <- tcirc.old(F, L = L);
-#  X <- hankel(F, L = L);
-#  h <- new.hmat(F, L = L);
-#  st1 <- system.time(for (i in 1:n) X %*% v);
-#  st2 <- system.time(for (i in 1:n) hmatmul.old(C, v));
-#  st3 <- system.time(for (i in 1:n) hmatmul(h, v));
-#  c(st1[["user.self"]], st2[["user.self"]], st3[["user.self"]]);
-#}
-
-
-#Rprof();
-#for (i in 1:250) {
-#  r1 <- X %*% v;
-#  r2 <- hmul(C, v);
-#}
-#Rprof(NULL);
-#print(max(abs(r1-r2)));
-#summaryRprof();
