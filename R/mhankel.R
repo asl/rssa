@@ -215,43 +215,52 @@ calc.v.mssa<- function(x, idx, ...) {
 .apply.attributes.mssa <- function(x, F,
                                    fixup = FALSE,
                                    only.new = TRUE, drop = FALSE) {
-  a <- (if (drop) NULL else .get(x, "Fattr"))
-  cls <- (if (drop) NULL else .get(x, "Fclass"))
   ia <- (if (drop) NULL else .get(x, "Iattr"))
 
   # MSSA is a bit different from the default case. We need to convert (if
   # possible) to original object
   stopifnot(inherits(F, "series.list"))
 
+  .restore.attr <- function(F, cls, attr, fixup = FALSE, only.new = TRUE) {
+    if (fixup) {
+      # Try to guess the indices of known time series classes
+      if ("ts" %in% cls) {
+        tsp <- attr$tsp
+        F <- ts(F,
+                start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
+                frequency = tsp[3])
+      }
+    } else {
+      ## Restore attributes
+
+      ## HACK: We need to handle data frames as a special case, because we cannot
+      ## convert to them just applying the attributes :(
+      if ("data.frame" %in% cls)
+        F <- as.data.frame(F)
+
+      attributes(F) <- attr
+    }
+
+    F
+  }
+
   # Restore the inner attributes, if any
-  for (idx in seq_along(F))
-    if (!is.null(ia[[idx]]))
-      attributes(F[[idx]]) <- ia[[idx]]
+  for (idx in seq_along(F)) {
+    cia <- ia[[idx]]
+    if (!is.null(cia))
+      F[[idx]] <- .restore.attr(F[[idx]], cia$class, cia,
+                                fixup = fixup, only.new = only.new)
+  }
+
+  a <- (if (drop) NULL else .get(x, "Fattr"))
+  cls <- (if (drop) NULL else .get(x, "Fclass"))
 
   # Pad with NA's if necessary and optionaly convert to matrix
   F <- .from.series.list(F, pad = "none",
                          simplify. = !("list" %in% cls))
 
-  if (fixup) {
-     # Try to guess the indices of known time series classes
-    if ("ts" %in% cls) {
-      tsp <- a$tsp
-      return (ts(F,
-                 start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
-                 frequency = tsp[3]))
-    }
-  } else {
-    # Restore attributes
-
-    # HACK: We need to handle data frames as a special case, because we cannot
-    # convert to them just applying the attributes :(
-    if ("data.frame" %in% cls)
-      F <- as.data.frame(F)
-
-    attributes(F) <- a
-  }
-
-  F
+  .restore.attr(F, cls, a,
+                fixup = fixup, only.new = only.new)
 }
 
 plot.mssa.reconstruction <- function(x,
