@@ -288,8 +288,14 @@ plot.mssa.reconstruction <- function(x,
 
   # Nifty defaults
   dots <- list(...)
-  dots <- .defaults(dots,
-                    main = "Reconstructed Series")
+  if (is.data.frame(original) && identical(plot.method, "native"))
+    dots <- .defaults(dots,
+                      main = "Reconstructed Series")
+  else
+    dots <- .defaults(dots,
+                      main = "Reconstructed Series",
+                      type = "l",
+                      ylab = "")
 
   # Prepare the array with all the data
   m <- lapply(x, .to.series.list, na.rm = FALSE)
