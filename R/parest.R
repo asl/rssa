@@ -115,17 +115,24 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
 
 shift.matrices.2d <- function(U, L,
+                              umask = NULL,
                               solve.method = c("ls", "tls")) {
   solve.method <- match.arg(solve.method)
   solver <- switch(solve.method,
                    ls = qr.solve,
                    tls = tls.solve)
 
-  lm1.mask <- as.vector(rbind(matrix(TRUE, L[1] - 1, L[2]), FALSE))
-  lm2.mask <- as.vector(rbind(FALSE, matrix(TRUE, L[1] - 1, L[2])))
+  if (is.null(umask)) {
+    umask <- matrix(TRUE, L[1], L[2])
+  }
 
-  mu1.mask <- as.vector(cbind(matrix(TRUE, L[1], L[2] - 1), FALSE))
-  mu2.mask <- as.vector(cbind(FALSE, matrix(TRUE, L[1], L[2] - 1)))
+  lm.mask <- umask[-1, , drop = FALSE] & umask[-nrow(umask),, drop = FALSE]
+  lm1.mask <- as.vector(rbind(lm.mask, FALSE)[umask])
+  lm2.mask <- as.vector(rbind(FALSE, lm.mask)[umask])
+
+  mu.mask <- umask[, -1, drop = FALSE] & umask[, -ncol(umask), drop = FALSE]
+  mu1.mask <- as.vector(cbind(mu.mask, FALSE)[umask])
+  mu2.mask <- as.vector(cbind(FALSE, mu.mask)[umask])
 
   lmA <- U[lm1.mask,, drop = FALSE]
   lmB <- U[lm2.mask,, drop = FALSE]
@@ -159,6 +166,7 @@ est_exp_memp_new <- function(Zs, beta = 8) {
 }
 
 parestimate.esprit2d <- function(U, L,
+                                 umask = NULL,
                                  method = c("esprit-diag-ls", "esprit-diag-tls",
                                             "esprit-memp-ls", "esprit-memp-tls"),
                                  beta = 8) {
@@ -167,7 +175,7 @@ parestimate.esprit2d <- function(U, L,
                          `esprit-diag-ls`  =, `esprit-memp-ls`  = "ls",
                          `esprit-diag-tls` =, `esprit-memp-tls` = "tls")
 
-  Zs <- shift.matrices.2d(U, L = L, solve.method = solve.method)
+  Zs <- shift.matrices.2d(U, L = L, umask = umask, solve.method = solve.method)
 
   r <- switch(method,
               `esprit-diag-ls` =, `esprit-diag-tls` = est_exp_2desprit(Zs, beta = beta),
@@ -197,6 +205,7 @@ parestimate.2d.ssa <- function(x, groups,
 
     out[[i]] <- parestimate.esprit2d(x$U[, group, drop = FALSE],
                                      L = x$window,
+                                     umask = x$umask,
                                      method = method,
                                      beta = beta)
   }
