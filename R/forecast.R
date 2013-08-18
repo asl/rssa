@@ -212,7 +212,7 @@ rforecast.mssa <- function(x, groups, len = 1,
     }
 
     out[[i]] <- if (only.new) .to.series.list(R) else {
-      res <- lapply(seq_along(F), function(idx) .na.bind(F[[idx]], R[, idx]), update.method = "append")
+      res <- lapply(seq_along(F), function(idx) .na.bind(F[[idx]], R[, idx], update.method = "append"))
       class(res) <- "series.list"
       res
     }
