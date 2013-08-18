@@ -90,7 +90,7 @@ wcor.mssa <- function(x, groups, ..., cache = TRUE) {
     groups <- as.list(1:nlambda(x))
 
   # Compute reconstruction.
-  F <- .to.series.list(reconstruct(x, groups, ..., cache = cache))
+  F <- lapply(reconstruct(x, groups, ..., cache = cache), .to.series.list)
   mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
   colnames(mx) <- names(F)
 
