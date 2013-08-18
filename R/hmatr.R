@@ -53,4 +53,3 @@ plot.hmatr <- function(x,
   image(1:nrow(x), 1:ncol(x), x,
         col = col, xlab = xlab, ylab = ylab, main = main, ...)
 }
-
