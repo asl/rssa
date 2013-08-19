@@ -215,3 +215,14 @@ calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
 
   (R1 + R2) + 1i*(-I1 + I2)
 }
+
+.hankelize.multi.complex <- function(U, V, fft.plan) {
+  ReU <- Re(U); ReV <- Re(V); ImU <- Im(U); ImV <- Im(V)
+  storage.mode(ReU) <- storage.mode(ReV) <- storage.mode(ImU) <- storage.mode(ImV) <- "double"
+  R1 <- .Call("hankelize_multi_fft", ReU, ReV, fft.plan)
+  R2 <- .Call("hankelize_multi_fft", ImU, ImV, fft.plan)
+  I1 <- .Call("hankelize_multi_fft", ReU, ImV, fft.plan)
+  I2 <- .Call("hankelize_multi_fft", ImU, ReV, fft.plan)
+
+  (R1 + R2) + 1i*(-I1 + I2)
+}

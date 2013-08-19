@@ -15,5 +15,5 @@ test_that("is.fft.plan-check works correctly", {
   expect_error(new.hmat(1:42, L = 10, no.fft.plan), regexp = regexp);
   expect_error(Lcov.matrix(1:42, L = 10, no.fft.plan), regexp = regexp);
   expect_error(.Call("hankelize_one_fft", 1:10, 1:10, no.fft.plan), regexp = regexp);
-  expect_error(.hankelize.multi.hankel(as.matrix(1:10), as.matrix(1:10), no.fft.plan), regexp = regexp);
+  expect_error(.hankelize.multi(as.matrix(1:10), as.matrix(1:10), no.fft.plan), regexp = regexp);
 });
