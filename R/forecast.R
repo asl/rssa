@@ -253,6 +253,13 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   # Grab the FFT plan
   fft.plan <- fft.plan.1d(N)
 
+  # Select appropriate hankelizetion function
+  if (inherits(x, "1d.ssa") || inherits(x, "toeplitz.ssa")) {
+    hankelize.multi <- .hankelize.multi.hankel
+  } else if (inherits(x, "cssa")) {
+    hankelize.multi <- .hankelize.multi.chankel
+  }
+
   out <- list()
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]])
@@ -265,14 +272,14 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
     U.head <- Uet[-L, , drop = FALSE]
     U.tail <- Uet[-1, , drop = FALSE]
     Pi <- Uet[L, ]
-    tUhUt <- t(U.head) %*% U.tail
-    P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt)
+    tUhUt <- t(U.head) %*% Conj(U.tail)
+    P <- tUhUt + 1 / (1 - sum(abs(Pi)^2)) * Conj(Pi) %*% (t(Pi) %*% tUhUt)
 
     for (j in (K + 1):(K + len + L - 1)) {
       Z[j, ] <- P %*% Z[j - 1, ]
     }
 
-    res <- rowSums(.hankelize.multi.hankel(Uet, Z, fft.plan))
+    res <- rowSums(hankelize.multi(Uet, Z, fft.plan))
 
     out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
     out[[i]] <- .apply.attributes(x, out[[i]],
@@ -517,6 +524,7 @@ forecast.1d.ssa <- function(object,
 
 "lrr.cssa" <- `lrr.1d.ssa`
 "rforecast.cssa" <- `rforecast.1d.ssa`;
+"vforecast.cssa" <- `vforecast.1d.ssa`;
 
 lrr <- function(x, ...)
   UseMethod("lrr")
