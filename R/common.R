@@ -178,7 +178,7 @@
   res <- sapply(x,
                 function(x) {
                   removed <- attr(x, "na.action")
-                  if (!is.null(removed)) {
+                  if (!is.null(removed) && length(removed) > 0) {
                     res <- numeric(length(x) + length(removed))
                     res[removed] <- NA
                     res[-removed] <- x
