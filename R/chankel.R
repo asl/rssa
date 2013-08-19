@@ -215,3 +215,29 @@ calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
 
   (R1 + R2) + 1i*(-I1 + I2)
 }
+
+plot.cssa.reconstruction <- function(x,
+                                     slice = list(),
+                                     ...,
+                                     type = c("raw", "cumsum"),
+                                     plot.method = c("native", "matplot"),
+                                     na.pad = c("left", "right"),
+                                     base.series = NULL,
+                                     add.original = TRUE,
+                                     add.residuals = TRUE) {
+  # Adopt CSSA to MSSA case - construct new reconstruction object
+  original <- attr(x, "series")
+  res <- attr(x, "residuals")
+
+  x <- lapply(x, function(el) list(Re = Re(el), Im = Im(el)))
+  attr(x, "residuals") <- list(Re = Re(original), Im = Im(original))
+  attr(x, "series") <- list(Re = Re(res), Im = Im(res))
+
+  class(x) <- paste(c("mssa", "ssa"), "reconstruction", sep = ".")
+
+  # Do the call with the same set of arguments
+  mplot <- match.call(expand.dots = FALSE)
+  mplot[[1L]] <- as.name("plot")
+  mplot[[2L]] <- x
+  eval(mplot, parent.frame())
+}
