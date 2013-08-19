@@ -47,6 +47,7 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
     out[[i]] <- res
   }
 
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -122,7 +123,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                                   only.new = only.new, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -221,7 +222,7 @@ rforecast.mssa <- function(x, groups, len = 1,
                                   only.new = only.new, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -279,8 +280,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
                                   only.new = only.new, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
-
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -381,7 +381,7 @@ vforecast.mssa <- function(x, groups, len = 1,
 
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
@@ -430,7 +430,7 @@ bforecast.1d.ssa <- function(x, groups,
                                   fixup = TRUE, drop = drop.attributes)
   }
 
-  names(out) <- paste(sep = "", "F", 1:length(groups))
+  names(out) <- .group.names(groups)
   if (length(out) == 1 && drop)
     out <- out[[1]]
 
