@@ -25,8 +25,9 @@
 }
 
 \value{
-  List of vectors of reconstructed series. Elements of the list are
-  named 'F1', 'F2', and so on.
+  List of vectors of reconstructed series. Elements of the list have
+  the same names as elements of \code{groups}. If group is unnamed,
+  corresponding component gets name `Fn', where `n' is its index in \code{groups} list.
 }
 
 \note{
