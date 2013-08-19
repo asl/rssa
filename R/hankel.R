@@ -61,7 +61,8 @@ hankel <- function(X, L) {
   .Call("hankelize_one_fft", U, V, fft.plan)
 }
 
-.hankelize.multi.hankel <- function(U, V, fft.plan) {
+.hankelize.multi.default <- function(U, V, fft.plan) {
+  stopifnot(is.numeric(V))
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hankelize_multi_fft", U, V, fft.plan)
 }
