@@ -267,7 +267,7 @@ plot.mssa.reconstruction <- function(x,
                                      slice = list(),
                                      ...,
                                      type = c("raw", "cumsum"),
-                                     plot.method = c("native", "matplot"),
+                                     plot.method = c("native", "matplot", "xyplot"),
                                      na.pad = c("left", "right"),
                                      base.series = NULL,
                                      add.original = TRUE,
@@ -371,7 +371,9 @@ plot.mssa.reconstruction <- function(x,
   colnames(m) <- mnames
 
   # Plot'em'all!
-  if (identical(plot.method, "matplot") || !is.object(m))
+  if (identical(plot.method, "xyplot"))
+    do.call(xyplot, c(list(m), dots))
+  else if (identical(plot.method, "matplot") || !is.object(m))
     do.call(matplot, c(list(x = m), dots))
   else if (identical(plot.method, "native"))
     do.call(plot, c(list(m), dots))

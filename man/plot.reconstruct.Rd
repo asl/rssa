@@ -3,6 +3,7 @@
 \alias{plot.ssa.reconstruction}
 \alias{plot.1d.ssa.reconstruction}
 \alias{plot.toeplitz.ssa.reconstruction}
+\alias{plot.mssa.reconstruction}
 \alias{plot.2d.ssa.reconstruction}
 
 \title{Plot the results of SSA reconstruction}
@@ -12,13 +13,19 @@
 \usage{
 \method{plot}{1d.ssa.reconstruction}(x, \dots,
     type = c("raw", "cumsum"),
-    plot.method = c("native", "matplot"),
+    plot.method = c("native", "matplot", "xyplot"),
     base.series = NULL,
     add.original = TRUE,
     add.residuals = TRUE)
 \method{plot}{toeplitz.ssa.reconstruction}(x, \dots,
     type = c("raw", "cumsum"),
-    plot.method = c("native", "matplot"),
+    plot.method = c("native", "matplot", "xyplot"),
+    base.series = NULL,
+    add.original = TRUE,
+    add.residuals = TRUE)
+\method{plot}{mssa.reconstruction}(x, \dots,
+    type = c("raw", "cumsum"),
+    plot.method = c("native", "matplot", "xyplot"),
     base.series = NULL,
     add.original = TRUE,
     add.residuals = TRUE)
@@ -37,7 +44,8 @@
   \item{\dots}{Arguments to be passed to methods, such as graphical
     parameters}
   \item{plot.method}{Plotting method to use: either ordinary all-in-one
-    via matplot, or native plotting method of the input time series}
+    via matplot or xyplot, or native plotting method of the input time
+    series}
   \item{base.series}{another SSA reconstruction object, the series of
     which should be considered as an original. Useful for plotting the
     results of sequential SSA}
