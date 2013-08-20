@@ -248,6 +248,8 @@ wnorm <- function(x, ...)
 
 .hankelize.one <- function(x, ...)
   UseMethod(".hankelize.one")
+.hankelize.multi <- function(x, ...)
+  UseMethod(".hankelize.multi")
 .elseries <- function(x, ...)
   UseMethod(".elseries")
 .init <- function(x, ...)
