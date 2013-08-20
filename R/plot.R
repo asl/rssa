@@ -323,7 +323,8 @@ plot.1d.ssa.reconstruction <- function(x, ...,
   # Merge the attributes in
   attributes(m) <- append(attributes(m), attributes(x[[1]]))
 
-  mnames <- paste("Reconstructed", 1:ncol(m))
+  cnames <- names(x)
+  mnames <- ifelse(cnames == "", 1:ncol(m), cnames)
   if (add.original) {
     m <- cbind(original, m)
     mnames <- c("Original", mnames)
