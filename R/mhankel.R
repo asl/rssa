@@ -350,7 +350,8 @@ plot.mssa.reconstruction <- function(x,
     m <- as.data.frame(m)
   attributes(m) <- append(attributes(m), a)
 
-  mnames <- sapply(slice$component, function(x) paste(rdimnames, x))
+  cnames <- names(x)[slice$component]
+  mnames <- sapply(seq_along(cnames), function(x) paste(rdimnames, if (cnames[x] != "") cnames[x] else x))
   if (add.original) {
     original <- .from.series.list(.to.series.list(original), pad = na.pad, simplify. = "array")
     if (is.ts(original))
