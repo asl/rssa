@@ -23,9 +23,12 @@
     base.series = NULL,
     add.original = TRUE,
     add.residuals = TRUE)
-\method{plot}{mssa.reconstruction}(x, \dots,
+\method{plot}{mssa.reconstruction}(x,
+    slice = list(),
+    \dots,
     type = c("raw", "cumsum"),
     plot.method = c("native", "matplot", "xyplot"),
+    na.pad = c("left", "right"),
     base.series = NULL,
     add.original = TRUE,
     add.residuals = TRUE)
@@ -40,12 +43,16 @@
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
+  \item{slice}{list with elements named 'series' and 'components';
+    allows one to select which components from the reconstruction of
+  multivariate time series to draw}
   \item{type}{Type of the plot (see 'Details' for more information)}
   \item{\dots}{Arguments to be passed to methods, such as graphical
     parameters}
   \item{plot.method}{Plotting method to use: either ordinary all-in-one
     via matplot or xyplot, or native plotting method of the input time
     series}
+  \item{na.pad}{select how to pad the series of unequal length with NA's}
   \item{base.series}{another SSA reconstruction object, the series of
     which should be considered as an original. Useful for plotting the
     results of sequential SSA}
@@ -109,4 +116,18 @@ s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 plot(reconstruct(s, 1), fill.uncovered = "original")
 # Reconstruct and plot texture pattern
 plot(reconstruct(s, groups = list(c(13,14, 17, 18))))
+
+# Decompose 'EuStockMarkets' series with default parameters
+s <- ssa(EuStockMarkets, kind = "mssa")
+r <- reconstruct(s, groups = list(Trend = 1))
+# Plot original series, trend and residuals superimposed
+plot(r, plot.method = "xyplot", superpose = TRUE,
+     auto.key = list(columns = 3),
+     col = c("blue", "green", "red", "violet"),
+     lty = c(rep(1, 4), rep(2, 4), rep(3, 4)))
+# Plot the series separately
+plot(r, plot.method = "xyplot", add.residuals = FALSE,
+     screens = list(colnames(EuStockMarkets)),
+     col = c("blue", "green", "red", "violet"),
+     lty = c(rep(1, 4), rep(2, 4), rep(3, 4)))
 }
