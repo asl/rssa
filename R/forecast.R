@@ -268,7 +268,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
     U.tail <- Uet[-1, , drop = FALSE]
     Pi <- Uet[L, ]
     tUhUt <- t(U.head) %*% Conj(U.tail)
-    P <- tUhUt + 1 / (1 - sum(abs(Pi)^2)) * Conj(Pi) %*% (t(Pi) %*% tUhUt)
+    P <- tUhUt + 1 / (1 - sum(abs(Pi)^2)) * Pi %*% (t(Conj(Pi)) %*% tUhUt)
 
     for (j in (K + 1):(K + len + L - 1)) {
       Z[j, ] <- P %*% Z[j - 1, ]
