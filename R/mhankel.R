@@ -384,3 +384,102 @@ plot.mssa.reconstruction <- function(x,
   else
     stop("Unknown plot method")
 }
+
+xyplot.matrix <- function(x, ..., outer = TRUE) {
+  x <- cbind(1:nrow(x), as.data.frame(x))
+  stopifnot(nrow(x) > 1)
+  nms <- sprintf("`%s`", colnames(x))
+  form <- sprintf("%s ~ %s", paste(nms[-1], collapse = "+"), nms[1])
+  xyplot(as.formula(form), data = x, ..., outer = outer)
+}
+
+.plot.ssa.vectors.mssa <- function(x, ...,
+                                   what = c("eigen", "factor"),
+                                   plot.contrib, idx, plot.type = "l") {
+  what <- match.arg(what)
+
+  # Eigenvectors are same as for 1D-SSA case
+  if (identical(what, "eigen")) {
+    ## Do the call with the same set of arguments
+    mplot <- match.call(expand.dots = FALSE)
+    mplot[[1L]] <- as.name(".plot.ssa.vectors.1d.ssa")
+    mplot[[2L]] <- x
+    eval(mplot, parent.frame())
+  } else {
+    dots <- list(...)
+
+    # Factor vectors are special...
+    # We actually create a reconstruction object with all stuff there..
+    if (max(idx) > nlambda(x))
+      stop("Too few eigentriples computed for this decomposition")
+
+    N <- x$length
+    L <- x$window
+    K <- N - L + 1
+    F <- .get(x, "F")
+
+    if (plot.contrib) {
+      total <- wnorm(x)^2
+      lambda <- round(100*x$lambda[idx]^2 / total, digits = 2)
+    }
+
+    cK <- c(0, cumsum(K))
+    res <- list()
+    for (i in idx) {
+      if (nv(x) >= i) {
+        # FIXME: Check, whether we have factor vectors for reconstruction
+        # FIXME: Get rid of .get call
+        V <- .get(x, "V")[, i]
+      } else {
+        # No factor vectors available. Calculate them on-fly.
+        V <- calc.v(x, i)
+      }
+
+      sres <- list()
+      for (j in seq_along(K)) {
+        sres[[j]] <- V[(cK[j]+1):cK[j+1]]
+        attr(sres[[j]], "na.action") <- attr(F[[j]], "na.action")
+      }
+      class(sres) <- "series.list"
+      res[[i]] <- .apply.attributes(x, sres,
+                                    fixup = TRUE, only.new = FALSE, drop = FALSE)
+    }
+
+    # Build pseudo-original series
+    oF <- lapply(seq_along(F),
+                 function(idx) {
+                   x <- F[[idx]]
+                   removed <- attr(x, "na.action")
+                   if (!is.null(removed) && length(removed) > 0) {
+                     m <- max(setdiff(seq_along(length(x) + length(removed)), removed))
+                     to.fix <- removed > m
+                     removed[to.fix] <- removed[to.fix] - L + 1
+                   }
+                   res <- x[1:K[idx]]
+                   attr(res, "na.action") <- removed
+                   res
+                 })
+    class(oF) <- "series.list"
+    attr(res, "series") <- .apply.attributes(x, oF,
+                                             fixup = TRUE, only.new = FALSE, drop = FALSE)
+
+    names(res) <- if (!plot.contrib) idx else paste(idx, " (", lambda, "%)", sep = "")
+
+    # Provide convenient defaults
+    dots <- .defaults(dots,
+                      xlab = "",
+                      ylab =  "",
+                      main = "Factor vectors",
+                      as.table = TRUE,
+                      scales = list(draw = FALSE, relation = "free"),
+                      aspect = 1,
+                      symmetric = TRUE,
+                      ref = TRUE)
+
+    do.call(plot.mssa.reconstruction, c(list(res,
+                                             plot.method = "xyplot",
+                                             add.original = FALSE,
+                                             add.residuals = FALSE),
+                                        dots))
+  }
+}
