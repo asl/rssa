@@ -311,6 +311,8 @@ plot.mssa.reconstruction <- function(x,
   m <- sapply(m,
               .from.series.list, pad = na.pad, simplify. = "array",
               simplify = "array")
+  if (length(dim(m)) == 2)
+    dim(m) <- c(NROW(m), 1, NCOL(m))
 
   m <- m[, slice$series, slice$component, drop = FALSE]
 
