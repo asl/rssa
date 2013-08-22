@@ -230,6 +230,8 @@ calc.v.mssa<- function(x, idx, ...) {
                 start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
                 frequency = tsp[3])
       }
+      # It's safe to propagate dimnames in any case
+      dimnames(F) <- attr$dimnames
     } else {
       ## Restore attributes
 
