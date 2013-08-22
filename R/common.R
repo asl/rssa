@@ -202,8 +202,8 @@
              l <- length(x)
              if (identical(pad, "left"))
                c(rep.int(NA, ml - l), x)
-           else
-             c(x, rep.int(NA, ml - l))
+             else
+               c(x, rep.int(NA, ml - l))
            },
            simplify = simplify.)
   }
