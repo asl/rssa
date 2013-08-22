@@ -356,14 +356,30 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
                                         symmetric = FALSE,
                                         .cuts = 20,
                                         .useRaster = FALSE,
-                                        region, contour) {
+                                        region, contour,
+                                        fill.uncovered = "void") {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   N <- dim(recon[[subscripts]])
   data <- expand.grid(y = rev(seq_len(N[1])), x = seq_len(N[2]))
   data$z <- as.vector(recon[[z[subscripts]]])
 
+  if (is.character(fill.uncovered)) {
+    fill.uncovered <- match.arg(fill.uncovered, choices = c("mean", "original", "void"))
+    fill.uncovered <- switch(fill.uncovered,
+                             mean = mean(data$z, na.rm = TRUE),
+                             original = attr(recon, "series"),
+                             void = NA)
+  }
+
+  if (!is.matrix(fill.uncovered)) {
+    fill.uncovered <- matrix(fill.uncovered, N[1], N[2])
+  }
+
+  stopifnot(all(dim(fill.uncovered) == N))
+  data$z[is.na(data$z)] <- fill.uncovered[is.na(data$z)]
+
   if (identical(at, "free")) {
-    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z)
+    z.range <- range(if (symmetric) c(data$z, -data$z) else data$z, na.rm = TRUE)
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
 
@@ -437,7 +453,8 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                     colorkey = !identical(at, "free"),
                     symmetric = FALSE,
                     ref = FALSE,
-                    useRaster = TRUE)
+                    useRaster = TRUE,
+                    fill.uncovered = "void")
 
   # Disable colorkey if subplots are drawing in different scales
   if (identical(at, "free"))
@@ -485,8 +502,9 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       region, contour) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   L <- ssaobj$window
+  wmask <- .get(ssaobj, "wmask", default = matrix(TRUE, L[1], L[2]))
 
-  data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))
+  data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))[as.vector(wmask), ]
   data$z <- ssaobj$U[, z[subscripts]]
 
   if (identical(at, "free")) {
