@@ -62,6 +62,12 @@
     \item{symmetric}{logical. Whether to use symmetric \code{z}-scale in 2d-reconstruction-plots.}
     \item{useRaster}{logical. For 2d-reconstruction-plot, indicating whether raster representations
       should be used. 'TRUE' by default.}
+    \item{fill.uncovered}{single number, matrix or one of the following strings: 'mean', 'original', 'void'.
+      For shaped 2d-reconstruction-plot this argument defines filling method for uncovered field elements on
+      components and residuals plots.
+      If number, all uncovered elements will be replaced by it. If matrix, all uncovered elements will be replaced by
+      corresponding matrix elements. If 'mean', they will be replaced by mean value of current component. If 'original',
+      they will be replaced by corresponding elements of original field. 'void' (by default) means no filling.}
   }
 }
 

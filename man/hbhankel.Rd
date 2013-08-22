@@ -13,7 +13,8 @@
 }
 
 \usage{
-new.hbhmat(F, L = (N + 1) \%/\% 2)
+new.hbhmat(F, L = (N + 1) \%/\% 2,
+           wmask = NULL, fmask = NULL, weights = NULL)
 is.hbhmat(h)
 hbhcols(h)
 hbhrows(h)
@@ -23,6 +24,10 @@ hbhmatmul(hmat, v, transposed = FALSE)
 \arguments{
   \item{F}{series to construct the trajectory matrix for.}
   \item{L}{the window length.}
+  \item{wmask, fmask, weights}{special parameters for shaped SSA case (see \code{\link[Rssa:ssa]{ssa}}).
+    \code{wmask} and \code{fmask} are logical matrices, window and factor masks respectively.
+    \code{weights} is integer matrix which denotes hankel weights for field elements. If 'NULL',
+    parameters for simple rectangular 2dSSA case are used.}
   \item{h, hmat}{matrix to operate on.}
   \item{transposed}{logical, if 'TRUE' the multiplication is performed
     with the transposed matrix.}
