@@ -47,6 +47,33 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   panel.xyplot(U, V, ...)
 }
 
+prepanel.factorvectors <- function(x, y, ssaobj, symmetric = FALSE) {
+  V <- if (y <= nv(ssaobj)) ssaobj$U[, y] else calc.v(ssaobj, idx = y)
+  U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$U[, x] else calc.v(ssaobj, idx = x)
+
+  res <- prepanel.default.xyplot(U, V)
+  if (symmetric) {
+    res$ylim <- range(V, -V)
+    if (!identical(x, y))
+      res$xlim <- range(U, -U)
+  }
+
+  res
+}
+
+panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
+  V <- if (y <= nv(ssaobj)) ssaobj$U[, y] else calc.v(ssaobj, idx = y)
+  U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$U[, x] else calc.v(ssaobj, idx = x)
+
+  if (ref) {
+    panel.abline(h = 0, ..., reference = TRUE)
+    if (!identical(x, y))
+      panel.abline(v = 0, ..., reference = TRUE)
+  }
+
+  panel.xyplot(U, V, ...)
+}
+
 .defaults <- function(x, ...) {
   dots <- list(...)
   modifyList(dots, x)
@@ -79,8 +106,11 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 .plot.ssa.vectors.ssa <- function(x, ...)
   stop("`.plot.ssa.vectors' is not implemented for this kind of SSA")
 
-.plot.ssa.vectors.1d.ssa <- function(x, ..., plot.contrib, idx, plot.type = "l") {
+.plot.ssa.vectors.1d.ssa <- function(x, ...,
+                                     what = c("eigen", "factor"),
+                                     plot.contrib, idx, plot.type = "l") {
   dots <- list(...)
+  what <- match.arg(what)
 
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idx)
@@ -95,7 +125,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     type = plot.type,
                     xlab = "",
                     ylab =  "",
-                    main = "Eigenvectors",
+                    main = if (identical(what, "eigen")) "Eigenvectors" else "Factor vectors",
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "free"),
                     aspect = 1,
@@ -106,8 +136,8 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                  c(list(x = A ~ B | factor(A,
                                            labels = if (!plot.contrib) A else paste(A, " (", lambda, "%)", sep = "")),
                         data = d, ssaobj = x,
-                        panel = panel.eigenvectors,
-                        prepanel = prepanel.eigenvectors),
+                        panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
+                        prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
                    dots))
   print(res)
 }
@@ -115,8 +145,11 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 .plot.ssa.vectors.toeplitz.ssa <- `.plot.ssa.vectors.1d.ssa`
 .plot.ssa.vectors.mssa <- `.plot.ssa.vectors.1d.ssa`
 
-.plot.ssa.paired <- function(x, ..., plot.contrib, idx, idy, plot.type = "l") {
+.plot.ssa.paired <- function(x, ...,
+                             what = c("eigen", "factor"),
+                             plot.contrib, idx, idy, plot.type = "l") {
   dots <- list(...)
+  what <- match.arg(what)
 
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idy)
@@ -132,7 +165,7 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     type = plot.type,
                     xlab = "",
                     ylab = "",
-                    main = "Pairs of eigenvectors",
+                    main = if (identical(what, "eigen")) "Pairs of eigenvectors" else "Pairs of factor vectors",
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "free"),
                     aspect = 1,
@@ -144,8 +177,8 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                                            labels = if (!plot.contrib) paste(A, "vs", B)
                                                     else paste(A, " (", lambdax, "%) vs ", B, " (", lambday, "%)", sep = "")),
                         data = d, ssaobj = x,
-                        panel = panel.eigenvectors,
-                        prepanel = prepanel.eigenvectors),
+                        panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
+                        prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
                    dots))
   print(res)
 }
@@ -255,6 +288,7 @@ plot.wcor.matrix <- function(x,
 plot.ssa <- function(x,
                      type = c("values", "vectors", "paired", "series", "wcor"),
                      ...,
+                     vectors = c("eigen", "factor"),
                      plot.contrib = TRUE,
                      numvalues = nlambda(x),
                      numvectors = min(nlambda(x), 10),
@@ -262,16 +296,17 @@ plot.ssa <- function(x,
                      idy,
                      groups) {
   type <- match.arg(type)
+  vectors <- match.arg(vectors)
 
   if (identical(type, "values")) {
     .plot.ssa.values(x, ..., numvalues = numvalues)
   } else if (identical(type, "vectors")) {
-    .plot.ssa.vectors(x, ..., plot.contrib = plot.contrib, idx = idx)
+    .plot.ssa.vectors(x, ..., what = vectors, plot.contrib = plot.contrib, idx = idx)
   } else if (identical(type, "paired")) {
     if (missing(idy))
       idy <- idx + 1
 
-    .plot.ssa.paired(x, ..., plot.contrib = plot.contrib, idx = idx, idy = idy)
+    .plot.ssa.paired(x, ..., what = vectors, plot.contrib = plot.contrib, idx = idx, idy = idy)
   } else if (identical(type, "series")) {
     if (missing(groups))
       groups <- as.list(1:min(nlambda(x), nu(x)))
