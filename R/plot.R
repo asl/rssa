@@ -95,9 +95,8 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     scales = list(y = list(log = TRUE)),
                     par.settings = list(plot.symbol = list(pch = 20)))
 
-  res <- do.call("xyplot",
-                 c(list(x = B ~ A , data = d, ssaobj = x), dots))
-  print(res)
+  do.call("xyplot",
+          c(list(x = B ~ A , data = d, ssaobj = x), dots))
 }
 
 .plot.ssa.vectors <- function(x, ...)
@@ -132,14 +131,13 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     symmetric = TRUE,
                     ref = TRUE)
 
-  res <- do.call("xyplot",
-                 c(list(x = A ~ B | factor(A,
-                                           labels = if (!plot.contrib) A else paste(A, " (", lambda, "%)", sep = "")),
-                        data = d, ssaobj = x,
-                        panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
-                        prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
-                   dots))
-  print(res)
+  do.call("xyplot",
+          c(list(x = A ~ B | factor(A,
+                   labels = if (!plot.contrib) A else paste(A, " (", lambda, "%)", sep = "")),
+                 data = d, ssaobj = x,
+                 panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
+                 prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
+            dots))
 }
 
 .plot.ssa.vectors.toeplitz.ssa <- `.plot.ssa.vectors.1d.ssa`
@@ -171,15 +169,14 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     symmetric = TRUE,
                     ref = TRUE)
 
-  res <- do.call("xyplot",
-                 c(list(x = A ~ B | factor(A,
-                                           labels = if (!plot.contrib) paste(A, "vs", B)
-                                                    else paste(A, " (", lambdax, "%) vs ", B, " (", lambday, "%)", sep = "")),
-                        data = d, ssaobj = x,
-                        panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
-                        prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
-                   dots))
-  print(res)
+  do.call("xyplot",
+          c(list(x = A ~ B | factor(A,
+                   labels = if (!plot.contrib) paste(A, "vs", B)
+                   else paste(A, " (", lambdax, "%) vs ", B, " (", lambday, "%)", sep = "")),
+                 data = d, ssaobj = x,
+                 panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
+                 prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
+            dots))
 }
 
 prepanel.series <- function(x, y, recon, ..., symmetric = FALSE) {
@@ -229,13 +226,12 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
                     as.table = TRUE,
                     scales = list(relation = "free"))
 
-  res <- do.call("xyplot",
-                 c(list(x = A ~ B | factor(A, labels = paste(groups)),
-                        data = d, recon = r,
-                        panel = panel.series,
-                        prepanel = prepanel.series),
-                   dots))
-  print(res)
+  do.call("xyplot",
+          c(list(x = A ~ B | factor(A, labels = paste(groups)),
+                 data = d, recon = r,
+                 panel = panel.series,
+                 prepanel = prepanel.series),
+            dots))
 }
 
 panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
@@ -273,15 +269,14 @@ plot.wcor.matrix <- function(x,
   # Rename args for transfer to panel function
   names(dots)[names(dots) == "useRaster"] <- ".useRaster"
 
-  res <- do.call("levelplot",
-                 c(list(x = abs(x) ~ row * column,
-                        data = data,
-                        at = seq(zlim[1], zlim[2], length.out = cuts + 2),
-                        panel = panel.levelplot.wcor,
-                        grid = grid,
-                        useRaster = dots$.useRaster),
-                 dots))
-  print(res)
+  do.call("levelplot",
+          c(list(x = abs(x) ~ row * column,
+                 data = data,
+                 at = seq(zlim[1], zlim[2], length.out = cuts + 2),
+                 panel = panel.levelplot.wcor,
+                 grid = grid,
+                 useRaster = dots$.useRaster),
+            dots))
 }
 
 plot.ssa <- function(x,
@@ -405,13 +400,12 @@ plot.fdimpars.1d <- function(x, ...) {
                     aspect = "iso",
                     pch = 19)
 
-  res <- do.call("xyplot",
-                 c(list(Im(roots) ~ Re(roots),
-                        data = x,
-                        panel = panel.roots,
-                        prepanel = prepanel.roots),
-                   dots))
-  print(res)
+  do.call("xyplot",
+          c(list(Im(roots) ~ Re(roots),
+                 data = x,
+                 panel = panel.roots,
+                 prepanel = prepanel.roots),
+            dots))
 }
 
 plot.fdimpars.2d <- function(x, ...) {
@@ -429,20 +423,18 @@ plot.fdimpars.2d <- function(x, ...) {
   data$root <- c(x[[1]]$roots, x[[2]]$roots)
   data$ind <- rep(c("lambda", "mu"), each = length(x[[1]]$roots))
 
-  res <- do.call("xyplot",
-                 c(list(Im(root) ~ Re(root) | ind,
-                        data = data,
-                        panel = panel.roots,
-                        prepanel = prepanel.roots),
-                   dots))
-  print(res)
+  do.call("xyplot",
+          c(list(Im(root) ~ Re(root) | ind,
+                 data = data,
+                 panel = panel.roots,
+                 prepanel = prepanel.roots),
+            dots))
 }
 
 plot.lrr <- function(x, ..., raw = FALSE) {
   if (!raw) {
     r <- roots(x)
-    res <- xyplot(Im(r) ~ Re(r), ...)
-    return(print(res))
+    xyplot(Im(r) ~ Re(r), ...)
   }
 
   dots <- list(...)
