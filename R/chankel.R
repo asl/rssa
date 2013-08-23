@@ -247,7 +247,7 @@ plot.cssa.reconstruction <- function(x,
   class(x) <- paste(c("mssa", "ssa"), "reconstruction", sep = ".")
 
   # Do the call with the same set of arguments
-  mplot <- match.call(expand.dots = FALSE)
+  mplot <- match.call(expand.dots = TRUE)
   mplot[[1L]] <- as.name("plot")
   mplot[[2L]] <- x
   eval(mplot, parent.frame())

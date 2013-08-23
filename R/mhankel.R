@@ -401,7 +401,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
   # Eigenvectors are same as for 1D-SSA case
   if (identical(what, "eigen")) {
     ## Do the call with the same set of arguments
-    mplot <- match.call(expand.dots = FALSE)
+    mplot <- match.call(expand.dots = TRUE)
     mplot[[1L]] <- as.name(".plot.ssa.vectors.1d.ssa")
     mplot[[2L]] <- x
     eval(mplot, parent.frame())
