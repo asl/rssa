@@ -502,7 +502,9 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       region, contour) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   L <- ssaobj$window
-  wmask <- .get(ssaobj, "wmask", default = matrix(TRUE, L[1], L[2]))
+  wmask <- .get(ssaobj, "wmask")
+  if (is.null(wmask))
+    wmask <- matrix(TRUE, L[1], L[2])
 
   data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))[as.vector(wmask), ]
   data$z <- ssaobj$U[, z[subscripts]]
