@@ -235,7 +235,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
   do.call("levelplot",
           c(list(x = z ~ row * column | factor(z,
-                   labels = if (!plot.contrib) z else paste(z, " (", lambda, "%)", sep = "")),
+                                               labels = if (!plot.contrib) z else paste(z, " (", lambda, "%)", sep = "")),
                  data = d, ssaobj = x,
                  at = at,
                  useRaster = dots$.useRaster,
