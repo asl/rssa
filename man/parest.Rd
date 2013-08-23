@@ -106,5 +106,16 @@ s <- ssa(mx, kind = "2d-ssa")
 pe <- parestimate(s, groups = list(1:5))
 print(pe)
 plot(pe)
+
+# Real example: Mars photo
+data(Mars)
+# Decompose only Mars image (without backgroud)
+s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
+# Reconstruct and plot texture pattern
+plot(reconstruct(s, groups = list(c(15,16, 20, 21))))
+# Estimate pattern parameters
+pe <- parestimate(s, groups = list(c(15,16, 20, 21)))
+print(pe)
+plot(pe)
 }
 

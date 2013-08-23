@@ -167,4 +167,15 @@ s <- ssa(mx, kind = "2d-ssa", wmask = circle(5), neig = 10)
 r <- reconstruct(s, groups = list(1, 2:5, 6))
 # Plot components, original field and residuals
 plot(r)
+
+# Real example: Mars photo
+data(Mars)
+# Decompose only Mars image (without backgroud)
+s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
+# Plot eigenfields
+plot(s, type = "vectors", idx = 1:25)
+# Reconstruct and plot trend
+plot(reconstruct(s, 1), fill.uncovered = "original", add.residual = FALSE, add.original = FALSE)
+# Reconstruct and plot texture pattern
+plot(reconstruct(s, groups = list(c(15,16, 20, 21))))
 }
