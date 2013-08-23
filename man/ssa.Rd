@@ -129,7 +129,7 @@ ssa(x,
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
     Time Series Structure: SSA and related techniques.} Chapman and
   Hall/CRC. ISBN 1584881941
- 
+
   Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
   Methods: Theory, Algorithms, Applications. World Scientific
@@ -137,7 +137,7 @@ ssa(x,
 
   Korobeynikov, A. (2010) \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
-    Pp. 257-268  
+    Pp. 257-268
 }
 \seealso{
   \code{\link[svd:svd]{svd}},
