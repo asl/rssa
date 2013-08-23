@@ -9,6 +9,7 @@
 \method{plot}{ssa}(x,
      type = c("values", "vectors", "paired", "series", "wcor"),
      \dots,
+     vectors = c("eigen", "factor"),
      plot.contrib = TRUE,
      numvalues = nlambda(x),
      numvectors = min(nlambda(x), 10),
@@ -20,7 +21,9 @@
 \arguments{
   \item{x}{SSA object holding the decomposition}
   \item{type}{Type of the plot (see 'Details' for more information)}
-  \item{\dots}{Arguments to be passed to methods, such as graphical parameters}
+  \item{\dots}{Arguments to be passed to methods, such as graphical
+    parameters}
+  \item{vectors}{For type = 'vectors', choose the vectors to plot}
   \item{plot.contrib}{logical. If 'TRUE' (the default), the contribution
     of the component to the total variance is plotted}
   \item{numvalues}{Number of eigenvalues to plot (for type = 'values')}
