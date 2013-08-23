@@ -90,4 +90,13 @@ r <- reconstruct(s, groups = list(1, 2:5, 6))
 plot(r)
 # Plot cumulative sum of components only
 plot(r, type = "cumsum", add.residuals = FALSE, add.original = FALSE)
+
+# Real example: Mars photo
+data(Mars)
+# Decompose only Mars image (without backgroud)
+s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
+# Reconstruct and plot trend
+plot(reconstruct(s, 1), fill.uncovered = "original", add.residual = FALSE, add.original = FALSE)
+# Reconstruct and plot texture pattern
+plot(reconstruct(s, groups = list(c(15,16, 20, 21))))
 }
