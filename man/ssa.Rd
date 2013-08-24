@@ -129,7 +129,7 @@ ssa(x,
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
     Time Series Structure: SSA and related techniques.} Chapman and
   Hall/CRC. ISBN 1584881941
- 
+
   Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
   Methods: Theory, Algorithms, Applications. World Scientific
@@ -137,7 +137,7 @@ ssa(x,
 
   Korobeynikov, A. (2010) \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
-    Pp. 257-268  
+    Pp. 257-268
 }
 \seealso{
   \code{\link[svd:svd]{svd}},
@@ -167,4 +167,15 @@ s <- ssa(mx, kind = "2d-ssa", wmask = circle(5), neig = 10)
 r <- reconstruct(s, groups = list(1, 2:5, 6))
 # Plot components, original field and residuals
 plot(r)
+
+# Real example: Mars photo
+data(Mars)
+# Decompose only Mars image (without backgroud)
+s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
+# Plot eigenfields
+plot(s, type = "vectors", idx = 1:25)
+# Reconstruct and plot trend
+plot(reconstruct(s, 1), fill.uncovered = "original", add.residual = FALSE, add.original = FALSE)
+# Reconstruct and plot texture pattern
+plot(reconstruct(s, groups = list(c(15,16, 20, 21))))
 }
