@@ -199,3 +199,34 @@ test_that("Shaped 2D-SSA test", {
   mask <- !is.na(rec.R)
   expect_equal(rec.R[mask], rec.CPP[mask])
 })
+
+test_that("Shaped SSA works like R code with random data", {
+  N <- c(100, 104)
+  L <- c(30, 30)
+
+
+  set.seed(1)
+  mx <- matrix(rnorm(prod(N)), N[1], N[2])
+  wmask <- matrix(TRUE, L[1], L[2])
+  wmask[1, 1] <- wmask[1, L[2]] <- wmask[L[1], 1] <- wmask[10, 10] <- FALSE
+
+  neig <- 30
+
+  # C decomposition
+  s <- ssa(mx, wmask = wmask, kind = "2d-ssa")
+
+  # R decomposition
+  shmat <- .sh2hbhmat(s)
+  dec <- propack.svd(shmat, neig = 50)
+  expect_equal(s$lambda[1:30], dec$d[1:neig])
+
+  # R reconstruction
+  rec.R <- lapply(1:neig, function(i) dec$d[i] * .hankelize.one.shaped2d.ssa(s, dec$u[, i], dec$v[, i]))
+
+  # C reconstruction
+  rec.C <- reconstruct(s, 1:neig)
+
+  for (i in 1:neig) {
+    expect_equal(rec.C[[i]], rec.R[[i]])
+  }
+})
