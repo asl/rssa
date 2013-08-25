@@ -98,5 +98,5 @@ s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 # Reconstruct and plot trend
 plot(reconstruct(s, 1), fill.uncovered = "original", add.residual = FALSE, add.original = FALSE)
 # Reconstruct and plot texture pattern
-plot(reconstruct(s, groups = list(c(15,16, 20, 21))))
+plot(reconstruct(s, groups = list(c(13,14, 17, 18))))
 }
