@@ -61,8 +61,6 @@ ssa <- function(x,
   # Grab class separately. This way we will capture the inherit class as well
   xclass <- class(x)
 
-  wmask <- fmask <- weights <- NULL
-
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
     # Coerce input to vector if necessary
@@ -77,6 +75,8 @@ ssa <- function(x,
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, N, neig, ...)
+
+    wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "2d-ssa")) {
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
@@ -146,6 +146,8 @@ ssa <- function(x,
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, sum(N), ...)
+
+    wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "cssa")) {
     # Sanity check - the input series should be complex
     if (!is.complex(x))
@@ -158,6 +160,8 @@ ssa <- function(x,
     # Fix SVD method.
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, N, ..., svd.mehod = "propack")
+
+    wmask <- fmask <- weights <- NULL
   }
   stopifnot(!is.null(neig))
 
