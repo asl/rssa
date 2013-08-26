@@ -90,7 +90,7 @@ mx <- outer(1:50, 1:50,
 # Decompose 'mx' with default parameters
 s <- ssa(mx, kind = "2d-ssa")
 # Plot wcor for first 12 components
-plot(wcor(s, groups = 1:12))
+plot(wcor(s, groups = 1:12), grid = c(2, 6))
 
 # Real example: Mars photo
 data(Mars)

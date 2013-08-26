@@ -230,3 +230,21 @@ test_that("Shaped SSA works like R code with random data", {
     expect_equal(rec.C[[i]], rec.R[[i]])
   }
 })
+
+test_that("Shaped 2d SSA works correctly with finite rank fields", {
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20))
+
+# wmask with hole
+wmask <- matrix(TRUE, 20, 20)
+wmask[10:14, 9:10] <- FALSE
+
+for (svd.method in c("eigen", "svd", "nutrlan", "propack")) {
+  # Decompose
+  s <- ssa(mx, wmask = wmask, kind = "2d-ssa", neig = 5, svd.method = svd.method)
+  # Reconstruct
+  r <- reconstruct(s, groups = list(1:5))$F1
+  expect_equal(r, mx, label = sprintf("svd.method = %s", svd.method))
+}
+})
