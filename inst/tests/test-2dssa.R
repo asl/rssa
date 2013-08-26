@@ -15,3 +15,16 @@ test_that("simple 2s-ssa test", {
                  label = sprintf("%s.2d.ssa reconstruction", svd.method));
   }
 });
+
+test_that("2d SSA works correctly with finite rank fields", {
+# Artificial field for 2dSSA
+mx <- outer(1:50, 1:50,
+            function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20))
+for (svd.method in c("eigen", "svd", "nutrlan", "propack")) {
+  # Decompose
+  s <- ssa(mx, kind = "2d-ssa", neig = 5, svd.method = svd.method)
+  # Reconstruct
+  r <- reconstruct(s, groups = list(1:5))$F1
+  expect_equal(r, mx, label = sprintf("svd.method = %s", svd.method))
+}
+})
