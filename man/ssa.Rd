@@ -164,7 +164,7 @@ mx <- outer(1:50, 1:50,
 # Decompose 'mx' with circular window
 s <- ssa(mx, kind = "2d-ssa", wmask = circle(5), neig = 10)
 # Reconstruct
-r <- reconstruct(s, groups = list(1, 2:5, 6))
+r <- reconstruct(s, groups = list(1, 2:5))
 # Plot components, original field and residuals
 plot(r)
 
