@@ -131,8 +131,8 @@ decompose.cssa.eigen <- function(x, ...,
   S <- cssa.to.complex(sqrt(S$values), S$vectors)
 
   # Save results
-  .set(x, "lambda", sqrt(S$values[1:neig]))
-  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
+  .set(x, "lambda", S$d[1:neig])
+  .set(x, "U", S$u[, 1:neig, drop = FALSE])
 
   x
 }

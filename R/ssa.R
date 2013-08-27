@@ -27,7 +27,7 @@ determine.svd.method <- function(L, N, neig = NULL, ..., svd.method = "nutrlan")
       truncated <- FALSE
       svd.method <- "eigen"
     } else if (neig > L /2) {
-    # Check, whether desired eigentriples amount is too huge
+      # Check, whether desired eigentriples amount is too huge
       if (L < 200) {
         svd.method <- "eigen"
         truncated <- FALSE
@@ -160,7 +160,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N, ..., svd.mehod = "propack")
+      svd.method <- determine.svd.method(L, N, ..., svd.mehod = "eigen")
 
     wmask <- fmask <- weights <- NULL
   }
