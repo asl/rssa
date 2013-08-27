@@ -96,7 +96,7 @@ data(Mars)
 # Decompose only Mars image (without backgroud)
 s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 # Reconstruct and plot trend
-plot(reconstruct(s, 1), fill.uncovered = "original", add.residual = FALSE, add.original = FALSE)
+plot(reconstruct(s, 1), fill.uncovered = "original")
 # Reconstruct and plot texture pattern
 plot(reconstruct(s, groups = list(c(13,14, 17, 18))))
 }
