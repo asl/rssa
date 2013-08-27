@@ -413,6 +413,9 @@ plot.2d.ssa.reconstruction <- function(x, ...,
   if (missing(add.ranges))
     add.ranges <- identical(at, "free")
 
+  # Save `x' attributes
+  xattr <- attributes(x)
+
   if (identical(type, "cumsum") && (length(x) > 1)) {
     for (i in 2:length(x))
       x[[i]] <- x[[i]] + x[[i - 1]]
@@ -436,6 +439,8 @@ plot.2d.ssa.reconstruction <- function(x, ...,
   if (add.residuals)
     x <- c(x, list(Residuals = residuals))
 
+  # Restore `x' attributes
+  attributes(x)[c("series", "residuals")] <- xattr[c("series", "residuals")]
 
   idx <- seq_along(x)
   d <- data.frame(row = idx, column = idx, z = idx)
