@@ -56,8 +56,8 @@ parestimate.pairs <- function(U) {
   scos <- rowSums(U1*U2) / sqrt(rowSums(U1*U1)) / sqrt(rowSums(U2*U2))
 
   # Some ad-hoc test for checking the sanity of the results
-  mres <- mad(2*pi/acos(scos))
-  if (mres > 1)
+  mres <- mad(2*pi/acos(scos)) / median(2*pi/acos(scos))
+  if (mres > 0.3)
     warning("too big deviation of estimates, period estimates might be unreliable")
 
   r <- exp(1i * acos(median(scos)))
