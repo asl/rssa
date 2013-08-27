@@ -413,6 +413,9 @@ plot.2d.ssa.reconstruction <- function(x, ...,
   if (missing(add.ranges))
     add.ranges <- identical(at, "free")
 
+  # Save `x' attributes
+  xattr <- attributes(x)
+
   if (identical(type, "cumsum") && (length(x) > 1)) {
     for (i in 2:length(x))
       x[[i]] <- x[[i]] + x[[i - 1]]
@@ -436,6 +439,8 @@ plot.2d.ssa.reconstruction <- function(x, ...,
   if (add.residuals)
     x <- c(x, list(Residuals = residuals))
 
+  # Restore `x' attributes
+  attributes(x)[c("series", "residuals")] <- xattr[c("series", "residuals")]
 
   idx <- seq_along(x)
   d <- data.frame(row = idx, column = idx, z = idx)
@@ -502,7 +507,9 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       region, contour) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   L <- ssaobj$window
-  wmask <- .get(ssaobj, "wmask", default = matrix(TRUE, L[1], L[2]))
+  wmask <- .get(ssaobj, "wmask")
+  if (is.null(wmask))
+    wmask <- matrix(TRUE, L[1], L[2])
 
   data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))[as.vector(wmask), ]
   data$z <- ssaobj$U[, z[subscripts]]
