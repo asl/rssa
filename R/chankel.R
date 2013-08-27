@@ -62,14 +62,14 @@ decompose.cssa.svd <- function(x,
   h <- hankel(F, L = L)
 
   # Do decomposition
-  S <- svd(h, nu = neig, nv = neig)
+  S <- svd(h)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "lambda", S$d[seq_len(neig)])
   if (!is.null(S$u))
-    .set(x, "U", S$u)
+    .set(x, "U", S$u[, seq_len(neig), drop = FALSE])
   if (!is.null(S$v))
-    .set(x, "V", S$v)
+    .set(x, "V", S$v[, seq_len(neig), drop = FALSE])
 
   x
 }
