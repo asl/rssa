@@ -92,6 +92,10 @@ plot(s, type = "values")
 plot(s, type = "vectors", idx = 1:6,
      ref = TRUE, at = "same", cuts = 50,
      plot.contrib = TRUE, symmetric = TRUE)
+# Plot factor vectors for first 6 components
+plot(s, type = "vectors", vectors = "factor", idx = 1:6,
+     ref = TRUE, at = "same", cuts = 50,
+     plot.contrib = TRUE, symmetric = TRUE)
 # Plot wcor for first 12 components
 plot(s, type = "wcor", groups = 1:12, grid = c(2, 6))
 }
