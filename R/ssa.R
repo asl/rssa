@@ -109,9 +109,14 @@ ssa <- function(x,
 
     if (!all(wmask) || !all(fmask)) {
       weights <- field.weights(wmask, fmask)
+
       ommited <- sum(mask & (weights == 0))
       if (ommited > 0) {
-        warning(sprintf("Some field elements were covered by shaped window. %d elements will be ommited", ommited))
+        warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
+      }
+
+      if (all(weights == 0)) {
+        stop("Nothing to decompose: the given field shape is empty")
       }
     } else {
       weights <- NULL
