@@ -4,6 +4,7 @@
 \alias{calc.v.1d.ssa}
 \alias{calc.v.toeplitz.ssa}
 \alias{calc.v.2d.ssa}
+\alias{calc.v.mssa}
 
 \title{Calculate Factor Vector(s)}
 
@@ -15,6 +16,7 @@
 \usage{
 \method{calc.v}{1d.ssa}(x, idx, \dots)
 \method{calc.v}{toeplitz.ssa}(x, idx, \dots)
+\method{calc.v}{mssa}(x, idx, \dots)
 \method{calc.v}{2d.ssa}(x, idx, \dots)
 }
 
@@ -34,16 +36,6 @@
   }
   where X is a Hankel trajectory matrix, U is the matrix of eigenvectors
   and Sigma is a matrix of singular values.
-
-  Note that for several SVD methods (`eigen' and `svd' currently) the
-  matrix X is not stored inside the `ssa' object and must be calculated
-  out of series which might be pretty time-consuming, especially if
-  multiple calls to the routine are desired. User might provide a
-  temporary garbage-collected environment, which the routine will use to
-  store different values which will be shared between the calls. It is
-  the user responsibility to ensure that the environment is valid
-  (e.g. it was populated via the call of calc.v with the same `ssa'
-  object as an argument).
 }
 
 \value{

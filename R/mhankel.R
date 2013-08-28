@@ -53,7 +53,7 @@
 }
 
 decompose.mssa.svd <- function(x,
-                               neig = min(L, K),
+                               neig = min(L, sum(K)),
                                ...,
                                force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
@@ -80,7 +80,7 @@ decompose.mssa.svd <- function(x,
 }
 
 decompose.mssa.eigen <- function(x, ...,
-                                 neig = min(L, K),
+                                 neig = min(L, sum(K)),
                                  force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
@@ -110,7 +110,7 @@ decompose.mssa.eigen <- function(x, ...,
 }
 
 decompose.mssa.propack <- function(x,
-                                   neig = min(50, L, prod(K)),
+                                   neig = min(50, L, sum(K)),
                                    ...,
                                    force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
@@ -133,7 +133,7 @@ decompose.mssa.propack <- function(x,
 }
 
 decompose.mssa.nutrlan <- function(x,
-                                   neig = min(50, L, prod(K)),
+                                   neig = min(50, L, sum(K)),
                                    ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 

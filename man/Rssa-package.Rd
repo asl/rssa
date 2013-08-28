@@ -21,7 +21,9 @@
   the time-series using the selected grouping
   (\code{\link[Rssa:reconstruct.ssa]{reconstruct}}). One ends with
   frequency estimation (\code{\link[Rssa:parestimate]{parestimate}}) and
-  series forecasting (\code{\link[Rssa:forecast.ssa]{forecast}}).
+  series forecasting (\code{\link[Rssa:forecast.ssa]{forecast}},
+  \code{\link[Rssa:rforecast.ssa]{rforecast}},
+  \code{\link[Rssa:vforecast.ssa]{vforecast}}).
 }
 
 \author{Anton Korobeynikov \email{anton@korobeynikov.info}}
@@ -54,7 +56,7 @@
 s <- ssa(co2) # Perform the decomposition using the default window length
 summary(s)        # Show various information about the decomposition
 plot(s)           # Show the plot of the eigenvalues
-f <- reconstruct(s, groups = list(c(1, 4), c(2, 3))) # Reconstruct into 2 series
+f <- reconstruct(s, groups = list(Trend = c(1, 4), Seasonality = c(2, 3))) # Reconstruct into 2 series
 plot(co2)         # Plot the original series
 plot(f)           # Plot the reconstruction
 }
