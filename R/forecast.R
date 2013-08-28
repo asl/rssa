@@ -144,7 +144,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   if (!is.null(removed)) {
     all.old <- seq_len(length(removed) + length(original))
     full.old <- setdiff(all.old, removed)
-    full.new <- c(full.old, max(full.old) + seq_along(new))
+    full.new <- c(full.old, max(full.old) + seq_len(length(res) - length(original)))
     res.na <- setdiff(all.old, full.new)
     attr(res, "na.action") <- if (length(res.na) > 0) res.na else NULL
   }
