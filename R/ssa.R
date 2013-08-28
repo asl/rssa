@@ -141,7 +141,7 @@ ssa <- function(x,
     }
 
     if (is.null(neig))
-      neig <- min(50, L, N - L + 1)
+      neig <- min(50, L, sum(N - L + 1))
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
