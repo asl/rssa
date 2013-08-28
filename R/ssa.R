@@ -112,7 +112,7 @@ ssa <- function(x,
       weights <- field.weights(wmask, fmask)
       ommited <- sum(mask & (weights == 0))
       if (ommited > 0) {
-        warning(sprintf("Some field elements were covered by shaped window. %d elements will be ommited", ommited))
+        warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
       }
     } else {
       weights <- NULL
