@@ -229,6 +229,7 @@ calc.v.mssa<- function(x, idx, ...) {
         F <- ts(F,
                 start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
                 frequency = tsp[3])
+        attr(F, "na.action") <- NULL
       }
       # It's safe to propagate dimnames in any case
       dimnames(F) <- attr$dimnames
@@ -250,7 +251,8 @@ calc.v.mssa<- function(x, idx, ...) {
   for (idx in seq_along(F)) {
     cia <- ia[[idx]]
     if (!is.null(cia))
-      F[[idx]] <- .restore.attr(F[[idx]], cia$class, cia,
+      F[[idx]] <- .restore.attr(F[[idx]],
+                                cia$class, cia,
                                 fixup = fixup, only.new = only.new)
   }
 
@@ -258,7 +260,7 @@ calc.v.mssa<- function(x, idx, ...) {
   cls <- (if (drop) NULL else .get(x, "Fclass"))
 
   # Pad with NA's if necessary and optionaly convert to matrix
-  F <- .from.series.list(F, pad = "none",
+  F <- .from.series.list(F, pad = "left",
                          simplify. = !("list" %in% cls))
 
   .restore.attr(F, cls, a,

@@ -188,8 +188,8 @@
                 },
                 simplify = (if (identical(pad, "none")) simplify. else FALSE))
 
-  # If no padding is required, return
-  if (identical(pad, "none"))
+  # If no padding or further simplification is required, return
+  if (identical(pad, "none") || simplify. == FALSE)
     return(res)
 
   # Pad with NA's
