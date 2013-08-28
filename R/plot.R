@@ -380,6 +380,10 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
 
   if (identical(at, "free")) {
     z.range <- range(if (symmetric) c(data$z, -data$z) else data$z, na.rm = TRUE)
+
+    if (diff(z.range) < .Machine$double.eps^.5)
+      z.range <- z.range + c(-1, 1) * .Machine$double.eps^.25
+
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
 
@@ -516,6 +520,10 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
   if (identical(at, "free")) {
     z.range <- range(if (symmetric) c(data$z, -data$z) else data$z)
+
+    if (diff(z.range) < .Machine$double.eps^.5)
+      z.range <- z.range + c(-1, 1) * .Machine$double.eps^.25
+
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
   panel.levelplot(data$x, data$y, data$z, subscripts = seq_len(nrow(data)), at = at, ...)
