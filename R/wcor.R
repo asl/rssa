@@ -155,7 +155,16 @@ clusterify.wcor.matrix <- function(x,
 }
 
 .hweights.mssa <- function(x, ...) {
-  unlist(lapply(x$length, .hweights.default, L = x$window))
+  w <- .get(x, "weights")
+
+  if (!is.null(w)) {
+    # Return positive weights
+    w[w > 0]
+  } else {
+    N <- x$length; L <- x$window
+
+    rep(.hweights.default(N[1], L), length(N))
+  }
 }
 
 wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {

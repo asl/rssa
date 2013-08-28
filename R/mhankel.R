@@ -17,39 +17,34 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-.get.or.create.mfft.plan <- function(x) {
-  .get.or.create(x, "fft.plan", lapply(x$length, fft.plan.1d))
-}
 
 .traj.dim.mssa <- function(x) {
   c(x$window, sum(x$length - x$window + 1))
 }
 
 .hmat.striped <- function(x, fft.plan) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  N <- x$length; L <- x$window
 
   F <- .get(x, "F")
-  h <- lapply(seq_along(N),
-              function(idx) new.hmat(F[[idx]], L = L,
-                                     fft.plan = fft.plan[[idx]]))
-  b <- c(0, cumsum(K))
-  matmul <- function(v) {
-    res <- numeric(L)
-    for (idx in seq_along(h)) {
-      res <- res + hmatmul(h[[idx]], v[(b[idx]+1):b[idx+1]], transposed = FALSE)
-    }
-    res
-  }
-  tmatmul <- function(v) unlist(lapply(h, hmatmul, v = v, transposed = TRUE))
+  field <- matrix(0., max(N), length(N))
 
-  extmat(matmul, tmatmul, nrow = L, ncol = sum(K))
+  weights <- .get(x, "weights")
+  if (!is.null(weights))
+    mask <- weights > 0
+  else
+    mask <- matrix(TRUE, max(N), length(N))
+
+  field[mask] <- unlist(F)
+
+  new.hbhmat(field, L = c(L, 1),
+             wmask = NULL,
+             fmask = .get(x, "fmask"),
+             weights = weights)
 }
 
-
 .get.or.create.mhmat <- function(x) {
-  fft.plan <- .get.or.create.mfft.plan(x)
   .get.or.create(x, "hmat",
-                 .hmat.striped(x, fft.plan = fft.plan))
+                 .hmat.striped(x))
 }
 
 decompose.mssa <- function(x,
@@ -70,9 +65,8 @@ decompose.mssa.svd <- function(x,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
-  F <- .get(x, "F")
-  h <- do.call(cbind, lapply(seq_along(N), function(idx) hankel(F[[idx]], L = L)))
+  # Create circulant and convert it to ordinary matrix
+  h <- as.matrix.hbhmat(.get.or.create.mhmat(x))
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
@@ -96,13 +90,8 @@ decompose.mssa.eigen <- function(x, ...,
   if (!force.continue && nlambda(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build L-cov matrix
-  F <- .get(x, "F")
-  fft.plan <- .get.or.create.mfft.plan(x)
-  C <- matrix(0, L, L)
-  for (idx in seq_along(N)) {
-    C <- C + Lcov.matrix(F[[idx]], L = L, fft.plan = fft.plan[[idx]])
-  }
+  # Create circulant and compute XX^T in form of ordinary matrix
+  C <- tcrossprod.hbhmat(.get.or.create.mhmat(x))
 
   # Do decomposition
   S <- eigen(C, symmetric = TRUE)
@@ -161,29 +150,25 @@ decompose.mssa.nutrlan <- function(x,
   x
 }
 
-.init.mssa <- function(x, ...) {
-  # Initialize FFT plan
-  .get.or.create.mfft.plan(x)
-}
-
 calc.v.mssa<- function(x, idx, ...) {
   lambda <- .get(x, "lambda")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
   h <- .get.or.create.mhmat(x)
 
   invisible(sapply(1:length(idx),
-                   function(i) ematmul(h, U[, i], transposed = TRUE) / lambda[i]))
+                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]))
 }
 
 .hankelize.one.mssa <- function(x, U, V) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  h <- .get.or.create.hbhmat(x)
+  storage.mode(U) <- storage.mode(V) <- "double"
+  F <- .Call("hbhankelize_one_fft", U, V, h)
+  w <- .get(x, "weights")
+  if (!is.null(w)) {
+    F <- F[w > 0]
+  }
 
-  b <- c(0, cumsum(K))
-  fft.plan <- .get.or.create.mfft.plan(x)
-
-  # FIXME: All these apply's are really ugly. Switch to C version...
-  unlist(lapply(seq_along(K),
-                function(idx) .hankelize.one.1d.ssa(x, U, V[(b[idx]+1):b[idx+1]], fft.plan[[idx]])))
+  F
 }
 
 .elseries.mssa <- function(x, idx, ...) {
