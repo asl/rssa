@@ -159,27 +159,44 @@ plot.2d.ssa.reconstruction <- function(x, ...,
   print(res)
 }
 
-prepanel.eigenvectors.2d.ssa <- function(x, y, subscripts, ssaobj, ...) {
-  L <- ssaobj$window
-  y <- c(seq_len(L[1]), rep(1, L[2]))
-  x <- c(seq_len(L[2]), rep(1, L[1]))
+prepanel.eigenvectors.2d.ssa <- function(x, y, subscripts, ssaobj, ..., what = "eigen") {
+  if (identical(what, "eigen")) {
+    Ls <- ssaobj$window
+  } else if (identical(what, "factor")) {
+    Ls <- ssaobj$length - ssaobj$window + 1
+  }
+
+  y <- c(seq_len(Ls[1]), rep(1, Ls[2]))
+  x <- c(seq_len(Ls[2]), rep(1, Ls[1]))
+
   prepanel.default.levelplot(x, y, subscripts = seq_along(x))
 }
 
 panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
+                                      what = "eigen",
                                       ref = FALSE,
                                       symmetric = FALSE,
                                       .cuts = 20,
                                       .useRaster = FALSE,
                                       region, contour) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
-  L <- ssaobj$window
-  wmask <- .get(ssaobj, "wmask")
-  if (is.null(wmask))
-    wmask <- matrix(TRUE, L[1], L[2])
 
-  data <- expand.grid(y = rev(seq_len(L[1])), x = seq_len(L[2]))[as.vector(wmask), ]
-  data$z <- ssaobj$U[, z[subscripts]]
+  idx <- z[subscripts]
+  if (identical(what, "eigen")) {
+    Ls <- ssaobj$window
+    vmask <- .get(ssaobj, "wmask")
+    vectors <- ssaobj$U[, idx]
+  } else if (identical(what, "factor")) {
+    Ls <- ssaobj$length - ssaobj$window + 1
+    vmask <- .get(ssaobj, "fmask")
+    vectors <- if (nv(ssaobj) >= max(idx)) ssaobj$V[, idx] else calc.v(ssaobj, idx)
+  }
+
+  if (is.null(vmask))
+    vmask <- matrix(TRUE, Ls[1], Ls[2])
+
+  data <- expand.grid(y = rev(seq_len(Ls[1])), x = seq_len(Ls[2]))[as.vector(vmask), ]
+  data$z <- vectors
 
   if (identical(at, "free")) {
     z.range <- range(if (symmetric) c(data$z, -data$z) else data$z)
@@ -199,8 +216,11 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
   }
 }
 
-.plot.ssa.vectors.2d.ssa <- function(x, ..., plot.contrib = FALSE, idx, at) {
+.plot.ssa.vectors.2d.ssa <- function(x, ...,
+                                     what = c("eigen", "factor"),
+                                     plot.contrib = FALSE, idx, at) {
   dots <- list(...)
+  what <- match.arg(what)
 
   if (missing(at))
     at <- "free"
@@ -219,7 +239,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
   dots <- .defaults(dots,
                     xlab = "",
                     ylab = "",
-                    main = "Eigenvectors",
+                    main = if (identical(what, "eigen")) "Eigenvectors" else "Factor vectors",
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "same"),
                     aspect = "iso",
@@ -246,6 +266,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
           c(list(x = z ~ row * column | factor(z,
                                                labels = if (!plot.contrib) z else paste(z, " (", lambda, "%)", sep = "")),
                  data = d, ssaobj = x,
+                 what = what,
                  at = at,
                  useRaster = dots$.useRaster,
                  panel = panel.eigenvectors.2d.ssa,
