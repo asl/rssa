@@ -7,7 +7,7 @@ Depends: R (>= 2.10), svd (>= 0.3.2), forecast
 Imports: lattice
 Suggests: testthat (>= 0.7)
 SystemRequirements: fftw (>=3.2)
-Author: Anton Korobeynikov
+Author: Anton Korobeynikov, Alex Shlemov, Konstantin Usevich, Nina Golyandina
 Maintainer: Anton Korobeynikov <anton@korobeynikov.info>
 Description: This package provides various Singular Spectrum Analysis routines.
 License: GPL (>= 2)
