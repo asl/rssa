@@ -184,6 +184,8 @@ data(Mars)
 s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 # Plot eigenfields
 plot(s, type = "vectors", idx = 1:25)
+# Plot factor fields
+plot(s, type = "vectors", vectors = "factor", idx = 1:25)
 # Reconstruct and plot trend
 plot(reconstruct(s, 1), fill.uncovered = "original")
 # Reconstruct and plot texture pattern
