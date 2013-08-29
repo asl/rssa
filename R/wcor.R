@@ -110,7 +110,10 @@ clusterify.wcor.matrix <- function(x,
   Ls <- min(L, K); Ks <- max(L, K)
 
   # Compute and return weights
-  c(1:(Ls-1), rep(Ls, Ks-Ls+1), (Ls-1):1)
+  if (Ls > 1)
+    c(1:(Ls-1), rep(Ls, Ks-Ls+1), (Ls-1):1)
+  else
+    rep(1, N)
 }
 
 .hweights.matrix <- function(x, L = (N + 1) %/% 2, ...) {
