@@ -105,7 +105,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(prod(L), prod(N - L + 1), ..., svd.method = "nutrlan")
+      svd.method <- determine.svd.method(prod(L), prod(N - L + 1), neig, ..., svd.method = "nutrlan")
 
     fmask <- factor.mask(mask, wmask)
 
@@ -152,7 +152,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, sum(N - L + 1), ...)
+      svd.method <- determine.svd.method(L, sum(N - L + 1), neig, ...)
 
     wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "cssa")) {
@@ -166,7 +166,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N - L + 1, ..., svd.method = "eigen")
+      svd.method <- determine.svd.method(L, N - L + 1, neig, ..., svd.method = "eigen")
 
     wmask <- fmask <- weights <- NULL
   }
