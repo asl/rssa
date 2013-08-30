@@ -17,18 +17,18 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-determine.svd.method <- function(L, N, neig = NULL, ..., svd.method = "nutrlan") {
+determine.svd.method <- function(L, K, neig = NULL, ..., svd.method = "nutrlan") {
   truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
 
-  if (is.null(neig)) neig <- min(50, L, N - L + 1)
+  if (is.null(neig)) neig <- min(50, L, K)
   if (truncated) {
     # It's not wise to call truncated methods for small matrices at all
-    if (L < 50) {
+    if (L < 500) {
       truncated <- FALSE
       svd.method <- "eigen"
     } else if (neig > L /2) {
       # Check, whether desired eigentriples amount is too huge
-      if (L < 200) {
+      if (L < 500) {
         svd.method <- "eigen"
         truncated <- FALSE
       } else {
@@ -74,7 +74,7 @@ ssa <- function(x,
 
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N, neig, ...)
+      svd.method <- determine.svd.method(L, N - L + 1, neig, ...)
 
     wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "2d-ssa")) {
@@ -103,8 +103,9 @@ ssa <- function(x,
     if (is.null(neig))
       neig <- min(50, prod(L), prod(N - L + 1))
 
+    # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- "nutrlan"
+      svd.method <- determine.svd.method(prod(L), prod(N - L + 1), ..., svd.method = "nutrlan")
 
     fmask <- factor.mask(mask, wmask)
 
@@ -151,7 +152,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, sum(N), ...)
+      svd.method <- determine.svd.method(L, sum(N - L + 1), ...)
 
     wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "cssa")) {
@@ -165,7 +166,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N, ..., svd.method = "eigen")
+      svd.method <- determine.svd.method(L, N - L + 1, ..., svd.method = "eigen")
 
     wmask <- fmask <- weights <- NULL
   }
