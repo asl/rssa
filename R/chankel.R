@@ -47,6 +47,14 @@
                  .chmat(x, fft.plan = .get.or.create.cfft.plan(x)))
 }
 
+decompose.cssa <- function(x,
+                           neig = min(50, L, K),
+                           ...,
+                           force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1
+  stop("Unsupported SVD method for Complex SSA!")
+}
+
 decompose.cssa.svd <- function(x,
                                neig = min(L, K),
                                ...,

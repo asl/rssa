@@ -52,6 +52,14 @@
                  .hmat.striped(x, fft.plan = fft.plan))
 }
 
+decompose.mssa <- function(x,
+                           neig = min(50, L, sum(K)),
+                           ...,
+                           force.continue = FALSE) {
+  N <- x$length; L <- x$window; K <- N - L + 1
+  stop("Unsupported SVD method for MSSA!")
+}
+
 decompose.mssa.svd <- function(x,
                                neig = min(L, sum(K)),
                                ...,
