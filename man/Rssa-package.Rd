@@ -50,8 +50,8 @@
     \code{\link[Rssa:reconstruct.ssa]{reconstruct}},
     \code{\link{wcor}}, \code{\link[Rssa:plot.ssa]{plot}},
     \code{\link[Rssa:parestimate]{parestimate}},
-    \code{\link[Rssa:rforecast.ssa]{rforecast}}
-    \code{\link[Rssa:vforecast.ssa]{vforecast}}
+    \code{\link[Rssa:rforecast.ssa]{rforecast}},
+    \code{\link[Rssa:vforecast.ssa]{vforecast}},
     \code{\link[Rssa:forecast.ssa]{forecast}}
 }
 \examples{
