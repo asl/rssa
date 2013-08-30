@@ -41,7 +41,7 @@
 
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
-  \code{\link[Rssa:ssa-inputs]{ssa-inputs}},  
+  \code{\link[Rssa:ssa-input]{ssa-input}},  
   \code{\link[Rssa:ssa]{ssa}},
   \code{\link[Rssa:plot.reconstruction]{plot.reconstruction}},
 }

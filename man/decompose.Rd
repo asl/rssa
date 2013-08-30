@@ -59,7 +59,7 @@
 
 \examples{
 # Decompose 'co2' series with default parameters and decomposition turned off.
-s <- ssa(co2, force.decompose = FALSE)
+s <- ssa(co2, force.decompose = FALSE, svd.method = "nutrlan")
 # Perform the decomposition
 decompose(s, neig = 50)
 # Continue the decomposition
