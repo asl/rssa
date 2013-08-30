@@ -26,13 +26,17 @@
 }
 
 \details{
-  \code{L}-weighted norm of series is Frobenius norm of its \code{L}-trajectory matrix. So,
-  if \code{x} is vector (series), the result of \code{wnorm(x, L)} is equal to \code{sqrt(sum(hankel(x, L)^2)}, but
-  would be evaluated much more efficiently.
-  For 1d SSA and Toeplitz SSA \code{wnorm(x)} calculates weighted norm for stored original input series and stored window length.
+  \code{L}-weighted norm of series is Frobenius norm of its
+  \code{L}-trajectory matrix. So, if \code{x} is vector (series), the
+  result of \code{wnorm(x, L)} is equal to \code{sqrt(sum(hankel(x,
+  L)^2)}, but in fact is calculated much more efficiently. For 1d SSA and
+  Toeplitz SSA \code{wnorm(x)} calculates weighted norm for stored
+  original input series and stored window length.
 
-  \code{L}-weighted norm of 2d-field is Frobenius norm of its \code{L[1] * L[2]}-trajectory hankel-block-hankel matrix.
-  For 2d SSA this method calculates weighted norm for stored original input field and stored 2d-window lengths.
+  \code{L}-weighted norm of 2d array is Frobenius norm of its \code{L[1]
+  * L[2]}-trajectory hankel-block-hankel matrix.  For 2d SSA this method
+  calculates weighted norm for stored original input array and stored
+  2d-window lengths.
 }
 
 \references{
@@ -52,7 +56,7 @@ wnorm(co2, 20)
 ss <- ssa(co2, force.decompose = FALSE)
 wnorm(ss)
 
-# Artificial field for 2dSSA
+# Artificial image for 2D SSA
 mx <- outer(1:50, 1:50,
             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
       rnorm(50^2, sd = 0.1)

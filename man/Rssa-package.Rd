@@ -31,12 +31,12 @@
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001):
   \emph{Analysis of Time Series Structure: SSA and related techniques.}
   Chapman and Hall/CRC. ISBN 1584881941
-  
+
   Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
   Methods: Theory, Algorithms, Applications. World Scientific
   Publishing, 450-474.
-  
+
   Korobeynikov, A. (2010) \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
   Pp. 257-268
@@ -50,13 +50,25 @@
     \code{\link[Rssa:reconstruct.ssa]{reconstruct}},
     \code{\link{wcor}}, \code{\link[Rssa:plot.ssa]{plot}},
     \code{\link[Rssa:parestimate]{parestimate}},
+    \code{\link[Rssa:rforecast.ssa]{rforecast}}
+    \code{\link[Rssa:vforecast.ssa]{vforecast}}
     \code{\link[Rssa:forecast.ssa]{forecast}}
 }
 \examples{
 s <- ssa(co2) # Perform the decomposition using the default window length
 summary(s)        # Show various information about the decomposition
 plot(s)           # Show the plot of the eigenvalues
-f <- reconstruct(s, groups = list(Trend = c(1, 4), Seasonality = c(2, 3))) # Reconstruct into 2 series
-plot(co2)         # Plot the original series
-plot(f)           # Plot the reconstruction
+r <- reconstruct(s, groups = list(Trend = c(1, 4), Seasonality = c(2, 3))) # Reconstruct into 2 series
+plot(r, add.original = TRUE)  # Plot the reconstruction
+
+# Simultaneous trend extraction using MSSA
+s <- ssa(EuStockMarkets, kind = "mssa")
+r <- reconstruct(s, groups = list(Trend = c(1,2)))
+plot(r, plot.method = "xyplot", add.residuals = FALSE,
+     superpose = TRUE, auto.key = list(columns = 2))
+# Trend forecast
+f <- rforecast(s, groups = list(Trend = c(1, 2)), len = 50, only.new = FALSE)
+library(lattice)
+xyplot(ts.union(Original = EuStockMarkets, "Recurrent Forecast" = f),
+       superpose = TRUE, auto.key = list(columns = 2))
 }

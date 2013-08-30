@@ -8,7 +8,7 @@
 \title{Perform SSA forecasting of series}
 
 \description{
-  All-in-one function to perform SSA forecasting of series.
+  All-in-one function to perform SSA forecasting of one-dimensional series.
 }
 
 \usage{

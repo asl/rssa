@@ -7,7 +7,7 @@
 \title{Perform bootstrap SSA forecasting of the series}
 
 \description{
-  Perform bootstrap SSA forecasting of the series.
+  Perform bootstrap SSA forecasting of the one-dimensional series.
 }
 
 \usage{

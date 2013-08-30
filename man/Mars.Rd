@@ -13,7 +13,7 @@
 
 \source{
   Thierry, P. Tutorial for IRIS 5.59 (an astronomical images processing software),
-  http://www.astrosurf.com/buil/iris/tutorial8/doc23_us.htm.
+  \url{http://www.astrosurf.com/buil/iris/tutorial8/doc23_us.htm}.
   Last updated: 20.12.2005
 }
 \keyword{datasets}

@@ -41,22 +41,25 @@
 
 \value{
   For 1D-SSA (and Toeplitz), a list of objects of S3-class `fdimpars.1d'. Each object is a list with 5 components:
-  'roots' - complex roots of minimal LRR characteristic polynom,
-  'periods' - periods of dumped sinusoids,
-  'frequencies' - frequencies of dumped sinusoids,
-  'moduli' - moduli of roots and
-  'rates' - rates of exponential trend (\code{rates == log(moduli)}).
+  \describe{
+    \item{roots}{complex roots of minimal LRR characteristic polynomial}
+    \item{periods}{periods of dumped sinusoids}
+    \item{frequencies}{frequencies of dumped sinusoids}
+    \item{moduli}{moduli of roots}
+    \item{rates}{rates of exponential trend (\code{rates == log(moduli)})}
+  }
 
-  For 'method' = 'pairs' all moduli equal to 1 and all rates equal to 0.
+  For 'method' = 'pairs' all moduli are set equal to 1 and all rates equal to 0.
 
   For 2D-SSA, a list of objects of S3-class `fdimpars.2d'. Each object is unnamed list of two
   `fdimpars.1d' objects, each for corresponding spatial coordinate.
 
-  In all cases elements of the list have
-  the same names as elements of \code{groups}. If group is unnamed,
-  corresponding component gets name `Fn', where `n' is its index in \code{groups} list.
-  If 'drop = TRUE' and length of 'groups' is one, then
-  corresponding list of estimated parameters is returned.
+  In all cases elements of the list have the same names as elements of
+  \code{groups}. If group is unnamed, corresponding component gets name
+  `Fn', where `n' is its index in \code{groups} list.
+
+  If 'drop = TRUE' and length of 'groups' is one, then corresponding
+  list of estimated parameters is returned.
 }
 
 \details{
@@ -101,7 +104,7 @@ pe <- parestimate(s, groups = list(c(2, 3, 5, 6)), method = "esprit-ls")
 print(pe)
 plot(pe)
 
-# Artificial field for 2dSSA
+# Artificial image for 2D SSA
 mx <- outer(1:50, 1:50,
             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
       rnorm(50^2, sd = 0.1)

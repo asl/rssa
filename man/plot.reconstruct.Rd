@@ -70,19 +70,18 @@
 }
 
 \details{
-  Additional (non-standard) graphical parameters which can be transfered via \dots:
+  Additional (non-standard) graphical parameters applicable to 2D SSA plots can be transfered via \dots:
   \describe{
     \item{cuts}{the number of levels the range of \code{z} would be divided into.}
-    \item{ref}{logical. Whether to plot zero-level isolines in 2d-reconstruction-plots.}
-    \item{symmetric}{logical. Whether to use symmetric \code{z}-scale in 2d-reconstruction-plots.}
-    \item{useRaster}{logical. For 2d-reconstruction-plot, indicating whether raster representations
-      should be used. 'TRUE' by default.}
+    \item{ref}{logical. Whether to plot zero-level isolines}
+    \item{symmetric}{logical. Whether to use symmetric \code{z}-scale.}
+    \item{useRaster}{logical. Indicates whether raster representations should be used. 'TRUE' by default.}
     \item{fill.uncovered}{single number, matrix or one of the following strings: 'mean', 'original', 'void'.
-      For shaped 2d-reconstruction-plot this argument defines filling method for uncovered field elements on
-      components and residuals plots.
+      For shaped 2d-reconstruction-plot this argument defines filling
+      method for uncovered by window array elements on components and residuals plots.
       If number, all uncovered elements will be replaced by it. If matrix, all uncovered elements will be replaced by
       corresponding matrix elements. If 'mean', they will be replaced by mean value of current component. If 'original',
-      they will be replaced by corresponding elements of original field. 'void' (by default) means no filling.}
+      they will be replaced by corresponding elements of original array. 'void' (by default) means no filling.}
     \item{fill.color}{color or 'NULL'. Defines background color for shaped 2d-reconstruction plot. If 'NULL', standard white
       background will be used.}
   }
@@ -95,7 +94,7 @@ r <- reconstruct(s, groups = list(c(1, 4), c(2, 3), c(5, 6)))
 # Plot full 'co2' reconstruction into trend, periodic components and noise
 plot(r)
 
-# Artificial field for 2dSSA
+# Artificial image for 2dSSA
 mx <- outer(1:50, 1:50,
             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
       rnorm(50^2, sd = 0.1)
@@ -103,7 +102,7 @@ mx <- outer(1:50, 1:50,
 s <- ssa(mx, kind = "2d-ssa")
 # Reconstruct
 r <- reconstruct(s, groups = list(1, 2:5))
-# Plot components, original field and residuals
+# Plot components, original image and residuals
 plot(r)
 # Plot cumulative sum of components only
 plot(r, type = "cumsum", add.residuals = FALSE, add.original = FALSE)
@@ -115,11 +114,11 @@ s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 # Reconstruct and plot trend
 plot(reconstruct(s, 1), fill.uncovered = "original")
 # Reconstruct and plot texture pattern
-plot(reconstruct(s, groups = list(c(13,14, 17, 18))))
+plot(reconstruct(s, groups = list(c(13, 14, 17, 18))))
 
 # Decompose 'EuStockMarkets' series with default parameters
 s <- ssa(EuStockMarkets, kind = "mssa")
-r <- reconstruct(s, groups = list(Trend = 1))
+r <- reconstruct(s, groups = list(Trend = 1:2))
 # Plot original series, trend and residuals superimposed
 plot(r, plot.method = "xyplot", superpose = TRUE,
      auto.key = list(columns = 3),

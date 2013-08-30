@@ -27,7 +27,7 @@
 }
 
 \value{
-  vector of residuals
+  residuals object
 }
 
 \seealso{

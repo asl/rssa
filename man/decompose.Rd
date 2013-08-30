@@ -4,6 +4,8 @@
 \alias{decompose.ssa}
 \alias{decompose.1d.ssa}
 \alias{decompose.2d.ssa}
+\alias{decompose.mssa}
+\alias{decompose.cssa}
 \alias{decompose.toeplitz.ssa}
 \title{Calculate SSA decomposition of the series}
 
@@ -14,6 +16,8 @@
 \usage{
 \method{decompose}{1d.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
 \method{decompose}{toeplitz.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
+\method{decompose}{mssa}(x, neig = min(50, L, sum(K)), \dots, force.continue = FALSE) 
+\method{decompose}{cssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
 \method{decompose}{2d.ssa}(x, neig = min(50, prod(L), prod(K)), \dots)
 }
 
@@ -36,6 +40,12 @@
   'ssa' object already holds some decomposition and more eigentriples
   are requested, then the decomposition continues using the current
   values as a starting point reducing the computation time dramatically.
+}
+
+\note{
+  Usually there is no need to call this function directly. Call to
+  \code{\link{ssa}} does the decomposition in the end. Other functions
+  do the decomposition when necessary.
 }
 
 \value{

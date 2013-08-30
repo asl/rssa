@@ -37,13 +37,12 @@
   This function is the single entry to various plots of SSA objects. Right
   now this includes:
   \describe{
-    \item{values}{plot the graph of eigenvalues.}
+    \item{values}{plot the graph of the singular values.}
     \item{vectors}{plot the eigenvectors.}
     \item{paired}{plot the pairs of eigenvectors (useful for the
       detection of periodic components).}
     \item{series}{plot the reconstructed series.}
-    \item{wcor}{plot the W-correlation matrix for the reconstructed series
-    (or fields, for 2dSSA case).}
+    \item{wcor}{plot the W-correlation matrix for the reconstructed objects.}
   }
 
   Additional (non-standard) graphical parameters which can be transfered via \dots:
@@ -82,7 +81,7 @@ plot(s, type = "series", groups = list(1:4))
 # Plot the eigenvalues by points only
 plot(s, type = "values", plot.type = "p")
 
-# Artificial field for 2dSSA
+# Artificial image for 2dSSA
 mx <- outer(1:50, 1:50,
             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
       rnorm(50^2, sd = 0.1)

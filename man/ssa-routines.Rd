@@ -40,7 +40,7 @@ nv(x)
   operator \code{$}, in particular, the following values of argument
   \code{name} are supported:
   \describe{
-    \item{lambda}{Vector of eigenvalues}
+    \item{lambda}{Vector of singular values}
     \item{U}{The matrix of eigenvectors}
     \item{V}{The matrix of factor vectors. Might not exist depending on the selected SVD method}
   }
@@ -69,10 +69,10 @@ nv(x)
 s <- ssa(co2, neig = 20)
 # Show the number of eigentriples saved in the 's'
 print(nlambda(s))
-# Show the summary
+# Show the summary 
 summary(s)
-# Show the set of eigenvalues
+# Show the set of singular values
 print(s$lambda)
 # Show the first eigenvector
-print(s$U[,1])
+print(s$U[, 1])
 }
