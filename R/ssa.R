@@ -165,7 +165,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N, ..., svd.mehod = "eigen")
+      svd.method <- determine.svd.method(L, N, ..., svd.method = "eigen")
 
     wmask <- fmask <- weights <- NULL
   }
