@@ -241,8 +241,8 @@ plot.cssa.reconstruction <- function(x,
   res <- attr(x, "residuals")
 
   x <- lapply(x, function(el) list(Re = Re(el), Im = Im(el)))
-  attr(x, "residuals") <- list(Re = Re(original), Im = Im(original))
-  attr(x, "series") <- list(Re = Re(res), Im = Im(res))
+  attr(x, "series") <- list(Re = Re(original), Im = Im(original))
+  attr(x, "residuals") <- list(Re = Re(res), Im = Im(res))
 
   class(x) <- paste(c("mssa", "ssa"), "reconstruction", sep = ".")
 
