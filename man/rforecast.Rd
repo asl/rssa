@@ -59,14 +59,31 @@
   \eqn{y_{n-(L-2)}}, \ldots, \eqn{y_{n}} are taken from the reconstructed
   time series (\code{base="reconstructed"}) or from the initial
   (\code{base="initial"}) time series.
+
+  For multichannel SSA the column forecast is obtained via applying the
+  LRR to each series separately. Row forecast uses the formulae from
+  (Golyandina and Stepanov, 2005).
 }
 
 \value{
-  List of vectors of forecasted series. Elements of the list have
-  the same names as elements of \code{groups}. If group is unnamed,
-  corresponding component gets name `Fn', where `n' is its index in \code{groups} list.
+  List of forecasted objects. Elements of the list have the same names
+  as elements of \code{groups}. If group is unnamed, corresponding
+  component gets name `Fn', where `n' is its index in \code{groups}
+  list.
 
-  The series itself, if length of groups is one and 'drop = TRUE'.
+  Or, the forecasted object itself, if length of groups is one and 'drop = TRUE'.
+}
+
+\references{
+  Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
+    Time Series Structure: SSA and related techniques.} Chapman and
+  Hall/CRC. ISBN 1584881941
+
+  Golyandina, N. and Stepanov, D. (2005): \emph{SSA-based approaches to
+    analysis and forecast of multidimensional time series}. In
+    Proceedings of the 5th St.Petersburg Workshop on Simulation, June
+    26-July 2, 2005, St. Petersburg State University, St. Petersburg,
+    293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
 }
 
 \seealso{

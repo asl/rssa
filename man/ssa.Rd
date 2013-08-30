@@ -20,9 +20,8 @@ ssa(x,
 }
 
 \arguments{
-  \item{x}{object to be decomposed. Vector or time series object for 1d
-    SSA (or something which can be coerced to a vector), matrix-like
-    object for 2d SSA.}
+  \item{x}{object to be decomposed. See
+  \code{\link[Rssa:ssa-input]{ssa-input}} for more information}
   \item{L}{integer, window length. Fixed to half of the series length by
     default. Should be vector of length 2 for 2d SSA}
   \item{neig}{integer, number of desired eigentriples. If 'NULL', then
@@ -161,6 +160,7 @@ ssa(x,
 \seealso{
   \code{\link[svd:svd]{svd}},
   \code{\link[Rssa:ssa-object]{ssa-object}},
+  \code{\link[Rssa:ssa-input]{ssa-input}},
   \code{\link[Rssa:decompose.ssa]{decompose}},
   \code{\link[Rssa:reconstruct]{reconstruct}},
   \code{\link[Rssa:plot]{plot}},

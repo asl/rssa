@@ -33,7 +33,7 @@
   \item{U}{Matrix containing the orthonormal basis vectors in columns}
   \item{eps}{Tolerance for verticality checking}
   \item{method}{methods used for calculation of the polynomial roots: via eigenvalues
-    of companion matrix or R's standard polyroot routine}
+    of companion matrix or R's standard \code{polyroot} routine}
   \item{raw}{logical, if 'TRUE' then \code{plot} routine will not add any
     additional plot components (e.g. unit circle)}
 }

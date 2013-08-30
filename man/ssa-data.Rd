@@ -1,21 +1,22 @@
-\name{ssa-data}
-\alias{ssa-data}
-\alias{ssa-inputs}
-\title{Data formats Used by SSA Routines}
+\name{ssa-input}
+\alias{ssa-input}
+\title{Input Data Formats Used by SSA Routines}
 
 \description{
   The inputs of SSA can be quite different depending on the kind of SSA
   used. However, there is a common of all the variants of SSA and all
   the routines. The package tries hard to preserve the specifics of
   input object as much as possible. This means, that all the attributes,
-  etc. are copied back to the reconstructed objects. So, the result of
-  the SSA decomposition of a 'ts' object is a 'ts' object as well.
+  etc. are copied back to the reconstructed objects. This way, the
+  result of the SSA decomposition of a 'ts' object is a 'ts' object as
+  well.
 
   For forecasting, it is not possible in general to preserve the
   attributes of the input objects. However, \code{Rssa} knows about some
   common time series classes (e.g. 'ts') and tries to infer the time
   scales for forecasted objects as well.
 
+  The input formats are as follows:
   \subsection{1d SSA and Toeplitz SSA}{
     Input is assumed to be a simple vector, or vector-like object
     (e.g. univariare 'ts' or 'zooreg' object). Everything else is
@@ -69,7 +70,8 @@
 
 \examples{
 s <- ssa(co2) # Perform the decomposition using the default window length
-r <- reconstruct(s, groups = list(Trend = c(1, 4), Seasonality = c(2, 3))) # Reconstruct into 2 series
+r <- reconstruct(s, groups = list(Trend = c(1, 4),
+                                  Seasonality = c(2, 3))) # Reconstruct into 2 series
 class(r$Trend) # Result is 'ts' object
 
 # Simultaneous trend extraction using MSSA

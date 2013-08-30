@@ -12,33 +12,33 @@
 }
 \usage{
 \method{plot}{1d.ssa.reconstruction}(x, \dots,
-    type = c("raw", "cumsum"),
-    plot.method = c("native", "matplot", "xyplot"),
-    base.series = NULL,
-    add.original = TRUE,
-    add.residuals = TRUE)
+     type = c("raw", "cumsum"),
+     plot.method = c("native", "matplot", "xyplot"),
+     base.series = NULL,
+     add.original = TRUE,
+     add.residuals = TRUE)
 \method{plot}{toeplitz.ssa.reconstruction}(x, \dots,
-    type = c("raw", "cumsum"),
-    plot.method = c("native", "matplot", "xyplot"),
-    base.series = NULL,
-    add.original = TRUE,
-    add.residuals = TRUE)
+     type = c("raw", "cumsum"),
+     plot.method = c("native", "matplot", "xyplot"),
+     base.series = NULL,
+     add.original = TRUE,
+     add.residuals = TRUE)
 \method{plot}{mssa.reconstruction}(x,
-    slice = list(),
-    \dots,
-    type = c("raw", "cumsum"),
-    plot.method = c("native", "matplot", "xyplot"),
-    na.pad = c("left", "right"),
-    base.series = NULL,
-    add.original = TRUE,
-    add.residuals = TRUE)
+     slice = list(),
+     \dots,
+     type = c("raw", "cumsum"),
+     plot.method = c("native", "matplot", "xyplot"),
+     na.pad = c("left", "right"),
+     base.series = NULL,
+     add.original = TRUE,
+     add.residuals = TRUE)
 \method{plot}{2d.ssa.reconstruction}(x, \dots,
-    type = c("raw", "cumsum"),
-    base.series = NULL,
-    add.original = TRUE,
-    add.residuals = TRUE,
-    add.ranges,
-    at)
+     type = c("raw", "cumsum"),
+     base.series = NULL,
+     add.original = TRUE,
+     add.residuals = TRUE,
+     add.ranges,
+     at)
 }
 
 \arguments{
@@ -60,7 +60,7 @@
     to the plot}
   \item{add.residuals}{logical, if 'TRUE' then the residuals are added
   to the plot}
-  \item{at}{A numeric vector giving breakpoints along the range of \code{z}.
+  \item{at}{A numeric vector giving breakpoints along the range of the image.
     Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
     special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
     argument in 'Details') for each component. 'same' means one breakpoints' vector for all
@@ -72,10 +72,10 @@
 \details{
   Additional (non-standard) graphical parameters applicable to 2D SSA plots can be transfered via \dots:
   \describe{
-    \item{cuts}{the number of levels the range of \code{z} would be divided into.}
-    \item{ref}{logical. Whether to plot zero-level isolines}
-    \item{symmetric}{logical. Whether to use symmetric \code{z}-scale.}
-    \item{useRaster}{logical. Indicates whether raster representations should be used. 'TRUE' by default.}
+    \item{cuts}{the number of levels the range of image would be divided into.}
+    \item{ref}{logical, whether to plot zero-level isolines}
+    \item{symmetric}{logical, whether to use symmetric image range scale}
+    \item{useRaster}{logical, indicates whether raster representations should be used. 'TRUE' by default.}
     \item{fill.uncovered}{single number, matrix or one of the following strings: 'mean', 'original', 'void'.
       For shaped 2d-reconstruction-plot this argument defines filling
       method for uncovered by window array elements on components and residuals plots.
