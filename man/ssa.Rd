@@ -72,9 +72,18 @@ ssa(x,
   \subsection{Window shape selection (for shaped 2d SSA)}{
     Window shape may be specified by argument \code{umask}. If \code{umask} is 'NULL',
     then standard rectangular window (specified by \code{L}) will be used.
-    Also \code{umask} may be expression like \code{umask = circle(R)},
-    where \code{R} is radius of circular window (One can use
-    function \code{I()} for avoid this interpretation)
+
+    Also in \code{umask} one may use following functions:
+    \describe{
+      \item{circle(R)}{circular mask of radius \code{R}}
+      \item{triangle(side)}{mask in form of isosceles right-angled triangle with
+        cathetus \code{side}. Right angle lay on topleft corner of container square
+        matrix}
+    }
+    This functions are not exported, they defined only for \code{wmask} expression.
+    If one has objects with same names and want to use their rather than these functions,
+    he should use special wrapper function \code{I()} (see 'Examples'). It's also not
+    exported.
   }
 
   \subsection{SVD methods}{
@@ -178,4 +187,8 @@ plot(s, type = "vectors", idx = 1:25)
 plot(reconstruct(s, 1), fill.uncovered = "original")
 # Reconstruct and plot texture pattern
 plot(reconstruct(s, groups = list(c(13,14, 17, 18))))
+
+# I()-wrapper demo
+circle <- 50
+s <- ssa(Mars, wmask = circle(R = I(circle)))
 }
