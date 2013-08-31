@@ -72,8 +72,11 @@ ssa(x,
   \subsection{Window shape selection (for shaped 2d SSA)}{
     Window shape may be specified by argument \code{umask}. If \code{umask} is 'NULL',
     then standard rectangular window (specified by \code{L}) will be used.
-    Also \code{umask} may be expression like \code{umask = circle(R)},
-    where \code{R} is radius of circular window (One can use
+    Also \code{umask} may be expression like \code{umask = circle(R)} or
+    \code{umask = triangle(side)},
+    where \code{R} is radius of circular window and \code{side} is side of
+    right-angled triangle.
+    (One can use
     function \code{I()} for avoid this interpretation)
   }
 
