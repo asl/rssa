@@ -467,7 +467,6 @@ forecast.1d.ssa <- function(object,
   f <- do.call(predict, c(list(object, groups = groups, len = len, method = method, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
 
   # Now perform a "cast" to forecast object
-  require(forecast)
   F <- .get(object, "F")
   if (!drop.attributes)
     attributes(F) <- .get(object, "Fattr")
