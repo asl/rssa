@@ -73,10 +73,10 @@ ssa(x,
   }
 
   \subsection{Window shape selection (for shaped 2d SSA)}{
-    Window shape may be specified by argument \code{umask}. If \code{umask} is 'NULL',
+    Window shape may be specified by argument \code{wmask}. If \code{wmask} is 'NULL',
     then standard rectangular window (specified by \code{L}) will be used.
 
-    Also in \code{umask} one may use following functions:
+    Also in \code{wmask} one may use following functions:
     \describe{
       \item{circle(R)}{circular mask of radius \code{R}}
       \item{triangle(side)}{mask in form of isosceles right-angled triangle with
