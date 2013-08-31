@@ -89,8 +89,8 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   dots <- .defaults(dots,
                     type = plot.type,
                     xlab =  "Index",
-                    ylab = "log of eigenvalue",
-                    main = "Eigenvalues",
+                    ylab = "log of singular value",
+                    main = "Singular Values",
                     grid = TRUE,
                     scales = list(y = list(log = TRUE)),
                     par.settings = list(plot.symbol = list(pch = 20)))
@@ -441,7 +441,7 @@ plot.lrr <- function(x, ..., raw = FALSE) {
 
   # Provide convenient defaults
   dots <- .defaults(dots,
-                    main = "Roots of Linear Recurrence Formula")
+                    main = "Roots of Linear Recurrence Relation")
 
   do.call("plot", c(list(roots2pars(roots(x))), dots))
 }

@@ -26,11 +26,16 @@
   \code{\link[Rssa:vforecast.ssa]{vforecast}}).
 }
 
-\author{Anton Korobeynikov \email{anton@korobeynikov.info}}
 \references{
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001):
   \emph{Analysis of Time Series Structure: SSA and related techniques.}
   Chapman and Hall/CRC. ISBN 1584881941
+
+  Golyandina, N. and Stepanov, D. (2005): \emph{SSA-based approaches to
+    analysis and forecast of multidimensional time series}. In
+  Proceedings of the 5th St.Petersburg Workshop on Simulation, June
+  26-July 2, 2005, St. Petersburg State University, St. Petersburg,
+  293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
 
   Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
@@ -46,8 +51,8 @@
 }
 \keyword{package}
 \seealso{
-  \code{\link{ssa}}, \code{\link[Rssa:decompose.ssa]{decompose}},
   \code{\link[Rssa:ssa-input]{ssa-input}},
+  \code{\link{ssa}}, \code{\link[Rssa:decompose.ssa]{decompose}},
   \code{\link[Rssa:reconstruct.ssa]{reconstruct}},
   \code{\link{wcor}}, \code{\link[Rssa:plot.ssa]{plot}},
   \code{\link[Rssa:parestimate]{parestimate}},
@@ -60,7 +65,7 @@ s <- ssa(co2) # Perform the decomposition using the default window length
 summary(s)        # Show various information about the decomposition
 plot(s)           # Show the plot of the eigenvalues
 r <- reconstruct(s, groups = list(Trend = c(1, 4),
-                                  Seasonality = c(2, 3))) # Reconstruct into 2 series
+                                  Seasonality = c(2:3, 5:6))) # Reconstruct into 2 series
 plot(r, add.original = TRUE)  # Plot the reconstruction
 
 # Simultaneous trend extraction using MSSA

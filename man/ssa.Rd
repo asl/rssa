@@ -25,7 +25,7 @@ ssa(x,
   \item{L}{integer, window length. Fixed to half of the series length by
     default. Should be vector of length 2 for 2d SSA}
   \item{neig}{integer, number of desired eigentriples. If 'NULL', then
-    sane default value will be used}
+    sane default value will be used, see 'Details'}
   \item{mask}{for shaped 2d SSA case only. Logical matrix with same dimension as
     \code{x}. Specifies form of decomposed array. If 'NULL', then all
     non-NA elements will be used}
@@ -61,7 +61,7 @@ ssa(x,
         BK-SSA, see (Broomhead and King, 1986).}
       \item{toeplitz-ssa}{Toeplitz variant of 1d SSA. See Section 1.7.2
         in (Golyandina et al, 2001). This is also knows as Vatuard-Gill
-        varian of SSA or VG-SSA for analysis of stationary time series,
+        variant of SSA or VG-SSA for analysis of stationary time series,
         see (Vautard and Ghil, 1989).}
       \item{mssa}{Multichannel SSA for simultaneous decomposition of
         several time series (possible of unequal length). See

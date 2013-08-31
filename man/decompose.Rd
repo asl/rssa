@@ -7,10 +7,10 @@
 \alias{decompose.mssa}
 \alias{decompose.cssa}
 \alias{decompose.toeplitz.ssa}
-\title{Calculate SSA decomposition of the series}
+\title{Perform SSA Decomposition}
 
 \description{
-  Performs the SSA decomposition of the series.
+  Performs the SSA decomposition.
 }
 
 \usage{
@@ -29,7 +29,7 @@
 }
 
 \details{
-  This is the main function which does the decomposition of the series
+  This is the main function which does the decomposition of the SSA
   trajectory matrix. Depending on the SVD method selected in the
   \code{\link{ssa}} different SVD implementations are called. This
   might be the ordinary full SVD routines or fast methods which exploit

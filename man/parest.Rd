@@ -7,7 +7,7 @@
 \title{Estimate periods from (set of) eigenvectors}
 
 \description{
-  Function to estimate sine periods given a set of SSA eigenvectors.
+  Function to estimate the parameters (frequencies and rates) given a set of SSA eigenvectors.
 }
 
 \usage{
@@ -39,7 +39,8 @@
     (2D-ESPRIT diagonalization) and
     'esprit-memp-ls' or `esprit-memp-tls' for `MEMP with an improved pairing step'.
     Suffix '-ls' or '-tls' means approximate matrix equation solve method, as in 1D-ESPRIT case.}
-  \item{beta}{In 2D-ESPRIT, coefficient in considered shift matrices convex linear combination.}
+  \item{beta}{In 2D-ESPRIT, coefficient in convex linear combination of
+    shifted matrices.}
 }
 
 \value{
@@ -54,8 +55,9 @@
 
   For 'method' = 'pairs' all moduli are set equal to 1 and all rates equal to 0.
 
-  For 2D-SSA, a list of objects of S3-class `fdimpars.2d'. Each object is unnamed list of two
-  `fdimpars.1d' objects, each for corresponding spatial coordinate.
+  For 2D-SSA, a list of objects of S3-class `fdimpars.2d'. Each object
+  is unnamed list of two `fdimpars.1d' objects, each for corresponding
+  spatial coordinate.
 
   In all cases elements of the list have the same names as elements of
   \code{groups}. If group is unnamed, corresponding component gets name
@@ -78,7 +80,14 @@
   \eqn{\mu_k}, more precisely, \eqn{\rho_k} ('moduli') and \eqn{T_k =
   1/\omega_k} ('periods').
 
-  Also `print' and `plot' methods are implemented for classes `fdimpars.1d' and `fdimpars.2d'.
+  For images, the model
+  \deqn{
+    x_{ij}=\sum_k C_k \lambda_k^i \mu_k^j
+  }
+  is considered.
+
+  Also `print' and `plot' methods are implemented for classes
+  `fdimpars.1d' and `fdimpars.2d'.
 }
 
 \references{
@@ -116,7 +125,7 @@ s <- ssa(mx, kind = "2d-ssa")
 # Estimate parameters
 pe <- parestimate(s, groups = list(1:5))
 print(pe)
-plot(pe)
+plot(pe, col = c("green", "red", "blue"))
 
 # Real example: Mars photo
 data(Mars)
@@ -127,6 +136,6 @@ plot(reconstruct(s, groups = list(c(13,14, 17, 18))))
 # Estimate pattern parameters
 pe <- parestimate(s, groups = list(c(13,14, 17, 18)))
 print(pe)
-plot(pe)
+plot(pe, col = c("green", "red", "blue", "black"))
 }
 

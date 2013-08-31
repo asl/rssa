@@ -4,7 +4,7 @@
 
 \title{Calculate the heterogeneity matrix.}
 \description{
-  Function calculates the heterogeneity matrix for the series.
+  Function calculates the heterogeneity matrix for the one-dimensional series.
 }
 \usage{hmatr(F, \dots,
       B = N \%/\% 4, T = N \%/\% 4, L = B \%/\% 2,

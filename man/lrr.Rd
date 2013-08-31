@@ -11,7 +11,7 @@
 \title{Calculate the Linear Recurrence Relation}
 
 \description{
-  Calculates the Linear Recurrence Relation given the 'ssa' object.
+  Calculates the Linear Recurrence Relation given the one-dimensional 'ssa' object.
 }
 
 \usage{

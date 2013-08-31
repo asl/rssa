@@ -82,5 +82,5 @@ plot(f, include = 24, shadecols = "green", type = "l")
 # Use of predict() for prediction
 p <- predict(s, groups = list(1:6), method = "recurrent", len = 24)
 # Simple plotting
-plot(p)
+plot(p, ylab = "Forecasteed Values")
 }

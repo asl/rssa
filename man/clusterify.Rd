@@ -1,7 +1,7 @@
 \name{clusterify}
 \alias{clusterify}
 \alias{clusterify.ssa}
-\title{Automatic grouping of the elementary series}
+\title{Automatic Grouping of the Elementary Components}
 
 \description{Try to perform the grouping step of the SSA via clusterization.}
 
@@ -13,8 +13,9 @@
 
 \arguments{
   \item{x}{SSA object}
-  \item{group}{vector of integers, initial set of elementary series numbers}
-  \item{nclust}{integer, desired number of output series}
+  \item{group}{list of numeric vectors, indices of elementary components
+    used for reconstruction}
+  \item{nclust}{integer, desired number of output objects}
   \item{\dots}{further arguments passed to clusterization methods}
   \item{type}{algorithm of clusterization, see 'Details' for more info}
   \item{cache}{logical, if 'TRUE' then the results of the intermediate
@@ -22,15 +23,15 @@
 }
 
 \value{
-  List of integer vectors holding the indices of the elementary series
-  forming each grouped series
+  List of integer vectors holding the indices of the elementary components
+  forming each grouped objects
 }
 
 \details{
   Right now the only clusterization method is supported: use of
   w-correlation matrix as the dissimilarity matrix. Standard
   \code{hclust} routine is used to perform the grouping of the
-  elementary series.
+  elementary components.
 }
 
 \seealso{

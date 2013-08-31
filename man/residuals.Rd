@@ -13,8 +13,8 @@
 
 \arguments{
   \item{object}{input object}
-  \item{groups}{list of numeric vectors, indices of elementary series
-    used for reconstruction.}
+  \item{groups}{list of numeric vectors, indices of elementary components
+    used for reconstruction, the entries of the list can be named.}
   \item{\dots}{further arguments passed to \code{reconstruct} routine}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}

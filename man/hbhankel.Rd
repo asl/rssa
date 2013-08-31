@@ -22,7 +22,7 @@ hbhmatmul(hmat, v, transposed = FALSE)
 }
 
 \arguments{
-  \item{F}{series to construct the trajectory matrix for.}
+  \item{F}{array to construct the trajectory matrix for.}
   \item{L}{the window length.}
   \item{wmask, fmask, weights}{special parameters for shaped SSA case (see \code{\link[Rssa:ssa]{ssa}}).
     \code{wmask} and \code{fmask} are logical matrices, window and factor masks respectively.

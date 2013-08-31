@@ -61,7 +61,7 @@
   (\code{base="initial"}) time series.
 
   For multichannel SSA the column forecast is obtained via applying the
-  LRR to each series separately. Row forecast uses the formulae from
+  LRR to each series separately. Forecast uses the formulae from
   (Golyandina and Stepanov, 2005).
 }
 
@@ -85,7 +85,6 @@
     26-July 2, 2005, St. Petersburg State University, St. Petersburg,
     293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
 }
-
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:forecast]{forecast}},

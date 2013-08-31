@@ -60,5 +60,5 @@ s <- ssa(co2)
 F <- cadzow(s, rank = 3)
 # Compare with SSA reconstruction
 Fr <- reconstruct(s, groups = list(1:3))$F1
-matplot(cbind(F, Fr), type = "l")
+plot(F - Fr, type = "l")
 }

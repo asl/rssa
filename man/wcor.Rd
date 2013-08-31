@@ -27,10 +27,10 @@
 \arguments{
   \item{x}{the input object. This might be ssa object for \emph{ssa}
     method, or just a matrix with elementary series in columns for
-  \emph{default} implementation.}
+    \emph{default} implementation.}
   \item{L}{window length.}
   \item{weights}{additional weights}
-  \item{groups}{list of numeric vectors, indices of elementary series
+  \item{groups}{list of numeric vectors, indices of elementary components
     used for reconstruction.}
   \item{\dots}{further arguments passed to \code{reconstruct} routine
   for \code{wcor} or to \code{plot} for \code{plot.wcor.matrix}}
@@ -45,12 +45,12 @@
   \item{cuts}{integer, the number of levels the range of W-cor
     values will be divided into.}
   \item{zlim}{range of displaying W-cor values.
-    Values outside the range will be absolutely not shown.}
+    Values outside the range will be not shown.}
 }
 \details{
   W-correlation matrix is a standard way of checking for weak
-  separability between the elementary time series. In particular, the
-  strongly correlated elementary series should be placed into the same
+  separability between the elementary components. In particular, the
+  strongly correlated elementary components should be placed into the same
   group.The function calculates such a matrix either directly from 'ssa'
   object or from the matrix of elementary series.
 

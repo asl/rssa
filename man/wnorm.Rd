@@ -6,9 +6,9 @@
 \alias{wnorm.mssa}
 \alias{wnorm.default}
 
-\title{Calculate weighted norm of series}
+\title{Calculate Weighted Norm of series}
 \description{
-  Function calculates the W-norm for input series or for series stored in input ssa obect.
+  Function calculates the W-norm for input objects or for objects stored in input ssa obect.
 }
 \usage{
 \method{wnorm}{1d.ssa}(x, ...)
@@ -46,7 +46,8 @@
 }
 
 \seealso{
-  \code{\link[Rssa:hankel]{hankel}}
+  \code{\link[Rssa:ssa-input]{ssa-input}},
+  \code{\link[Rssa:hankel]{hankel}},
   \code{\link[Rssa:wcor]{wcor}}
 }
 

@@ -1,7 +1,7 @@
 \name{precache}
 \alias{precache}
 \alias{precache.ssa}
-\title{Calculates and caches elementary series inside SSA object}
+\title{Calculates and caches elementary components inside SSA object}
 
 \description{
   Calculates all the elementary series and saves inside SSA
