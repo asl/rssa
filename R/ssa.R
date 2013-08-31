@@ -88,7 +88,8 @@ ssa <- function(x,
 
     wmask <- .fiface.eval(substitute(wmask),
                           envir = parent.frame(),
-                          circle = circle.mask)
+                          circle = circle.mask,
+                          triangle = triangle.mask)
     if (is.null(wmask)) {
       wmask <- matrix(TRUE, L[1], L[2])
     } else {

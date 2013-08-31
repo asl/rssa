@@ -73,6 +73,13 @@ circle.mask <- function(R) {
   (I - R)^2 + (J - R)^2 < R^2
 }
 
+triangle.mask <- function(side) {
+  I <- matrix(seq_len(side), side, side)
+  J <- t(I)
+
+  I + J <= side + 1
+}
+
 new.hbhmat <- function(F, L = (N + 1) %/% 2,
                        wmask = NULL, fmask = NULL, weights = NULL) {
   N <- dim(F)
