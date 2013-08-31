@@ -68,6 +68,8 @@
       If number, all uncovered elements will be replaced by it. If matrix, all uncovered elements will be replaced by
       corresponding matrix elements. If 'mean', they will be replaced by mean value of current component. If 'original',
       they will be replaced by corresponding elements of original field. 'void' (by default) means no filling.}
+    \item{fill.color}{color or 'NULL'. Defines background color for shaped 2d-reconstruction plot. If 'NULL', standard white
+      background will be used.}
   }
 }
 

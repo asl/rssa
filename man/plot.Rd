@@ -58,6 +58,8 @@
       argument in 'Details') for each component. 'same' means one breakpoints' vector for all
       component (will be evaluated automatically too).}
     \item{cuts}{for 2d-reconstruction-plot, the number of levels the range of \code{z} would be divided into.}
+    \item{fill.color}{color or 'NULL'. Defines background color for shaped 2d-eigenvectors plot. If 'NULL', standard white
+      background will be used.}
   }
 }
 
