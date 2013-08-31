@@ -357,7 +357,11 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
                                         .cuts = 20,
                                         .useRaster = FALSE,
                                         region, contour,
-                                        fill.uncovered = "void") {
+                                        fill.uncovered = "void",
+                                        fill.color = NULL) {
+  if (!is.null(fill.color))
+    panel.fill(col = fill.color)
+
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   N <- dim(recon[[subscripts]])
   data <- expand.grid(y = rev(seq_len(N[1])), x = seq_len(N[2]))
@@ -508,7 +512,11 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       symmetric = FALSE,
                                       .cuts = 20,
                                       .useRaster = FALSE,
-                                      region, contour) {
+                                      region, contour,
+                                      fill.color = NULL) {
+  if (!is.null(fill.color))
+    panel.fill(col = fill.color)
+
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   L <- ssaobj$window
   wmask <- .get(ssaobj, "wmask")
