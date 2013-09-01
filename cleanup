@@ -1,0 +1,3 @@
+rm -f  R/init.R
+rm -f  src/config.h
+rm -f  src/Makevars
