@@ -88,6 +88,7 @@
 }
 
 \examples{
+\donttest{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
 r <- reconstruct(s, groups = list(c(1, 4), c(2, 3), c(5, 6)))
@@ -129,4 +130,5 @@ plot(r, plot.method = "xyplot", add.residuals = FALSE,
      screens = list(colnames(EuStockMarkets)),
      col = c("blue", "green", "red", "violet"),
      lty = c(rep(1, 4), rep(2, 4), rep(3, 4)))
+}
 }

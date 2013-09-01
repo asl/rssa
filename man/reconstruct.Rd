@@ -56,6 +56,7 @@ plot(r)
 r <- reconstruct(s, groups = list(1, 1:4, 1:6))
 plot(r)
 
+\donttest{
 # Real example: Mars photo
 data(Mars)
 # Decompose only Mars image (without backgroud)
@@ -73,5 +74,6 @@ plot(r, plot.method = "xyplot", superpose = TRUE,
      auto.key = list(columns = 3),
      col = c("blue", "green", "red", "violet"),
      lty = c(rep(1, 4), rep(2, 4), rep(3, 4)))
+}
 }
 

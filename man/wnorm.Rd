@@ -58,10 +58,12 @@ ss <- ssa(co2, force.decompose = FALSE)
 wnorm(ss)
 
 # Artificial image for 2D SSA
+\donttest{
 mx <- outer(1:50, 1:50,
             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
       rnorm(50^2, sd = 0.1)
 # Construct ssa-object for 'mx' with default parameters but don't decompose
 s <- ssa(mx, kind = "2d-ssa", force.decompose = FALSE)
 wnorm(s)
+}
 }

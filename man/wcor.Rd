@@ -85,6 +85,7 @@ plot(w, grid = c(2,4, 5,7))
 # to check separability
 w <- wcor(s, groups = list(c(1,4), c(2,3), c(5,6)))
 
+\donttest{
 # Artificial image for 2D SSA
 mx <- outer(1:50, 1:50,
             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
@@ -100,5 +101,6 @@ data(Mars)
 s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 # Plot wcor for the first 25 components
 plot(wcor(s, groups = 1:25), grid = c(13,15, 17,19))
+}
 }
 

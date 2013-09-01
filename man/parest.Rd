@@ -116,6 +116,7 @@ pe <- parestimate(s, groups = list(c(2, 3, 5, 6)), method = "esprit-ls")
 print(pe)
 plot(pe)
 
+\donttest{
 # Artificial image for 2D SSA
 mx <- outer(1:50, 1:50,
             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7) + exp(i/25 - j/20)) +
@@ -137,5 +138,6 @@ plot(reconstruct(s, groups = list(c(13,14, 17, 18))))
 pe <- parestimate(s, groups = list(c(13,14, 17, 18)))
 print(pe)
 plot(pe, col = c("green", "red", "blue", "black"))
+}
 }
 

@@ -69,6 +69,7 @@ r <- reconstruct(s, groups = list(Trend = c(1, 4),
 plot(r, add.original = TRUE)  # Plot the reconstruction
 
 # Simultaneous trend extraction using MSSA
+\donttest{
 s <- ssa(EuStockMarkets, kind = "mssa")
 r <- reconstruct(s, groups = list(Trend = c(1,2)))
 plot(r, plot.method = "xyplot", add.residuals = FALSE,
@@ -79,4 +80,5 @@ f <- rforecast(s, groups = list(Trend = c(1, 2)),
 library(lattice)
 xyplot(ts.union(Original = EuStockMarkets, "Recurrent Forecast" = f),
        superpose = TRUE, auto.key = list(columns = 2))
+}
 }

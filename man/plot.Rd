@@ -66,6 +66,7 @@
 }
 
 \examples{
+\donttest{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
 # Plot the eigenvalues
@@ -99,4 +100,5 @@ plot(s, type = "vectors", vectors = "factor", idx = 1:6,
      plot.contrib = TRUE, symmetric = TRUE)
 # Plot wcor for first 12 components
 plot(s, type = "wcor", groups = 1:12, grid = c(2, 6))
+}
 }

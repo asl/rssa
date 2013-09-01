@@ -174,16 +174,20 @@ s <- ssa(co2)
 summary(s)
 # Reconstruct the series, with suitable grouping
 r <- reconstruct(s, groups = list(c(1, 4), c(2, 3), c(5, 6)))
+\donttest{
 plot(r)
+}
 
 # Decompose 'EuStockMarkets' series with default parameters
 s <- ssa(EuStockMarkets, kind = "mssa")
 r <- reconstruct(s, groups = list(Trend = 1:2))
 # Plot original series, trend and residuals superimposed
+\donttest{
 plot(r, plot.method = "xyplot", superpose = TRUE,
      auto.key = list(columns = 3),
      col = c("blue", "green", "red", "violet"),
      lty = c(rep(1, 4), rep(2, 4), rep(3, 4)))
+}
 
 # Artificial image for 2dSSA
 mx <- outer(1:50, 1:50,
@@ -193,13 +197,16 @@ mx <- outer(1:50, 1:50,
 s <- ssa(mx, kind = "2d-ssa", wmask = circle(5), neig = 10)
 # Reconstruct
 r <- reconstruct(s, groups = list(1, 2:5))
+\donttest{
 # Plot components, original image and residuals
 plot(r)
+}
 
 # Real example: Mars photo
 data(Mars)
 # Decompose only Mars image (without backgroud)
 s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
+\donttest{
 # Plot eigenarrays
 plot(s, type = "vectors", idx = 1:25)
 # Plot factor arrays
@@ -217,4 +224,5 @@ s <- ssa(Mars, wmask = circle(R = I(circle)))
 s <- ssa(EuStockMarkets[, 1] + 1.0i*EuStockMarkets[, 2], kind = "cssa")
 r <- reconstruct(s, groups = list(Trend = 1:2))
 plot(r)
+}
 }
