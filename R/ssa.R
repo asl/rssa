@@ -154,7 +154,19 @@ ssa <- function(x,
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(L, sum(N - L + 1), neig, ...)
 
-    wmask <- fmask <- weights <- NULL
+    wmask <- NULL
+    if (!all(N == max(N))) {
+      K <- N - L + 1
+
+      weights <- matrix(0, max(N), length(N))
+      fmask <- matrix(FALSE, max(K), length(N))
+      for (idx in seq_along(N)) {
+        weights[seq_len(N[idx]), idx] <- .hweights.default(N[idx], L)
+        fmask[seq_len(K[idx]), idx] <- TRUE
+      }
+    } else {
+      fmask <- weights <- NULL
+    }
   } else if (identical(kind, "cssa")) {
     # Sanity check - the input series should be complex
     if (!is.complex(x))
