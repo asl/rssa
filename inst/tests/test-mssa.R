@@ -36,14 +36,16 @@ vrfore <- vforecast(s,
                     direction = "row",
                     len = len, only.new = FALSE)
 expect_equal(vrfore, testcase$vrfore,
-             label = "mssa row-vector forecast")
+             label = "mssa row-vector forecast",
+             tolerance = 1e-6)
 
 vcfore <- vforecast(s,
                     groups = list(1, 1:12),
                     direction = "column",
                     len = len, only.new = FALSE)
 expect_equal(vcfore, testcase$vcfore,
-             label = "mssa column-vector forecast")
+             label = "mssa column-vector forecast",
+             tolerance = 1e-6)
 
 rrofore <- rforecast(s,
                      groups = list(1, 1:12),
@@ -51,7 +53,8 @@ rrofore <- rforecast(s,
                      base = "original",
                      len = len, only.new = FALSE)
 expect_equal(rrofore, testcase$rrofore,
-             label = "mssa row-reccurent forecast (base = original)")
+             label = "mssa row-reccurent forecast (base = original)",
+             tolerance = 1e-6)
 
 rrrfore <- rforecast(s,
                      groups = list(1, 1:12),
@@ -59,7 +62,8 @@ rrrfore <- rforecast(s,
                      base = "reconstructed",
                      len = len, only.new = FALSE)
 expect_equal(rrrfore, testcase$rrrfore,
-             label = "mssa row-reccurent forecast (base = reconstructed)")
+             label = "mssa row-reccurent forecast (base = reconstructed)",
+             tolerance = 1e-6)
 
 rcofore <- rforecast(s,
                      groups = list(1, 1:12),
@@ -67,7 +71,8 @@ rcofore <- rforecast(s,
                      base = "original",
                      len = len, only.new = FALSE)
 expect_equal(rcofore, testcase$rcofore,
-             label = "mssa column-reccurent forecast (base = original)")
+             label = "mssa column-reccurent forecast (base = original)",
+             tolerance = 1e-6)
 
 rcrfore <- rforecast(s,
                      groups = list(1, 1:12),
@@ -75,6 +80,7 @@ rcrfore <- rforecast(s,
                      base = "reconstructed",
                      len = len, only.new = FALSE)
 expect_equal(rcrfore, testcase$rcrfore,
-             label = "mssa column-reccurent forecast (base = reconstructed)")
+             label = "mssa column-reccurent forecast (base = reconstructed)",
+             tolerance = 1e-6)
 })
 }}}
