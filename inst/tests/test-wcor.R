@@ -47,3 +47,37 @@ test_that("wcor method return correct matrix for 2dSSA case", {
                  info = sprintf("wcor.2d.ssa.%s", svd.method))
   }
 })
+
+test_that("Hankel weights computed correctly for marginal cases", {
+expect_equal(.hweights.default(1, 1), 1)
+expect_equal(.hweights.default(10, 1), rep(1, 10))
+expect_equal(.hweights.default(10, 10), rep(1, 10))
+})
+
+test_that("Hankel weights computed correctly for common case", {
+expect_equal(.hweights.default(5, 2), c(1, 2, 2, 2, 1))
+expect_equal(.hweights.default(5, 3), c(1, 2, 3, 2, 1))
+expect_equal(.hweights.default(5, 4), c(1, 2, 2, 2, 1))
+})
+
+test_that("`wnorm' works correctly for MSSA", {
+Nss <- list(20,
+            c(17, 17),
+            14,
+            c(14, 32, 36, 36, 31, 37))
+
+set.seed(1)
+for (Ns in Nss) {
+  f <- lapply(Ns, rnorm)
+
+  sss <- lapply(f, ssa, kind = "1d-ssa", L = 13,
+                force.decompose = FALSE)
+  ss <- ssa(f, kind = "mssa", L = 13,
+            force.decompose = FALSE)
+
+  w1 <- sum(sapply(sss, wnorm) ^ 2)
+  w2 <- wnorm(ss) ^ 2
+  expect_equal(w2, w1, label = sprintf("lengths: %s",
+                                       paste0(Ns, collapse = ", ")))
+}
+})
