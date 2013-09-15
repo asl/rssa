@@ -135,6 +135,26 @@ static void convolve2d_half(const fftw_complex *ox,
   fftw_free(oy);
 }
 
+static void convolve2d(double *x,
+                       double *y,
+                       R_len_t Nx, R_len_t Ny,
+                       int conjugate,
+                       fftw_plan r2c_plan,
+                       fftw_plan c2r_plan) {
+  fftw_complex *ox;
+
+  /* Allocate needed memory */
+  ox = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+
+  /* Compute the 2dFFT of the matrices x and y */
+  fftw_execute_dft_r2c(r2c_plan, x, ox);
+
+  convolve2d_half(ox, y, Nx, Ny, conjugate, r2c_plan, c2r_plan);
+
+  /* Cleanup */
+  fftw_free(ox);
+}
+
 static void hbhankel_matmul(double* out,
                             const double* v,
                             const void* matrix) {
@@ -230,13 +250,10 @@ static R_INLINE void hbhankelize_fft(double *F,
   R_len_t i, j;
 
   double *iU, *iV;
-  fftw_complex *cU, *cV;
 
   /* Allocate needed memory */
   iU = (double*) fftw_malloc(Nx * Ny * sizeof(double));
   iV = (double*) fftw_malloc(Nx * Ny * sizeof(double));
-  cU = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
-  cV = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
 
   /* Fill the arrays */
   memset(iU, 0, Nx * Ny * sizeof(double));
@@ -261,16 +278,8 @@ static R_INLINE void hbhankelize_fft(double *F,
     }
   }
 
-  /* Compute the FFTs */
-  fftw_execute_dft_r2c(h->r2c_plan, iU, cU);
-  fftw_execute_dft_r2c(h->r2c_plan, iV, cV);
-
-   /* Dot-multiply */
-  for (i = 0; i < Ny * (Nx/2 + 1); ++i)
-    cU[i] = cU[i] * cV[i];
-
-  /* Compute the inverse FFT */
-  fftw_execute_dft_c2r(h->c2r_plan, cU, iU);
+  /* Compute convolution */
+  convolve2d(iV, iU, Nx, Ny, 0, h->r2c_plan, h->c2r_plan);
 
   /* Form the result */
   for (i = 0; i < Nx * Ny; ++i) {
@@ -281,8 +290,6 @@ static R_INLINE void hbhankelize_fft(double *F,
 
   fftw_free(iU);
   fftw_free(iV);
-  fftw_free(cU);
-  fftw_free(cV);
 }
 #else
 static void free_circulant(hbhankel_matrix *h) {
