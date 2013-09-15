@@ -108,26 +108,35 @@ static void initialize_circulant(hbhankel_matrix *h,
   h->length.x = Nx; h->length.y = Ny;
 }
 
-static void convolve(double *circ,
-                     const hbhankel_matrix *h) {
-  R_len_t Nx = h->length.x, Ny = h->length.y, i;
-  fftw_complex *ocirc;
+static void convolve2d_half(const fftw_complex *ox,
+                            double *y,
+                            R_len_t Nx, R_len_t Ny,
+                            int conjugate,
+                            fftw_plan r2c_plan,
+                            fftw_plan c2r_plan) {
+  R_len_t i;
+  fftw_complex *oy;
 
   /* Allocate needed memory */
-  ocirc = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+  oy = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
 
-  /* Compute the FFT of the reversed vector v */
-  fftw_execute_dft_r2c(h->r2c_plan, circ, ocirc);
+  /* Compute the 2dFFT of the matrix y */
+  fftw_execute_dft_r2c(r2c_plan, y, oy);
 
-  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
+  /* Compute conjugation if needed */
+  if (conjugate)
+    for (i = 0; i < Ny * (Nx/2 + 1); ++i)
+      oy[i] = conj(oy[i]);
+
+  /* Dot-multiply ox and oy */
   for (i = 0; i < Ny * (Nx/2 + 1); ++i)
-    ocirc[i] = ocirc[i] * h->circ_freq[i];
+    oy[i] *= ox[i];
 
   /* Compute the reverse transform to obtain result */
-  fftw_execute_dft_c2r(h->c2r_plan, ocirc, circ);
+  fftw_execute_dft_c2r(c2r_plan, oy, y);
 
   /* Cleanup */
-  fftw_free(ocirc);
+  fftw_free(oy);
 }
 
 static void hbhankel_matmul(double* out,
@@ -154,7 +163,10 @@ static void hbhankel_matmul(double* out,
     }
   }
 
-  convolve(circ, h);
+  convolve2d_half(h->circ_freq, circ,
+                  h->length.x, h->length.y,
+                  0,
+                  h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
   if (h->row_ind == NULL) {
@@ -194,7 +206,10 @@ static void hbhankel_tmatmul(double* out,
     }
   }
 
-  convolve(circ, h);
+  convolve2d_half(h->circ_freq, circ,
+                  h->length.x, h->length.y,
+                  0,
+                  h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
   if (h->col_ind == NULL) {
