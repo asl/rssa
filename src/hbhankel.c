@@ -128,9 +128,9 @@ static void convolve2d_half(const fftw_complex *ox,
     for (i = 0; i < Ny * (Nx/2 + 1); ++i)
       oy[i] = conj(oy[i]);
 
-  /* Dot-multiply ox and oy */
+  /* Dot-multiply ox and oy, and divide by Nx*Ny*/
   for (i = 0; i < Ny * (Nx/2 + 1); ++i)
-    oy[i] *= ox[i];
+    oy[i] *= ox[i] / Nx / Ny;
 
   /* Compute the reverse transform to obtain result */
   fftw_execute_dft_c2r(c2r_plan, oy, y);
@@ -172,10 +172,10 @@ static void hbhankel_matmul(double* out,
   if (h->row_ind == NULL) {
     for (j = 0; j < Ly; ++j)
       for (i = 0; i < Lx; ++i)
-        out[i + j*Lx] = circ[i + j*Nx] / (Nx * Ny);
+        out[i + j*Lx] = circ[i + j*Nx];
   } else {
     for (i = 0; i < h->row_ind->num; ++i) {
-      out[i] = circ[h->row_ind->ind[i]] / (Nx * Ny);
+      out[i] = circ[h->row_ind->ind[i]];
     }
   }
 
@@ -215,10 +215,10 @@ static void hbhankel_tmatmul(double* out,
   if (h->col_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
-        out[i + j * Kx] = circ[(i + Lx - 1) + (j + Ly - 1)*Nx] / (Nx * Ny);
+        out[i + j * Kx] = circ[(i + Lx - 1) + (j + Ly - 1)*Nx];
   } else {
     for (i = 0; i < h->col_ind->num; ++i) {
-      out[i] =  circ[h->col_ind->ind[i] + (Lx-1) + (Ly-1)*Nx] / (Nx * Ny);
+      out[i] =  circ[h->col_ind->ind[i] + (Lx-1) + (Ly-1)*Nx];
     }
   }
 
@@ -279,7 +279,7 @@ static R_INLINE void hbhankelize_fft(double *F,
   /* Form the result */
   for (i = 0; i < Nx * Ny; ++i) {
     if (h->weights[i]) {
-      F[i] = iU[i] / h->weights[i] / Nx / Ny;
+      F[i] = iU[i] / h->weights[i];
     }
   }
 
