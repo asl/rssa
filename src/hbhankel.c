@@ -74,7 +74,6 @@ static void initialize_circulant(hbhankel_matrix *h,
                                  const double *F,
                                  R_len_t Nx, R_len_t Ny,
                                  R_len_t Lx, R_len_t Ly) {
-  R_len_t Kx = Nx - Lx + 1, Ky = Ny - Ly + 1, i, j;
   fftw_complex *ocirc;
   fftw_plan p1, p2;
   double *circ;
@@ -90,10 +89,7 @@ static void initialize_circulant(hbhankel_matrix *h,
   p2 = fftw_plan_dft_c2r_2d(Ny, Nx, ocirc, circ, FFTW_ESTIMATE);
 
   /* Fill input buffer */
-  for (j = 0; j < Ny; ++j)
-    for (i = 0; i < Nx; ++i)
-      /* This is pretty ad-hoc solution and needs to be fixed in the future */
-      circ[i + Nx*j] = F[(i + Kx - 1) % Nx + Nx*((j + Ky - 1) % Ny)];
+  memcpy(circ, F, Nx * Ny * sizeof(double));
 
   /* Run the plan on input data */
   fftw_execute(p1);
@@ -156,16 +152,16 @@ static void hbhankel_matmul(double* out,
   if (h->col_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
-        circ[i + j*Nx] = v[Kx*Ky - i - j*Kx - 1];
+        circ[i + j*Nx] = v[i + j*Kx];
   } else {
     for (i = 0; i < h->col_ind->num; ++i) {
-      circ[(Kx - 1) + (Ky - 1)*Nx - h->col_ind->ind[i]] = v[i];
+      circ[h->col_ind->ind[i]] = v[i];
     }
   }
 
   convolve2d_half(h->circ_freq, circ,
                   h->length.x, h->length.y,
-                  0,
+                  1,
                   h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
@@ -199,26 +195,26 @@ static void hbhankel_tmatmul(double* out,
   if (h->row_ind == NULL) {
     for (j = 0; j < Ly; ++j)
       for (i = 0; i < Lx; ++i)
-        circ[(i + Kx - 1) + (j + Ky - 1)*Nx] = v[Lx*Ly - i - j*Lx - 1];
+        circ[i + j*Nx] = v[i + j*Lx];
   } else {
     for (i = 0; i < h->row_ind->num; ++i) {
-      circ[Nx*Ny - 1 - h->row_ind->ind[i]] = v[i];
+      circ[h->row_ind->ind[i]] = v[i];
     }
   }
 
   convolve2d_half(h->circ_freq, circ,
                   h->length.x, h->length.y,
-                  0,
+                  1,
                   h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
   if (h->col_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
-        out[i + j * Kx] = circ[(i + Lx - 1) + (j + Ly - 1)*Nx];
+        out[i + j*Kx] = circ[i + j*Nx];
   } else {
     for (i = 0; i < h->col_ind->num; ++i) {
-      out[i] =  circ[h->col_ind->ind[i] + (Lx-1) + (Ly-1)*Nx];
+      out[i] =  circ[h->col_ind->ind[i]];
     }
   }
 
