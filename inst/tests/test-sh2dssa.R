@@ -4,6 +4,14 @@ source(system.file("extdata", "common.test.methods.R", package = "Rssa"))
 
 context("Shaped 2dSSA")
 
+convolve2.open <- function(X, Y, conj = FALSE) {
+  convolve2(X, Y, conj = conj, type = "open")
+}
+
+convolve2.filter <- function(X, Y, conj = TRUE) {
+  convolve2(X, Y, conj = conj, type = "filter")
+}
+
 test_that("new.hbhmat returns matrix with proper dimension", {
   data(Mars)
   s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), neig = 50, kind = "2d-ssa", force.decompose = FALSE)

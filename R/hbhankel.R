@@ -52,18 +52,10 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
   tmp[seq_len(output.dim[1]), seq_len(output.dim[2])]
 }
 
-convolve2.open <- function(X, Y, conj = FALSE) {
-  convolve2(X, Y, conj = conj, type = "open")
-}
-
-convolve2.filter <- function(X, Y, conj = TRUE) {
-  convolve2(X, Y, conj = conj, type = "filter")
-}
-
 factor.mask <- function(field.mask, window.mask) {
   field.mask[] <- as.numeric(field.mask)
   window.mask[] <- as.numeric(window.mask)
-  tmp <- convolve2.filter(field.mask, window.mask)
+  tmp <- convolve2(field.mask, window.mask, conj = TRUE, type = "filter")
 
   abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
 }
@@ -71,7 +63,7 @@ factor.mask <- function(field.mask, window.mask) {
 field.weights <- function(window.mask, factor.mask) {
   window.mask[] <- as.numeric(window.mask)
   factor.mask[] <- as.numeric(factor.mask)
-  res <- convolve2.open(factor.mask, window.mask)
+  res <- convolve2(factor.mask, window.mask, conj = FALSE, type = "open")
   res[] <- as.integer(round(res))
 
   res
