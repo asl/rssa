@@ -52,6 +52,7 @@ ssa <- function(x,
                 wmask = NULL,
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+                circular = FALSE,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method)
@@ -63,6 +64,9 @@ ssa <- function(x,
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
+    if (any(circular))
+      stop("Circular variant of 1dSSA isn't implemented yet")
+
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x)
@@ -78,6 +82,11 @@ ssa <- function(x,
 
     wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "2d-ssa")) {
+    if (length(circular) > 2)
+      warning("Incorrect argument length: length(circular) > 2, two leading values will be used")
+    if (length(circular) != 2)
+      circular <- rep(circular, 2)[1:2]
+
     # Coerce input to matrix if necessary
     if (!is.matrix(x))
       x <- as.matrix(x)
@@ -107,10 +116,10 @@ ssa <- function(x,
     if (identical(svd.method, "auto"))
       svd.method <- determine.svd.method(prod(L), prod(N - L + 1), neig, ..., svd.method = "nutrlan")
 
-    fmask <- factor.mask(mask, wmask)
+    fmask <- factor.mask(mask, wmask, circular = circular)
 
-    if (!all(wmask) || !all(fmask)) {
-      weights <- field.weights(wmask, fmask)
+    if (!all(wmask) || !all(fmask) || any(circular)) {
+      weights <- field.weights(wmask, fmask, circular = circular)
 
       ommited <- sum(mask & (weights == 0))
       if (ommited > 0) {
@@ -129,6 +138,9 @@ ssa <- function(x,
     if (all(fmask))
       fmask <- NULL
   } else if (identical(kind, "mssa")) {
+    if (any(circular))
+      stop("Circular variant of multichannel SSA isn't implemented yet")
+
     # We assume that we have mts-like object. With series in the columns.
     # Coerce input to series.list object
     # Note that this will correctly remove leading and trailing NA's
@@ -168,6 +180,9 @@ ssa <- function(x,
       fmask <- weights <- NULL
     }
   } else if (identical(kind, "cssa")) {
+    if (any(circular))
+      stop("Circular variant of complex SSA isn't implemented yet")
+
     # Sanity check - the input series should be complex
     if (!is.complex(x))
       stop("complex SSA should be performed on complex time series")
@@ -201,10 +216,11 @@ ssa <- function(x,
   # Save series
   .set(this, "F", x);
 
-  # Save masks and weights
+  # Save masks, weights and topology
   .set(this, "wmask", wmask)
   .set(this, "fmask", fmask)
   .set(this, "weights", weights)
+  .set(this, "circular", circular)
 
   # Save attributes
   .set(this, "Fattr", xattr)

@@ -14,7 +14,8 @@
 
 \usage{
 new.hbhmat(F, L = (N + 1) \%/\% 2,
-           wmask = NULL, fmask = NULL, weights = NULL)
+           wmask = NULL, fmask = NULL, weights = NULL,
+           circular = FALSE)
 is.hbhmat(h)
 hbhcols(h)
 hbhrows(h)
@@ -28,6 +29,9 @@ hbhmatmul(hmat, v, transposed = FALSE)
     \code{wmask} and \code{fmask} are logical matrices, window and factor masks respectively.
     \code{weights} is integer matrix which denotes hankel weights for array elements. If 'NULL',
     parameters for simple rectangular 2D SSA case are used.}
+  \item{circular}{logical vector of one or two elements, describes field topology.
+    'TRUE' means circularity by a corresponding coordinate. If vector has only one element,
+    this element will be used twice.}
   \item{h, hmat}{matrix to operate on.}
   \item{transposed}{logical, if 'TRUE' the multiplication is performed
     with the transposed matrix.}

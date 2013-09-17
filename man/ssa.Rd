@@ -15,6 +15,7 @@ ssa(x,
     wmask = NULL,
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+    circular = FALSE,
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
 }
@@ -35,6 +36,10 @@ ssa(x,
   \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA,
     Toeplitz variant of 1d SSA, multichannel variant of SSA and complex
     SSA}
+  \item{circular}{logical vector of one or two elements, describes series topology for
+    1d SSA and Toeplitz SSA or field topology
+    for 2d SSA. 'TRUE' means series circularity for 1d case or circularity by a corresponding coordinate
+    for 2d case.}
   \item{svd.method}{singular value decomposition method. See 'Details'
     for more info.}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
