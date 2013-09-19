@@ -86,7 +86,6 @@ static void free_circulant(hankel_matrix *h) {
 
 static void initialize_circulant(hankel_matrix *h, fft_plan *f,
                                  const double *F, R_len_t N, R_len_t L) {
-  R_len_t K = N - L + 1, i;
   fftw_complex *ocirc;
   double *circ;
 
@@ -98,12 +97,7 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
 
   /* Fill input buffer */
-  for (i = K-1; i < N; ++i)
-    circ[i - K + 1] = F[i];
-
-  for (i = 0; i < K-1; ++i) {
-    circ[L + i] = F[i];
-  }
+  memcpy(circ, F, N * sizeof(double));
 
   /* Run the plan on input data */
   fftw_execute_dft_r2c(f->r2c_plan, circ, ocirc);
@@ -132,8 +126,7 @@ static void hankel_matmul(double* out,
   ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
 
   /* Fill the arrays */
-  for (i = 0; i < K; ++i)
-    circ[i] = v[K - i - 1];
+  memcpy(circ, v, K * sizeof(double));
   memset(circ + K, 0, (L - 1)*sizeof(double));
 
   /* Compute the FFT of the reversed vector v */
@@ -141,7 +134,7 @@ static void hankel_matmul(double* out,
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
   for (i = 0; i < (N/2 + 1); ++i)
-    ocirc[i] = ocirc[i] * h->circ_freq[i];
+    ocirc[i] = conj(ocirc[i]) * h->circ_freq[i];
 
   /* Compute the reverse transform to obtain result */
   fftw_execute_dft_c2r(f->c2r_plan, ocirc, circ);
@@ -169,23 +162,22 @@ static void hankel_tmatmul(double* out,
   ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
 
   /* Fill the arrays */
-  memset(circ, 0, (K - 1)*sizeof(double));
-  for (i = 0; i < L; ++i)
-    circ[i + K - 1] = v[L - i - 1];
+  memset(circ + L, 0, (K - 1)*sizeof(double));
+  memcpy(circ, v, L * sizeof(double));
 
   /* Compute the FFT of the reversed vector v */
   fftw_execute_dft_r2c(f->r2c_plan, circ, ocirc);
 
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
   for (i = 0; i < (N/2 + 1); ++i)
-    ocirc[i] = ocirc[i] * h->circ_freq[i];
+    ocirc[i] = conj(ocirc[i]) * h->circ_freq[i];
 
   /* Compute the reverse transform to obtain result */
   fftw_execute_dft_c2r(f->c2r_plan, ocirc, circ);
 
   /* Cleanup and return */
   for (i = 0; i < K; ++i)
-    out[i] = circ[i + L - 1] / N;
+    out[i] = circ[i] / N;
 
   fftw_free(circ);
   fftw_free(ocirc);
@@ -302,7 +294,7 @@ static void free_circulant(hankel_matrix *h) {
 
 static void initialize_circulant(hankel_matrix *h, fft_plan *f,
                                  const double *F, R_len_t N, R_len_t L) {
-  R_len_t K = N - L + 1, i;
+  R_len_t i;
   Rcomplex* circ;
   SEXP rcirc;
 
@@ -314,14 +306,9 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   circ = COMPLEX(rcirc);
 
   /* Fill input buffer */
-  for (i = K - 1; i < N; ++i) {
-    circ[i - K + 1].r = F[i];
-    circ[i - K + 1].i = 0;
-  }
-
-  for (i = 0; i < K - 1; ++i) {
-    circ[L + i].r = F[i];
-    circ[L + i].i = 0;
+  for (i = 0; i < N; ++i) {
+    circ[i].r = F[i];
+    circ[i].i = 0;
   }
 
   /* Run the FFT on input data */
@@ -348,7 +335,7 @@ static void hankel_matmul(double* out,
 
   /* Fill the arrays */
   for (i = 0; i < K; ++i)
-    COMPLEX(rcirc)[i].r = v[K - i - 1];
+    COMPLEX(rcirc)[i].r = v[i];
 
   /* Compute the FFT of the reversed vector v */
   PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
@@ -356,8 +343,8 @@ static void hankel_matmul(double* out,
   /* Dot-multiply with pre-computed FFT of toeplitz circulant */
   for (i = 0; i < N; ++i) {
     Rcomplex x1 = COMPLEX(rV1)[i], x2 = COMPLEX(h->circ_freq)[i];
-    COMPLEX(rV1)[i].r = x1.r * x2.r - x1.i * x2.i;
-    COMPLEX(rV1)[i].i = x1.r * x2.i + x1.i * x2.r;
+    COMPLEX(rV1)[i].r = x1.r * x2.r + x1.i * x2.i;
+    COMPLEX(rV1)[i].i = x1.r * x2.i - x1.i * x2.r;
   }
 
   /* Compute the reverse transform to obtain result */
@@ -385,10 +372,8 @@ static void hankel_tmatmul(double* out,
   memset(COMPLEX(rcirc), 0, N * sizeof(Rcomplex));
 
   /* Fill the arrays */
-  for (i = 0; i < L; ++i) {
-    COMPLEX(rcirc)[i + K - 1].r = v[L - i - 1];
-    COMPLEX(rcirc)[i + K - 1].i = 0;
-  }
+  for (i = 0; i < L; ++i)
+    COMPLEX(rcirc)[i].r = v[i];
 
   /* Compute the FFT of the reversed vector v */
   PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
@@ -397,8 +382,8 @@ static void hankel_tmatmul(double* out,
   /* FIXME! => rV1 */
   for (i = 0; i < N; ++i) {
     Rcomplex x1 = COMPLEX(rV1)[i], x2 = COMPLEX(h->circ_freq)[i];
-    COMPLEX(rV1)[i].r = x1.r * x2.r - x1.i * x2.i;
-    COMPLEX(rV1)[i].i = x1.r * x2.i + x1.i * x2.r;
+    COMPLEX(rV1)[i].r = x1.r * x2.r + x1.i * x2.i;
+    COMPLEX(rV1)[i].i = x1.r * x2.i - x1.i * x2.r;
   }
 
   /* Compute the reverse transform to obtain result */
@@ -408,7 +393,7 @@ static void hankel_tmatmul(double* out,
 
   /* Cleanup and return */
   for (i = 0; i < K; ++i)
-    out[i] = COMPLEX(res)[i + L - 1].r / N;
+    out[i] = COMPLEX(res)[i].r / N;
 
   UNPROTECT(4);
 }
