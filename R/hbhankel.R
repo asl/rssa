@@ -26,33 +26,36 @@ fft2 <- function(X, inverse = FALSE) {
   t(mvfft(t(mvfft(X, inverse = inverse)), inverse = inverse))
 }
 
-convolve2.open <- function(X, Y, conj = FALSE) {
-  new.dim <- dim(X) + dim(Y) - 1
+convolve2 <- function(x, y, conj = TRUE, type = "circular") {
+  if (length(type) != 2)
+    type <- rep(type, 2)[1:2]
+  type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
 
-  x <- matrix(0, new.dim[1], new.dim[2])
-  x[1:nrow(X), 1:ncol(X)] <- X
+  convolution.size <- function(length.x, length.y, type) {
+    switch(type,
+           circular = list(input = length.x, output = length.x),
+           open = list(input = length.x + length.y - 1, output = length.x + length.y - 1),
+           filter = list(input = length.x, output = length.x - length.y + 1))
+  }
 
-  y <- matrix(0, new.dim[1], new.dim[2])
-  y[1:nrow(Y), 1:ncol(Y)] <- Y
+  cs <- lapply(1:2, function(j) convolution.size(dim(x)[j], dim(y)[j], type[j]))
 
-  Re(fft2(fft2(x) * if (conj) Conj(fft2(y)) else fft2(y), inverse = TRUE) / prod(new.dim))
-}
+  input.dim <- c(cs[[1]]$input, cs[[2]]$input)
+  output.dim <- c(cs[[1]]$output, cs[[2]]$output)
 
-convolve2.filter <- function(X, Y, conj = TRUE) {
-  new.dim <- dim(X) - dim(Y) + 1
+  X <- Y <- matrix(0, input.dim[1], input.dim[2])
 
-  x <- X
-  y <- matrix(0, nrow(X), ncol(X))
-  y[1:nrow(Y), 1:ncol(Y)] <- Y
+  X[seq_len(nrow(x)), seq_len(ncol(x))] <- x
+  Y[seq_len(nrow(y)), seq_len(ncol(y))] <- y
 
-  tmp <- Re(fft2(fft2(x) * if (conj) Conj(fft2(y)) else fft2(y), inverse = TRUE) / prod(dim(X)))
-  tmp[seq_len(new.dim[1]), seq_len(new.dim[2])]
+  tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
+  tmp[seq_len(output.dim[1]), seq_len(output.dim[2])]
 }
 
 factor.mask <- function(field.mask, window.mask) {
   field.mask[] <- as.numeric(field.mask)
   window.mask[] <- as.numeric(window.mask)
-  tmp <- convolve2.filter(field.mask, window.mask)
+  tmp <- convolve2(field.mask, window.mask, conj = TRUE, type = "filter")
 
   abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
 }
@@ -60,7 +63,7 @@ factor.mask <- function(field.mask, window.mask) {
 field.weights <- function(window.mask, factor.mask) {
   window.mask[] <- as.numeric(window.mask)
   factor.mask[] <- as.numeric(factor.mask)
-  res <- convolve2.open(factor.mask, window.mask)
+  res <- convolve2(factor.mask, window.mask, conj = FALSE, type = "open")
   res[] <- as.integer(round(res))
 
   res
