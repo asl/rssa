@@ -74,7 +74,6 @@ static void initialize_circulant(hbhankel_matrix *h,
                                  const double *F,
                                  R_len_t Nx, R_len_t Ny,
                                  R_len_t Lx, R_len_t Ly) {
-  R_len_t Kx = Nx - Lx + 1, Ky = Ny - Ly + 1, i, j;
   fftw_complex *ocirc;
   fftw_plan p1, p2;
   double *circ;
@@ -90,10 +89,7 @@ static void initialize_circulant(hbhankel_matrix *h,
   p2 = fftw_plan_dft_c2r_2d(Ny, Nx, ocirc, circ, FFTW_ESTIMATE);
 
   /* Fill input buffer */
-  for (j = 0; j < Ny; ++j)
-    for (i = 0; i < Nx; ++i)
-      /* This is pretty ad-hoc solution and needs to be fixed in the future */
-      circ[i + Nx*j] = F[(i + Kx - 1) % Nx + Nx*((j + Ky - 1) % Ny)];
+  memcpy(circ, F, Nx * Ny * sizeof(double));
 
   /* Run the plan on input data */
   fftw_execute(p1);
@@ -108,26 +104,55 @@ static void initialize_circulant(hbhankel_matrix *h,
   h->length.x = Nx; h->length.y = Ny;
 }
 
-static void convolve(double *circ,
-                     const hbhankel_matrix *h) {
-  R_len_t Nx = h->length.x, Ny = h->length.y, i;
-  fftw_complex *ocirc;
+static void convolve2d_half(const fftw_complex *ox,
+                            double *y,
+                            R_len_t Nx, R_len_t Ny,
+                            int conjugate,
+                            fftw_plan r2c_plan,
+                            fftw_plan c2r_plan) {
+  R_len_t i;
+  fftw_complex *oy;
 
   /* Allocate needed memory */
-  ocirc = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+  oy = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
 
-  /* Compute the FFT of the reversed vector v */
-  fftw_execute_dft_r2c(h->r2c_plan, circ, ocirc);
+  /* Compute the 2dFFT of the matrix y */
+  fftw_execute_dft_r2c(r2c_plan, y, oy);
 
-  /* Dot-multiply with pre-computed FFT of toeplitz circulant */
+  /* Compute conjugation if needed */
+  if (conjugate)
+    for (i = 0; i < Ny * (Nx/2 + 1); ++i)
+      oy[i] = conj(oy[i]);
+
+  /* Dot-multiply ox and oy, and divide by Nx*Ny*/
   for (i = 0; i < Ny * (Nx/2 + 1); ++i)
-    ocirc[i] = ocirc[i] * h->circ_freq[i];
+    oy[i] *= ox[i] / Nx / Ny;
 
   /* Compute the reverse transform to obtain result */
-  fftw_execute_dft_c2r(h->c2r_plan, ocirc, circ);
+  fftw_execute_dft_c2r(c2r_plan, oy, y);
 
   /* Cleanup */
-  fftw_free(ocirc);
+  fftw_free(oy);
+}
+
+static void convolve2d(double *x,
+                       double *y,
+                       R_len_t Nx, R_len_t Ny,
+                       int conjugate,
+                       fftw_plan r2c_plan,
+                       fftw_plan c2r_plan) {
+  fftw_complex *ox;
+
+  /* Allocate needed memory */
+  ox = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
+
+  /* Compute the 2dFFT of the matrices x and y */
+  fftw_execute_dft_r2c(r2c_plan, x, ox);
+
+  convolve2d_half(ox, y, Nx, Ny, conjugate, r2c_plan, c2r_plan);
+
+  /* Cleanup */
+  fftw_free(ox);
 }
 
 static void hbhankel_matmul(double* out,
@@ -147,23 +172,26 @@ static void hbhankel_matmul(double* out,
   if (h->col_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
-        circ[i + j*Nx] = v[Kx*Ky - i - j*Kx - 1];
+        circ[i + j*Nx] = v[i + j*Kx];
   } else {
     for (i = 0; i < h->col_ind->num; ++i) {
-      circ[(Kx - 1) + (Ky - 1)*Nx - h->col_ind->ind[i]] = v[i];
+      circ[h->col_ind->ind[i]] = v[i];
     }
   }
 
-  convolve(circ, h);
+  convolve2d_half(h->circ_freq, circ,
+                  h->length.x, h->length.y,
+                  1,
+                  h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
   if (h->row_ind == NULL) {
     for (j = 0; j < Ly; ++j)
       for (i = 0; i < Lx; ++i)
-        out[i + j*Lx] = circ[i + j*Nx] / (Nx * Ny);
+        out[i + j*Lx] = circ[i + j*Nx];
   } else {
     for (i = 0; i < h->row_ind->num; ++i) {
-      out[i] = circ[h->row_ind->ind[i]] / (Nx * Ny);
+      out[i] = circ[h->row_ind->ind[i]];
     }
   }
 
@@ -187,23 +215,26 @@ static void hbhankel_tmatmul(double* out,
   if (h->row_ind == NULL) {
     for (j = 0; j < Ly; ++j)
       for (i = 0; i < Lx; ++i)
-        circ[(i + Kx - 1) + (j + Ky - 1)*Nx] = v[Lx*Ly - i - j*Lx - 1];
+        circ[i + j*Nx] = v[i + j*Lx];
   } else {
     for (i = 0; i < h->row_ind->num; ++i) {
-      circ[Nx*Ny - 1 - h->row_ind->ind[i]] = v[i];
+      circ[h->row_ind->ind[i]] = v[i];
     }
   }
 
-  convolve(circ, h);
+  convolve2d_half(h->circ_freq, circ,
+                  h->length.x, h->length.y,
+                  1,
+                  h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
   if (h->col_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
-        out[i + j * Kx] = circ[(i + Lx - 1) + (j + Ly - 1)*Nx] / (Nx * Ny);
+        out[i + j*Kx] = circ[i + j*Nx];
   } else {
     for (i = 0; i < h->col_ind->num; ++i) {
-      out[i] =  circ[h->col_ind->ind[i] + (Lx-1) + (Ly-1)*Nx] / (Nx * Ny);
+      out[i] =  circ[h->col_ind->ind[i]];
     }
   }
 
@@ -219,13 +250,10 @@ static R_INLINE void hbhankelize_fft(double *F,
   R_len_t i, j;
 
   double *iU, *iV;
-  fftw_complex *cU, *cV;
 
   /* Allocate needed memory */
   iU = (double*) fftw_malloc(Nx * Ny * sizeof(double));
   iV = (double*) fftw_malloc(Nx * Ny * sizeof(double));
-  cU = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
-  cV = (fftw_complex*) fftw_malloc(Ny*(Nx / 2 + 1) * sizeof(fftw_complex));
 
   /* Fill the arrays */
   memset(iU, 0, Nx * Ny * sizeof(double));
@@ -250,28 +278,18 @@ static R_INLINE void hbhankelize_fft(double *F,
     }
   }
 
-  /* Compute the FFTs */
-  fftw_execute_dft_r2c(h->r2c_plan, iU, cU);
-  fftw_execute_dft_r2c(h->r2c_plan, iV, cV);
-
-   /* Dot-multiply */
-  for (i = 0; i < Ny * (Nx/2 + 1); ++i)
-    cU[i] = cU[i] * cV[i];
-
-  /* Compute the inverse FFT */
-  fftw_execute_dft_c2r(h->c2r_plan, cU, iU);
+  /* Compute convolution */
+  convolve2d(iV, iU, Nx, Ny, 0, h->r2c_plan, h->c2r_plan);
 
   /* Form the result */
   for (i = 0; i < Nx * Ny; ++i) {
     if (h->weights[i]) {
-      F[i] = iU[i] / h->weights[i] / Nx / Ny;
+      F[i] = iU[i] / h->weights[i];
     }
   }
 
   fftw_free(iU);
   fftw_free(iV);
-  fftw_free(cU);
-  fftw_free(cV);
 }
 #else
 static void free_circulant(hbhankel_matrix *h) {
