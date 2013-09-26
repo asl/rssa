@@ -36,3 +36,22 @@ test_that("1dSSA works correctly for marginal L values", {
     }
   }
 })
+
+test_that("Toeplitz SSA works correctly for marginal L values", {
+  Ns <- c(15, 150, 200)
+
+  set.seed(1)
+  for (N in Ns) {
+    for (L in 1) {
+      for (svd.method in c("propack", "eigen", "svd")) {
+        F <- rcauchy(N)
+        ss <- ssa(F, kind = "toeplitz-ssa", L = L, svd.method = svd.method)
+
+        expect_equal(wnorm(ss), sqrt(sum(F^2)),
+                     info = sprintf("L = %d, N = %d, svd.method = %s", L, N, svd.method))
+        expect_equal(reconstruct(ss, 1)$F1, F,
+                     info = sprintf("L = %d, N = %d, svd.method = %s", L, N, svd.method))
+      }
+    }
+  }
+})
