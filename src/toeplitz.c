@@ -527,7 +527,7 @@ SEXP Lcor(SEXP F, SEXP L, SEXP circular) {
   R_len_t N = length(F), intL = INTEGER(L)[0];
 
   if (intL <= 0 || intL > N)
-    error("invalid length of inpur vector 'F'");
+    error("invalid length of input vector 'F'");
 
   /* Allocate output buffer */
   PROTECT(R = allocVector(REALSXP, intL));
