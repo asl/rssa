@@ -119,7 +119,7 @@ decompose.toeplitz.ssa.eigen <- function(x,
   C <- toeplitz(Lcor(F, L))
   S <- eigen(C, symmetric = TRUE)
 
-  .set(x, "U", S$vectors[, 1:neig])
+  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
   lambda <- numeric(L)
   V <- matrix(nrow = K, ncol = L)
