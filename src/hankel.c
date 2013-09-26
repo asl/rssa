@@ -245,8 +245,8 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
   R_len_t i, K;
 
   /* Length's check */
-  if ((L >= N) || (L < 1))
-    error("must be 'N' > 'L' >= 1");
+  if ((L > N) || (L < 1))
+    error("must be 'N' >= 'L' >= 1");
 
   K = N - L + 1;
 
@@ -464,8 +464,8 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
     error("invalid FFT plan for given FFT length");
 
   /* Length check */
-  if ((L >= N) || (L < 1))
-    error("must be 'N' > 'L' >= 1");
+  if ((L > N) || (L < 1))
+    error("must be 'N' > 'L' > 1");
 
   /* Allocate needed memory */
   PROTECT(rF = allocVector(CPLXSXP, N));
