@@ -19,10 +19,11 @@
 
 #   Routines for toeplitz SSA
 
-Lcor <- function(F, L) {
+Lcor <- function(F, L, circular = FALSE) {
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
-  .Call("Lcor", F, L)
+  storage.mode(circular) <- "logical"
+  .Call("Lcor", F, L, circular)
 }
 
 new.tmat <- function(F, L = (N + 1) %/% 2, fft.plan = NULL) {
