@@ -177,7 +177,7 @@ prepanel.eigenvectors.2d.ssa <- function(x, y, subscripts, ssaobj, ..., what = "
   if (identical(what, "eigen")) {
     Ls <- ssaobj$window
   } else if (identical(what, "factor")) {
-    Ls <- ssaobj$length - ssaobj$window + 1
+    Ls <- ifelse(ssaobj$circular, ssaobj$length, ssaobj$length - ssaobj$window + 1)
   }
 
   y <- c(seq_len(Ls[1]), rep(1, Ls[2]))
@@ -205,7 +205,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
     vmask <- .get(ssaobj, "wmask")
     vectors <- ssaobj$U[, idx]
   } else if (identical(what, "factor")) {
-    Ls <- ssaobj$length - ssaobj$window + 1
+    Ls <- ifelse(ssaobj$circular, ssaobj$length, ssaobj$length - ssaobj$window + 1)
     vmask <- .get(ssaobj, "fmask")
     vectors <- if (nv(ssaobj) >= max(idx)) ssaobj$V[, idx] else calc.v(ssaobj, idx)
   }

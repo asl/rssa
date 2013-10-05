@@ -27,6 +27,8 @@ fft2 <- function(X, inverse = FALSE) {
 }
 
 convolve2 <- function(x, y, conj = TRUE, type = "circular") {
+  if (length(type) > 2)
+    warning("Incorrect argument length: length(type) > 2, two leading values will be used")
   if (length(type) != 2)
     type <- rep(type, 2)[1:2]
   type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
@@ -52,18 +54,20 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
   tmp[seq_len(output.dim[1]), seq_len(output.dim[2])]
 }
 
-factor.mask <- function(field.mask, window.mask) {
+factor.mask <- function(field.mask, window.mask, circular = FALSE) {
   field.mask[] <- as.numeric(field.mask)
   window.mask[] <- as.numeric(window.mask)
-  tmp <- convolve2(field.mask, window.mask, conj = TRUE, type = "filter")
+  tmp <- convolve2(field.mask, window.mask, conj = TRUE,
+                   type = ifelse(circular, "circular", "filter"))
 
   abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
 }
 
-field.weights <- function(window.mask, factor.mask) {
+field.weights <- function(window.mask, factor.mask, circular = FALSE) {
   window.mask[] <- as.numeric(window.mask)
   factor.mask[] <- as.numeric(factor.mask)
-  res <- convolve2(factor.mask, window.mask, conj = FALSE, type = "open")
+  res <- convolve2(factor.mask, window.mask, conj = FALSE,
+                   type = ifelse(circular, "circular", "open"))
   res[] <- as.integer(round(res))
 
   res
@@ -84,11 +88,18 @@ triangle.mask <- function(side) {
 }
 
 new.hbhmat <- function(F, L = (N + 1) %/% 2,
-                       wmask = NULL, fmask = NULL, weights = NULL) {
+                       wmask = NULL, fmask = NULL, weights = NULL,
+                       circular = FALSE) {
+  if (length(circular) > 2)
+    warning("Incorrect argument length: length(circular) > 2, two leading values will be used")
+  if (length(circular) != 2)
+    circular <- rep(circular, 2)[1:2]
+
   N <- dim(F)
 
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
+  storage.mode(circular) <- "logical"
 
   if (!is.null(wmask)) {
     storage.mode(wmask) <- "logical"
@@ -107,7 +118,7 @@ new.hbhmat <- function(F, L = (N + 1) %/% 2,
   }
   storage.mode(weights) <- "integer"
 
-  h <- .Call("initialize_hbhmat", F, L[1], L[2], wmask, fmask, weights)
+  h <- .Call("initialize_hbhmat", F, L[1], L[2], wmask, fmask, weights, circular)
 }
 
 hbhcols <- function(h) {
@@ -131,7 +142,7 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
 .get.or.create.hbhmat <- function(x) {
   .get.or.create(x, "hmat",
                  new.hbhmat(x$F, L = x$window, wmask = x$wmask, fmask = x$fmask,
-                            weights = x$weights))
+                            weights = x$weights, circular = x$circular))
 }
 
 as.matrix.hbhmat <- function(x) {

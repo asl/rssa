@@ -46,6 +46,7 @@ typedef struct {
 #else
 #endif
   struct {R_len_t x; R_len_t y;} window;
+  struct {R_len_t x; R_len_t y;} factor;
   struct {R_len_t x; R_len_t y;} length;
   area2d_indices *row_ind;
   area2d_indices *col_ind;
@@ -59,8 +60,7 @@ static unsigned hbhankel_nrow(const void *matrix) {
 
 static unsigned hbhankel_ncol(const void *matrix) {
   const hbhankel_matrix *h = matrix;
-  return h->col_ind != NULL ? h->col_ind->num :
-         (h->length.x - h->window.x + 1) * (h->length.y - h->window.y + 1);
+  return h->col_ind != NULL ? h->col_ind->num : h->factor.x * h->factor.y;
 }
 
 #if HAVE_FFTW3_H
@@ -73,7 +73,8 @@ static void free_circulant(hbhankel_matrix *h) {
 static void initialize_circulant(hbhankel_matrix *h,
                                  const double *F,
                                  R_len_t Nx, R_len_t Ny,
-                                 R_len_t Lx, R_len_t Ly) {
+                                 R_len_t Lx, R_len_t Ly,
+                                 const int *circular) {
   fftw_complex *ocirc;
   fftw_plan p1, p2;
   double *circ;
@@ -102,6 +103,7 @@ static void initialize_circulant(hbhankel_matrix *h,
   h->c2r_plan = p2;
   h->window.x = Lx; h->window.y = Ly;
   h->length.x = Nx; h->length.y = Ny;
+  h->factor.x = circular[0] ? Nx : Nx - Lx + 1; h->factor.y = circular[1] ? Ny : Ny - Ly + 1;
 }
 
 static void convolve2d_half(const fftw_complex *ox,
@@ -161,7 +163,7 @@ static void hbhankel_matmul(double* out,
   const hbhankel_matrix *h = matrix;
   R_len_t Nx = h->length.x, Ny = h->length.y;
   R_len_t Lx = h->window.x, Ly = h->window.y;
-  R_len_t Kx = Nx - Lx + 1, Ky = Ny - Ly + 1, i, j;
+  R_len_t Kx = h->factor.x, Ky = h->factor.y, i, j;
   double *circ;
 
   /* Allocate needed memory */
@@ -204,7 +206,7 @@ static void hbhankel_tmatmul(double* out,
   const hbhankel_matrix *h = matrix;
   R_len_t Nx = h->length.x, Ny = h->length.y;
   R_len_t Lx = h->window.x, Ly = h->window.y;
-  R_len_t Kx = Nx - Lx + 1, Ky = Ny - Ly + 1, i, j;
+  R_len_t Kx = h->factor.x, Ky = h->factor.y, i, j;
   double *circ;
 
   /* Allocate needed memory */
@@ -246,7 +248,7 @@ static R_INLINE void hbhankelize_fft(double *F,
                                      const hbhankel_matrix* h) {
   R_len_t Nx = h->length.x, Ny = h->length.y;
   R_len_t Lx = h->window.x, Ly = h->window.y;
-  R_len_t Kx = Nx - Lx + 1, Ky = Ny - Ly + 1;
+  R_len_t Kx = h->factor.x, Ky = h->factor.y;
   R_len_t i, j;
 
   double *iU, *iV;
@@ -299,7 +301,8 @@ static void free_circulant(hbhankel_matrix *h) {
 static void initialize_circulant(hbhankel_matrix *h,
                                  const double *F,
                                  R_len_t Nx, R_len_t Ny,
-                                 R_len_t Lx, R_len_t Ly) {
+                                 R_len_t Lx, R_len_t Ly,
+                                 const int *circular) {
   error("FFTW-less version of 2D-SSA is not implemented yet!");
 }
 
@@ -398,7 +401,8 @@ static void hbhmat_finalizer(SEXP ptr) {
 }
 
 SEXP initialize_hbhmat(SEXP F, SEXP windowx, SEXP windowy,
-                       SEXP wmask, SEXP fmask, SEXP weights) {
+                       SEXP wmask, SEXP fmask, SEXP weights,
+                       SEXP circular) {
   R_len_t Nx, Ny, Lx, Ly;
   hbhankel_matrix *h;
   ext_matrix *e;
@@ -418,7 +422,7 @@ SEXP initialize_hbhmat(SEXP F, SEXP windowx, SEXP windowy,
 
   /* Build toeplitz circulants for hankel matrix */
   h = Calloc(1, hbhankel_matrix);
-  initialize_circulant(h, REAL(F), Nx, Ny, Lx, Ly);
+  initialize_circulant(h, REAL(F), Nx, Ny, Lx, Ly, LOGICAL(circular));
   /* TODO: add a check for correct window sizes */
   h->row_ind = alloc_area2d(wmask, Nx);
   h->col_ind = alloc_area2d(fmask, Nx);
