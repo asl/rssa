@@ -27,6 +27,8 @@ fft2 <- function(X, inverse = FALSE) {
 }
 
 convolve2 <- function(x, y, conj = TRUE, type = "circular") {
+  if (length(type) > 2)
+    warning("Incorrect argument length: length(type) > 2, two leading values will be used")
   if (length(type) != 2)
     type <- rep(type, 2)[1:2]
   type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
