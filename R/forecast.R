@@ -109,6 +109,9 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  if (x$circular)
+    stop("forecasting is not properly defined for circular SSA")
+
   L <- x$window
 
   base <- match.arg(base)
@@ -248,6 +251,9 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE) {
+  if (x$circular)
+    stop("forecasting is not properly defined for circular SSA")
+
   L <- x$window
   K <- x$length - L + 1
   N <- K + L - 1 + len + L - 1
