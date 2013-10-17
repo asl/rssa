@@ -413,8 +413,6 @@ bforecast.1d.ssa <- function(x, groups,
     boot.forecast <- function(F, base) {
       s <- clone(base, copy.cache = FALSE, copy.storage = FALSE)
       .set(s, "F", F)
-      .set(s, "Fattr", attributes(F))
-      .set(s, "Fclass", class(F))
       do.call(forecast.fun,
               c(list(s,
                      groups = list(group), len = len, drop = TRUE, only.new = TRUE),

@@ -45,7 +45,6 @@ igapfill <- function(x, L,
   repeat {
     is <- clone(s, copy.cache = FALSE, copy.storage = FALSE)
     .set(s, "F", F)
-    .set(s, "Fattr", attributes(F))
     r <- reconstruct(s, groups = list(groups), ..., cache = cache)
     stopifnot(length(r) == 1)
     rF <- x

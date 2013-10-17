@@ -213,6 +213,11 @@ ssa <- function(x,
   # Create data storage
   this <- .create.storage(this);
 
+  # Save the names of the essential fields
+  this$fields <- c("F",
+                   "wmask", "fmask", "weights",
+                   "Fattr", "Fclass", "Iattr")
+
   # Save series
   .set(this, "F", x);
 
@@ -427,9 +432,15 @@ nlambda <- function(x) {
 }
 
 clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
-  obj <- .clone(x, copy.storage = copy.storage);
+  obj <- .clone(x, copy.storage = copy.storage)
+
+  # We need to copy the "essential" fields
+  if (copy.storage == FALSE)
+    for (field in x$fields)
+      .set(obj, field, .get(x, field))
+
   if (copy.cache == FALSE)
-    cleanup(obj);
+    cleanup(obj)
 
   obj;
 }
