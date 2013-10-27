@@ -453,6 +453,22 @@ predict.1d.ssa <- function(object,
           'bootstrap-vector' =  do.call(bforecast, c(list(object, type = "vector", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)))
 }
 
+predict.mssa <- function(object,
+                         groups, len = 1,
+                         method = c("recurrent-column", "recurrent-row", "vector-column", "vector-row"),
+                         ...,
+                         drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  method <- match.arg(method)
+  dots <- list(...)
+
+  # Calculate a forecast
+  switch (method,
+          'recurrent-row' = do.call(rforecast, c(list(object, direction = "row", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
+          'recurrent-column' = do.call(rforecast, c(list(object, direction = "column", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
+          'vector-row' = do.call(vforecast, c(list(object, direction = "row", groups = groups, len = len, cache = cache), dots)),
+          'vector-column' = do.call(vforecast, c(list(object, direction = "column", groups = groups, len = len, cache = cache), dots)))
+}
+
 forecast.1d.ssa <- function(object,
                             groups, len = 1,
                             method = c("recurrent", "vector", "bootstrap-recurrent", "bootstrap-vector"),

@@ -4,6 +4,7 @@
 \alias{forecast.toeplitz.ssa}
 \alias{predict.ssa}
 \alias{predict.1d.ssa}
+\alias{predict.mssa}
 \alias{predict.toeplitz.ssa}
 \title{Perform SSA forecasting of series}
 
@@ -34,6 +35,12 @@
         groups, len = 1,
         method = c("recurrent", "vector",
                    "bootstrap-recurrent", "bootstrap-vector"),
+        \dots,
+        drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{predict}{mssa}(object,
+        groups, len = 1,
+        method = c("recurrent-column", "recurrent-row",
+                   "vector-column", "vector-row"),
         \dots,
         drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
