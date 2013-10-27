@@ -12,7 +12,7 @@ mx <- outer(ii, jj, function(i, j) sin(i) + sin(j))
 
 ss <- ssa(mx, circular = TRUE, kind = "2d-ssa")
 
-expect_true(sum(ss$lambda[-(1:4)]) < .Machine$double.eps^.25)
+expect_true(sum(ss$lambda[-(1:4)]) / sum(ss$lambda[1:4]) < .Machine$double.eps^.25)
 expect_equal(reconstruct(ss, groups = list(1:4))$F1, mx)
 })
 
@@ -26,6 +26,6 @@ mx <- outer(ii, jj, function(i, j) sin(i) * exp(j))
 
 ss <- ssa(mx, circular = c(TRUE, FALSE), kind = "2d-ssa")
 
-expect_true(sum(ss$lambda[-(1:2)]) < .Machine$double.eps^.25)
+expect_true(sum(ss$lambda[-(1:2)]) / sum(ss$lambda[1:2]) < .Machine$double.eps^.25)
 expect_equal(reconstruct(ss, groups = list(1:2))$F1, mx)
 })
