@@ -51,7 +51,7 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
   Y[seq_len(nrow(y)), seq_len(ncol(y))] <- y
 
   tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
-  tmp[seq_len(output.dim[1]), seq_len(output.dim[2])]
+  tmp[seq_len(output.dim[1]), seq_len(output.dim[2]), drop = FALSE]
 }
 
 factor.mask <- function(field.mask, window.mask, circular = FALSE) {
