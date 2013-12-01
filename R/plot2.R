@@ -167,7 +167,6 @@ plot.2d.ssa.reconstruction <- function(x, ...,
           c(list(x = z ~ row * column | factor(z, labels = labels),
                  data = d, recon = x,
                  at = at,
-                 useRaster = dots$.useRaster,
                  panel = panel.reconstruction.2d.ssa,
                  prepanel = prepanel.reconstruction.2d.ssa),
             dots))
@@ -224,7 +223,6 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
-  panel.levelplot(data$x, data$y, data$z, subscripts = seq_len(nrow(data)), at = at, ...)
 
   panel(data$x, data$y, data$z, subscripts = seq_len(nrow(data)),
         at = at, contour = FALSE, region = TRUE, ...)
@@ -290,7 +288,6 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                  data = d, ssaobj = x,
                  what = what,
                  at = at,
-                 useRaster = dots$.useRaster,
                  panel = panel.eigenvectors.2d.ssa,
                  prepanel = prepanel.eigenvectors.2d.ssa),
             dots));

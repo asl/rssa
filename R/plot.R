@@ -274,8 +274,7 @@ plot.wcor.matrix <- function(x,
                  data = data,
                  at = seq(zlim[1], zlim[2], length.out = cuts + 2),
                  panel = panel.levelplot.wcor,
-                 grid = grid,
-                 useRaster = dots$.useRaster),
+                 grid = grid),
             dots))
 }
 
