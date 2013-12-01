@@ -208,7 +208,13 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
   panel.xyplot(X, Y, ...)
 }
 
-.plot.ssa.series <- function(x, ..., groups, plot.type = "l") {
+.plot.ssa.series <- function(x, ...)
+  UseMethod(".plot.ssa.series")
+
+.plot.ssa.series.ssa <- function(x, ..., groups)
+  plot(reconstruct(x, groups = groups, drop = FALSE), ...)
+
+.plot.ssa.series.1d.ssa <- function(x, ..., groups, plot.type = "l") {
   dots <- list(...)
 
   # FIXME: check for proper lengths
@@ -233,6 +239,8 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
                  prepanel = prepanel.series),
             dots))
 }
+
+.plot.ssa.series.toeplitz.ssa <- .plot.ssa.vectors.1d.ssa
 
 panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
