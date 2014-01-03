@@ -48,8 +48,8 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 }
 
 prepanel.factorvectors <- function(x, y, ssaobj, symmetric = FALSE) {
-  V <- if (y <= nv(ssaobj)) ssaobj$U[, y] else calc.v(ssaobj, idx = y)
-  U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$U[, x] else calc.v(ssaobj, idx = x)
+  V <- if (y <= nv(ssaobj)) ssaobj$V[, y] else calc.v(ssaobj, idx = y)
+  U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$V[, x] else calc.v(ssaobj, idx = x)
 
   res <- prepanel.default.xyplot(U, V)
   if (symmetric) {
@@ -62,8 +62,8 @@ prepanel.factorvectors <- function(x, y, ssaobj, symmetric = FALSE) {
 }
 
 panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
-  V <- if (y <= nv(ssaobj)) ssaobj$U[, y] else calc.v(ssaobj, idx = y)
-  U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$U[, x] else calc.v(ssaobj, idx = x)
+  V <- if (y <= nv(ssaobj)) ssaobj$V[, y] else calc.v(ssaobj, idx = y)
+  U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$V[, x] else calc.v(ssaobj, idx = x)
 
   if (ref) {
     panel.abline(h = 0, ..., reference = TRUE)
