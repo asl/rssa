@@ -64,8 +64,12 @@ ssa <- function(x,
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
-    if (any(circular))
-      stop("Circular variant of 1dSSA isn't implemented yet")
+    if (length(circular) > 1)
+      warning("Incorrect argument length: length(circular) > 1, two leading values will be used")
+    if (length(circular) != 1)
+      circular <- circular[1]
+    if (circular && identical(kind, "1d-ssa"))
+      stop("Circular variant of 1d SSA isn't implemented yet")
 
     # Coerce input to vector if necessary
     if (!is.vector(x))
