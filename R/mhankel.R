@@ -62,7 +62,7 @@ decompose.mssa.svd <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Create circulant and convert it to ordinary matrix
@@ -72,7 +72,7 @@ decompose.mssa.svd <- function(x,
   S <- svd(h, nu = neig, nv = neig)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
   if (!is.null(S$v))
@@ -87,7 +87,7 @@ decompose.mssa.eigen <- function(x, ...,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Create circulant and compute XX^T in form of ordinary matrix
@@ -100,7 +100,7 @@ decompose.mssa.eigen <- function(x, ...,
   S$values[S$values < 0] <- 0
 
   # Save results
-  .set(x, "lambda", sqrt(S$values[1:neig]))
+  .set(x, "sigma", sqrt(S$values[1:neig]))
   .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
   x
@@ -113,14 +113,14 @@ decompose.mssa.propack <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
 
   h <- .get.or.create.mhmat(x)
   S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
   if (!is.null(S$v))
@@ -136,14 +136,14 @@ decompose.mssa.nutrlan <- function(x,
 
   h <- .get.or.create.mhmat(x)
 
-  lambda <- .get(x, "lambda", allow.null = TRUE)
+  sigma <- .get(x, "sigma", allow.null = TRUE)
   U <- .get(x, "U", allow.null = TRUE)
 
   S <- trlan.svd(h, neig = neig, ...,
-                 lambda = lambda, U = U)
+                 lambda = sigma, U = U)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
 
@@ -151,12 +151,12 @@ decompose.mssa.nutrlan <- function(x,
 }
 
 calc.v.mssa<- function(x, idx, ...) {
-  lambda <- .get(x, "lambda")[idx]
+  sigma <- .get(x, "sigma")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
   h <- .get.or.create.mhmat(x)
 
   invisible(sapply(1:length(idx),
-                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / lambda[i]))
+                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / sigma[i]))
 }
 
 .hankelize.one.mssa <- function(x, U, V) {
@@ -172,11 +172,11 @@ calc.v.mssa<- function(x, idx, ...) {
 }
 
 .elseries.mssa <- function(x, idx, ...) {
-  if (max(idx) > nlambda(x))
+  if (max(idx) > nsigma(x))
     stop("Too few eigentriples computed for this decomposition")
 
   N <- x$length
-  lambda <- .get(x, "lambda")
+  sigma <- .get(x, "sigma")
   U <- .get(x, "U")
   F <- .get(x, "F")
 
@@ -191,7 +191,7 @@ calc.v.mssa<- function(x, idx, ...) {
       V <- calc.v(x, i)
     }
 
-    res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V)
+    res <- res + sigma[i] * .hankelize.one(x, U = U[, i], V = V)
   }
 
   cN <- c(0, cumsum(N))
@@ -405,7 +405,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
 
     # Factor vectors are special...
     # We actually create a reconstruction object with all stuff there..
-    if (max(idx) > nlambda(x))
+    if (max(idx) > nsigma(x))
       stop("Too few eigentriples computed for this decomposition")
 
     N <- x$length
@@ -415,7 +415,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
 
     if (plot.contrib) {
       total <- wnorm(x)^2
-      lambda <- round(100*x$lambda[idx]^2 / total, digits = 2)
+      sigma <- round(100*x$sigma[idx]^2 / total, digits = 2)
     }
 
     cK <- c(0, cumsum(K))
@@ -458,7 +458,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
     attr(res, "series") <- .apply.attributes(x, oF,
                                              fixup = TRUE, only.new = FALSE, drop = FALSE)
 
-    names(res) <- if (!plot.contrib) idx else paste(idx, " (", lambda, "%)", sep = "")
+    names(res) <- if (!plot.contrib) idx else paste(idx, " (", sigma, "%)", sep = "")
 
     # Provide convenient defaults
     dots <- .defaults(dots,

@@ -232,6 +232,9 @@ ssa <- function(x,
   .set(this, "Fclass", xclass)
   .set(this, "Iattr", iattr)
 
+  # Deprecated stuff
+  .deprecate(this, "lambda", "sigma")
+
   # Make this S3 object
   class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
 
@@ -262,7 +265,7 @@ ssa <- function(x,
     stop("Cannot decompose that much, desired elementary series index is too huge")
 
   # Continue decomposition, if necessary
-  if (desired > min(nlambda(x), nu(x)))
+  if (desired > min(nsigma(x), nu(x)))
     decompose(x, ..., neig = min(desired + 1, min(.traj.dim(x))))
 
   desired
@@ -272,7 +275,7 @@ precache <- function(x, n, ...) {
   if (missing(n)) {
     warning("Amount of sub-series missed, precaching EVERYTHING",
             immediate. = TRUE);
-    n <- nlambda(x);
+    n <- nsigma(x);
   }
 
   # Calculate numbers of sub-series to be calculated
@@ -323,7 +326,7 @@ reconstruct.ssa <- function(x, groups, ...,
   out <- list();
 
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(x), nu(x)));
+    groups <- as.list(1:min(nsigma(x), nu(x)));
 
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
@@ -386,7 +389,7 @@ reconstruct.ssa <- function(x, groups, ...,
 }
 
 residuals.ssa <- function(object, groups, ..., cache = TRUE) {
-  groups <- list(if (missing(groups)) 1:min(nlambda(object), nu(object)) else unlist(groups))
+  groups <- list(if (missing(groups)) 1:min(nsigma(object), nu(object)) else unlist(groups))
 
   residuals(reconstruct(object, groups = groups, ..., cache = cache))
 }
@@ -396,10 +399,10 @@ residuals.ssa.reconstruction <- function(object, ...) {
 }
 
 .elseries.default <- function(x, idx, ...) {
-  if (max(idx) > nlambda(x))
+  if (max(idx) > nsigma(x))
     stop("Too few eigentriples computed for this decomposition")
 
-  lambda <- .get(x, "lambda");
+  sigma <- .get(x, "sigma");
   U <- .get(x, "U");
 
   res <- numeric(prod(x$length));
@@ -413,7 +416,7 @@ residuals.ssa.reconstruction <- function(object, ...) {
       V <- calc.v(x, i);
     }
 
-    res <- res + lambda[i] * .hankelize.one(x, U = U[, i], V = V);
+    res <- res + sigma[i] * .hankelize.one(x, U = U[, i], V = V);
   }
 
   res;
@@ -428,7 +431,12 @@ nv <- function(x) {
 }
 
 nlambda <- function(x) {
-  ifelse(.exists(x, "lambda"), length(.get(x, "lambda")), 0);
+  warning("this function is deprecated, use `nsigma' instead")
+  nsigma(x)
+}
+
+nsigma <- function(x) {
+  ifelse(.exists(x, "sigma"), length(.get(x, "sigma")), 0);
 }
 
 clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
@@ -451,7 +459,7 @@ clusterify.ssa <- function(x, group, nclust = length(group) / 2,
   type <- match.arg(type)
 
   if (missing(group))
-    group <- as.list(1:nlambda(x));
+    group <- as.list(1:nsigma(x));
 
   if (identical(type, "wcor")) {
     w <- wcor(x, groups = group, ..., cache = cache);
@@ -465,12 +473,9 @@ clusterify.ssa <- function(x, group, nclust = length(group) / 2,
 
 '$.ssa' <- function(x, name) {
   if (ind <- charmatch(name, names(x), nomatch = 0))
-    return (x[[ind]]);
+    return (x[[ind]])
 
-  if (.exists(x, name))
-    return (.get(x, name));
-
-  NULL;
+  .get(x, name, allow.null = TRUE)
 }
 
 .object.size <- function(x, pat = NULL) {
@@ -481,7 +486,7 @@ clusterify.ssa <- function(x, group, nclust = length(group) / 2,
     members <- ls(envir = env, pattern = pat);
   }
 
-  l <- sapply(members, function(el) object.size(.get(x, el)))
+  l <- sapply(members, function(el) object.size(.get(x, el, silent = TRUE)))
 
   ifelse(length(l), sum(l), 0);
 }
@@ -493,7 +498,7 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat(",\tWindow length:", paste(x$window, collapse = " x "));
   cat(",\tSVD method:", x$svd.method);
   cat("\n\nComputed:\n");
-  cat("Eigenvalues:", nlambda(x));
+  cat("Eigenvalues:", nsigma(x));
   cat(",\tEigenvectors:", nu(x));
   cat(",\tFactor vectors:", nv(x));
   cat("\n\nPrecached:",

@@ -129,7 +129,7 @@ decompose.1d.ssa.svd <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
@@ -140,7 +140,7 @@ decompose.1d.ssa.svd <- function(x,
   S <- svd(h, nu = neig, nv = neig)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
   if (!is.null(S$v))
@@ -165,7 +165,7 @@ decompose.1d.ssa.eigen <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
@@ -179,7 +179,7 @@ decompose.1d.ssa.eigen <- function(x,
   S$values[S$values < 0] <- 0
 
   # Save results
-  .set(x, "lambda", sqrt(S$values[1:neig]))
+  .set(x, "sigma", sqrt(S$values[1:neig]))
   .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
   x
@@ -192,14 +192,14 @@ decompose.1d.ssa.propack <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
 
   h <- .get.or.create.hmat(x)
   S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
   if (!is.null(S$v))
@@ -215,14 +215,14 @@ decompose.1d.ssa.nutrlan <- function(x,
 
   h <- .get.or.create.hmat(x)
 
-  lambda <- .get(x, "lambda", allow.null = TRUE)
+  sigma <- .get(x, "sigma", allow.null = TRUE)
   U <- .get(x, "U", allow.null = TRUE)
 
   S <- trlan.svd(h, neig = neig, ...,
-                 lambda = lambda, U = U)
+                 lambda = sigma, U = U)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
 
@@ -230,10 +230,10 @@ decompose.1d.ssa.nutrlan <- function(x,
 }
 
 calc.v.1d.ssa <- function(x, idx, ...) {
-  lambda <- .get(x, "lambda")[idx]
+  sigma <- .get(x, "sigma")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
   h <- .get.or.create.hmat(x)
 
   invisible(sapply(1:length(idx),
-                   function(i) hmatmul(h, U[, i], transposed = TRUE) / lambda[i]))
+                   function(i) hmatmul(h, U[, i], transposed = TRUE) / sigma[i]))
 }

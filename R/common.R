@@ -27,12 +27,30 @@
 .storage <- function(x)
   attr(x, ".env");
 
-.get <- function(x, name, default, allow.null = FALSE) {
+.get <- function(x, name, default,
+                 allow.null = FALSE, silent = FALSE) {
   ret <- NULL
   # Make sure default is evaluated only when necessary
-  if (.exists(x, name))
+  if (.exists(x, name)) {
     ret <- get(name, envir = .storage(x))
-  else if (!allow.null || !missing(default))
+    # Check for deprecation
+    if (isTRUE(attr(ret, "deprecated"))) {
+      msg <- paste("the field `", name, "' is deprecated", sep = "")
+      instead <- attr(ret, "instead")
+
+      # If no substitution is available, just stop here
+      if (is.null(instead)) {
+        if (!silent)
+          stop(msg)
+        ret <- NULL
+      } else {
+        # Otherwise, warn and fallback to new name
+        if (!silent)
+          warning(paste(msg, ". use `", instead, "' instead.", sep = ""))
+        ret <- .get(x, instead)
+      }
+    }
+  } else if (!allow.null || !missing(default))
     ret <- default
 
   ret
@@ -66,6 +84,13 @@
 
 .remove <- function(x, name)
   rm(list = name, envir = .storage(x), inherits = FALSE);
+
+.deprecate <- function(x, name, instead = NULL) {
+  val <- NA
+  attr(val, "deprecated") <- TRUE
+  attr(val, "instead") <- instead
+  .set(x, name, val)
+}
 
 .clone <- function(x, copy.storage = TRUE) {
   # Copy the information body

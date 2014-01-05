@@ -252,7 +252,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
   if (plot.contrib) {
     total <- wnorm(x)^2
-    lambda <- round(100*x$lambda[idx]^2 / total, digits = 2);
+    sigma <- round(100*x$sigma[idx]^2 / total, digits = 2);
   }
 
   # Provide convenient defaults
@@ -284,7 +284,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
   do.call("levelplot",
           c(list(x = z ~ row * column | factor(z,
-                                               labels = if (!plot.contrib) z else paste(z, " (", lambda, "%)", sep = "")),
+                                               labels = if (!plot.contrib) z else paste(z, " (", sigma, "%)", sep = "")),
                  data = d, ssaobj = x,
                  what = what,
                  at = at,

@@ -88,7 +88,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
   method <- match.arg(method)
 
   if (missing(groups))
-    groups <- 1:min(nlambda(x), nu(x))
+    groups <- 1:min(nsigma(x), nu(x))
 
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
@@ -196,7 +196,7 @@ parestimate.2d.ssa <- function(x, groups,
                                drop = TRUE) {
   method <- match.arg(method)
   if (missing(groups))
-    groups <- 1:min(nlambda(x), nu(x))
+    groups <- 1:min(nsigma(x), nu(x))
 
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)

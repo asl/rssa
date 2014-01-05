@@ -86,16 +86,16 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
     .set(x, "U", S$u)
 
   num <- length(S$d)
-  lambda <- numeric(num)
+  sigma <- numeric(num)
   V <- matrix(nrow = K, ncol = num)
   for (i in 1:num) {
     Z <- hmatmul(h, S$u[, i], transposed = TRUE)
-    lambda[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / lambda[i]
+    sigma[i] <- sqrt(sum(Z^2))
+    V[, i] <- Z / sigma[i]
   }
 
   # Save results
-  .set(x, "lambda", lambda)
+  .set(x, "sigma", sigma)
   .set(x, "V", V)
 
   x
@@ -108,7 +108,7 @@ decompose.toeplitz.ssa.eigen <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
@@ -121,16 +121,16 @@ decompose.toeplitz.ssa.eigen <- function(x,
 
   .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
-  lambda <- numeric(L)
+  sigma <- numeric(L)
   V <- matrix(nrow = K, ncol = L)
   for (i in 1:L) {
     Z <- hmatmul(h, S$vectors[,i], transposed = TRUE)
-    lambda[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / lambda[i]
+    sigma[i] <- sqrt(sum(Z^2))
+    V[, i] <- Z / sigma[i]
   }
 
   # Save results
-  .set(x, "lambda", lambda[1:neig])
+  .set(x, "sigma", sigma[1:neig])
   .set(x, "V", V[, 1:neig, drop = FALSE])
 
   x
@@ -143,7 +143,7 @@ decompose.toeplitz.ssa.svd <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
@@ -156,16 +156,16 @@ decompose.toeplitz.ssa.svd <- function(x,
 
   .set(x, "U", S$u)
 
-  lambda <- numeric(neig)
+  sigma <- numeric(neig)
   V <- matrix(nrow = K, ncol = neig)
   for (i in 1:neig) {
     Z <- hmatmul(h, S$u[,i], transposed = TRUE)
-    lambda[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / lambda[i]
+    sigma[i] <- sqrt(sum(Z^2))
+    V[, i] <- Z / sigma[i]
   }
 
   # Save results
-  .set(x, "lambda", lambda)
+  .set(x, "sigma", sigma)
   .set(x, "V", V)
 
   x
@@ -178,7 +178,7 @@ decompose.toeplitz.ssa.propack <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.");
 
   F <- .get(x, "F")
@@ -197,16 +197,16 @@ decompose.toeplitz.ssa.propack <- function(x,
     .set(x, "U", S$u)
 
   num <- length(S$d)
-  lambda <- numeric(num)
+  sigma <- numeric(num)
   V <- matrix(nrow = K, ncol = num)
   for (i in 1:num) {
     Z <- hmatmul(h, S$u[, i], transposed = TRUE)
-    lambda[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / lambda[i]
+    sigma[i] <- sqrt(sum(Z^2))
+    V[, i] <- Z / sigma[i]
   }
 
   # Save results
-  .set(x, "lambda", lambda)
+  .set(x, "sigma", sigma)
   .set(x, "V", V)
 
   x

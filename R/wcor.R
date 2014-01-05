@@ -50,7 +50,7 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
 wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
   N <- prod(x$length)
   if (missing(groups))
-    groups <- as.list(1:nlambda(x))
+    groups <- as.list(1:nsigma(x))
 
   # Compute reconstruction.
   F <- reconstruct(x, groups, ..., cache = cache)
@@ -64,7 +64,7 @@ wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
 wcor.2d.ssa <- function(x, groups, ..., cache = TRUE) {
   N <- prod(x$length)
   if (missing(groups))
-    groups <- as.list(1:nlambda(x))
+    groups <- as.list(1:nsigma(x))
 
   # Compute reconstruction.
   F <- reconstruct(x, groups, ..., cache = cache)
@@ -87,7 +87,7 @@ wcor.2d.ssa <- function(x, groups, ..., cache = TRUE) {
 wcor.mssa <- function(x, groups, ..., cache = TRUE) {
   N <- sum(x$length)
   if (missing(groups))
-    groups <- as.list(1:nlambda(x))
+    groups <- as.list(1:nsigma(x))
 
   # Compute reconstruction.
   F <- lapply(reconstruct(x, groups, ..., cache = cache), .to.series.list)

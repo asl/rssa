@@ -1,6 +1,7 @@
 \name{ssa-object}
 \alias{ssa-object}
 \alias{nlambda}
+\alias{nsigma}
 \alias{nu}
 \alias{nv}
 \alias{summary.ssa}
@@ -15,7 +16,7 @@
 }
 
 \usage{
-nlambda(x)
+nsigma(x)
 nu(x)
 nv(x)
 \method{summary}{ssa}(object, digits = max(3, getOption("digits") - 3), \dots)
@@ -40,19 +41,19 @@ nv(x)
   operator \code{$}, in particular, the following values of argument
   \code{name} are supported:
   \describe{
-    \item{lambda}{Vector of singular values}
+    \item{sigma}{Vector of singular values}
     \item{U}{The matrix of eigenvectors}
     \item{V}{The matrix of factor vectors. Might not exist depending on the selected SVD method}
   }
 }
 
 \value{
-  an 'integer' of length 1 for \code{nu}, \code{nv}, \code{nlambda}
+  an 'integer' of length 1 for \code{nu}, \code{nv}, \code{nsigma}
   routines, matrix or vector for \code{$} operator.
 }
 
 \note{
-  For \code{nlambda}, \code{nu}, \code{nv}, \code{$}  routines, the
+  For \code{nsigma}, \code{nu}, \code{nv}, \code{$}  routines, the
   values returned solely depend on used singular value decomposition
   method and parameters of this method (e.g. 'neig' argument for
   'propack' and 'nutrlan' SVD methods).
@@ -68,11 +69,11 @@ nv(x)
 # Decompose 'co2' series with default parameters
 s <- ssa(co2, neig = 20)
 # Show the number of eigentriples saved in the 's'
-print(nlambda(s))
+print(nsigma(s))
 # Show the summary 
 summary(s)
 # Show the set of singular values
-print(s$lambda)
+print(s$sigma)
 # Show the first eigenvector
 print(s$U[, 1])
 }

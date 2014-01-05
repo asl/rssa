@@ -62,7 +62,7 @@ decompose.cssa.svd <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
@@ -73,7 +73,7 @@ decompose.cssa.svd <- function(x,
   S <- svd(h)
 
   # Save results
-  .set(x, "lambda", S$d[seq_len(neig)])
+  .set(x, "sigma", S$d[seq_len(neig)])
   if (!is.null(S$u))
     .set(x, "U", S$u[, seq_len(neig), drop = FALSE])
   if (!is.null(S$v))
@@ -119,7 +119,7 @@ decompose.cssa.eigen <- function(x, ...,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
@@ -139,7 +139,7 @@ decompose.cssa.eigen <- function(x, ...,
   S <- cssa.to.complex(sqrt(S$values), S$vectors)
 
   # Save results
-  .set(x, "lambda", S$d[1:neig])
+  .set(x, "sigma", S$d[1:neig])
   .set(x, "U", S$u[, 1:neig, drop = FALSE])
 
   x
@@ -152,7 +152,7 @@ decompose.cssa.propack <- function(x,
   N <- x$length; L <- x$window; K <- N - L + 1
 
   # Check, whether continuation of decomposition is requested
-  if (!force.continue && nlambda(x) > 0)
+  if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
 
   h <- .get.or.create.chmat(x)
@@ -161,7 +161,7 @@ decompose.cssa.propack <- function(x,
   S <- cssa.to.complex(S$d, S$u)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
   if (!is.null(S$v))
@@ -177,16 +177,16 @@ decompose.cssa.nutrlan <- function(x,
 
   h <- .get.or.create.chmat(x)
 
-  lambda <- .get(x, "lambda", allow.null = TRUE)
+  sigma <- .get(x, "sigma", allow.null = TRUE)
   U <- .get(x, "U", allow.null = TRUE)
 
   S <- trlan.svd(h, neig = 2*neig, ...,
-                 lambda = lambda, U = U)
+                 lambda = sigma, U = U)
 
   S <- cssa.to.complex(S$d, S$u)
 
   # Save results
-  .set(x, "lambda", S$d)
+  .set(x, "sigma", S$d)
   if (!is.null(S$u))
     .set(x, "U", S$u)
 
@@ -203,13 +203,13 @@ decompose.cssa.nutrlan <- function(x,
 }
 
 calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
-  lambda <- .get(x, "lambda")[idx]
+  sigma <- .get(x, "sigma")[idx]
   U <- .get(x, "U")[, idx, drop = FALSE]
   h <- .get.or.create.chmat(x)
 
   invisible(sapply(1:length(idx),
                    function(i) {
-                     v <- ematmul(h, c(Re(U[, i]), Im(U[, i])), transposed = TRUE) / lambda[i]
+                     v <- ematmul(h, c(Re(U[, i]), Im(U[, i])), transposed = TRUE) / sigma[i]
                      v[1:(length(v) / 2)] + 1i*v[-(1:(length(v) / 2))]
                    }))
 }

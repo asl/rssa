@@ -11,8 +11,8 @@
      \dots,
      vectors = c("eigen", "factor"),
      plot.contrib = TRUE,
-     numvalues = nlambda(x),
-     numvectors = min(nlambda(x), 10),
+     numvalues = nsigma(x),
+     numvectors = min(nsigma(x), 10),
      idx = 1:numvectors,
      idy,
      groups)

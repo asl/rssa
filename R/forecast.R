@@ -31,7 +31,7 @@ lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
 
 lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
   if (missing(groups))
-    groups <- 1:min(nlambda(x), nu(x))
+    groups <- 1:min(nsigma(x), nu(x))
 
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
@@ -101,7 +101,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
 
   base <- match.arg(base)
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(x), nu(x)))
+    groups <- as.list(1:min(nsigma(x), nu(x)))
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
@@ -167,7 +167,7 @@ rforecast.mssa <- function(x, groups, len = 1,
   base <- match.arg(base)
   direction <- match.arg(direction)
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(x), nu(x)))
+    groups <- as.list(1:min(nsigma(x), nu(x)))
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
@@ -242,12 +242,12 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   N.res <- K + L - 1 + len
 
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(x), nu(x)))
+    groups <- as.list(1:min(nsigma(x), nu(x)))
 
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
-  lambda <- .get(x, "lambda")
+  sigma <- .get(x, "sigma")
   U <- .get(x, "U")
 
   V <- if (nv(x) >= desired) .get(x, "V") else NULL
@@ -262,7 +262,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
     Uet <- U[, group, drop = FALSE]
     Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
 
-    Z <- rbind(t(lambda[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
+    Z <- rbind(t(sigma[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
 
     U.head <- Uet[-L, , drop = FALSE]
     U.tail <- Uet[-1, , drop = FALSE]
@@ -297,14 +297,14 @@ vforecast.mssa <- function(x, groups, len = 1,
                            drop = TRUE, drop.attributes = FALSE) {
   direction <- match.arg(direction)
   if (missing(groups))
-    groups <- as.list(1:min(nlambda(x), nu(x)))
+    groups <- as.list(1:min(nsigma(x), nu(x)))
 
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
   F <- .get(x, "F")
 
-  lambda <- .get(x, "lambda")
+  sigma <- .get(x, "sigma")
   U <- .get(x, "U")
 
   V <- if (nv(x) >= desired) .get(x, "V") else NULL
@@ -336,7 +336,7 @@ vforecast.mssa <- function(x, groups, len = 1,
       P <- tUhUt + 1 / (1 - sum(Pi^2)) * Pi %*% (t(Pi) %*% tUhUt)
 
       R <- lapply(seq_along(N), function(idx) {
-          Z <- rbind(t(lambda[group] * t(Vet[cKs[idx] : cK[idx], , drop = FALSE])), matrix(NA, len + L - 1, length(group)))
+          Z <- rbind(t(sigma[group] * t(Vet[cKs[idx] : cK[idx], , drop = FALSE])), matrix(NA, len + L - 1, length(group)))
 
           for (j in (K[idx] + 1) : (K[idx] + len + L - 1)) {
             Z[j, ] <- P %*% Z[j - 1, ]
@@ -353,7 +353,7 @@ vforecast.mssa <- function(x, groups, len = 1,
       tVhVt <- crossprod(V.head, V.tail)
       P <- tVhVt + t(Pi) %*% (solve(diag(length(N)) - tcrossprod(Pi), Pi) %*% tVhVt)
 
-      Z <- rbind(t(lambda[group] * t(Uet)), matrix(NA, len + max(K) - 1, length(group)))
+      Z <- rbind(t(sigma[group] * t(Uet)), matrix(NA, len + max(K) - 1, length(group)))
 
       for (j in (L + 1) : (L + len + max(K) - 1)) {
         Z[j, ] <- P %*% Z[j - 1, ]
@@ -399,7 +399,7 @@ bforecast.1d.ssa <- function(x, groups,
   type <- match.arg(type)
   dots <- list(...)
   if (missing(groups))
-    groups <- list(1:min(nlambda(x), nu(x)))
+    groups <- list(1:min(nsigma(x), nu(x)))
 
   out <- list()
   for (i in seq_along(groups)) {
