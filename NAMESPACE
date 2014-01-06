@@ -50,7 +50,11 @@ export(clone,
 # Period estimation
        parestimate,
 # Gap filling and rank estimation
-       cadzow
+       cadzow,
+# Non-orthogonal decompositions
+       iossa,
+       genwcor,
+       fssa
        )
 
 S3method("clone", ssa)
@@ -80,6 +84,7 @@ S3method("decompose", "pssa.svd")
 S3method("decompose", "pssa.eigen")
 S3method("decompose", "pssa.propack")
 S3method("decompose", "pssa.nutrlan")
+S3method("decompose", "ossa")
 S3method("reconstruct", ssa)
 S3method("residuals", ssa)
 S3method("residuals", "ssa.reconstruction")
@@ -88,6 +93,7 @@ S3method("calc.v", "2d.ssa")
 S3method("calc.v", "toeplitz.ssa")
 S3method("calc.v", "mssa")
 S3method("calc.v", "cssa")
+S3method("calc.v", "ossa")
 S3method("$", ssa)
 S3method("print", ssa)
 S3method("summary", ssa)
@@ -136,6 +142,9 @@ S3method("plot", "fdimpars.1d")
 S3method("print", "fdimpars.2d")
 S3method("plot", "fdimpars.2d")
 S3method("plot", "hmatr")
+S3method("print", "ossa.result")
+S3method("summary", "ossa.result")
+S3method("plot", "ossa.result")
 S3method("bforecast", "1d.ssa")
 S3method("bforecast", "toeplitz.ssa")
 S3method("parestimate", "1d.ssa")
