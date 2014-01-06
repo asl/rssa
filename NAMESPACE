@@ -50,7 +50,11 @@ export(clone,
 # Period estimation
        parestimate,
 # Gap filling and rank estimation
-       cadzow
+       cadzow,
+# Non-orthogonal decompositions
+       assa,
+       fssa,
+       orthogonalize
        )
 
 S3method("clone", ssa)
@@ -75,6 +79,7 @@ S3method("decompose", "cssa.svd")
 S3method("decompose", "cssa.eigen")
 S3method("decompose", "cssa.propack")
 S3method("decompose", "cssa.nutrlan")
+S3method("decompose", "ossa")
 S3method("reconstruct", ssa)
 S3method("residuals", ssa)
 S3method("residuals", "ssa.reconstruction")
@@ -83,6 +88,7 @@ S3method("calc.v", "2d.ssa")
 S3method("calc.v", "toeplitz.ssa")
 S3method("calc.v", "mssa")
 S3method("calc.v", "cssa")
+S3method("calc.v", "ossa")
 S3method("$", ssa)
 S3method("print", ssa)
 S3method("summary", ssa)
@@ -97,6 +103,7 @@ S3method("wcor", "1d.ssa")
 S3method("wcor", "2d.ssa")
 S3method("wcor", "toeplitz.ssa")
 S3method("wcor", "mssa")
+S3method("wcor", "ossa")
 S3method("wnorm", "default")
 S3method("wnorm", "1d.ssa")
 S3method("wnorm", "2d.ssa")
@@ -129,6 +136,7 @@ S3method("plot", "fdimpars.1d")
 S3method("print", "fdimpars.2d")
 S3method("plot", "fdimpars.2d")
 S3method("plot", "hmatr")
+S3method("plot", "ossa.result")
 S3method("bforecast", "1d.ssa")
 S3method("bforecast", "toeplitz.ssa")
 S3method("parestimate", "1d.ssa")
