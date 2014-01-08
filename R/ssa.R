@@ -17,7 +17,7 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-determine.svd.method <- function(L, K, neig = NULL, ..., svd.method = "nutrlan") {
+.determine.svd.method <- function(L, K, neig = NULL, ..., svd.method = "nutrlan") {
   truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
 
   if (is.null(neig)) neig <- min(50, L, K)
@@ -78,7 +78,7 @@ ssa <- function(x,
 
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N - L + 1, neig, ...)
+      svd.method <- .determine.svd.method(L, N - L + 1, neig, ...)
 
     wmask <- fmask <- weights <- NULL
   } else if (identical(kind, "2d-ssa")) {
@@ -114,7 +114,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(prod(L), prod(N - L + 1), neig, ..., svd.method = "nutrlan")
+      svd.method <- .determine.svd.method(prod(L), prod(N - L + 1), neig, ..., svd.method = "nutrlan")
 
     fmask <- factor.mask(mask, wmask, circular = circular)
 
@@ -164,7 +164,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, sum(N - L + 1), neig, ...)
+      svd.method <- .determine.svd.method(L, sum(N - L + 1), neig, ...)
 
     wmask <- NULL
     if (!all(N == max(N))) {
@@ -193,7 +193,7 @@ ssa <- function(x,
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- determine.svd.method(L, N - L + 1, neig, ..., svd.method = "eigen")
+      svd.method <- .determine.svd.method(L, N - L + 1, neig, ..., svd.method = "eigen")
 
     wmask <- fmask <- weights <- NULL
   }
