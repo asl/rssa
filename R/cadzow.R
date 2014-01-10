@@ -57,7 +57,7 @@ cadzow.1d.ssa <- function(x, rank,
   # Correct the stuff if requested
   if (correct) {
     h1 <- hankel(F, x$window)
-    h2 <- hankel(.get(x, "F"), x$window)
+    h2 <- hankel(.F(x), x$window)
 
     F <- sum(h1 * h2) / sum(h2 * h2) * F
   }

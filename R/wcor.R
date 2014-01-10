@@ -182,12 +182,12 @@ wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...) {
   w <- .hweights(x)
 
   # Compute wnorm
-  sqrt(sum(w * as.vector(x$F)^2))
+  sqrt(sum(w * as.vector(.F(x))^2))
 }
 
 wnorm.2d.ssa <- function(x, ...) {
   # Get F
-  F <- .get(x, "F")
+  F <- .F(x)
 
   # Compute weights
   w <- .hweights(x)
@@ -207,7 +207,7 @@ wnorm.mssa <- function(x, ...) {
   w <- .hweights(x)
 
   # Get series
-  F <- .get(x, "F")
+  F <- .F(x)
 
   # Compute wnorm
   sqrt(sum(w * unlist(F)^2))

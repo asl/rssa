@@ -44,7 +44,7 @@ hankel <- function(X, L) {
 
 .get.or.create.hmat <- function(x) {
   .get.or.create(x, "hmat",
-                 new.hmat(x$F, L = x$window,
+                 new.hmat(.F(x), L = x$window,
                           fft.plan = .get.or.create.fft.plan(x)))
 }
 

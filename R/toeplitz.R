@@ -61,7 +61,7 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 .hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa
 
 .get.or.create.tmat <- function(x) {
-  .get.or.create(x, "tmat", new.tmat(F = x$F, L = x$window))
+  .get.or.create(x, "tmat", new.tmat(F = .F(x), L = x$window))
 }
 
 decompose.toeplitz.ssa.nutrlan <- function(x,
@@ -69,7 +69,7 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
                                            ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- .get.or.create.hmat(x)
 
   olambda <- .get(x, "olambda", allow.null = TRUE)
@@ -108,7 +108,7 @@ decompose.toeplitz.ssa.eigen <- function(x,
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- .get.or.create.hmat(x)
 
   # Do decomposition
@@ -143,7 +143,7 @@ decompose.toeplitz.ssa.svd <- function(x,
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- .get.or.create.hmat(x)
 
   # Do decomposition
@@ -174,7 +174,7 @@ decompose.toeplitz.ssa.propack <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.");
 
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- .get.or.create.hmat(x)
 
   olambda <- .get(x, "olambda", allow.null = TRUE)

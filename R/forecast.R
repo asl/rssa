@@ -116,7 +116,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
     group <- groups[[i]]
 
     # Calculate the forecasted values
-    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
+    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .F(x),
                           lf[[i]], len, only.new = only.new)
     out[[i]] <- .apply.attributes(x, out[[i]],
                                   fixup = TRUE,
@@ -177,7 +177,7 @@ rforecast.mssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
-    F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]]) else .get(x, "F")
+    F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]]) else .F(x)
 
     # Calculate the forecasted values
     if (identical(direction, "column")) {
@@ -302,7 +302,7 @@ vforecast.mssa <- function(x, groups, len = 1,
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
-  F <- .get(x, "F")
+  F <- .F(x)
 
   sigma <- .sigma(x)
   U <- .U(x)

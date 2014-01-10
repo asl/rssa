@@ -141,7 +141,7 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
 
 .get.or.create.hbhmat <- function(x) {
   .get.or.create(x, "hmat",
-                 new.hbhmat(x$F, L = x$window, wmask = x$wmask, fmask = x$fmask,
+                 new.hbhmat(.F(x), L = x$window, wmask = x$wmask, fmask = x$fmask,
                             weights = x$weights, circular = x$circular))
 }
 

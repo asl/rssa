@@ -25,7 +25,7 @@
 .hmat.striped <- function(x, fft.plan) {
   N <- x$length; L <- x$window
 
-  F <- .get(x, "F")
+  F <- .F(x)
   field <- matrix(0., max(N), length(N))
 
   weights <- .get(x, "weights")
@@ -169,7 +169,7 @@ calc.v.mssa<- function(x, idx, ...) {
   N <- x$length
   sigma <- .sigma(x)
   U <- .U(x)
-  F <- .get(x, "F")
+  F <- .F(x)
 
   res <- numeric(sum(N))
   for (i in idx) {
@@ -402,7 +402,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
     N <- x$length
     L <- x$window
     K <- N - L + 1
-    F <- .get(x, "F")
+    F <- .F(x)
 
     if (plot.contrib) {
       total <- wnorm(x)^2

@@ -27,7 +27,7 @@
 
 .chmat <- function(x, fft.plan) {
   N <- x$length; L <- x$window; K <- N - L + 1
-  F <- .get(x, "F")
+  F <- .F(x)
 
   R <- new.hmat(Re(F), L = L, fft.plan = fft.plan)
   I <- new.hmat(Im(F), L = L, fft.plan = fft.plan)
@@ -66,7 +66,7 @@ decompose.cssa.svd <- function(x,
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- hankel(F, L = L)
 
   # Do decomposition
@@ -122,7 +122,7 @@ decompose.cssa.eigen <- function(x, ...,
     stop("Continuation of decomposition is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F")
+  F <- .F(x)
 
   R <- hankel(Re(F), L = L)
   I <- hankel(Im(F), L = L)
