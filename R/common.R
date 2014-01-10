@@ -28,29 +28,13 @@
   attr(x, ".env");
 
 .get <- function(x, name, default,
-                 allow.null = FALSE, silent = FALSE) {
+                 allow.null = FALSE) {
   ret <- NULL
-  # Make sure default is evaluated only when necessary
-  if (.exists(x, name)) {
-    ret <- get(name, envir = .storage(x))
-    # Check for deprecation
-    if (isTRUE(attr(ret, "deprecated"))) {
-      msg <- paste("the field `", name, "' is deprecated", sep = "")
-      instead <- attr(ret, "instead")
 
-      # If no substitution is available, just stop here
-      if (is.null(instead)) {
-        if (!silent)
-          stop(msg)
-        ret <- NULL
-      } else {
-        # Otherwise, warn and fallback to new name
-        if (!silent)
-          warning(paste(msg, ". use `", instead, "' instead.", sep = ""))
-        ret <- .get(x, instead)
-      }
-    }
-  } else if (!allow.null || !missing(default))
+  # Make sure default is evaluated only when necessary
+  if (.exists(x, name))
+    ret <- get(name, envir = .storage(x))
+  else if (!allow.null || !missing(default))
     ret <- default
 
   ret
@@ -68,9 +52,6 @@
 
 .exists <- function(x, name)
   exists(name, envir = .storage(x), inherits = FALSE);
-
-.is.extptrnull <- function(x)
-  .Call("is_extptrnull", x)
 
 .exists.non.null <- function(x, name) {
   ret <- FALSE
@@ -141,6 +122,30 @@
   }
   F
 }
+
+.F <- function(x)
+  .get(x, "F")
+
+.decomposition <- function(x)
+  .get(x, "decomposition", allow.null = TRUE)
+
+.set.decomposition <- function(x, ..., kind = "ssa.decomposition") {
+  val <- list(...)
+  class(val) <- kind
+  .set(x, "decomposition", val)
+}
+
+.U <- function(x)
+  .decomposition(x)$U
+
+.V <- function(x)
+  .decomposition(x)$V
+
+.sigma <- function(x)
+  .decomposition(x)$sigma
+
+.is.extptrnull <- function(x)
+  .Call("is_extptrnull", x)
 
 .na.omit <- function(x, ...) {
   # Drop initial and final NAs

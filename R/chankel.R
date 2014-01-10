@@ -73,11 +73,10 @@ decompose.cssa.svd <- function(x,
   S <- svd(h)
 
   # Save results
-  .set(x, "sigma", S$d[seq_len(neig)])
-  if (!is.null(S$u))
-    .set(x, "U", S$u[, seq_len(neig), drop = FALSE])
-  if (!is.null(S$v))
-    .set(x, "V", S$v[, seq_len(neig), drop = FALSE])
+  .set.decomposition(x,
+                     sigma = S$d[seq_len(neig)],
+                     U = if (!is.null(S$u)) S$u[, seq_len(neig), drop = FALSE] else NULL,
+                     V = if (!is.null(S$v)) S$v[, seq_len(neig), drop = FALSE] else NULL)
 
   x
 }
@@ -139,8 +138,8 @@ decompose.cssa.eigen <- function(x, ...,
   S <- cssa.to.complex(sqrt(S$values), S$vectors)
 
   # Save results
-  .set(x, "sigma", S$d[1:neig])
-  .set(x, "U", S$u[, 1:neig, drop = FALSE])
+  .set.decomposition(x,
+                     sigma = S$d[1:neig], U = S$u[, 1:neig, drop = FALSE])
 
   x
 }
@@ -161,11 +160,7 @@ decompose.cssa.propack <- function(x,
   S <- cssa.to.complex(S$d, S$u)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-  if (!is.null(S$v))
-    .set(x, "V", S$v)
+  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
 
   x
 }
@@ -177,8 +172,8 @@ decompose.cssa.nutrlan <- function(x,
 
   h <- .get.or.create.chmat(x)
 
-  sigma <- .get(x, "sigma", allow.null = TRUE)
-  U <- .get(x, "U", allow.null = TRUE)
+  sigma <- .sigma(x)
+  U <- .U(x)
 
   S <- trlan.svd(h, neig = 2*neig, ...,
                  lambda = sigma, U = U)
@@ -186,9 +181,7 @@ decompose.cssa.nutrlan <- function(x,
   S <- cssa.to.complex(S$d, S$u)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
+  .set.decomposition(x, sigma = S$d, U = S$u)
 
   x
 }
@@ -203,8 +196,8 @@ decompose.cssa.nutrlan <- function(x,
 }
 
 calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
-  sigma <- .get(x, "sigma")[idx]
-  U <- .get(x, "U")[, idx, drop = FALSE]
+  sigma <- .sigma[idx]
+  U <- .U[, idx, drop = FALSE]
   h <- .get.or.create.chmat(x)
 
   invisible(sapply(1:length(idx),

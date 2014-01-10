@@ -39,7 +39,7 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
-    U <- .get(x, "U")[, group, drop = FALSE]
+    U <- .U(x)[, group, drop = FALSE]
 
     res <- lrr.default(U, ...)
     class(res) <- "lrr"
@@ -247,10 +247,10 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
-  sigma <- .get(x, "sigma")
-  U <- .get(x, "U")
+  sigma <- .sigma(x)
+  U <- .U(x)
 
-  V <- if (nv(x) >= desired) .get(x, "V") else NULL
+  V <- if (nv(x) >= desired) .V(x) else NULL
 
   # Grab the FFT plan
   fft.plan <- fft.plan.1d(N)
@@ -304,10 +304,10 @@ vforecast.mssa <- function(x, groups, len = 1,
 
   F <- .get(x, "F")
 
-  sigma <- .get(x, "sigma")
-  U <- .get(x, "U")
+  sigma <- .sigma(x)
+  U <- .U(x)
 
-  V <- if (nv(x) >= desired) .get(x, "V") else NULL
+  V <- if (nv(x) >= desired) .V(x) else NULL
 
   L <- x$window
   K <- x$length - L + 1

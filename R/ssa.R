@@ -211,7 +211,7 @@ ssa <- function(x,
                svd.method = svd.method)
 
   # Create data storage
-  this <- .create.storage(this);
+  this <- .create.storage(this)
 
   # Save the names of the essential fields
   this$fields <- c("F",
@@ -236,7 +236,7 @@ ssa <- function(x,
   .deprecate(this, "lambda", "sigma")
 
   # Make this S3 object
-  class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa");
+  class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa")
 
   # Perform additional init steps, if necessary
   .init(this)
@@ -275,7 +275,7 @@ precache <- function(x, n, ...) {
   if (missing(n)) {
     warning("Amount of sub-series missed, precaching EVERYTHING",
             immediate. = TRUE);
-    n <- nsigma(x);
+    n <- nsigma(x)
   }
 
   # Calculate numbers of sub-series to be calculated
@@ -335,7 +335,7 @@ reconstruct.ssa <- function(x, groups, ...,
   info <- .get.series.info(x);
 
   # Do actual reconstruction. Calculate the residuals on the way
-  residuals <- .get(x, "F")
+  residuals <- .F(x)
   for (i in seq_along(groups)) {
     group <- groups[[i]];
     new <- setdiff(group, info);
@@ -366,7 +366,7 @@ reconstruct.ssa <- function(x, groups, ...,
   names(out) <- .group.names(groups)
 
   # Calculate the residuals
-  residuals <- .get(x, "F")
+  residuals <- .F(x)
   rgroups <- unique(unlist(groups))
   info <- .get.series.info(x);
   rcached <- intersect(rgroups, info)
@@ -378,7 +378,7 @@ reconstruct.ssa <- function(x, groups, ...,
 
   # Propagate attributes of residuals
   residuals <- .apply.attributes(x, residuals, fixup = FALSE, drop = drop.attributes)
-  F <- .apply.attributes(x, .get(x, "F"), fixup = FALSE, drop = drop.attributes)
+  F <- .apply.attributes(x, .F(x), fixup = FALSE, drop = drop.attributes)
 
   attr(out, "residuals") <- residuals;
   attr(out, "series") <- F;
@@ -402,15 +402,15 @@ residuals.ssa.reconstruction <- function(object, ...) {
   if (max(idx) > nsigma(x))
     stop("Too few eigentriples computed for this decomposition")
 
-  sigma <- .get(x, "sigma");
-  U <- .get(x, "U");
+  sigma <- .sigma(x)
+  U <- .U(x)
 
   res <- numeric(prod(x$length));
   for (i in idx) {
     if (nv(x) >= i) {
       # FIXME: Check, whether we have factor vectors for reconstruction
       # FIXME: Get rid of .get call
-      V <- .get(x, "V")[, i];
+      V <- .V(x)[, i];
     } else {
       # No factor vectors available. Calculate them on-fly.
       V <- calc.v(x, i);
@@ -423,11 +423,13 @@ residuals.ssa.reconstruction <- function(object, ...) {
 }
 
 nu <- function(x) {
-  ifelse(.exists(x, "U"), ncol(.get(x, "U")), 0);
+  res <- ncol(.U(x))
+  ifelse(is.null(res), 0, res)
 }
 
 nv <- function(x) {
-  ifelse(.exists(x, "V"), ncol(.get(x, "V")), 0);
+  res <- ncol(.V(x))
+  ifelse(is.null(res), 0, res)
 }
 
 nlambda <- function(x) {
@@ -436,7 +438,7 @@ nlambda <- function(x) {
 }
 
 nsigma <- function(x) {
-  ifelse(.exists(x, "sigma"), length(.get(x, "sigma")), 0);
+  length(.sigma(x))
 }
 
 clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
@@ -472,10 +474,31 @@ clusterify.ssa <- function(x, group, nclust = length(group) / 2,
 }
 
 '$.ssa' <- function(x, name) {
+  # First, check the fields of the object itself
   if (ind <- charmatch(name, names(x), nomatch = 0))
     return (x[[ind]])
 
-  .get(x, name, allow.null = TRUE)
+  # Now, check the fields of the storage
+  res <- .get(x, name, allow.null = TRUE)
+  if (!is.null(res)) {
+     # Check for deprecation
+    if (isTRUE(attr(res, "deprecated"))) {
+      msg <- paste("the field `", name, "' is deprecated", sep = "")
+      instead <- attr(res, "instead")
+
+      # If no substitution is available, just stop here
+      if (is.null(instead))
+        stop(msg)
+
+      # Otherwise, warn and fallback to new name
+      warning(paste(msg, ". use `", instead, "' instead.", sep = ""))
+      res <- Recall(x, instead)
+    }
+    return (res)
+  }
+
+  # Final special case: the fields of the decomposition
+  .decomposition(x)[[name]]
 }
 
 .object.size <- function(x, pat = NULL) {
@@ -486,7 +509,7 @@ clusterify.ssa <- function(x, group, nclust = length(group) / 2,
     members <- ls(envir = env, pattern = pat);
   }
 
-  l <- sapply(members, function(el) object.size(.get(x, el, silent = TRUE)))
+  l <- sapply(members, function(el) object.size(.get(x, el)))
 
   ifelse(length(l), sum(l), 0);
 }

@@ -73,7 +73,7 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   h <- .get.or.create.hmat(x)
 
   olambda <- .get(x, "olambda", allow.null = TRUE)
-  U <- .get(x, "U", allow.null = TRUE)
+  U <- .U(x)
 
   T <- .get.or.create.tmat(x)
 
@@ -81,10 +81,6 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
                    lambda = olambda, U = U)
 
   # Save results
-  .set(x, "olambda", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-
   num <- length(S$d)
   sigma <- numeric(num)
   V <- matrix(nrow = K, ncol = num)
@@ -95,8 +91,8 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma)
-  .set(x, "V", V)
+  .set(x, "olambda", S$d)
+  .set.decomposition(x, sigma = sigma, U = S$u, V = V)
 
   x
 }
@@ -119,8 +115,6 @@ decompose.toeplitz.ssa.eigen <- function(x,
   C <- toeplitz(Lcor(F, L))
   S <- eigen(C, symmetric = TRUE)
 
-  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
-
   sigma <- numeric(L)
   V <- matrix(nrow = K, ncol = L)
   for (i in 1:L) {
@@ -130,8 +124,10 @@ decompose.toeplitz.ssa.eigen <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma[1:neig])
-  .set(x, "V", V[, 1:neig, drop = FALSE])
+  .set.decomposition(x,
+                     sigma = sigma[1:neig],
+                     U = S$vectors[, 1:neig, drop = FALSE],
+                     V = V[, 1:neig, drop = FALSE])
 
   x
 }
@@ -154,8 +150,6 @@ decompose.toeplitz.ssa.svd <- function(x,
   C <- toeplitz(Lcor(F, L))
   S <- svd(C, nu = neig, nv = neig)
 
-  .set(x, "U", S$u)
-
   sigma <- numeric(neig)
   V <- matrix(nrow = K, ncol = neig)
   for (i in 1:neig) {
@@ -165,8 +159,7 @@ decompose.toeplitz.ssa.svd <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma)
-  .set(x, "V", V)
+  .set.decomposition(x, sigma = sigma, U = S$u, V = V)
 
   x
 }
@@ -185,16 +178,11 @@ decompose.toeplitz.ssa.propack <- function(x,
   h <- .get.or.create.hmat(x)
 
   olambda <- .get(x, "olambda", allow.null = TRUE)
-  U <- .get(x, "U", allow.null = TRUE)
+  U <- .U(x)
 
   T <- .get.or.create.tmat(x)
 
   S <- propack.svd(T, neig = neig, ...)
-
-  # Save results
-  .set(x, "olambda", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
 
   num <- length(S$d)
   sigma <- numeric(num)
@@ -206,8 +194,8 @@ decompose.toeplitz.ssa.propack <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma)
-  .set(x, "V", V)
+  .set(x, "olambda", S$d)
+  .set.decomposition(x, sigma = sigma, U = S$u, V = V)
 
   x
 }
@@ -221,4 +209,4 @@ decompose.toeplitz.ssa <- function(x,
 }
 
 calc.v.toeplitz.ssa <- function(x, idx, ...)
-  x$V[, idx]
+  .V(x)[, idx]
