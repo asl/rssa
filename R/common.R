@@ -140,7 +140,13 @@
 .U.default <- function(x)
   x$U
 
+.colspan.default <- function(x)
+  x$U
+
 .V.default <- function(x)
+  x$V
+
+.rowspan.default <- function(x)
   x$V
 
 .sigma.default <- function(x)
@@ -149,8 +155,14 @@
 .U.ssa <- function(x)
   .decomposition(x, "U")
 
+.colspan.ssa <- function(x)
+  .colspan(.decomposition(x))
+
 .V.ssa <- function(x)
   .decomposition(x, "V")
+
+.rowspan.ssa <- function(x)
+  .rowspan(.decomposition(x))
 
 .sigma.ssa <- function(x)
   .decomposition(x, "sigma")
@@ -302,8 +314,12 @@ wnorm <- function(x, ...)
   UseMethod(".hankelize.multi")
 .U <- function(x, ...)
   UseMethod(".U")
+.colspan <- function(x, ...)
+  UseMethod(".colspan")
 .V <- function(x, ...)
   UseMethod(".V")
+.rowspan <- function(x, ...)
+  UseMethod(".rowspan")
 .sigma <- function(x, ...)
   UseMethod(".sigma")
 .elseries <- function(x, ...)
