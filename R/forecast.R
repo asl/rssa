@@ -247,10 +247,10 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
-  sigma <- .sigma(x)
-  U <- .U(x)
-
-  V <- if (nv(x) >= desired) .V(x) else NULL
+  dec <- .decomposition(x)
+  sigma <- .sigma(dec)
+  U <- .U(dec)
+  V <- if (nv(x) >= desired) .V(dec) else NULL
 
   # Grab the FFT plan
   fft.plan <- fft.plan.1d(N)
@@ -304,10 +304,10 @@ vforecast.mssa <- function(x, groups, len = 1,
 
   F <- .F(x)
 
-  sigma <- .sigma(x)
-  U <- .U(x)
-
-  V <- if (nv(x) >= desired) .V(x) else NULL
+  dec <- decomposition(x)
+  sigma <- .sigma(dec)
+  U <- .U(dec)
+  V <- if (nv(x) >= desired) .V(dec) else NULL
 
   L <- x$window
   K <- x$length - L + 1
