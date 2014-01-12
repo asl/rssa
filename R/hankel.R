@@ -201,7 +201,7 @@ decompose.1d.ssa.propack <- function(x,
 
 decompose.1d.ssa.nutrlan <- function(x,
                                      neig = min(50, L, K),
-                                       ...) {
+                                     ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
   h <- .get.or.create.hmat(x)

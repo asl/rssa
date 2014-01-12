@@ -402,8 +402,9 @@ residuals.ssa.reconstruction <- function(object, ...) {
   if (max(idx) > nsigma(x))
     stop("Too few eigentriples computed for this decomposition")
 
-  sigma <- .sigma(x)
-  U <- .U(x)
+  dec <- .decomposition(x)
+  sigma <- .sigma(dec)
+  U <- .U(dec)
 
   res <- numeric(prod(x$length));
   for (i in idx) {

@@ -137,13 +137,22 @@
   .set(x, "decomposition", val)
 }
 
-.U <- function(x)
+.U.default <- function(x)
+  x$U
+
+.V.default <- function(x)
+  x$V
+
+.sigma.default <- function(x)
+  x$sigma
+
+.U.ssa <- function(x)
   .decomposition(x, "U")
 
-.V <- function(x)
+.V.ssa <- function(x)
   .decomposition(x, "V")
 
-.sigma <- function(x)
+.sigma.ssa <- function(x)
   .decomposition(x, "sigma")
 
 .is.extptrnull <- function(x)
@@ -291,6 +300,12 @@ wnorm <- function(x, ...)
   UseMethod(".hankelize.one")
 .hankelize.multi <- function(x, ...)
   UseMethod(".hankelize.multi")
+.U <- function(x, ...)
+  UseMethod(".U")
+.V <- function(x, ...)
+  UseMethod(".V")
+.sigma <- function(x, ...)
+  UseMethod(".sigma")
 .elseries <- function(x, ...)
   UseMethod(".elseries")
 .init <- function(x, ...)
