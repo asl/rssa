@@ -207,4 +207,4 @@ decompose.toeplitz.ssa <- function(x,
 }
 
 calc.v.toeplitz.ssa <- function(x, idx, ...)
-  .V(x)[, idx]
+  .V(x)[, idx, drop = FALSE]
