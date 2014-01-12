@@ -140,14 +140,14 @@
 .U.default <- function(x)
   x$U
 
-.colspan.default <- function(x)
-  x$U
+.colspan.default <- function(x, idx)
+  x$U[, idx, drop = FALSE]
 
 .V.default <- function(x)
   x$V
 
-.rowspan.default <- function(x)
-  x$V
+.rowspan.default <- function(x, idx)
+  x$V[, idx, drop = FALSE]
 
 .sigma.default <- function(x)
   x$sigma
@@ -155,14 +155,14 @@
 .U.ssa <- function(x)
   .decomposition(x, "U")
 
-.colspan.ssa <- function(x)
-  .colspan(.decomposition(x))
+.colspan.ssa <- function(x, idx)
+  .colspan(.decomposition(x), idx)
 
 .V.ssa <- function(x)
   .decomposition(x, "V")
 
-.rowspan.ssa <- function(x)
-  .rowspan(.decomposition(x))
+.rowspan.ssa <- function(x, idx)
+  .rowspan(.decomposition(x), idx)
 
 .sigma.ssa <- function(x)
   .decomposition(x, "sigma")

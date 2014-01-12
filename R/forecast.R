@@ -37,12 +37,8 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
   .maybe.continue(x, groups = groups, ...)
 
   out <- list()
-  cU <- .colspan(x)
   for (i in seq_along(groups)) {
-    group <- groups[[i]]
-    U <- cU[, group, drop = FALSE]
-
-    res <- lrr.default(U, ...)
+    res <- lrr.default(.colspan(x, groups[[i]]), ...)
     class(res) <- "lrr"
 
     out[[i]] <- res
@@ -250,7 +246,6 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
 
   dec <- .decomposition(x)
   sigma <- .sigma(dec)
-  U <- .colspan(dec)
   V <- if (nv(x) >= desired) .rowspan(dec) else NULL
 
   # Grab the FFT plan
@@ -260,7 +255,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]])
 
-    Uet <- U[, group, drop = FALSE]
+    Uet <- .colspan(dec, group)
     Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
 
     Z <- rbind(t(sigma[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
@@ -307,7 +302,6 @@ vforecast.mssa <- function(x, groups, len = 1,
 
   dec <- .decomposition(x)
   sigma <- .sigma(dec)
-  U <- .colspan(dec)
   V <- if (nv(x) >= desired) .rowspan(dec) else NULL
 
   L <- x$window
@@ -326,7 +320,7 @@ vforecast.mssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]])
 
-    Uet <- U[, group, drop = FALSE]
+    Uet <- .colspan(dec, group)
     Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
 
     if (identical(direction, "column")) {
