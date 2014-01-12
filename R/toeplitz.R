@@ -72,13 +72,13 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   F <- .F(x)
   h <- .get.or.create.hmat(x)
 
-  olambda <- .get(x, "olambda", allow.null = TRUE)
+  lambda <- .decomposition(x)$lambda
   U <- .U(x)
 
   T <- .get.or.create.tmat(x)
 
   S <- trlan.eigen(T, neig = neig, ...,
-                   lambda = olambda, U = U)
+                   lambda = lambda, U = U)
 
   # Save results
   num <- length(S$d)
@@ -91,8 +91,9 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   }
 
   # Save results
-  .set(x, "olambda", S$d)
-  .set.decomposition(x, sigma = sigma, U = S$u, V = V)
+  .set.decomposition(x,
+                     sigma = sigma, U = S$u, V = V, lambda = S$d,
+                     kind = "toeplitz.decomposition")
 
   x
 }
@@ -127,7 +128,8 @@ decompose.toeplitz.ssa.eigen <- function(x,
   .set.decomposition(x,
                      sigma = sigma[1:neig],
                      U = S$vectors[, 1:neig, drop = FALSE],
-                     V = V[, 1:neig, drop = FALSE])
+                     V = V[, 1:neig, drop = FALSE],
+                     kind = "toeplitz.decomposition")
 
   x
 }
@@ -159,7 +161,9 @@ decompose.toeplitz.ssa.svd <- function(x,
   }
 
   # Save results
-  .set.decomposition(x, sigma = sigma, U = S$u, V = V)
+  .set.decomposition(x,
+                     sigma = sigma, U = S$u, V = V,
+                     kind = "toeplitz.decomposition")
 
   x
 }
@@ -174,16 +178,9 @@ decompose.toeplitz.ssa.propack <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.");
 
-  F <- .F(x)
+  S <- propack.svd(.get.or.create.tmat(x), neig = neig, ...)
+
   h <- .get.or.create.hmat(x)
-
-  olambda <- .get(x, "olambda", allow.null = TRUE)
-  U <- .U(x)
-
-  T <- .get.or.create.tmat(x)
-
-  S <- propack.svd(T, neig = neig, ...)
-
   num <- length(S$d)
   sigma <- numeric(num)
   V <- matrix(nrow = K, ncol = num)
@@ -194,8 +191,9 @@ decompose.toeplitz.ssa.propack <- function(x,
   }
 
   # Save results
-  .set(x, "olambda", S$d)
-  .set.decomposition(x, sigma = sigma, U = S$u, V = V)
+  .set.decomposition(x,
+                     sigma = sigma, U = S$u, V = V, lambda = S$d,
+                     kind = "toeplitz.decomposition")
 
   x
 }

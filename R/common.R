@@ -126,8 +126,10 @@
 .F <- function(x)
   .get(x, "F")
 
-.decomposition <- function(x)
-  .get(x, "decomposition", allow.null = TRUE)
+.decomposition <- function(x, field) {
+  d <- .get(x, "decomposition", allow.null = TRUE)
+  if (missing(field)) d else d[[field]]
+}
 
 .set.decomposition <- function(x, ..., kind = "ssa.decomposition") {
   val <- list(...)
@@ -136,13 +138,13 @@
 }
 
 .U <- function(x)
-  .decomposition(x)$U
+  .decomposition(x, "U")
 
 .V <- function(x)
-  .decomposition(x)$V
+  .decomposition(x, "V")
 
 .sigma <- function(x)
-  .decomposition(x)$sigma
+  .decomposition(x, "sigma")
 
 .is.extptrnull <- function(x)
   .Call("is_extptrnull", x)
