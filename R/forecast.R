@@ -20,6 +20,10 @@
 
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U)
+
+  # Return zero LRR coefficients for zero subspace
+  if (ncol(U) == 0) return(rep(0, N - 1))
+
   lpf <- Conj(U) %*% t(U[N, , drop = FALSE])
 
   divider <- 1 - lpf[N]
