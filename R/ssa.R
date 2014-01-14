@@ -236,7 +236,12 @@ ssa <- function(x,
   .deprecate(this, "lambda", "sigma")
 
   # Make this S3 object
-  class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa")
+  class(this) <- c(do.call("c", lapply(kind,
+                                       function(kind)
+                                         list(paste(kind, svd.method, sep = "."),
+                                              kind)
+                                       )),
+                   "ssa")
 
   # Perform additional init steps, if necessary
   .init(this)
