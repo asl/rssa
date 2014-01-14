@@ -258,7 +258,7 @@ ssa <- function(x,
   K <- x$length - x$window + 1
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups))
+  desired <- max(unlist(groups), -Inf)
 
   # Sanity check
   if (desired > min(.traj.dim(x)))
