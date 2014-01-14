@@ -76,7 +76,12 @@ roots.lrr <- function(x, ..., method = c("companion", "polyroot")) {
   res[order(abs(res), decreasing = TRUE)]
 }
 
-apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
+apply.lrr <- function(F, lrr, len = 1, only.new = FALSE, drift = 0) {
+  # Recycle drifts if needed
+  if (length(drift) != len) {
+    drift <- rep(drift, len)[seq_len(len)]
+  }
+
   N <- length(F)
   r <- length(lrr)
 
@@ -87,7 +92,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   # Run the actual LRR
   F <- c(F, rep(NA, len))
   for (i in 1:len)
-    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr)
+    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr) + drift[i]
 
   if (only.new) F[(N+1):(N+len)] else F
 }
