@@ -13,8 +13,10 @@ ssa(x,
     neig = NULL,
     mask = NULL,
     wmask = NULL,
+    column.projector = "constant",
+    row.projector = "constant",
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
     circular = FALSE,
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
@@ -42,6 +44,8 @@ ssa(x,
     for 2d case.}
   \item{svd.method}{singular value decomposition method. See 'Details'
     for more info.}
+  \item{column.projector, row.projector}{column and row signal subspaces projectors for
+    SSA with projection. See `Details' for information about methods of projectors specification.}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
     performed before return.}
 }
@@ -91,6 +95,15 @@ ssa(x,
     These functions are not exported, they defined only for \code{wmask} expression.
     If one has objects with the same names and wants to use them rather than these functions,
     one should use special wrapper function \code{I()} (see 'Examples'). 
+  }
+
+  \subsection{Projectors specification for SSA with projection}{
+    Projectors are specified by arguments \code{column.projector} and \code{row.projector}.
+    Each may be a matrix of orthonormal (unless QR orthonormalization process will be perfomed)
+    basis of projection subspace, or single integer, which will be interpreted
+    as degree of orthogonal polynomial basis, or one of following character strings (or unique prefix):
+    'none', 'constant', 'linear', 'quadratic' or 'qubic' --- such orthopolynomial basis
+    will be used. 'constant' for both bases (by default) means `double centering SSA'
   }
 
   \subsection{SVD methods}{

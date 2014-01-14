@@ -207,4 +207,8 @@ decompose.toeplitz.ssa <- function(x,
 }
 
 calc.v.toeplitz.ssa <- function(x, idx, ...)
-  .V(x)[, idx]
+  .V(x)[, idx, drop = FALSE]
+
+.rowspan.toeplitz.ssa <- function(x, idx) {
+  qr.Q(qr(.V(x)[, idx, drop = FALSE]))
+}
