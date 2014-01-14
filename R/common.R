@@ -167,6 +167,9 @@
 .sigma.ssa <- function(x)
   .decomposition(x, "sigma")
 
+.nspecial.ssa <- function(x)
+  return(0)
+
 .is.extptrnull <- function(x)
   .Call("is_extptrnull", x)
 
@@ -322,6 +325,8 @@ wnorm <- function(x, ...)
   UseMethod(".rowspan")
 .sigma <- function(x, ...)
   UseMethod(".sigma")
+.nspecial <- function(x, ...)
+  UseMethod(".nspecial")
 .elseries <- function(x, ...)
   UseMethod(".elseries")
 .init <- function(x, ...)
