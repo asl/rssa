@@ -128,7 +128,7 @@
 
 .decomposition <- function(x, field) {
   d <- .get(x, "decomposition", allow.null = TRUE)
-  if (missing(field)) d else d[[field]]
+  if (missing(field)) d else if (length(field) == 1) d[[field]] else d[field]
 }
 
 .set.decomposition <- function(x, ..., kind = "ssa.decomposition") {
