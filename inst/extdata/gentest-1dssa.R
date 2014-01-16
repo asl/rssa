@@ -1,6 +1,6 @@
-library(testthat);
-library(Rssa);
-source(system.file("extdata", "common.test.methods.R", package = "Rssa"));
+library(testthat)
+library(Rssa)
+source(system.file("extdata", "common.test.methods.R", package = "Rssa"))
 
 all.svd <- c("svd", "eigen", "propack", "nutrlan")
 svd.wo.nutrlan <- c("svd", "eigen", "propack")
@@ -16,18 +16,18 @@ co2.td <- make.test.data(series = co2,
                          svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                          svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
                          tolerance = 2e-7,
-                         neig = 20);
-test.test.data(test.data = co2.td);
+                         neig = 20)
+test.test.data(test.data = co2.td)
 
 
 finite.rank.r5ex1 <- function(N) {
-  tt <- 1:N;
-  cos(2*pi*(1:N) / 7) + sin(2*pi*(1:N) / 17) * exp(tt / N * 1.5) + exp(-tt / N * 1.2);
+  tt <- 1:N
+  cos(2*pi*(1:N) / 7) + sin(2*pi*(1:N) / 17) * exp(tt / N * 1.5) + exp(-tt / N * 1.2)
 }
 
-fr50 <- finite.rank.r5ex1(50);
-fr1k <- finite.rank.r5ex1(1000);
-fr50k <- finite.rank.r5ex1(50000);
+fr50 <- finite.rank.r5ex1(50)
+fr1k <- finite.rank.r5ex1(1000)
+fr50k <- finite.rank.r5ex1(50000)
 
 fr50.td <- make.test.data(series = fr50,
                           Ls = c(17, 25, 40),
@@ -39,8 +39,8 @@ fr50.td <- make.test.data(series = fr50,
                           svd.method = "e",
                           svd.methods = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
                           svd.methods.forecast = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
-                          neig = 5);
-test.test.data(test.data = fr50.td);
+                          neig = 5)
+test.test.data(test.data = fr50.td)
 
 fr1k.td <- make.test.data(series = fr1k,
                           Ls = c(17, 493, 499, 500, 670),
@@ -52,8 +52,8 @@ fr1k.td <- make.test.data(series = fr1k,
                           svd.method = "e",
                           svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                           svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
-                          neig = 5);
-test.test.data(test.data = fr1k.td);
+                          neig = 5)
+test.test.data(test.data = fr1k.td)
 
 #fr50k.td <- make.test.data(series = fr50k,
 #                           Ls = c(17, 493, 23800, 25000, 40000),
@@ -65,10 +65,10 @@ test.test.data(test.data = fr1k.td);
 #                           svd.method = "p",
 #                           neig = 5,
 #                           tolerance = 1e-6,
-#                           svd.methods = c("p", "n"));
-#test.test.data(test.data = fr50k.td);
+#                           svd.methods = c("p", "n"))
+#test.test.data(test.data = fr50k.td)
 
-set.seed(1);
+set.seed(1)
 fr50.nz.td <- make.test.data(series = fr50 + rnorm(fr50),
                              name = "fr50.nz",
                              Ls = c(17, 25, 40),
@@ -80,10 +80,10 @@ fr50.nz.td <- make.test.data(series = fr50 + rnorm(fr50),
                              svd.method = "e",
                              svd.methods = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
                              svd.methods.forecast = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
-                             neig = 15);
-test.test.data(test.data = fr50.nz.td);
+                             neig = 15)
+test.test.data(test.data = fr50.nz.td)
 
-set.seed(1);
+set.seed(1)
 fr1k.nz.td <- make.test.data(series = fr1k + rnorm(fr1k),
                              name = "fr1k.nz",
                              Ls = c(17, 493, 499, 500, 670),
@@ -95,10 +95,10 @@ fr1k.nz.td <- make.test.data(series = fr1k + rnorm(fr1k),
                              svd.method = "e",
                              svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                              svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
-                             neig = 15);
-test.test.data(test.data = fr1k.nz.td);
+                             neig = 15)
+test.test.data(test.data = fr1k.nz.td)
 
-#set.seed(1);
+#set.seed(1)
 #fr50k.nz.td <- make.test.data(series = fr50k + rnorm(fr50k),
 #                              name = "fr50k.nz",
 #                              Ls = c(17, 493, 23800, 25000, 40000),
@@ -110,10 +110,10 @@ test.test.data(test.data = fr1k.nz.td);
 #                              svd.method = "p",
 #                              neig = 15,
 #                              tolerance = 1e-6,
-#                              svd.methods = c("p", "n"));
-#test.test.data(test.data = fr50k.nz.td);
+#                              svd.methods = c("p", "n"))
+#test.test.data(test.data = fr50k.nz.td)
 
 #save(co2.td, fr50.td, fr1k.td, fr50k.td, fr50.nz.td, fr1k.nz.td, fr50k.nz.td,
 save(co2.td, fr50.td, fr1k.td, fr50.nz.td, fr1k.nz.td,
      file = system.file("extdata", "1dssa.testdata.rda", package = "Rssa"),
-     compress = "xz", compression_level = 9);
+     compress = "xz", compression_level = 9)
