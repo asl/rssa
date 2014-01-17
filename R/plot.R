@@ -240,7 +240,7 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
             dots))
 }
 
-.plot.ssa.series.toeplitz.ssa <- .plot.ssa.vectors.1d.ssa
+.plot.ssa.series.toeplitz.ssa <- .plot.ssa.series.1d.ssa
 
 panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot

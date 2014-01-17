@@ -50,8 +50,10 @@ ssa <- function(x,
                 neig = NULL,
                 mask = NULL,
                 wmask = NULL,
+                column.projector = "constant",
+                row.projector = "constant",
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
                 circular = FALSE,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
@@ -81,6 +83,8 @@ ssa <- function(x,
       svd.method <- .determine.svd.method(L, N - L + 1, neig, ...)
 
     wmask <- fmask <- weights <- NULL
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "2d-ssa")) {
     if (length(circular) > 2)
       warning("Incorrect argument length: length(circular) > 2, two leading values will be used")
@@ -137,6 +141,8 @@ ssa <- function(x,
       wmask <- NULL
     if (all(fmask))
       fmask <- NULL
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "mssa")) {
     if (any(circular))
       stop("Circular variant of multichannel SSA isn't implemented yet")
@@ -179,6 +185,8 @@ ssa <- function(x,
     } else {
       fmask <- weights <- NULL
     }
+
+    column.projector <- row.projector <- NULL
   } else if (identical(kind, "cssa")) {
     if (any(circular))
       stop("Circular variant of complex SSA isn't implemented yet")
@@ -196,6 +204,46 @@ ssa <- function(x,
       svd.method <- .determine.svd.method(L, N - L + 1, neig, ..., svd.method = "eigen")
 
     wmask <- fmask <- weights <- NULL
+
+    column.projector <- row.projector <- NULL
+  } else if (identical(kind, "pssa")) {
+    # Coerce input to vector if necessary
+    if (!is.vector(x))
+      x <- as.vector(x)
+
+    N <- length(x)
+    K <- N - L + 1
+
+    if (is.null(neig))
+      neig <- min(50, L, K)
+
+    # Compute projectors
+    if (is.character(column.projector) || !is.matrix(column.projector)) {
+      column.projector <- orthopoly(column.projector, L)
+    } else {
+      # Perform orthogonalization
+      column.projector <- qr.Q(qr(column.projector))
+    }
+
+    if (is.character(row.projector) || !is.matrix(row.projector)) {
+      row.projector <- orthopoly(row.projector, K)
+    } else {
+      # Perform orthogonalization
+      row.projector <- qr.Q(qr(row.projector))
+    }
+
+    # Check projectors' dimensions
+    stopifnot(nrow(column.projector) == L)
+    stopifnot(nrow(row.projector) == K)
+
+    # Fix svd method, if needed
+    if (identical(svd.method, "auto"))
+      svd.method <- .determine.svd.method(L, N, neig, ...)
+
+    wmask <- fmask <- weights <- NULL
+
+    # ProjectionSSA is just a special case of 1d-ssa
+    kind <- c("pssa", "1d-ssa")
   }
   stopifnot(!is.null(neig))
 
@@ -235,8 +283,17 @@ ssa <- function(x,
   # Deprecated stuff
   .deprecate(this, "lambda", "sigma")
 
+  # Store projectors
+  .set(this, "column.projector", column.projector)
+  .set(this, "row.projector", row.projector)
+
   # Make this S3 object
-  class(this) <- c(paste(kind, svd.method, sep = "."), kind, "ssa")
+  class(this) <- c(do.call("c", lapply(kind,
+                                       function(kind)
+                                         list(paste(kind, svd.method, sep = "."),
+                                              kind)
+                                       )),
+                   "ssa")
 
   # Perform additional init steps, if necessary
   .init(this)
@@ -258,7 +315,7 @@ ssa <- function(x,
   K <- x$length - x$window + 1
 
   # Determine the upper bound of desired eigentriples
-  desired <- max(unlist(groups))
+  desired <- max(unlist(groups), -Inf)
 
   # Sanity check
   if (desired > min(.traj.dim(x)))

@@ -128,7 +128,7 @@
 
 .decomposition <- function(x, field) {
   d <- .get(x, "decomposition", allow.null = TRUE)
-  if (missing(field)) d else d[[field]]
+  if (missing(field)) d else if (length(field) == 1) d[[field]] else d[field]
 }
 
 .set.decomposition <- function(x, ..., kind = "ssa.decomposition") {
@@ -166,6 +166,9 @@
 
 .sigma.ssa <- function(x)
   .decomposition(x, "sigma")
+
+.nspecial.ssa <- function(x)
+  return(0)
 
 .is.extptrnull <- function(x)
   .Call("is_extptrnull", x)
@@ -322,6 +325,8 @@ wnorm <- function(x, ...)
   UseMethod(".rowspan")
 .sigma <- function(x, ...)
   UseMethod(".sigma")
+.nspecial <- function(x, ...)
+  UseMethod(".nspecial")
 .elseries <- function(x, ...)
   UseMethod(".elseries")
 .init <- function(x, ...)
