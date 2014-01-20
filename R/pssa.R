@@ -126,8 +126,6 @@ decompose.pssa.svd <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = c(sigma, S$d), U = cbind(U, S$u), V = cbind(V, S$v))
 
   x
@@ -168,8 +166,6 @@ decompose.pssa.eigen <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = c(sigma, sqrt(S$values[seq_len(neig)])),
                      U = cbind(U, S$vectors[, seq_len(neig), drop = FALSE]),
                      V = V)
@@ -203,8 +199,6 @@ decompose.pssa.propack <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = sigma, U = U, V = V)
 
   x
@@ -232,8 +226,6 @@ decompose.pssa.nutrlan <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = sigma, U = U, V = V)
 
   x
