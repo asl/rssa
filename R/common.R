@@ -134,7 +134,12 @@
 .set.decomposition <- function(x, ..., kind = "ssa.decomposition") {
   val <- list(...)
   class(val) <- kind
-  .set(x, "decomposition", val)
+
+  d <- .get(x, "decomposition", allow.null = TRUE)
+  if (is.null(d))
+    d <- list()
+
+  .set(x, "decomposition", modifyList(d, val))
 }
 
 .U.default <- function(x)
