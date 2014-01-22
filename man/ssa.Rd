@@ -242,5 +242,9 @@ s <- ssa(Mars, wmask = circle(R = I(circle)))
 s <- ssa(EuStockMarkets[, 1] + 1.0i*EuStockMarkets[, 2], kind = "cssa")
 r <- reconstruct(s, groups = list(Trend = 1:2))
 plot(r)
+
+# `co2' decomposition with double projection to linear functions
+s <- ssa(co2, kind = "pssa", column.projector = "linear", row.projector = "linear")
+plot(reconstruct(s, groups = list(trend = 1:4)))
 }
 }
