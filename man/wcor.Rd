@@ -5,6 +5,7 @@
 \alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
 \alias{wcor.mssa}
+\alias{wcor.ossa}
 \alias{plot.wcor.matrix}
 
 \title{Calculate the W-correlation matrix}
