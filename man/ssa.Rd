@@ -101,7 +101,9 @@ ssa(x,
     Projectors are specified by arguments \code{column.projector} and \code{row.projector}.
     Each may be a matrix of orthonormal (otherwise QR orthonormalization process will be perfomed)
     basis of projection subspace, or single integer, which will be interpreted
-    as degree of orthogonal polynomial basis, or one of following character strings (or unique prefix):
+    as dimension of orthogonal polynomial basis (be careful, dimension is degree plus 1,
+    e.g. quadratic basis has dimension 3),
+    or one of following character strings (or unique prefix):
     'none', 'constant', 'linear', 'quadratic' or 'qubic' --- such orthopolynomial basis
     will be used. 'constant' for both bases (by default) means `double centering SSA'
   }
