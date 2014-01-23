@@ -91,7 +91,7 @@
     }
   }
 
-  .init(obj)
+  obj
 }
 
 .get.series.info <- function(x) {
