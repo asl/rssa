@@ -18,23 +18,23 @@
 #   MA 02139, USA.
 
 
-orthopoly <- function(degree, L) {
-  if (is.character(degree)) {
-    degree <- match.arg(degree,
-                        choices = c("none", "constant", "linear", "quadratic", "qubic"))
-    degree <- switch(degree,
-                     none = -1, constant = 0, linear = 1, quadratic = 2, qubic = 3)
+orthopoly <- function(d, L) {
+  if (is.character(d)) {
+    d <- match.arg(d,
+                   choices = c("none", "constant", "linear", "quadratic", "qubic"))
+    d <- switch(d,
+                none = 0, constant = 1, linear = 2, quadratic = 3, qubic = 4)
   }
 
-  stopifnot(is.numeric(degree) && length(degree) == 1)
+  stopifnot(is.numeric(d) && length(d) == 1)
 
-  if (degree == -1) {
+  if (d == 0) {
     # Return matrix with zero columns
     matrix(NA_real_, L, 0)
-  } else if (degree == 0) {
+  } else if (d == 1) {
     matrix(1 / sqrt(L), L, 1)
   } else {
-    cbind(1 / sqrt(L), poly(seq_len(L), degree))
+    cbind(1 / sqrt(L), poly(seq_len(L), d - 1))
   }
 }
 
