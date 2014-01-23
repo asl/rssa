@@ -218,14 +218,14 @@ ssa <- function(x,
       neig <- min(50, L, K)
 
     # Compute projectors
-    if (is.character(column.projector) || !is.matrix(column.projector)) {
+    if (length(column.projector) == 1) {
       column.projector <- orthopoly(column.projector, L)
     } else {
       # Perform orthogonalization
       column.projector <- qr.Q(qr(column.projector))
     }
 
-    if (is.character(row.projector) || !is.matrix(row.projector)) {
+    if (length(row.projector) == 1) {
       row.projector <- orthopoly(row.projector, K)
     } else {
       # Perform orthogonalization
