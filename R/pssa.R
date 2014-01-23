@@ -87,6 +87,8 @@ hmatmul.wrap <- function(h, mx, transposed = TRUE) {
   .set.decomposition(x,
                      nPR = ncol(RV), nPL = ncol(LU),
                      sigma = c(Rsigma, Lsigma), U = cbind(RU, LU), V = cbind(RV, LV))
+
+  x
 }
 
 decompose.pssa <- function(x,
