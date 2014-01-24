@@ -93,7 +93,7 @@ matplot(data.frame(c(co2, rep(NA, 24)), vfor), type="l")
 
 # Forecast `co2' trend by PSSA
 s <- ssa(co2, kind = "pssa", column.projector = "linear", row.projector = "linear")
-plot(vforecast(s, groups = list(trend = 1:4), len = 100, only.new = FALSE))
+plot(vforecast(s, groups = list(trend = seq_len(nspecial(s))), len = 100, only.new = FALSE))
 
 # Forecast finite rank series with polynomial component by PSSA
 v <- 5000 * sin(2*pi / 13 * (1:100)) +  (1:100)^2 + 10000

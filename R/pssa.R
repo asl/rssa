@@ -97,7 +97,7 @@ decompose.pssa <- function(x,
   stop("Unsupported SVD method for SSA with projection!")
 }
 
-.nspecial.pssa <- function(x) {
+nspecial.pssa <- function(x) {
   sum(unlist(.decomposition(x, c("nPL", "nPR"))))
 }
 
@@ -106,7 +106,7 @@ decompose.pssa.svd <- function(x,
                                ...,
                                force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > nspecial)
@@ -136,7 +136,7 @@ decompose.pssa.eigen <- function(x,
                                  ...,
                                  force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > nspecial)
@@ -178,7 +178,7 @@ decompose.pssa.propack <- function(x,
                                    ...,
                                    force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
 
   # We will use special (first nspecial) entries below
   sigma <- .sigma(x)
@@ -209,7 +209,7 @@ decompose.pssa.nutrlan <- function(x,
                                    ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
   # We will use special (first nspecial) entries below
   sigma <- .sigma(x)
   U <- .U(x)
