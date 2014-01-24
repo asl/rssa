@@ -578,6 +578,7 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("Series length:", paste(x$length, collapse = clp));
   cat(",\tWindow length:", paste(x$window, collapse = " x "));
   cat(",\tSVD method:", x$svd.method);
+  cat("\nSpecial triples: ", nspecial(x));
   cat("\n\nComputed:\n");
   cat("Eigenvalues:", nsigma(x));
   cat(",\tEigenvectors:", nu(x));

@@ -245,6 +245,6 @@ plot(r)
 
 # `co2' decomposition with double projection to linear functions
 s <- ssa(co2, kind = "pssa", column.projector = "linear", row.projector = "linear")
-plot(reconstruct(s, groups = list(trend = 1:4)))
+plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }
 }

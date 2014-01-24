@@ -12,6 +12,7 @@ export(clone,
        nv,
        nlambda,
        nsigma,
+       nspecial,
        calc.v,
        precache,
        cleanup,
@@ -144,3 +145,5 @@ S3method("parestimate", "toeplitz.ssa")
 S3method("parestimate", "mssa")
 S3method("cadzow", "ssa")
 S3method("cadzow", "1d.ssa")
+S3method("nspecial", "ssa")
+S3method("nspecial", "pssa")
