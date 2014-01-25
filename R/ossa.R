@@ -383,7 +383,7 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 1.2,
   invisible(x)
 }
 
-fssa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
+fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
   if (!is.function(FILTER)) {
     FILTER.coeffs <- FILTER
     FILTER <- function(x) {

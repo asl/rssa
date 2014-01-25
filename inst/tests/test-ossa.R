@@ -23,7 +23,7 @@ test_that("I-OSSA separate 3 sines exactly", {
   expect_equal(rec$F3, F3.real, tolerance = 1e-6)
 })
 
-test_that("I-OSSA and FSSA", {
+test_that("I-OSSA and F-OSSA", {
   N <- 200
   L <- 100
   omega1 <- 0.07
@@ -32,7 +32,7 @@ test_that("I-OSSA and FSSA", {
   F1.real <- 2*sin(2*pi*omega1*(1:N))
   F2.real <- 2*sin(2*pi*omega2*(1:N))
   ss <- ssa(F1.real + F2.real, L, svd.method = "eigen", neig = 28)
-  fss <- fssa(ss, nested.groups = list(c(1,2), c(3,4)), kappa = 100)
+  fss <- fossa(ss, nested.groups = list(c(1,2), c(3,4)), kappa = 100)
   ioss <- iossa(fss, nested.groups = list(c(1,2), c(3,4)), maxIter = 1000, kappa = 2, tol = 1e-8)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
@@ -45,7 +45,7 @@ test_that("I-OSSA and FSSA", {
   expect_true(ioss$iossa.result$conv)
 })
 
-test_that("FSSA", {
+test_that("FOSSA", {
   N <- 150
   L <- 70
   omega1 <- 1/5
@@ -55,7 +55,7 @@ test_that("FSSA", {
   F2.real <- 2*sin(2*pi*omega2*(1:N))
   v <- F1.real + F2.real
   ss <- ssa(v, L, svd.method = "eigen")
-  fss <- fssa(ss,  nested.groups = list(1:2, 3:4), gamma = 100.5)
+  fss <- fossa(ss,  nested.groups = list(1:2, 3:4), gamma = 100.5)
   wc <- wcor(fss, groups = list(1:2, 3:4))
 
   expect_equivalent(wc[,], diag(2))

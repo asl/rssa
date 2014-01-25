@@ -72,7 +72,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 1.2,
 }
 
 \seealso{
-  \code{\link[Rssa:fssa]{fssa}},
+  \code{\link[Rssa:fossa]{fossa}},
   \code{\link[Rssa:genwcor]{genwcor}},
   \code{\link[Rssa:iossa.result]{iossa.result}}.
 }
@@ -102,8 +102,8 @@ omega2 <- 0.06
 
 F <- sin(2*pi*omega1 * (1:N)) + sin(2*pi*omega2 * (1:N))
 s <- ssa(F, L)
-# Apply FSSA and then I-OSSA
-fs <- fssa(s, nested.groups = 1:4)
+# Apply F-OSSA and then I-OSSA
+fs <- fossa(s, nested.groups = 1:4)
 ios <- iossa(fs, nested.groups = list(1:2, 3:4), maxiter = 100)
 
 opar <- par(mfrow = c(3, 1))
