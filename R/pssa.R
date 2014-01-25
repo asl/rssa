@@ -72,7 +72,10 @@ hmatmul.wrap <- function(h, mx, transposed = TRUE) {
   apply(mx, 2, hmatmul, hmat = h, transposed = transposed)
 }
 
-.init.pssa <- function(x) {
+.calc.projections <- function(x, force.update = FALSE) {
+  if (!is.null(.decomposition(x)) && !force.update)
+    return(x)
+
   hmat <- .get.or.create.hmat(x)
   LU <- .get(x, "column.projector")
   RV <- .get(x, "row.projector")
@@ -107,6 +110,9 @@ decompose.pssa.svd <- function(x,
                                neig = min(50, L, K),
                                ...,
                                force.continue = FALSE) {
+  # Compute special eigentriples if needed
+  .calc.projections(x)
+
   N <- x$length; L <- x$window; K <- N - L + 1
   nspecial <- nspecial(x)
 
@@ -137,6 +143,9 @@ decompose.pssa.eigen <- function(x,
                                  neig = min(50, L, K),
                                  ...,
                                  force.continue = FALSE) {
+  # Compute special eigentriples if needed
+  .calc.projections(x)
+
   N <- x$length; L <- x$window; K <- N - L + 1
   nspecial <- nspecial(x)
 
@@ -179,6 +188,9 @@ decompose.pssa.propack <- function(x,
                                    neig = min(50, L, K),
                                    ...,
                                    force.continue = FALSE) {
+  # Compute special eigentriples if needed
+  .calc.projections(x)
+
   N <- x$length; L <- x$window; K <- N - L + 1
   nspecial <- nspecial(x)
 
@@ -209,6 +221,9 @@ decompose.pssa.propack <- function(x,
 decompose.pssa.nutrlan <- function(x,
                                    neig = min(50, L, K),
                                    ...) {
+  # Compute special eigentriples if needed
+  .calc.projections(x)
+
   N <- x$length; L <- x$window; K <- N - L + 1
 
   nspecial <- nspecial(x)

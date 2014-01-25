@@ -190,11 +190,6 @@ decompose.cssa.nutrlan <- function(x,
   c(2*x$window, 2*(x$length - x$window + 1))
 }
 
-.init.cssa <- function(x, ...) {
-  # Initialize FFT plan
-  .get.or.create.cfft.plan(x)
-}
-
 calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
   sigma <- .sigma[idx]
   U <- .U[, idx, drop = FALSE]

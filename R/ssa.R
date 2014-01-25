@@ -264,7 +264,8 @@ ssa <- function(x,
   # Save the names of the essential fields
   this$fields <- c("F",
                    "wmask", "fmask", "weights",
-                   "Fattr", "Fclass", "Iattr")
+                   "Fattr", "Fclass", "Iattr",
+                   "column.projector", "row.projector")
 
   # Save series
   .set(this, "F", x);
