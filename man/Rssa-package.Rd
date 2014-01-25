@@ -23,7 +23,9 @@
   frequency estimation (\code{\link[Rssa:parestimate]{parestimate}}) and
   series forecasting (\code{\link[Rssa:forecast.ssa]{forecast}},
   \code{\link[Rssa:rforecast.ssa]{rforecast}},
-  \code{\link[Rssa:vforecast.ssa]{vforecast}}).
+  \code{\link[Rssa:vforecast.ssa]{vforecast}}). In addition, Oblique SSA
+  methods can be used to improve the series separability
+  (\code{\link[Rssa:iossa]{iossa}}, \code{\link[Rssa:fssa]{fssa}}).
 }
 
 \references{
@@ -58,7 +60,9 @@
   \code{\link[Rssa:parestimate]{parestimate}},
   \code{\link[Rssa:rforecast.ssa]{rforecast}},
   \code{\link[Rssa:vforecast.ssa]{vforecast}},
-  \code{\link[Rssa:forecast.ssa]{forecast}}
+  \code{\link[Rssa:forecast.ssa]{forecast}},
+  \code{\link[Rssa:iossa]{iossa}},
+  \code{\link[Rssa:fssa]{fssa}}
 }
 \examples{
 s <- ssa(co2) # Perform the decomposition using the default window length

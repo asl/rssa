@@ -1,9 +1,9 @@
 \name{iossa}
 \alias{iossa}
-\title{Iterative OSSA nested redecomposition}
+\title{Iterative OSSA nested decomposition}
 
 \description{
-  Perform Iterative OSSA (I-OSSA) algorithm to the ssa-object.
+  Perform Iterative OSSA (I-OSSA) algorithm.
 }
 
 \usage{
@@ -23,39 +23,46 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 1.2,
   \item{kappa}{`kappa' parameter for sigma-correction (see `Details' and `References') procedure.
     If 'NULL', sigma-correction will not be performed}
   \item{maxiter}{upper bound for the number of iterations}
-  \item{initial.approx}{list of series the same length as \code{nested.groups}, using for initial signal
-    subspaces' approximations}
-  \item{norm}{function, norm series norm for convergence detection}
-  \item{trace}{logical, indicating whether convergence process should be traced}
-  \item{kappa.balance}{proportion of distribution sigma-correction multiplier
-    between colums and rows inner probucts}
+  \item{initial.approx}{list of series the same length as
+    \code{nested.groups}, using for initial approximations of signal subspaces}
+  \item{norm}{function, series norm for convergence detection}
+  \item{trace}{logical, indicates whether the convergence process should be traced}
+  \item{kappa.balance}{proportion of the distribution of sigma-correction multiplier
+    between colums and rows inner products}
   \item{svd.method}{singular value decomposition method, passed to \code{ssa} routine (I-OSSA method
-    uses Standart 1D SSA for rank and signal subspace estimations)}
+    uses Basic 1D SSA for rank and signal subspace estimations)}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
 }
 
 \value{
-  Object of `ossa' class --- modificated input object. Also is contains following fiels:
+  Object of `ossa' class object. In additional to usual `ssa' class
+  fields, it also contains the following fields:
   \describe{
-    \item{iossa.result}{object of `iossa.result' class, list which contains algorithm parameters,
+    \item{iossa.result}{object of `iossa.result' class, a list which contains algorithm parameters,
       final inner products, their condition numbers, separability measures, the number of iterations and
-      convergence status (see \code{\link{iossa.result}}). This object can be printed or plotted}
-    \item{iossa.groups}{list, describes final (after sigma-correction) component grouping}
+      convergence status (see \code{\link{iossa.result}})}
+    \item{iossa.groups}{list, describes final (after sigma-correction)
+      grouping of series components}
     \item{iossa.groups.all}{list, describes cumulative grouping after several sequentional I-OSSA applications}
   }
 }
 
 \details{
-  Iterative Oblique SSA (I-OSSA) is iterative (EM-like) method for improving separability in SSA.
-  In each iteration components signal subspaces are estimated by series decomposition from previous iteration,
-  then oblique reduced inner products are constructed by estimated signal subspaces (and
-  optionally sigma-correction procedure is applied) and nested (low-rank) generalized SVD
-  redecomposition with new inner products is performed for specified eigentriples. And so on.
+  Iterative Oblique SSA (I-OSSA) is an iterative (EM-like) method for
+  improving separability in SSA.  At each iteration signal subspaces of
+  series components are estimated by series decomposition from previous
+  iteration, then oblique reduced inner products are constructed from
+  the estimated signal subspaces (and optionally sigma-correction
+  procedure is applied). Finally nested (low-rank) generalized SVD
+  decomposition with new inner products is performed for specified
+  eigentriples. Such a procedure is performed until the stationary
+  point.
 
-  Sigma-correction is renormalization new inner products for preventing mixing components in next iteration.
-  This approach make procedure more stable and can solve lack of strong separability problem
-  (see referenced article).
+  Sigma-correction procudure does the renormalization of new inner
+  products. This prevents the mixing of the components during the next
+  iteration. Such approach makes the whole procedure more stable and can
+  solve lack of strong separability problem (see References).
 }
 
 \references{
@@ -71,7 +78,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 1.2,
 }
 
 \examples{
-# Separate three non-separable sines with different amplitudes
+# Separate three non-separable sine series with different amplitudes
 N <- 150
 L <- 70
 
@@ -81,12 +88,12 @@ omega3 <- 0.07
 
 F <- 4*sin(2*pi*omega1 * (1:N)) + 2*sin(2*pi*omega2 * (1:N)) + sin(2*pi*omega3 * (1:N))
 s <- ssa(F, L)
-ios <- iossa(s, nested.groups = list(1:2, 3:4, 5:6), kappa = NULL, maxIter = 200, tol = 1e-8)
+ios <- iossa(s, nested.groups = list(1:2, 3:4, 5:6), kappa = NULL, maxiter = 100, tol = 1e-3)
 
 plot(reconstruct(ios, groups = ios$iossa.groups))
-print(ios$iossa.result)
-plot(ios$iossa.result)
+summary(ios)
 
+\donttest{
 # Separate two non-separable sines with equal amplitudes
 N <- 200
 L <- 100
@@ -97,13 +104,16 @@ F <- sin(2*pi*omega1 * (1:N)) + sin(2*pi*omega2 * (1:N))
 s <- ssa(F, L)
 # Apply FSSA and then I-OSSA
 fs <- fssa(s, nested.groups = 1:4)
-ios <- iossa(fs, nested.groups = list(1:2, 3:4), maxIter = 1000)
+ios <- iossa(fs, nested.groups = list(1:2, 3:4), maxiter = 100)
 
+opar <- par(mfrow = c(3, 1))
 plot(reconstruct(s, groups = list(1:2, 3:4)))
+plot(reconstruct(fs, groups = list(1:2, 3:4)))
 plot(reconstruct(ios, groups = ios$iossa.groups))
-plot(ios$iossa.result)
-print(ios$iossa.result)
+par(opar)
+summary(ios)
 
 plot(wcor(ios, groups = 1:4))
 plot(genwcor(ios, groups = 1:4))
+}
 }

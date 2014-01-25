@@ -120,13 +120,16 @@ print.iossa.result <- function(x, digits = max(3, getOption("digits") - 3), ...)
 summary.iossa.result <- function(object, digits = max(3, getOption("digits") - 3), ...)
   print.iossa.result(x = object, digits = digits, ...)
 
-print.ossa <- function(x, ...) {
+print.ossa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   NextMethod()
 
   iossa.result <- .get(x, "iossa.result", allow.null = TRUE)
   if (!is.null(iossa.result))
-    print(iossa.result)
+    print(iossa.result, digits = digits)
 }
+
+summary.ossa <- function(object, digits = max(3, getOption("digits") - 3), ...)
+  print(x = object, digits = digits, ...)
 
 .save.oblique.decomposition <- function(x, nosigma, Y, Z, idx) {
   sigma <- .sigma(x)

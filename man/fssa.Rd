@@ -1,9 +1,9 @@
 \name{fssa}
 \alias{fssa}
-\title{Nested FSSA redecomposition}
+\title{Nested FSSA decomposition}
 
 \description{
-  Perform Filtered SSA nested redecomposition of the ssa-object.
+  Perform Filtered SSA nested decomposition.
 }
 
 
@@ -12,9 +12,9 @@
 }
 
 \arguments{
-  \item{x}{SSA object holding the one-dimensional SSA (classic 1d-SSA, Toeplitz SSA or PSSA) decomposition}
-  \item{nested.groups}{vector of elementary components indices for nested redecomposition. If list passed,
-    \code{unlist} and then \code{unique} will be applyed}
+  \item{x}{SSA object holding the one-dimensional SSA (Basic 1d-SSA, Toeplitz SSA or PSSA) decomposition}
+  \item{nested.groups}{vector of elementary components indices for
+    nested decomposition. The argument is coerced to a vector, if necessary}
   \item{FILTER}{function or numeric vector of impulse response coefficients for filtration}
   \item{gamma}{weight coefficient of filtration addition. See `Details' and `References'}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
@@ -22,21 +22,24 @@
 }
 
 \value{
-  Object of `ossa' class --- modified input object.
+  Object of class `ossa'.
 }
 
 \details{
-  Filtered SSA performs nested (low-rank) Quotient SVD redecomposition of specified eigentriples.
-  Inner product is conventional in column space and in row space it has form:
+  Filtered SSA performs nested (low-rank) Quotient SVD decomposition of
+  specified eigentriples. The used inner product is conventional in
+  column space and in row space it has the following form:
   \deqn{%
     \langle x, y \rangle = (x, y) + \gamma^2(\Phi(x), \Phi(y)),
   }{<x, y> = (x, y) + gamma^2(Phi(x), Phi(y))}
   where \eqn{(\cdot, \cdot)}{(., .)} denotes conventional inner product and
-  `\eqn{\Phi}{Phi}' is function (supposed to be linear operator, but not any checkings performed)
+  `\eqn{\Phi}{Phi}' is function (supposed to be linear operator, but
+  right now no additional checks are performed)
   or linear filtration, specified by \code{FILTER} argument.
 
-  If \eqn{\Phi}{Phi} is difference (by default), such Filtered SSA called `DerivSSA'
-  (this very case is dicussed in referenced article).
+  The special case of \eqn{\Phi}{Phi} being a difference operator (by
+  default) is called `DerivSSA'. See References for more details.
+
 }
 
 \references{

@@ -9,12 +9,13 @@
 }
 
 \usage{
-  \method{print}{iossa.result}(x, ...)
-  \method{summary}{iossa.result}(object, ...)
+  \method{print}{iossa.result}(x, digits = max(3, getOption("digits") - 3), \dots)
+  \method{summary}{iossa.result}(object, digits = max(3, getOption("digits") - 3), \dots)
 }
 
 \arguments{
-  \item{x, object}{object of class `iossa.result'}
+  \item{x, object}{object of class `iossa.result' or `ossa'}
+  \item{digits}{integer, used for number formatting}
   \item{\dots}{further arguments passed to method}
 }
 
@@ -43,6 +44,7 @@
 }
 
 \examples{
+\donttest{
 # Separate three non-separable sines with different amplitudes
 N <- 150
 L <- 70
@@ -53,9 +55,9 @@ omega3 <- 0.07
 
 F <- 4*sin(2*pi*omega1 * (1:N)) + 2*sin(2*pi*omega2 * (1:N)) + sin(2*pi*omega3 * (1:N))
 s <- ssa(F, L)
-ios <- iossa(s, nested.groups = list(1:2, 3:4, 5:6), kappa = NULL, maxIter = 200, tol = 1e-8)
+ios <- iossa(s, nested.groups = list(1:2, 3:4, 5:6), kappa = NULL, maxiter = 100, tol = 1e-3)
 
 print(ios)
 print(ios$iossa.result)
-plot(ios$iossa.result)
+}
 }
