@@ -98,7 +98,7 @@ orthogonalize <- function(Y, Z, sigma, side = c("bi", "left", "right"), normaliz
   cor
 }
 
-print.iossa.result <- function(x, ...) {
+print.iossa.result <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   max.abs.nodiag <- function(mx) {
     diag(mx) <- 0
     mx[which.max(abs(mx))]
@@ -107,18 +107,18 @@ print.iossa.result <- function(x, ...) {
   cat("\nI-OSSA result:\n")
   cat("\tConverged:             ", ifelse(x$converged, "yes", "no"), "\n", sep = "")
   cat("\tIterations:            ", x$iter, "\n", sep = "")
-  cat("\tCondition numbers:     ", paste0(x$Cond, collapse = ", "), "\n", sep = "")
-  cat("\tInitial mean(tau):     ", mean(x$initial.hrr), "\n", sep = "")
-  cat("\tInitial tau:           ", paste0(x$initial.hrr, collapse = ", "), "\n", sep = "")
-  cat("\tI-OSSA mean(tau):      ", mean(x$hrr), "\n", sep = "")
-  cat("\tI-OSSA tau:            ", paste0(x$hrr, collapse = ", "), "\n", sep = "")
-  cat("\tInitial max wcor:      ", max.abs.nodiag(x$initial.wcor), "\n", sep = "")
-  cat("\tI-OSSA max wcor:       ", max.abs.nodiag(x$wcor), "\n", sep = "")
+  cat("\tCondition numbers:     ", paste0(format(x$Cond, digits = digits), collapse = ", "), "\n", sep = "")
+  cat("\tInitial mean(tau):     ", format(mean(x$initial.hrr), digits = digits), "\n", sep = "")
+  cat("\tInitial tau:           ", paste0(format(x$initial.hrr, digits = digits), collapse = ", "), "\n", sep = "")
+  cat("\tI-OSSA mean(tau):      ", format(mean(x$hrr), digits = digits), "\n", sep = "")
+  cat("\tI-OSSA tau:            ", paste0(format(x$hrr, digits = digits), collapse = ", "), "\n", sep = "")
+  cat("\tInitial max wcor:      ", format(max.abs.nodiag(x$initial.wcor), digits = digits), "\n", sep = "")
+  cat("\tI-OSSA max wcor:       ", format(max.abs.nodiag(x$wcor), digits = digits), "\n", sep = "")
   cat("\n")
 }
 
-summary.iossa.result <- function(object, ...)
-  print.iossa.result(object, ...)
+summary.iossa.result <- function(object, digits = max(3, getOption("digits") - 3), ...)
+  print.iossa.result(x = object, digits = digits, ...)
 
 print.ossa <- function(x, ...) {
   NextMethod()
