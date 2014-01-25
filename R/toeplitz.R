@@ -51,13 +51,6 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   .Call("tmatmul", tmat, v, transposed)
 }
 
-.init.toeplitz.ssa <- function(x, ...) {
-  # Initialize FFT plan
-  .get.or.create.fft.plan(x)
-
-  x
-}
-
 .hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa
 
 .get.or.create.tmat <- function(x) {

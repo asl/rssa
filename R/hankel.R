@@ -103,13 +103,6 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hmatmul", hmat, v, transposed);
 }
 
-.init.1d.ssa <- function(x, ...) {
-  # Initialize FFT plan
-  .get.or.create.fft.plan(x)
-
-  x
-}
-
 .traj.dim.default <- function(x) {
   c(x$window, x$length - x$window + 1)
 }
