@@ -13,8 +13,8 @@ ssa(x,
     neig = NULL,
     mask = NULL,
     wmask = NULL,
-    column.projector = "constant",
-    row.projector = "constant",
+    column.projector = "centering",
+    row.projector = "centering",
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
     circular = FALSE,
@@ -104,8 +104,8 @@ ssa(x,
     as dimension of orthogonal polynomial basis (be careful, dimension is degree plus 1,
     e.g. quadratic basis has dimension 3),
     or one of following character strings (or unique prefix):
-    'none', 'constant', 'linear', 'quadratic' or 'qubic' --- such orthopolynomial basis
-    will be used. 'constant' for both bases (by default) means `double centering SSA'
+    'none', 'constant' (or 'centering'), 'linear', 'quadratic' or 'qubic' --- such orthopolynomial basis
+    will be used. 'centering' for both bases (by default) means `double centering SSA'
   }
 
   \subsection{SVD methods}{

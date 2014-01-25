@@ -21,9 +21,9 @@
 orthopoly <- function(d, L) {
   if (is.character(d)) {
     d <- match.arg(d,
-                   choices = c("none", "constant", "linear", "quadratic", "qubic"))
+                   choices = c("none", "constant", "centering", "linear", "quadratic", "qubic"))
     d <- switch(d,
-                none = 0, constant = 1, linear = 2, quadratic = 3, qubic = 4)
+                none = 0, constant =, centering = 1, linear = 2, quadratic = 3, qubic = 4)
   }
 
   stopifnot(is.numeric(d) && length(d) == 1)
