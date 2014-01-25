@@ -98,19 +98,6 @@ orthogonalize <- function(Y, Z, sigma, side = c("bi", "left", "right"), normaliz
   cor
 }
 
-plot.iossa.result <- function(x, ...) {
-  main <- sprintf("M = %3.2f iter = %d hrr: %4e -> %4e converged = %s",
-                  prod(x$Cond), x$iter,
-                  mean(x$initial.hrr), mean(x$hrr),
-                  ifelse(x$converged, "T", "F"))
-
-  col <- c("grey", rainbow(length(x$Fs)))
-  matplot(do.call(cbind, c(list(x$F), x$Fs)), type = "l", main = main, lty = "solid",
-          col = col, ylab = "F", xlab = "x", ...)
-  legend("topright", legend = c("Initial", names(x$Fs)),
-         col = col, lty = "solid")
-}
-
 print.iossa.result <- function(x, ...) {
   max.abs.nodiag <- function(mx) {
     diag(mx) <- 0

@@ -2,45 +2,39 @@
 \alias{iossa.result}
 \alias{print.iossa.result}
 \alias{summary.iossa.result}
-\alias{plot.iossa.result}
-\title{S3 class for I-OSSA algorithm results storaging}
+\title{Summary of I-OSSA results}
 
 \description{
-  Class for storaging I-OSSA procedure results and methods
-  for displaying them.
+  Various routines to print Iterative Oblique SSA results
 }
 
 \usage{
   \method{print}{iossa.result}(x, ...)
   \method{summary}{iossa.result}(object, ...)
-  \method{plot}{iossa.result}(x, ...)
 }
 
 \arguments{
-  \item{x, object}{object of `iossa.result' class}
+  \item{x, object}{object of class `iossa.result'}
   \item{\dots}{further arguments passed to method}
 }
 
 \details{
-  `iossa.result' class object is a list of following fields:
+  An object of class `iossa.result' is a list with the following fields:
   \describe{
     \item{F}{initial series of whole decomposition}
     \item{Fs}{list of series, the final decomposition}
-    \item{Cond}{numeric vector of two elements, condition numbers of the final column and row inner products}
-    \item{gwcor}{Generalized W-correlations matrix of the final decomposition}
-    \item{wcor}{Standard W-correlations matrix of the final decomposition}
-    \item{initial.wcor}{Standard W-correlation matrix of the initial decomposition}
+    \item{Cond}{numeric vector with two elements, condition numbers of the final column and row inner products}
+    \item{gwcor}{generalized W-correlations matrix of the final decomposition}
+    \item{wcor}{W-correlations matrix of the final decomposition}
+    \item{initial.wcor}{W-correlation matrix of the initial decomposition}
     \item{hrr}{numeric vector, proportions of high rank components contribution for each of final series
-      (measure of finitrankness)}
+      (denotes how well the series is approximated by a series of finite rank)}
     \item{initial.hrr}{proportions of high rank components contribution for each of initial series}
     \item{initial.rec}{list of initial series}
-    \item{iter}{the number of iterations}
+    \item{iter}{the number of OSSA iterations}
     \item{converged}{logical, whether algorithm has been converged}
-    \item{kappa, maxiter, tol}{corresponding I-OSSA procedure parameters}
+    \item{kappa, maxiter, tol}{I-OSSA procedure parameters}
   }
-
-  For ssa-objects returned from \code{iossa} routine, method \code{summary} also prints I-OSSA result
-  after common SSA info.
 }
 
 \seealso{
