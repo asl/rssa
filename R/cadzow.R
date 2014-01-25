@@ -79,7 +79,7 @@ cadzow.ssa <- function(x, rank,
   repeat {
     s <- clone(x, copy.cache = FALSE, copy.storage = FALSE)
     .set(s, "F", conversion(F))
-    r <- reconstruct(s, groups = list(1:rank), ..., cache = cache)
+    r <- reconstruct(s, groups = list(1:rank), ..., cache = FALSE)
     stopifnot(length(r) == 1)
     rF <- r[[1]]
 
