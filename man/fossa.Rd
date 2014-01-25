@@ -1,14 +1,14 @@
-\name{fssa}
-\alias{fssa}
-\title{Nested FSSA decomposition}
+\name{fossa}
+\alias{fossa}
+\title{Nested Filtered O-SSA decomposition}
 
 \description{
-  Perform Filtered SSA nested decomposition.
+  Perform Filtered O-SSA nested decomposition.
 }
 
 
 \usage{
-  fssa(x, nested.groups, FILTER = diff, gamma = 1, \dots)
+  fossa(x, nested.groups, FILTER = diff, gamma = 1, \dots)
 }
 
 \arguments{
@@ -61,7 +61,7 @@ omega2 <- 1/10
 
 v <- sin(2*pi*omega1 * (1:N)) + sin(2*pi*omega2 * (1:N))
 s <- ssa(v, L)
-fs <- fssa(s, nested.groups = 1:4, gamma = 100)
+fs <- fossa(s, nested.groups = 1:4, gamma = 100)
 
 plot(wcor(s, groups = 1:4))
 plot(wcor(fs, groups = 1:4))
@@ -69,7 +69,7 @@ plot(wcor(fs, groups = 1:4))
 # Real-life example: Australian Wine Sales
 data(AustralianWine)
 s <- ssa(AustralianWine[1:120, "Fortified"], L = 60)
-fs <- fssa(s, nested.groups = list(6:7, 8:9, 10:11), gamma = 10)
+fs <- fossa(s, nested.groups = list(6:7, 8:9, 10:11), gamma = 10)
 
 plot(reconstruct(fs, groups = list(6:7, 8:9, 10:11)))
 plot(wcor(s, groups = 6:11))
