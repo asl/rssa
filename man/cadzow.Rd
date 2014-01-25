@@ -1,7 +1,6 @@
 \name{cadzow}
 \alias{cadzow}
 \alias{cadzow.ssa}
-\alias{cadzow.1d.ssa}
 
 \title{
   Cadzow Iterations
@@ -11,8 +10,7 @@
 }
 
 \usage{
-\method{cadzow}{ssa}(x, rank, eps = 1e-6, numiter = 0, \dots, cache = TRUE)
-\method{cadzow}{1d.ssa}(x, rank, correct = TRUE, eps = 1e-6, numiter = 0, \dots, cache = TRUE)
+\method{cadzow}{ssa}(x, rank, correct = TRUE, eps = 1e-6, numiter = 0, \dots, cache = TRUE)
 }
 
 \arguments{
