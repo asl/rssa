@@ -263,7 +263,7 @@ ssa <- function(x,
 
   # Save the names of the essential fields
   this$fields <- c("F",
-                   "wmask", "fmask", "weights",
+                   "wmask", "fmask", "weights", "circular",
                    "Fattr", "Fclass", "Iattr",
                    "column.projector", "row.projector")
 
