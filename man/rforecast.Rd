@@ -104,8 +104,10 @@ rfor <- rforecast(s, groups = list(c(1,4), 1:4), len = 24, only.new=FALSE)
 matplot(data.frame(c(co2, rep(NA, 24)), rfor), type="l")
 
 # Forecast `co2' trend by PSSA
-s <- ssa(co2, kind = "pssa", column.projector = "linear", row.projector = "linear")
-plot(rforecast(s, groups = list(trend = seq_len(nspecial(s))), len = 100, only.new = FALSE))
+s <- ssa(co2, kind = "pssa", column.projector = 2, row.projector = 2)
+len <- 100
+rfor <- rforecast(s, groups = list(trend = seq_len(nspecial(s))), len = len, only.new = FALSE)
+matplot(data.frame(c(co2, rep(NA, len)), rfor), type = "l")
 
 # Forecast finite rank series with polynomial component by PSSA
 v <- 5000 * sin(2*pi / 13 * (1:100)) +  (1:100)^2 + 10000
