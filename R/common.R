@@ -91,7 +91,7 @@
     }
   }
 
-  .init(obj)
+  obj
 }
 
 .get.series.info <- function(x) {
@@ -134,7 +134,12 @@
 .set.decomposition <- function(x, ..., kind = "ssa.decomposition") {
   val <- list(...)
   class(val) <- kind
-  .set(x, "decomposition", val)
+
+  d <- .get(x, "decomposition", allow.null = TRUE)
+  if (is.null(d))
+    d <- list()
+
+  .set(x, "decomposition", modifyList(d, val))
 }
 
 .U.default <- function(x)
@@ -167,7 +172,7 @@
 .sigma.ssa <- function(x)
   .decomposition(x, "sigma")
 
-.nspecial.ssa <- function(x)
+nspecial.ssa <- function(x)
   return(0)
 
 .is.extptrnull <- function(x)
@@ -325,8 +330,8 @@ wnorm <- function(x, ...)
   UseMethod(".rowspan")
 .sigma <- function(x, ...)
   UseMethod(".sigma")
-.nspecial <- function(x, ...)
-  UseMethod(".nspecial")
+nspecial <- function(x)
+  UseMethod("nspecial")
 .elseries <- function(x, ...)
   UseMethod(".elseries")
 .init <- function(x, ...)

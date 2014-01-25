@@ -5,6 +5,7 @@
 \alias{rforecast.1d.ssa}
 \alias{rforecast.toeplitz.ssa}
 \alias{rforecast.mssa}
+\alias{rforecast.pssa}
 \title{Perform recurrent SSA forecasting of the series}
 
 \description{
@@ -15,6 +16,8 @@
 \method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
+          only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{rforecast}{pssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{mssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           direction = c("row", "column"), only.new = TRUE, \dots, drop = TRUE,
@@ -99,4 +102,15 @@ s <- ssa(co2)
 # as a base space for the forecast.
 rfor <- rforecast(s, groups = list(c(1,4), 1:4), len = 24, only.new=FALSE)
 matplot(data.frame(c(co2, rep(NA, 24)), rfor), type="l")
+
+# Forecast `co2' trend by PSSA
+s <- ssa(co2, kind = "pssa", column.projector = 2, row.projector = 2)
+len <- 100
+rfor <- rforecast(s, groups = list(trend = seq_len(nspecial(s))), len = len, only.new = FALSE)
+matplot(data.frame(c(co2, rep(NA, len)), rfor), type = "l")
+
+# Forecast finite rank series with polynomial component by PSSA
+v <- 5000 * sin(2*pi / 13 * (1:100)) +  (1:100)^2 + 10000
+s <- ssa(v, kind = "pssa", row.projector = 2, column.projector = 2)
+plot(rforecast(s, groups = list(all = 1:6), len = 100, only.new = FALSE), type = "l")
 }

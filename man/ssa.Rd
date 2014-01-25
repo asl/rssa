@@ -13,8 +13,8 @@ ssa(x,
     neig = NULL,
     mask = NULL,
     wmask = NULL,
-    column.projector = "constant",
-    row.projector = "constant",
+    column.projector = "centering",
+    row.projector = "centering",
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
     circular = FALSE,
@@ -101,9 +101,11 @@ ssa(x,
     Projectors are specified by arguments \code{column.projector} and \code{row.projector}.
     Each may be a matrix of orthonormal (otherwise QR orthonormalization process will be perfomed)
     basis of projection subspace, or single integer, which will be interpreted
-    as degree of orthogonal polynomial basis, or one of following character strings (or unique prefix):
-    'none', 'constant', 'linear', 'quadratic' or 'qubic' --- such orthopolynomial basis
-    will be used. 'constant' for both bases (by default) means `double centering SSA'
+    as dimension of orthogonal polynomial basis (be careful, dimension is degree plus 1,
+    e.g. quadratic basis has dimension 3),
+    or one of following character strings (or unique prefix):
+    'none', 'constant' (or 'centering'), 'linear', 'quadratic' or 'qubic' --- such orthopolynomial basis
+    will be used. 'centering' for both bases (by default) means `double centering SSA'
   }
 
   \subsection{SVD methods}{
@@ -242,5 +244,9 @@ s <- ssa(Mars, wmask = circle(R = I(circle)))
 s <- ssa(EuStockMarkets[, 1] + 1.0i*EuStockMarkets[, 2], kind = "cssa")
 r <- reconstruct(s, groups = list(Trend = 1:2))
 plot(r)
+
+# `co2' decomposition with double projection to linear functions
+s <- ssa(co2, kind = "pssa", column.projector = "linear", row.projector = "linear")
+plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }
 }

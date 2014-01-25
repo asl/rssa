@@ -5,6 +5,7 @@
 \alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
 \alias{wcor.mssa}
+\alias{wcor.ossa}
 \alias{plot.wcor.matrix}
 
 \title{Calculate the W-correlation matrix}
@@ -16,6 +17,7 @@
 \method{wcor}{2d.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{mssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{ossa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
      grid = c(),
@@ -59,6 +61,11 @@
     \item{useRaster}{logical. For wcor-plot, indicating whether raster representations
       should be used. 'TRUE' by default.}
   }
+
+  For class `ossa', Frobenius orthogonality checking is performed and if
+  reconstructed matrices are not all F-orthogonal (it's usual for Oblique SSA),
+  corresponding warning is risen.
+  W-cor matrix has no any sence in this case and may be you should use \code{\link[Rssa:genwcor]{genwcor.}}
 }
 
 \value{
@@ -72,6 +79,7 @@
 }
 \seealso{
   \code{\link[Rssa:reconstruct.ssa]{reconstruct}}
+  \code{\link[Rssa:genwcor]{genwcor.}}
 }
 
 \examples{

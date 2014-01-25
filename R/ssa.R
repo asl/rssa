@@ -50,8 +50,8 @@ ssa <- function(x,
                 neig = NULL,
                 mask = NULL,
                 wmask = NULL,
-                column.projector = "constant",
-                row.projector = "constant",
+                column.projector = "centering",
+                row.projector = "centering",
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
                 circular = FALSE,
@@ -218,14 +218,14 @@ ssa <- function(x,
       neig <- min(50, L, K)
 
     # Compute projectors
-    if (is.character(column.projector) || !is.matrix(column.projector)) {
+    if (length(column.projector) == 1) {
       column.projector <- orthopoly(column.projector, L)
     } else {
       # Perform orthogonalization
       column.projector <- qr.Q(qr(column.projector))
     }
 
-    if (is.character(row.projector) || !is.matrix(row.projector)) {
+    if (length(row.projector) == 1) {
       row.projector <- orthopoly(row.projector, K)
     } else {
       # Perform orthogonalization
@@ -578,6 +578,7 @@ print.ssa <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("Series length:", paste(x$length, collapse = clp));
   cat(",\tWindow length:", paste(x$window, collapse = " x "));
   cat(",\tSVD method:", x$svd.method);
+  cat("\nSpecial triples: ", nspecial(x));
   cat("\n\nComputed:\n");
   cat("Eigenvalues:", nsigma(x));
   cat(",\tEigenvectors:", nu(x));

@@ -18,23 +18,23 @@
 #   MA 02139, USA.
 
 
-orthopoly <- function(degree, L) {
-  if (is.character(degree)) {
-    degree <- match.arg(degree,
-                        choices = c("none", "constant", "linear", "quadratic", "qubic"))
-    degree <- switch(degree,
-                     none = -1, constant = 0, linear = 1, quadratic = 2, qubic = 3)
+orthopoly <- function(d, L) {
+  if (is.character(d)) {
+    d <- match.arg(d,
+                   choices = c("none", "constant", "centering", "linear", "quadratic", "qubic"))
+    d <- switch(d,
+                none = 0, constant =, centering = 1, linear = 2, quadratic = 3, qubic = 4)
   }
 
-  stopifnot(is.numeric(degree) && length(degree) == 1)
+  stopifnot(is.numeric(d) && length(d) == 1)
 
-  if (degree == -1) {
+  if (d == 0) {
     # Return matrix with zero columns
     matrix(NA_real_, L, 0)
-  } else if (degree == 0) {
+  } else if (d == 1) {
     matrix(1 / sqrt(L), L, 1)
   } else {
-    cbind(1 / sqrt(L), poly(seq_len(L), degree))
+    cbind(1 / sqrt(L), poly(seq_len(L), d - 1))
   }
 }
 
@@ -87,6 +87,8 @@ hmatmul.wrap <- function(h, mx, transposed = TRUE) {
   .set.decomposition(x,
                      nPR = ncol(RV), nPL = ncol(LU),
                      sigma = c(Rsigma, Lsigma), U = cbind(RU, LU), V = cbind(RV, LV))
+
+  x
 }
 
 decompose.pssa <- function(x,
@@ -97,7 +99,7 @@ decompose.pssa <- function(x,
   stop("Unsupported SVD method for SSA with projection!")
 }
 
-.nspecial.pssa <- function(x) {
+nspecial.pssa <- function(x) {
   sum(unlist(.decomposition(x, c("nPL", "nPR"))))
 }
 
@@ -106,7 +108,7 @@ decompose.pssa.svd <- function(x,
                                ...,
                                force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > nspecial)
@@ -126,8 +128,6 @@ decompose.pssa.svd <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = c(sigma, S$d), U = cbind(U, S$u), V = cbind(V, S$v))
 
   x
@@ -138,7 +138,7 @@ decompose.pssa.eigen <- function(x,
                                  ...,
                                  force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > nspecial)
@@ -168,8 +168,6 @@ decompose.pssa.eigen <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = c(sigma, sqrt(S$values[seq_len(neig)])),
                      U = cbind(U, S$vectors[, seq_len(neig), drop = FALSE]),
                      V = V)
@@ -182,7 +180,7 @@ decompose.pssa.propack <- function(x,
                                    ...,
                                    force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
 
   # We will use special (first nspecial) entries below
   sigma <- .sigma(x)
@@ -203,8 +201,6 @@ decompose.pssa.propack <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = sigma, U = U, V = V)
 
   x
@@ -215,7 +211,7 @@ decompose.pssa.nutrlan <- function(x,
                                    ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
-  nspecial <- .nspecial(x)
+  nspecial <- nspecial(x)
   # We will use special (first nspecial) entries below
   sigma <- .sigma(x)
   U <- .U(x)
@@ -232,8 +228,6 @@ decompose.pssa.nutrlan <- function(x,
 
   # Save results
   .set.decomposition(x,
-                     nPL = .decomposition(x, "nPL"),
-                     nPR = .decomposition(x, "nPR"),
                      sigma = sigma, U = U, V = V)
 
   x
@@ -376,7 +370,7 @@ rforecast.pssa <- function(x, groups, len = 1,
 vforecast.pssa <- function(x, groups, len = 1,
                            only.new = TRUE,
                            ...,
-                           drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+                           drop = TRUE, drop.attributes = FALSE) {
   L <- x$window
   N <- x$length
   K <- x$length - L + 1

@@ -56,8 +56,8 @@ test_that("All svd.methods provides the same decomposition", {
   Ls <- c(70, 100, 200)
   svd.methods <- c("propack", "nutrlan", "eigen")
 
-  row.projectors <- -1:4
-  column.projectors <- -1:4
+  row.projectors <- 0:5
+  column.projectors <- 0:5
 
   neig <- 20
   groups <- as.list(1:neig)
@@ -101,16 +101,18 @@ test_that("PSSA reconstruct and predict finite rank series exactly", {
               cos(tt) * exp(tt/N),
               sin(2 * pi * tt/11) + tt^2,
               tt^3 + 1)
-  ranks <- c(5, 2, 2, 5, 4)
+  pranks <- c(5, 0, 0, 3, 4)
+  npranks <- c(0, 2, 2, 2, 0)
 
   for (vvi in seq_along(vvs)) {
     vv <- vvs[[vvi]]
-    rank <- ranks[vvi]
+    nprank <- npranks[vvi]
+    rank <- pranks[vvi] + npranks[vvi]
 
     v <- vv[seq_len(N)]
 
-    rc.projectors <- expand.grid(row.projector = -1:rank, column.projector = -1:rank)
-    rc.projectors <- rc.projectors[rc.projectors$row.projector + rc.projectors$column.projector <= rank - 2, ]
+    rc.projectors <- expand.grid(row.projector = 0:rank, column.projector = 0:rank)
+    rc.projectors <- rc.projectors[rc.projectors$row.projector + rc.projectors$column.projector <= nprank, ]
 
     for (rci in seq_len(nrow(rc.projectors))) {
       row.projector <- rc.projectors$row.projector[rci]
