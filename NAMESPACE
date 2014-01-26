@@ -54,7 +54,7 @@ export(clone,
        cadzow,
 # Non-orthogonal decompositions
        iossa,
-       genwcor,
+       owcor,
        fossa
        )
 

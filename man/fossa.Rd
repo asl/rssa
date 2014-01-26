@@ -1,22 +1,22 @@
 \name{fossa}
 \alias{fossa}
-\title{Nested Filtered O-SSA decomposition}
+\title{Nested Filter-adjusted O-SSA decomposition}
 
 \description{
-  Perform Filtered O-SSA nested decomposition.
+  Perform nested decomposition by Filter-adjusted O-SSA.
 }
-
 
 \usage{
   fossa(x, nested.groups, FILTER = diff, gamma = 1, \dots)
 }
 
 \arguments{
-  \item{x}{SSA object holding the one-dimensional SSA (Basic 1d-SSA, Toeplitz SSA or PSSA) decomposition}
-  \item{nested.groups}{vector of elementary components indices for
+  \item{x}{SSA object holding the one-dimensional SSA (Basic 1D-SSA, Toeplitz SSA) decomposition}
+  \item{nested.groups}{vector of elementary component indices for
     nested decomposition. The argument is coerced to a vector, if necessary}
-  \item{FILTER}{function or numeric vector of impulse response coefficients for filtration}
-  \item{gamma}{weight coefficient of filtration addition. See `Details' and `References'}
+  \item{FILTER}{function or numeric vector of impulse response
+    coefficients for filter adjustment}
+  \item{gamma}{weight of filter adjustment. See `Details' and `References'}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
 }
@@ -26,20 +26,20 @@
 }
 
 \details{
-  Filtered SSA performs nested (low-rank) Quotient SVD decomposition of
-  specified eigentriples. The used inner product is conventional in
-  column space and in row space it has the following form:
+  Filter-adjusted O-SSA performs a nested decomposition specified by a
+  number eigentriples via Oblique SSA with a specific inner product in
+  the row space:
   \deqn{%
     \langle x, y \rangle = (x, y) + \gamma^2(\Phi(x), \Phi(y)),
   }{<x, y> = (x, y) + gamma^2(Phi(x), Phi(y))}
   where \eqn{(\cdot, \cdot)}{(., .)} denotes conventional inner product and
   `\eqn{\Phi}{Phi}' is function (supposed to be linear operator, but
   right now no additional checks are performed)
-  or linear filtration, specified by \code{FILTER} argument.
+  or linear filtration which is specified by \code{FILTER} argument.
 
-  The special case of \eqn{\Phi}{Phi} being a difference operator (by
-  default) is called `DerivSSA'. See References for more details.
-
+  The default value of \eqn{\Phi}{Phi} corresponds to sequential
+  differences, that is, to derivation. Such version of Filter-adjusted
+  O-SSA is called `DerivSSA'. See References for more details.
 }
 
 \references{
@@ -49,11 +49,12 @@
 }
 
 \seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:iossa]{iossa}}.
 }
 
 \examples{
-# Separate two non-strongly separated series
+# Separation of two mixed sine-waves with equal amplitudes
 N <- 150
 L <- 70
 omega1 <- 1/5

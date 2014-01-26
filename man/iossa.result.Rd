@@ -25,7 +25,7 @@
     \item{F}{initial series of whole decomposition}
     \item{Fs}{list of series, the final decomposition}
     \item{Cond}{numeric vector with two elements, condition numbers of the final column and row inner products}
-    \item{gwcor}{generalized W-correlations matrix of the final decomposition}
+    \item{owcor}{oblique W-correlation matrix of the final decomposition}
     \item{wcor}{W-correlations matrix of the final decomposition}
     \item{initial.wcor}{W-correlation matrix of the initial decomposition}
     \item{hrr}{numeric vector, proportions of high rank components contribution for each of final series

@@ -39,7 +39,7 @@ test_that("I-OSSA and F-OSSA", {
   expect_equal(rec$F1, F1.real, tolerance = 1e-6)
   expect_equal(rec$F2, F2.real, tolerance = 1e-6)
 
-  wc <- genwcor(ioss, groups = list(1:2, 3:4))
+  wc <- owcor(ioss, groups = list(1:2, 3:4))
   expect_equivalent(wc[,], diag(2))
 
   expect_true(ioss$iossa.result$conv)
