@@ -98,16 +98,28 @@ ssa(x,
   }
 
   \subsection{Projectors specification for SSA with projection}{
-    Projectors are specified by arguments \code{column.projector} and
-    \code{row.projector}.  Each may be a matrix of orthonormal
+    Projectors are specified by means of \code{column.projector} and
+    \code{row.projector} arguments. Each may be a matrix of orthonormal
     (otherwise QR orthonormalization process will be perfomed) basis of
     projection subspace, or single integer, which will be interpreted as
     dimension of orthogonal polynomial basis (note that the dimension
     equals to degree plus 1, e.g. quadratic basis has dimension 3), or
     one of following character strings (or unique prefix): 'none',
     'constant' (or 'centering'), 'linear', 'quadratic' or 'qubic' for
-    orthonormal bases of the correspondng functions. 'centering' for
-    both sides (by default) means `double centering SSA'.
+    orthonormal bases of the corresponding functions.
+
+    Here is the the list of the most used options
+    \describe{
+      \item{both projectors are 'none'}{corresponds to ordinary 1D SSA,}
+      \item{column.projector='centering'}{corresponds to 1D SSA
+        with centering,}
+      \item{column.projector='centering' and
+        row.projector='centering'}{corresponds to 1D SSA with double
+        centering.}
+    }
+
+    SSA with centering and double centering may improve the separation
+    of linear trend (see (Golyandina, 2001) for more information).
   }
 
   \subsection{SVD methods}{
