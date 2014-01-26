@@ -300,7 +300,7 @@ ssa <- function(x,
 
   # Continue decomposition, if necessary
   if (desired > min(nsigma(x), nu(x)))
-    decompose(x, ..., neig = min(desired + 1, min(.traj.dim(x))))
+    decompose(x, ..., neig = min(desired + 1 - nspecial(x), min(.traj.dim(x))))
 
   desired
 }

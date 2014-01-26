@@ -19,7 +19,7 @@ test_that("PSSA with no any projections is just SSA", {
     v <- rnorm(N)
     for (svd.method in svd.methods) {
       ss <- ssa(v, L = L, kind = "1d-ssa", svd.method = svd.method, neig = neig + 1)
-      pss <- ssa(v, L = L, row.projector = "none", column.projector = "none",
+      pss <- ssa(v, L = L, row.projector = 0, column.projector = 0,
                  svd.method = svd.method, neig = neig + 1)
 
       expect_equal(pss$sigma[seq_len(neig)], ss$sigma[seq_len(neig)],
@@ -103,68 +103,80 @@ test_that("PSSA reconstruct and predict finite rank series exactly", {
               tt^3 + 1)
   pranks <- c(5, 0, 0, 3, 4)
   npranks <- c(0, 2, 2, 2, 0)
+  ranks <- npranks + pranks
 
   for (vvi in seq_along(vvs)) {
     vv <- vvs[[vvi]]
     nprank <- npranks[vvi]
-    rank <- pranks[vvi] + npranks[vvi]
+    prank <- pranks[vvi]
 
     v <- vv[seq_len(N)]
 
-    rc.projectors <- expand.grid(row.projector = 0:rank, column.projector = 0:rank)
-    rc.projectors <- rc.projectors[rc.projectors$row.projector + rc.projectors$column.projector <= nprank, ]
+    rc.projectors <- expand.grid(row.projector = 0:pranks[vvi], column.projector = 0:pranks[vvi])
 
     for (rci in seq_len(nrow(rc.projectors))) {
       row.projector <- rc.projectors$row.projector[rci]
       column.projector <- rc.projectors$column.projector[rci]
+      rank <- max(prank, column.projector + row.projector) + nprank
+      neig <- rank - (column.projector + row.projector) + 1
 
       for (svd.method in svd.methods) {
         pss <- ssa(v, row.projector = row.projector, column.projector = column.projector,
-                   svd.method = svd.method, neig = rank)
+                   svd.method = svd.method, neig = neig)
 
-        expect_equal(reconstruct(pss, groups = list(all = 1:rank))$all, v)
+        expect_equal(reconstruct(pss, groups = list(all = 1:rank))$all, v,
+                     tolerance = 1e-6)
 
         expect_equal(rforecast(pss,
                                groups = list(all = 1:rank),
                                len = 50,
                                base = "original",
                                only.new = FALSE),
-                     vv)
+                     vv,
+                     tolerance = 1e-6)
         expect_equal(rforecast(pss,
                                groups = list(all = 1:rank),
                                len = 50,
                                base = "reconstructed",
                                only.new = FALSE),
-                     vv)
+                     vv,
+                     tolerance = 1e-6)
 
         expect_equal(vforecast(pss,
                                groups = list(all = 1:rank),
                                len = 50,
                                only.new = FALSE),
-                     vv)
+                     vv,
+                     tolerance = 1e-6)
       }
     }
   }
 })
 
-test_that("PSSA reconstruct test", {
+test_that("PSSA (double centering) reconstruct test", {
   env <- new.env()
   load(system.file("extdata", "pssa.testdata.rda", package = "Rssa"), envir = env)
   #names <- c("co2.td", "fr50.td", "fr1k.td", "fr50k.td", "fr50.nz.td", "fr1k.nz.td", "fr50k.nz.td")
   names <- c("co2.td", "fr50.td", "fr1k.td", "fr50.nz.td", "fr1k.nz.td")
   for (name in names) {
     test.test.data(what = "reconstruct",
-                   test.data = env[[name]])
+                   test.data = env[[name]],
+                   kind = "1d-ssa",
+                   row.projector = "centering",
+                   column.projector = "centering")
   }
 })
 
-test_that("PSSA forecast test", {
+test_that("PSSA (double centerging) forecast test", {
   env <- new.env()
   load(system.file("extdata", "pssa.testdata.rda", package = "Rssa"), envir = env)
   #names <- c("co2.td", "fr50.td", "fr1k.td", "fr50k.td", "fr50.nz.td", "fr1k.nz.td", "fr50k.nz.td")
   names <- c("co2.td", "fr50.td", "fr1k.td", "fr50.nz.td", "fr1k.nz.td")
   for (name in names) {
     test.test.data(what = c("rforecast", "vforecast"),
-                   test.data = env[[name]])
+                   test.data = env[[name]],
+                   kind = "1d-ssa",
+                   row.projector = "centering",
+                   column.projector = "centering")
   }
 })

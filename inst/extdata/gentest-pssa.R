@@ -11,11 +11,13 @@ co2.td <- make.test.data(series = co2,
                          groups = as.list(1:10),
                          groups.forecast = list(1, 1:2, 3:5, 1:5, c(1, 3, 6, 10), 1:10),
                          len = 100,
-                         kind = "pssa",
+                         kind = "1d-ssa",
                          svd.method = "eigen",
                          svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                          svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
                          tolerance = 2e-7,
+                         column.projector = "centering",
+                         row.projector = "centering",
                          neig = 20)
 test.test.data(test.data = co2.td)
 
@@ -35,11 +37,13 @@ fr50.td <- make.test.data(series = fr50,
                           groups = as.list(1:5),
                           groups.forecast = list(1, 1:2, 3:5, 1:5, 5),
                           len = 100,
-                          kind = "pssa",
+                          kind = "1d-ssa",
                           svd.method = "e",
                           svd.methods = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
                           svd.methods.forecast = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
                           tolerance = 1e-6,
+                          column.projector = "centering",
+                          row.projector = "centering",
                           neig = 5)
 test.test.data(test.data = fr50.td)
 
@@ -49,26 +53,15 @@ fr1k.td <- make.test.data(series = fr1k,
                           groups = as.list(1:5),
                           groups.forecast = list(1, 1:2, 3:5, 1:5, 5),
                           len = 100,
-                          kind = "pssa",
+                          kind = "1d-ssa",
                           svd.method = "e",
                           svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                           svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
                           tolerance = 1e-5,
+                          column.projector = "centering",
+                          row.projector = "centering",
                           neig = 5)
 test.test.data(test.data = fr1k.td)
-
-#fr50k.td <- make.test.data(series = fr50k,
-#                           Ls = c(17, 493, 23800, 25000, 40000),
-#                           Ls.forecast = c(17, 493, 23000, 23800, 25000),
-#                           groups = as.list(1:5),
-#                           groups.forecast = list(1, 1:2, 3:5, 1:5, 5),
-#                           len = 100,
-#                           kind = "pssa",
-#                           svd.method = "p",
-#                           neig = 5,
-#                           tolerance = 1e-6,
-#                           svd.methods = c("p", "n"))
-#test.test.data(test.data = fr50k.td)
 
 set.seed(1)
 fr50.nz.td <- make.test.data(series = fr50 + rnorm(fr50),
@@ -78,10 +71,12 @@ fr50.nz.td <- make.test.data(series = fr50 + rnorm(fr50),
                              groups = as.list(1:10),
                              groups.forecast = list(1, 1:2, 3:5, 1:5, c(1, 3, 6, 10), 1:10),
                              len = 100,
-                             kind = "pssa",
+                             kind = "1d-ssa",
                              svd.method = "e",
                              svd.methods = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
                              svd.methods.forecast = list(svd.wo.nutrlan, svd.wo.nutrlan, svd.wo.nutrlan),
+                             column.projector = "centering",
+                             row.projector = "centering",
                              neig = 15)
 test.test.data(test.data = fr50.nz.td)
 
@@ -93,30 +88,16 @@ fr1k.nz.td <- make.test.data(series = fr1k + rnorm(fr1k),
                              groups = as.list(1:10),
                              groups.forecast = list(1, 1:2, 3:5, 1:5, c(1, 3, 6, 10), 1:10),
                              len = 100,
-                             kind = "pssa",
+                             kind = "1d-ssa",
                              svd.method = "e",
                              svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                              svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
                              tolerance = 1e-6,
+                             column.projector = "centering",
+                             row.projector = "centering",
                              neig = 15)
 test.test.data(test.data = fr1k.nz.td)
 
-#set.seed(1)
-#fr50k.nz.td <- make.test.data(series = fr50k + rnorm(fr50k),
-#                              name = "fr50k.nz",
-#                              Ls = c(17, 493, 23800, 25000, 40000),
-#                              Ls.forecast = c(17, 493, 23000, 23800, 25000),
-#                              groups = as.list(1:10),
-#                              groups.forecast = list(1, 1:2, 3:5, 1:5, c(1, 3, 6, 10), 1:10),
-#                              len = 100,
-#                              kind = "pssa",
-#                              svd.method = "p",
-#                              neig = 15,
-#                              tolerance = 1e-6,
-#                              svd.methods = c("p", "n"))
-#test.test.data(test.data = fr50k.nz.td)
-
-#save(co2.td, fr50.td, fr1k.td, fr50k.td, fr50.nz.td, fr1k.nz.td, fr50k.nz.td,
 save(co2.td, fr50.td, fr1k.td, fr50.nz.td, fr1k.nz.td,
      file = system.file("extdata", "pssa.testdata.rda", package = "Rssa"),
      compress = "xz", compression_level = 9)
