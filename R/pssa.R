@@ -447,3 +447,60 @@ vforecast.pssa <- function(x, groups, len = 1,
   # Forecasted series can be pretty huge...
   invisible(out)
 }
+
+vforecast.1d.ssa <- function(x, groups, len = 1,
+                             only.new = TRUE,
+                             ...,
+                             drop = TRUE, drop.attributes = FALSE) {
+  L <- x$window
+  K <- x$length - L + 1
+  N <- K + L - 1 + len + L - 1
+  N.res <- K + L - 1 + len
+
+  if (missing(groups))
+    groups <- as.list(1:min(nsigma(x), nu(x)))
+
+  # Continue decomposition, if necessary
+  desired <- .maybe.continue(x, groups = groups, ...)
+
+  dec <- .decomposition(x)
+  sigma <- .sigma(dec)
+  V <- if (nv(x) >= desired) .rowspan(dec) else NULL
+
+  # Grab the FFT plan
+  fft.plan <- fft.plan.1d(N)
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- unique(groups[[i]])
+
+    Uet <- .colspan(dec, group)
+    Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
+
+    Z <- rbind(t(sigma[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
+
+    U.head <- Uet[-L, , drop = FALSE]
+    U.tail <- Uet[-1, , drop = FALSE]
+    Pi <- Uet[L, ]
+    tUhUt <- t(U.head) %*% Conj(U.tail)
+    P <- tUhUt + 1 / (1 - sum(abs(Pi)^2)) * Pi %*% (t(Conj(Pi)) %*% tUhUt)
+
+    for (j in (K + 1):(K + len + L - 1)) {
+      Z[j, ] <- P %*% Z[j - 1, ]
+    }
+
+    res <- rowSums(.hankelize.multi(Uet, Z, fft.plan))
+
+    out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
+    out[[i]] <- .apply.attributes(x, out[[i]],
+                                  fixup = TRUE,
+                                  only.new = only.new, drop = drop.attributes)
+  }
+
+  names(out) <- .group.names(groups)
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  # Forecasted series can be pretty huge...
+  invisible(out)
+}

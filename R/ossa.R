@@ -104,16 +104,17 @@ print.iossa.result <- function(x, digits = max(3, getOption("digits") - 3), ...)
     mx[which.max(abs(mx))]
   }
 
-  cat("\nI-OSSA result:\n")
+  cat("\nIterative O-SSA result:\n")
   cat("\tConverged:             ", ifelse(x$converged, "yes", "no"), "\n", sep = "")
   cat("\tIterations:            ", x$iter, "\n", sep = "")
-  cat("\tCondition numbers:     ", paste0(format(x$Cond, digits = digits), collapse = ", "), "\n", sep = "")
-  cat("\tInitial mean(tau):     ", format(mean(x$initial.hrr), digits = digits), "\n", sep = "")
-  cat("\tInitial tau:           ", paste0(format(x$initial.hrr, digits = digits), collapse = ", "), "\n", sep = "")
-  cat("\tI-OSSA mean(tau):      ", format(mean(x$hrr), digits = digits), "\n", sep = "")
-  cat("\tI-OSSA tau:            ", paste0(format(x$hrr, digits = digits), collapse = ", "), "\n", sep = "")
+  cat("\tCondition numbers:     ", paste0(format(x$cond, digits = digits), collapse = ", "), "\n", sep = "")
+  cat("\tInitial mean(tau):     ", format(mean(x$initial.tau), digits = digits), "\n", sep = "")
+  cat("\tInitial tau:           ", paste0(format(x$initial.tau, digits = digits), collapse = ", "), "\n", sep = "")
+  cat("\tI. O-SSA mean(tau):    ", format(mean(x$tau), digits = digits), "\n", sep = "")
+  cat("\tI. O-SSA tau:          ", paste0(format(x$tau, digits = digits), collapse = ", "), "\n", sep = "")
   cat("\tInitial max wcor:      ", format(max.abs.nodiag(x$initial.wcor), digits = digits), "\n", sep = "")
-  cat("\tI-OSSA max wcor:       ", format(max.abs.nodiag(x$wcor), digits = digits), "\n", sep = "")
+  cat("\tI. O-SSA max wcor:     ", format(max.abs.nodiag(x$wcor), digits = digits), "\n", sep = "")
+  cat("\tI. O-SSA max owcor:    ", format(max.abs.nodiag(x$owcor), digits = digits), "\n", sep = "")
   cat("\n")
 }
 
@@ -155,25 +156,23 @@ summary.ossa <- function(object, digits = max(3, getOption("digits") - 3), ...)
 .make.ossa.result <- function(x, Fs, ranks, IBL, IBR, initial.Fs, svd.method = "auto") {
   L <- x$window
 
-  hrr <- sapply(seq_along(Fs),
+  tau <- sapply(seq_along(Fs),
                 function(i) {
                   high.rank.rate(Fs[[i]], L, ranks[i], svd.method = svd.method)
                 })
 
-  initial.hrr <- sapply(seq_along(initial.Fs),
+  initial.tau <- sapply(seq_along(initial.Fs),
                         function(i) {
                           high.rank.rate(initial.Fs[[i]], L, ranks[i], svd.method = svd.method)
                         })
 
   names(Fs) <- paste("F", seq_along(Fs), sep = "")
-  out <- list(F = .F(x),
-              Fs = Fs,
-              Cond = c(Cond(IBL), Cond(IBR)),
+  out <- list(cond = c(Cond(IBL), Cond(IBR)),
               owcor = .owcor(do.call(cbind, Fs), L, IBL, IBR),
               wcor = wcor(do.call(cbind, Fs), L),
               initial.wcor = wcor(do.call(cbind, initial.Fs), L),
-              hrr = hrr,
-              initial.hrr = initial.hrr,
+              tau = tau,
+              initial.tau = initial.tau,
               initial.rec = initial.Fs)
   class(out) <- "iossa.result"
 
@@ -249,7 +248,6 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
 
 iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
                   maxiter = 100,
-                  initial.approx = reconstruct(x, nested.groups),
                   norm = function(x) sqrt(mean(x^2)),
                   trace = FALSE,
                   kappa.balance = 0.5,
@@ -262,9 +260,11 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = nested.groups, ...)
 
-  rec <- reconstruct(x, groups = nested.groups)
+  nested.groups <- lapply(nested.groups, unique)
+  if (length(unique(unlist(nested.groups))) != sum(sapply(nested.groups, length)))
+    stop("Intersected nested groups")
 
-  Fs <- initial.approx
+  Fs <- rec <- reconstruct(x, groups = nested.groups) # Get initial approx
 
   idx <- sort(unique(unlist(nested.groups)))
   triples <- .get.orth.triples(x, idx)
