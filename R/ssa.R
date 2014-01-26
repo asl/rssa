@@ -50,10 +50,10 @@ ssa <- function(x,
                 neig = NULL,
                 mask = NULL,
                 wmask = NULL,
-                column.projector = "centering",
-                row.projector = "centering",
+                column.projector = "none",
+                row.projector = "none",
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
+                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 circular = FALSE,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
@@ -74,17 +74,31 @@ ssa <- function(x,
       x <- as.vector(x)
 
     N <- length(x)
+    K <- N - L + 1
 
     if (is.null(neig))
-      neig <- min(50, L, N - L + 1)
+      neig <- min(50, L, K)
 
     # Fix svd method, if needed
     if (identical(svd.method, "auto"))
-      svd.method <- .determine.svd.method(L, N - L + 1, neig, ...)
+      svd.method <- .determine.svd.method(L, K, neig, ...)
 
     wmask <- fmask <- weights <- NULL
 
-    column.projector <- row.projector <- NULL
+    if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
+      # Compute projectors
+      column.projector <- if (length(column.projector) == 1) orthopoly(column.projector, L) else qr.Q(qr(column.projector))
+      row.projector <- if (length(row.projector) == 1) orthopoly(row.projector, K) else qr.Q(qr(row.projector))
+
+      # Check projector dimensions
+      stopifnot(nrow(column.projector) == L)
+      stopifnot(nrow(row.projector) == K)
+
+      # ProjectionSSA is just a special case of 1d-ssa
+      kind <- c("pssa", "1d-ssa")
+    } else {
+      column.projector <- row.projector <- NULL
+    }
   } else if (identical(kind, "2d-ssa")) {
     if (length(circular) > 2)
       warning("Incorrect argument length: length(circular) > 2, two leading values will be used")
@@ -206,44 +220,6 @@ ssa <- function(x,
     wmask <- fmask <- weights <- NULL
 
     column.projector <- row.projector <- NULL
-  } else if (identical(kind, "pssa")) {
-    # Coerce input to vector if necessary
-    if (!is.vector(x))
-      x <- as.vector(x)
-
-    N <- length(x)
-    K <- N - L + 1
-
-    if (is.null(neig))
-      neig <- min(50, L, K)
-
-    # Compute projectors
-    if (length(column.projector) == 1) {
-      column.projector <- orthopoly(column.projector, L)
-    } else {
-      # Perform orthogonalization
-      column.projector <- qr.Q(qr(column.projector))
-    }
-
-    if (length(row.projector) == 1) {
-      row.projector <- orthopoly(row.projector, K)
-    } else {
-      # Perform orthogonalization
-      row.projector <- qr.Q(qr(row.projector))
-    }
-
-    # Check projectors' dimensions
-    stopifnot(nrow(column.projector) == L)
-    stopifnot(nrow(row.projector) == K)
-
-    # Fix svd method, if needed
-    if (identical(svd.method, "auto"))
-      svd.method <- .determine.svd.method(L, N, neig, ...)
-
-    wmask <- fmask <- weights <- NULL
-
-    # ProjectionSSA is just a special case of 1d-ssa
-    kind <- c("pssa", "1d-ssa")
   }
   stopifnot(!is.null(neig))
 

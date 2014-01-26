@@ -51,14 +51,14 @@ nv(x)
     \item{V}{The matrix of factor vectors. Might not exist depending on the selected SVD method}
   }
 
-  If ProjectionSSA has performed, eigentriples are ordered as follows:
-  at firts, row projection triples, then column projection triples and then
+  If SSA with projections is being performed, then the eigentriples are ordered as follows:
+  at first, row projection triples, then column projection triples and then
   SVD-triples. Non-SVD triples (like projection triples) are called `special triples'.
   The number of special triples can be obtained by calling \code{nspecial} method.
-  Also, one can use the following fields of the ssa-object (exist only for class `pssa'):
+  Also, one can use the following fields of the SSA object:
   \describe{
-    \item{nPR}{the number of row projection triples}
-    \item{nPL}{the number of column projection triples}
+    \item{nPR}{the number of row projection triples, may be NULL}
+    \item{nPL}{the number of column projection triples, may be NULL}
   }
 }
 
@@ -93,7 +93,7 @@ print(s$sigma)
 print(s$U[, 1])
 
 # Decompose `co2' series with double centering
-s <- ssa(co2, kind = "pssa")
+s <- ssa(co2, row.projector = "centering", column.projector = "centering")
 print(nspecial(s))
 # Reconstruct centering trend
 plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
