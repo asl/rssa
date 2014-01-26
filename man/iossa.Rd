@@ -7,8 +7,8 @@
 }
 
 \usage{
-iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 1.2,
-      maxiter = 1000,
+iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
+      maxiter = 100,
       initial.approx = reconstruct(x, nested.groups),
       norm = function(x) sqrt(mean(x^2)),
       trace = FALSE,
@@ -17,7 +17,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 1.2,
 }
 
 \arguments{
-  \item{x}{SSA object holding the one-dimensional SSA (classic 1d-SSA, Toeplitz SSA or PSSA) decomposition}
+  \item{x}{SSA object holding the one-dimensional SSA (classic 1D-SSA, Toeplitz SSA) decomposition}
   \item{nested.groups}{list or named list, describes initial grouping for I-OSSA iterations}
   \item{tol}{tolerance for I-OSSA iterations}
   \item{kappa}{`kappa' parameter for sigma-correction (see `Details' and `References') procedure.
@@ -40,11 +40,13 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 1.2,
   fields, it also contains the following fields:
   \describe{
     \item{iossa.result}{object of `iossa.result' class, a list which contains algorithm parameters,
-      final inner products, their condition numbers, separability measures, the number of iterations and
-      convergence status (see \code{\link{iossa.result}})}
+      final inner products, their condition numbers, separability
+      measures, the number of iterations and convergence status (see
+      \code{\link{iossa.result}})}
     \item{iossa.groups}{list, describes final (after sigma-correction)
       grouping of series components}
-    \item{iossa.groups.all}{list, describes cumulative grouping after several sequentional I-OSSA applications}
+    \item{iossa.groups.all}{list, describes cumulative grouping after
+      several sequentional I-OSSA applications}
   }
 }
 
@@ -73,7 +75,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 1.2,
 
 \seealso{
   \code{\link[Rssa:fossa]{fossa}},
-  \code{\link[Rssa:genwcor]{genwcor}},
+  \code{\link[Rssa:owcor]{owcor}},
   \code{\link[Rssa:iossa.result]{iossa.result}}.
 }
 
@@ -114,6 +116,6 @@ par(opar)
 summary(ios)
 
 plot(wcor(ios, groups = 1:4))
-plot(genwcor(ios, groups = 1:4))
+plot(owcor(ios, groups = 1:4))
 }
 }

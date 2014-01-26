@@ -74,7 +74,7 @@ orthogonalize <- function(Y, Z, sigma, side = c("bi", "left", "right"), normaliz
   }
 }
 
-.gwcor <- function(X, L, LM, RM) {
+.owcor <- function(X, L, LM, RM) {
   fft.plan <- fft.plan.1d(nrow(X))
   mx <- apply(X, 2,
               function(v) {
@@ -169,7 +169,7 @@ summary.ossa <- function(object, digits = max(3, getOption("digits") - 3), ...)
   out <- list(F = .F(x),
               Fs = Fs,
               Cond = c(Cond(IBL), Cond(IBR)),
-              gwcor = .gwcor(do.call(cbind, Fs), L, IBL, IBR),
+              owcor = .owcor(do.call(cbind, Fs), L, IBL, IBR),
               wcor = wcor(do.call(cbind, Fs), L),
               initial.wcor = wcor(do.call(cbind, initial.Fs), L),
               hrr = hrr,
@@ -247,8 +247,8 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
   list(sigma = sigma, U = U, V = V)
 }
 
-iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 1.2,
-                  maxiter = 1000,
+iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
+                  maxiter = 100,
                   initial.approx = reconstruct(x, nested.groups),
                   norm = function(x) sqrt(mean(x^2)),
                   trace = FALSE,
@@ -480,7 +480,7 @@ calc.v.ossa <- function(x, idx, ...) {
   invisible(V)
 }
 
-genwcor <- function(x, groups, basis, ..., cache = TRUE) {
+owcor <- function(x, groups, basis, ..., cache = TRUE) {
   if (missing(groups)) {
     groups <- x$iossa.groups.all
     if (is.null(groups)) {
@@ -502,8 +502,8 @@ genwcor <- function(x, groups, basis, ..., cache = TRUE) {
   LM <- pseudo.inverse(.U(x)[, basis, drop = FALSE]) # No colspan here!!!!
   RM <- pseudo.inverse(calc.v(x, basis)) # No rowspan here!!!!
 
-  # Compute generalized w-correlations and return
-  res <- .gwcor(do.call(cbind, F), L = x$window, LM, RM)
+  # Compute oblique w-correlations and return
+  res <- .owcor(do.call(cbind, F), L = x$window, LM, RM)
   colnames(res) <- rownames(res) <- names(F)
 
   res

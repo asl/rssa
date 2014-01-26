@@ -63,9 +63,11 @@
   }
 
   For class `ossa', Frobenius orthogonality checking is performed and if
-  reconstructed matrices are not all F-orthogonal (it's usual for Oblique SSA),
-  corresponding warning is risen.
-  W-cor matrix has no any sence in this case and may be you should use \code{\link[Rssa:genwcor]{genwcor.}}
+  reconstructed matrices are not all F-orthogonal (it is usual for
+  Oblique SSA), corresponding warning will be shown.  In case of lack
+  orthogonality, the W-cor matrix may not represent the weak
+  separability properly. In such a case, the use of
+  \code{\link[Rssa:owcor]{owcor}} is preferred.
 }
 
 \value{
@@ -79,7 +81,7 @@
 }
 \seealso{
   \code{\link[Rssa:reconstruct.ssa]{reconstruct}}
-  \code{\link[Rssa:genwcor]{genwcor.}}
+  \code{\link[Rssa:owcor]{owcor.}}
 }
 
 \examples{
