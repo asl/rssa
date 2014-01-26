@@ -1,15 +1,14 @@
 \name{iossa}
 \alias{iossa}
-\title{Iterative OSSA nested decomposition}
+\title{Iterative O-SSA nested decomposition}
 
 \description{
-  Perform Iterative OSSA (I-OSSA) algorithm.
+  Perform Iterative O-SSA (IOSSA) algorithm.
 }
 
 \usage{
 iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
       maxiter = 100,
-      initial.approx = reconstruct(x, nested.groups),
       norm = function(x) sqrt(mean(x^2)),
       trace = FALSE,
       kappa.balance = 0.5,
@@ -18,18 +17,16 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
 
 \arguments{
   \item{x}{SSA object holding the one-dimensional SSA (classic 1D-SSA, Toeplitz SSA) decomposition}
-  \item{nested.groups}{list or named list, describes initial grouping for I-OSSA iterations}
-  \item{tol}{tolerance for I-OSSA iterations}
+  \item{nested.groups}{list or named list, describes initial grouping for IOSSA iterations}
+  \item{tol}{tolerance for IOSSA iterations}
   \item{kappa}{`kappa' parameter for sigma-correction (see `Details' and `References') procedure.
     If 'NULL', sigma-correction will not be performed}
   \item{maxiter}{upper bound for the number of iterations}
-  \item{initial.approx}{list of series the same length as
-    \code{nested.groups}, using for initial approximations of signal subspaces}
   \item{norm}{function, series norm for convergence detection}
   \item{trace}{logical, indicates whether the convergence process should be traced}
   \item{kappa.balance}{proportion of the distribution of sigma-correction multiplier
     between colums and rows inner products}
-  \item{svd.method}{singular value decomposition method, passed to \code{ssa} routine (I-OSSA method
+  \item{svd.method}{singular value decomposition method, passed to \code{ssa} routine (IOSSA method
     uses Basic 1D SSA for rank and signal subspace estimations)}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
@@ -40,18 +37,18 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
   fields, it also contains the following fields:
   \describe{
     \item{iossa.result}{object of `iossa.result' class, a list which contains algorithm parameters,
-      final inner products, their condition numbers, separability
+      final inner products condition numbers, separability
       measures, the number of iterations and convergence status (see
       \code{\link{iossa.result}})}
     \item{iossa.groups}{list, describes final (after sigma-correction)
       grouping of series components}
     \item{iossa.groups.all}{list, describes cumulative grouping after
-      several sequentional I-OSSA applications}
+      several sequentional IOSSA applications}
   }
 }
 
 \details{
-  Iterative Oblique SSA (I-OSSA) is an iterative (EM-like) method for
+  Iterative Oblique SSA (IOSSA) is an iterative (EM-like) method for
   improving separability in SSA.  At each iteration signal subspaces of
   series components are estimated by series decomposition from previous
   iteration, then oblique reduced inner products are constructed from
@@ -104,7 +101,7 @@ omega2 <- 0.06
 
 F <- sin(2*pi*omega1 * (1:N)) + sin(2*pi*omega2 * (1:N))
 s <- ssa(F, L)
-# Apply F-OSSA and then I-OSSA
+# Apply FOSSA and then IOSSA
 fs <- fossa(s, nested.groups = 1:4)
 ios <- iossa(fs, nested.groups = list(1:2, 3:4), maxiter = 100)
 
