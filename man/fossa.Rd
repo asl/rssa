@@ -39,7 +39,7 @@
 
   The default value of \eqn{\Phi}{Phi} corresponds to sequential
   differences, that is, to derivation. Such version of Filter-adjusted
-  O-SSA is called `DerivSSA'. See References for more details.
+  O-SSA is called `DerivSSA'. See `References' for more details.
 }
 
 \references{

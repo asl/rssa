@@ -2,7 +2,7 @@
 \alias{iossa.result}
 \alias{print.iossa.result}
 \alias{summary.iossa.result}
-\title{Summary of I-OSSA results}
+\title{Summary of Iterative O-SSA results}
 
 \description{
   Various routines to print Iterative Oblique SSA results
@@ -22,24 +22,31 @@
 \details{
   An object of class `iossa.result' is a list with the following fields:
   \describe{
-    \item{F}{initial series of whole decomposition}
-    \item{Fs}{list of series, the final decomposition}
-    \item{Cond}{numeric vector with two elements, condition numbers of the final column and row inner products}
-    \item{owcor}{oblique W-correlation matrix of the final decomposition}
-    \item{wcor}{W-correlations matrix of the final decomposition}
-    \item{initial.wcor}{W-correlation matrix of the initial decomposition}
-    \item{hrr}{numeric vector, proportions of high rank components contribution for each of final series
-      (denotes how well the series is approximated by a series of finite rank)}
-    \item{initial.hrr}{proportions of high rank components contribution for each of initial series}
-    \item{initial.rec}{list of initial series}
-    \item{iter}{the number of OSSA iterations}
     \item{converged}{logical, whether algorithm has been converged}
-    \item{kappa, maxiter, tol}{I-OSSA procedure parameters}
+    \item{iter}{the number of OSSA iterations}
+    \item{cond}{numeric vector with two elements, condition numbers of the final column and row inner products}
+    \item{initial.tau}{numeric vector, proportions of high rank components contribution
+      for each of initial series
+      (denotes how well the series is approximated by a series of finite rank)}
+    \item{tau}{numeric vector, proportions of high rank components contribution for each of final series}
+    \item{initial.wcor}{W-correlation matrix of the initial nested decomposition}
+    \item{wcor}{W-correlations matrix of the final nested decomposition}
+    \item{owcor}{oblique W-correlation matrix (see \code{\link[Rssa:owcor]{owcor}})
+      of the final nested decomposition}
+    \item{initial.rec}{list of initial series (reconstructed initial nested decomposition)}
+    \item{kappa, maxiter, tol}{Iterative O-SSA procedure parameters}
   }
+}
+
+\references{
+  Golyandina N. and Shlemov A. (2013): \emph{Variations of Singular Spectrum Analysis
+  for separability improvement: non-orthogonal decompositions of time series},
+  \url{http://arxiv.org/abs/1308.4022}
 }
 
 \seealso{
   \code{\link[Rssa:iossa]{iossa}},
+  \code{\link[Rssa:owcor]{owcor}},
   \code{\link[Rssa:summary.ssa]{summary.ssa}}.
 }
 
