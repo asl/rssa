@@ -19,7 +19,7 @@ test_that("PSSA with no any projections is just SSA", {
     v <- rnorm(N)
     for (svd.method in svd.methods) {
       ss <- ssa(v, L = L, kind = "1d-ssa", svd.method = svd.method, neig = neig + 1)
-      pss <- ssa(v, L = L, kind = "pssa", row.projector = "none", column.projector = "none",
+      pss <- ssa(v, L = L, row.projector = "none", column.projector = "none",
                  svd.method = svd.method, neig = neig + 1)
 
       expect_equal(pss$sigma[seq_len(neig)], ss$sigma[seq_len(neig)],
@@ -69,12 +69,12 @@ test_that("All svd.methods provides the same decomposition", {
 
     for (row.projector in row.projectors) {
       for (column.projector in column.projectors) {
-        pss.svd <- ssa(v, L = L, kind = "pssa",
+        pss.svd <- ssa(v, L = L,
                        row.projector = row.projector, column.projector = column.projector,
                        svd.method = "svd", neig = neig + 1)
 
         for (svd.method in svd.methods) {
-          pss <- ssa(v, L = L, kind = "pssa",
+          pss <- ssa(v, L = L,
                      row.projector = row.projector, column.projector = column.projector,
                      svd.method = svd.method, neig = neig + 1)
 

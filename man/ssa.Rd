@@ -13,10 +13,10 @@ ssa(x,
     neig = NULL,
     mask = NULL,
     wmask = NULL,
-    column.projector = "centering",
-    row.projector = "centering",
+    column.projector = "none",
+    row.projector = "none",
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "pssa", "mssa", "cssa"),
+    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
     circular = FALSE,
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)
@@ -248,7 +248,7 @@ r <- reconstruct(s, groups = list(Trend = 1:2))
 plot(r)
 
 # `co2' decomposition with double projection to linear functions
-s <- ssa(co2, kind = "pssa", column.projector = "linear", row.projector = "linear")
+s <- ssa(co2, column.projector = "centering", row.projector = "centering")
 plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }
 }
