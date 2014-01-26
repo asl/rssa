@@ -2,17 +2,24 @@ library(testthat);
 library(Rssa);
 
 compute.reconstructions <- function(x, Ls, groups,
-                                    kind = c("1d-ssa", "toeplitz-ssa", "pssa"),
+                                    kind = c("1d-ssa", "toeplitz-ssa"),
                                     svd.method = c("eigen", "propack", "nutrlan", "svd"),
-                                    neig = max(unlist(groups)) + 1, ...) {
+                                    neig = max(unlist(groups)) + 1,
+                                    column.projector = "none",
+                                    row.projector = "none",
+                                    ...) {
   kind <- match.arg(kind);
   svd.method <- match.arg(svd.method);
   if (is.null(neig))
     neig <- eval(formals()$neig);
 
   out <- lapply(Ls,
-                function(L) {
-                  ss <- suppressWarnings(ssa(x, L, kind = kind, svd.method = svd.method, neig = min(neig, L), ...));
+                function(L, ...) {
+                  ss <- suppressWarnings(ssa(x, L, kind = kind, svd.method = svd.method,
+                                             neig = min(neig, L),
+                                             column.projector = column.projector,
+                                             row.projector = row.projector,
+                                             ...));
                   reconstruct(ss, groups = groups);
                 }, ...);
 
@@ -23,11 +30,13 @@ compute.reconstructions <- function(x, Ls, groups,
 }
 
 compute.forecasts <- function(x, Ls, groups, len,
-                              kind = c("1d-ssa", "toeplitz-ssa", "pssa"),
+                              kind = c("1d-ssa", "toeplitz-ssa"),
                               forecast.method = c("recurent", "vector"),
                               base = c("reconstructed", "original"),
                               svd.method = c("eigen", "propack", "nutrlan", "svd"),
-                              neig = max(unlist(groups)) + 1, ...) {
+                              neig = max(unlist(groups)) + 1,
+                              column.projector = "none", row.projector = "none",
+                              ...) {
   kind <- match.arg(kind);
   svd.method <- match.arg(svd.method);
   forecast.method <- match.arg(forecast.method);
@@ -36,8 +45,12 @@ compute.forecasts <- function(x, Ls, groups, len,
     neig <- eval(formals()$neig);
 
   out <- lapply(Ls,
-                function(L) {
-                  ss <- suppressWarnings(ssa(x, L, kind = kind, svd.method = svd.method, neig = min(neig, L), ...));
+                function(L, ...) {
+                  ss <- suppressWarnings(ssa(x, L, kind = kind, svd.method = svd.method,
+                                             neig = min(neig, L),
+                                             column.projector = column.projector,
+                                             row.projector = row.projector,
+                                             ...));
 
                   rec <- if (identical(forecast.method, "recurent")) {
                     rforecast(ss, groups = groups, len = len, base = base, only.new = FALSE);
@@ -61,12 +74,14 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
                            groups,
                            groups.forecast = groups,
                            len = 100,
-                           kind = c("1d-ssa", "toeplitz-ssa", "pssa"),
+                           kind = c("1d-ssa", "toeplitz-ssa"),
                            svd.method = c("eigen", "propack", "svd", "nutrlan"),
                            neig = NULL,
                            tolerance = 1e-7,
                            svd.methods = c("eigen", "propack", "svd", "nutrlan"),
                            svd.methods.forecast = c("eigen", "propack", "svd", "nutrlan"),
+                           column.projector = "none",
+                           row.projector = "none",
                            ...) {
   what <- sapply(what, match.arg, choices = eval(formals()$what));
   kind <- match.arg(kind);
@@ -89,6 +104,8 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
     out$reconstruction <- compute.reconstructions(series, Ls, groups = groups,
                                                   kind,
                                                   svd.method = svd.method, neig = neig,
+                                                  column.projector = column.projector,
+                                                  row.projector = row.projector,
                                                   ...);
   }
 
@@ -96,10 +113,14 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
     out$rforecast.orig <- compute.forecasts(series, Ls.forecast, groups = groups.forecast, len = len,
                                             kind = kind, forecast.method = "recurent", base = "original",
                                             svd.method = svd.method, neig = neig,
+                                            column.projector = column.projector,
+                                            row.projector = row.projector,
                                             ...);
     out$rforecast.rec <- compute.forecasts(series, Ls.forecast, groups = groups.forecast, len = len,
                                            kind = kind, forecast.method = "recurent", base = "reconstructed",
                                            svd.method = svd.method, neig = neig,
+                                           column.projector = column.projector,
+                                           row.projector = row.projector,
                                            ...);
   }
 
@@ -107,6 +128,8 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
     out$vforecast <- compute.forecasts(series, Ls.forecast, groups = groups.forecast, len = len,
                                        kind = kind, forecast.method = "vector",
                                        svd.method = svd.method, neig = neig,
+                                       column.projector = column.projector,
+                                       row.projector = row.projector,
                                        ...);
   }
 
@@ -118,7 +141,9 @@ make.test.data <- function(what = c("reconstruct", "rforecast", "vforecast"),
                             Ls.forecast = Ls.forecast,
                             groups.forecast = groups.forecast,
                             len = len,
-                            neig = neig);
+                            neig = neig,
+                            column.projector = column.projector,
+                            row.projector = row.projector);
   attr(out, "tolerance") <- tolerance;
   attr(out, "svd.methods") <- svd.methods;
   attr(out, "svd.methods.forecast") <- svd.methods.forecast;
@@ -135,6 +160,9 @@ test.test.data <- function(what,
                            svd.methods.forecast,
                            neig,
                            tolerance,
+                           column.projector = pars$column.projector,
+                           row.projector = pars$column.projector,
+                           kind = pars$kind,
                            ...) {
   if (missing(tolerance))
     tolerance <- attr(test.data, "tolerance");
@@ -144,7 +172,11 @@ test.test.data <- function(what,
   if (missing(neig))
     neig <- pars$neig;
 
-  kind <- pars$kind;
+  if (is.null(column.projector))
+    column.projector <- "none"
+
+  if (is.null(row.projector))
+    row.projector <- "none"
 
   if (missing(what)) {
     what <- attr(test.data, "what");
@@ -198,6 +230,8 @@ test.test.data <- function(what,
         reconstruction <- compute.reconstructions(series, L, groups = groups,
                                                   kind,
                                                   svd.method = svd.method, neig = neig,
+                                                  column.projector = column.projector,
+                                                  row.projector = row.projector,
                                                   ...)
 
         expect_equal(reconstruction[[Lname]], test.data$reconstruction[[Lname]],
@@ -215,10 +249,14 @@ test.test.data <- function(what,
         rforecast.orig <- compute.forecasts(series, L, groups = groups.forecast, len = len,
                                             kind = kind, forecast.method = "recurent", base = "original",
                                             svd.method = svd.method, neig = neig,
+                                            column.projector = column.projector,
+                                            row.projector = row.projector,
                                             ...)
         rforecast.rec <- compute.forecasts(series, L, groups = groups.forecast, len = len,
                                            kind = kind, forecast.method = "recurent", base = "reconstructed",
                                            svd.method = svd.method, neig = neig,
+                                           column.projector = column.projector,
+                                           row.projector = row.projector,
                                            ...)
 
         expect_equal(rforecast.orig[[Lname]], test.data$rforecast.orig[[Lname]],
@@ -233,6 +271,8 @@ test.test.data <- function(what,
         vforecast <- compute.forecasts(series, L, groups = groups.forecast, len = len,
                                        kind = kind, forecast.method = "vector",
                                        svd.method = svd.method, neig = neig,
+                                       column.projector = column.projector,
+                                       row.projector = row.projector,
                                        ...)
         expect_equal(vforecast[[Lname]], test.data$vforecast[[Lname]],
                      label = sprintf("%s, %s: %s$vforecast, L = %d", name, kind, svd.method, L),
