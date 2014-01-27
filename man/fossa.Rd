@@ -67,6 +67,7 @@ fs <- fossa(s, nested.groups = 1:4, gamma = 100)
 plot(wcor(s, groups = 1:4))
 plot(wcor(fs, groups = 1:4))
 
+
 # Real-life example: Australian Wine Sales
 data(AustralianWine)
 s <- ssa(AustralianWine[1:120, "Fortified"], L = 60)
@@ -75,4 +76,22 @@ fs <- fossa(s, nested.groups = list(6:7, 8:9, 10:11), gamma = 10)
 plot(reconstruct(fs, groups = list(6:7, 8:9, 10:11)))
 plot(wcor(s, groups = 6:11))
 plot(wcor(fs, groups = 6:11))
+
+
+# Real life example: improving of strong separability
+data(USUnemployment)
+s <- ssa(USUnemployment[, "MALE"])
+fs <- fossa(s, nested.groups = 1:13, gamma = 1000)
+
+# w-cor matrices before and after FOSSA
+plot(wcor(s, groups = 1:13))
+plot(wcor(fs, groups = 1:13))
+
+# eigenvectors before and after FOSSA
+plot(s, type = "vectors", idx = 1:13)
+plot(fs, type = "vectors", idx = 1:13)
+
+# 2D plots of periodic eigenvectors before and after FOSSA
+plot(s, type = "paired", idx = c(5, 12))
+plot(fs, type = "paired", idx = c(1, 3))
 }
