@@ -71,13 +71,20 @@ tls.solve <- function(A, B) {
   qr.solve(V[1:r,, drop = FALSE], V[-(1:r),, drop = FALSE])
 }
 
+shift.matrix <- function(U, solve.method = c("ls", "tls")) {
+  solve.method <- match.arg(solve.method)
+  solver <- switch(solve.method,
+                   ls = qr.solve,
+                   tls = tls.solve)
+  solver(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE])
+}
+
 parestimate.esprit <- function(U, method = c("esprit-ls", "esprit-tls")) {
   method <- match.arg(method)
-  solver <- switch(method,
-                   `esprit-ls` = qr.solve,
-                   `esprit-tls` = tls.solve)
+  Z <- shift.matrix(U, solve.method = switch(method,
+                                             `esprit-ls` = "ls",
+                                             `esprit-tls` = "tls"))
 
-  Z <- solver(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE])
   r <- eigen(Z, only.values = TRUE)$values
   roots2pars(r)
 }
