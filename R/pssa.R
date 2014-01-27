@@ -300,20 +300,14 @@ calc.v.pssa <- function(x, idx, ...) {
   span
 }
 
-enlarge.basis <- function(B, len, solve.method = c("ls", "tls")) {
-  solve.method <- match.arg(solve.method)
-  solver <- switch(solve.method,
-                   ls = qr.solve,
-                   tls = tls.solve)
+enlarge.basis <- function(B, len, ...) {
   N <- nrow(B)
 
   if (ncol(B) == 0) {
-    return(matrix(NA_real_, nrow(B) + len, 0))
+    return(matrix(NA_real_, N + len, 0))
   }
 
-  B.head <- B[-N,, drop = FALSE]
-  B.tail <- B[-1,, drop = FALSE]
-  P <- solver(B.head, B.tail)
+  P <- shift.matrix(B, ...)
 
   B <- rbind(B, matrix(NA, len, ncol(B)))
   for (i in seq_len(len)) {
@@ -350,9 +344,9 @@ rforecast.pssa <- function(x, groups, len = 1,
   lf <- lrr(x, groups = nonright.groups, drop = FALSE)
   stopifnot(length(lf) == length(groups))
 
-  all.sigma <- .sigma(x)[seq_len(desired)]
-  all.U <- .U(x)[, seq_len(desired), drop = FALSE]
-  all.V <- calc.v(x, seq_len(desired))
+  sigma <- .sigma(x)
+  U <- .U(x)
+  V <- if (nv(x) >= desired) .V(x) else NULL
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -360,11 +354,10 @@ rforecast.pssa <- function(x, groups, len = 1,
     right.group <- if (identical(base, "reconstructed")) right.groups[[i]] else right.special.triples
 
     # Calculate drifts
-    sigma <- all.sigma[right.group]
-    U <- all.U[, right.group, drop = FALSE]
-    V <- all.V[, right.group, drop = FALSE]
-    V <- enlarge.basis(V, len)
-    drift <- ((c(-lf[[i]], 1) %*% U) * sigma) %*% t(V[K + seq_len(len),, drop = FALSE])
+    Uet <- U[, right.group, drop = FALSE]
+    Vet <- if (is.null(V)) calc.v(x, idx = right.group) else V[, right.group, drop = FALSE]
+    Vet <- enlarge.basis(Vet, len)
+    drift <- ((c(-lf[[i]], 1) %*% Uet) * sigma[right.group]) %*% t(Vet[K + seq_len(len),, drop = FALSE])
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
@@ -387,11 +380,14 @@ vforecast.pssa <- function(x, groups, len = 1,
                            ...,
                            drop = TRUE, drop.attributes = FALSE) {
   L <- x$window
-  N <- x$length
   K <- x$length - L + 1
+  N <- K + L - 1 + len + L - 1
+  N.res <- K + L - 1 + len
 
   if (missing(groups))
-    groups <- as.list(seq_len(min(nsigma(x), nu(x))))
+    groups <- as.list(1:min(nsigma(x), nu(x)))
+
+  groups <- lapply(groups, unique)
 
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
@@ -400,13 +396,12 @@ vforecast.pssa <- function(x, groups, len = 1,
   right.groups <- lapply(groups, function(group) intersect(group, right.special.triples))
   nonright.groups <- lapply(groups, function(group) setdiff(group, right.special.triples))
 
-  # Calculate the LRR corresponding to groups
-  lf <- lrr(x, groups = nonright.groups, drop = FALSE)
-  stopifnot(length(lf) == length(groups))
+  sigma <- .sigma(x)
+  U <- .U(x)
+  V <- if (nv(x) >= desired) .V(x) else NULL
 
-  all.sigma <- .sigma(x)[seq_len(desired)]
-  all.U <- .U(x)[, seq_len(desired), drop = FALSE]
-  all.V <- calc.v(x, seq_len(desired))
+  # Grab the FFT plan
+  fft.plan <- fft.plan.1d(N)
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -414,27 +409,33 @@ vforecast.pssa <- function(x, groups, len = 1,
     right.group <- right.groups[[i]]
     nonright.group <- nonright.groups[[i]]
 
-    U <- all.U[, right.group, drop = FALSE]
-    V <- all.V[, right.group, drop = FALSE]
-    V <- enlarge.basis(V, len + L - 1)
-    Z <- V * rep(all.sigma[right.group], each = nrow(V))
-    C <- U %*% t(Z)
+    Uet.right <- U[, right.group, drop = FALSE]
+    Uet.nonright <- U[, nonright.group, drop = FALSE]
+    Vet.right <- if (is.null(V)) calc.v(x, idx = right.group) else V[, right.group, drop = FALSE]
+    Vet.nonright <- if (is.null(V)) calc.v(x, idx = nonright.group) else V[, nonright.group, drop = FALSE]
 
-    U.head.nr <- all.U[-L, nonright.group, drop = FALSE]
-    P.head <- tcrossprod(qr.Q(qr(U.head.nr)))
+    Z.right <- Vet.right * rep(sigma[right.group], each = nrow(Vet.right))
+    Z.nonright <- Vet.nonright * rep(sigma[nonright.group], each = nrow(Vet.nonright))
 
-    X <- all.U[, group, drop = FALSE] %*% (all.sigma[group] * t(all.V[, group]))
-    X <- cbind(X, matrix(NA, L, len + L - 1))
-    for (j in (K + 1) : ncol(X)) {
-      tt <- X[-1, j - 1] - C[-L, j]
-      tt <- P.head %*% tt
-      tt <- c(tt, sum(lf[[i]] * tt))
-      X[, j] <- tt + C[, j]
+    Pright <- t(shift.matrix(Z.right))
+    Pnonright <- shift.matrix(Uet.nonright)
+
+    PP <- qr.solve(Uet.nonright[-L,, drop = FALSE],
+                   Uet.right[-1,, drop = FALSE] - Uet.right[-L,, drop = FALSE] %*% Pright)
+
+    Uet <- cbind(Uet.right, Uet.nonright)
+    Z <- rbind(cbind(Z.right, Z.nonright), matrix(NA, len + L - 1, length(group)))
+
+    P <- rbind(cbind(Pright, matrix(0, length(right.group), length(nonright.group))),
+               cbind(PP, Pnonright))
+
+    for (j in (K + 1):(K + len + L - 1)) {
+      Z[j, ] <- P %*% Z[j - 1, ]
     }
-    ser <- hankel(X)
 
-    # Calculate the forecasted values
-    out[[i]] <- if (only.new) ser[N + seq_len(len)] else ser[seq_len(N + len)]
+    res <- rowSums(.hankelize.multi(Uet, Z, fft.plan))
+
+    out[[i]] <- res[(if (only.new) (K+L):N.res else 1:N.res)]
     out[[i]] <- .apply.attributes(x, out[[i]],
                                   fixup = TRUE,
                                   only.new = only.new, drop = drop.attributes)
