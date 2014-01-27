@@ -344,9 +344,9 @@ rforecast.pssa <- function(x, groups, len = 1,
   lf <- lrr(x, groups = nonright.groups, drop = FALSE)
   stopifnot(length(lf) == length(groups))
 
-  all.sigma <- .sigma(x)[seq_len(desired)]
-  all.U <- .U(x)[, seq_len(desired), drop = FALSE]
-  all.V <- calc.v(x, seq_len(desired))
+  sigma <- .sigma(x)
+  U <- .U(x)
+  V <- if (nv(x) >= desired) .V(x) else NULL
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -354,11 +354,10 @@ rforecast.pssa <- function(x, groups, len = 1,
     right.group <- if (identical(base, "reconstructed")) right.groups[[i]] else right.special.triples
 
     # Calculate drifts
-    sigma <- all.sigma[right.group]
-    U <- all.U[, right.group, drop = FALSE]
-    V <- all.V[, right.group, drop = FALSE]
-    V <- enlarge.basis(V, len)
-    drift <- ((c(-lf[[i]], 1) %*% U) * sigma) %*% t(V[K + seq_len(len),, drop = FALSE])
+    Uet <- U[, right.group, drop = FALSE]
+    Vet <- if (is.null(V)) calc.v(x, idx = right.group) else V[, right.group, drop = FALSE]
+    Vet <- enlarge.basis(Vet, len)
+    drift <- ((c(-lf[[i]], 1) %*% Uet) * sigma[right.group]) %*% t(Vet[K + seq_len(len),, drop = FALSE])
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
