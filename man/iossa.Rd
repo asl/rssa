@@ -101,6 +101,7 @@ omega2 <- 0.06
 
 F <- sin(2*pi*omega1 * (1:N)) + sin(2*pi*omega2 * (1:N))
 s <- ssa(F, L)
+
 # Apply FOSSA and then IOSSA
 fs <- fossa(s, nested.groups = 1:4)
 ios <- iossa(fs, nested.groups = list(1:2, 3:4), maxiter = 100)
@@ -114,5 +115,27 @@ summary(ios)
 
 plot(wcor(ios, groups = 1:4))
 plot(owcor(ios, groups = 1:4))
+}
+
+
+\donttest{
+# Real life example: improving of strong separability
+data(USUnemployment)
+s <- ssa(USUnemployment[, "MALE"])
+ios <- iossa(s, nested.groups = list(c(1:4, 7:11), c(5:6, 12:13)))
+
+print(ios$iossa.result)
+
+# w-cor matrix before IOSSA and ow-cor matrix after it
+plot(wcor(s, groups = 1:13))
+plot(owcor(ios, groups = 1:13))
+
+# eigenvectors before and after Iterative O-SSA
+plot(s, type = "vectors", idx = 1:13)
+plot(ios, type = "vectors", idx = 1:13)
+
+# 2D plots of periodic eigenvectors before and after Iterative O-SSA
+plot(s, type = "paired", idx = c(5, 12))
+plot(ios, type = "paired", idx = c(10, 12), plot.contrib = FALSE)
 }
 }
