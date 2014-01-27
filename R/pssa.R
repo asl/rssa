@@ -300,20 +300,14 @@ calc.v.pssa <- function(x, idx, ...) {
   span
 }
 
-enlarge.basis <- function(B, len, solve.method = c("ls", "tls")) {
-  solve.method <- match.arg(solve.method)
-  solver <- switch(solve.method,
-                   ls = qr.solve,
-                   tls = tls.solve)
+enlarge.basis <- function(B, len, ...) {
   N <- nrow(B)
 
   if (ncol(B) == 0) {
-    return(matrix(NA_real_, nrow(B) + len, 0))
+    return(matrix(NA_real_, N + len, 0))
   }
 
-  B.head <- B[-N,, drop = FALSE]
-  B.tail <- B[-1,, drop = FALSE]
-  P <- solver(B.head, B.tail)
+  P <- shift.matrix(B, ...)
 
   B <- rbind(B, matrix(NA, len, ncol(B)))
   for (i in seq_len(len)) {
