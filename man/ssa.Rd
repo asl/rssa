@@ -13,6 +13,8 @@ ssa(x,
     neig = NULL,
     mask = NULL,
     wmask = NULL,
+    column.projector = "none",
+    row.projector = "none",
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
     circular = FALSE,
@@ -42,6 +44,8 @@ ssa(x,
     for 2d case.}
   \item{svd.method}{singular value decomposition method. See 'Details'
     for more info.}
+  \item{column.projector, row.projector}{column and row signal subspaces projectors for
+    SSA with projection. See `Details' for information about methods of projectors specification.}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
     performed before return.}
 }
@@ -91,6 +95,31 @@ ssa(x,
     These functions are not exported, they defined only for \code{wmask} expression.
     If one has objects with the same names and wants to use them rather than these functions,
     one should use special wrapper function \code{I()} (see 'Examples'). 
+  }
+
+  \subsection{Projectors specification for SSA with projection}{
+    Projectors are specified by means of \code{column.projector} and
+    \code{row.projector} arguments. Each may be a matrix of orthonormal
+    (otherwise QR orthonormalization process will be perfomed) basis of
+    projection subspace, or single integer, which will be interpreted as
+    dimension of orthogonal polynomial basis (note that the dimension
+    equals to degree plus 1, e.g. quadratic basis has dimension 3), or
+    one of following character strings (or unique prefix): 'none',
+    'constant' (or 'centering'), 'linear', 'quadratic' or 'qubic' for
+    orthonormal bases of the corresponding functions.
+
+    Here is the the list of the most used options
+    \describe{
+      \item{both projectors are 'none'}{corresponds to ordinary 1D SSA,}
+      \item{column.projector='centering'}{corresponds to 1D SSA
+        with centering,}
+      \item{column.projector='centering' and
+        row.projector='centering'}{corresponds to 1D SSA with double
+        centering.}
+    }
+
+    SSA with centering and double centering may improve the separation
+    of linear trend (see (Golyandina, 2001) for more information).
   }
 
   \subsection{SVD methods}{
@@ -229,5 +258,9 @@ s <- ssa(Mars, wmask = circle(R = I(circle)))
 s <- ssa(EuStockMarkets[, 1] + 1.0i*EuStockMarkets[, 2], kind = "cssa")
 r <- reconstruct(s, groups = list(Trend = 1:2))
 plot(r)
+
+# `co2' decomposition with double projection to linear functions
+s <- ssa(co2, column.projector = "centering", row.projector = "centering")
+plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }
 }

@@ -17,9 +17,57 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
+.extend.series <- function(x, alpha) {
+  if (is.list(x)) lapply(x, sys.function(), alpha = alpha) else alpha * x
+}
+
+.series.sqdistance <- function(F1, F2, mask = TRUE) {
+  mask <- as.logical(mask)
+  F1 <- as.vector(unlist(F1))[mask]
+  F2 <- as.vector(unlist(F2))[mask]
+
+  max((F1 - F2) ^ 2)
+}
+
+.series.winnerprod <- function(F1, F2, weights = 1) {
+  mask <- weights > 0
+
+  weights <- weights[mask]
+  F1 <- as.vector(unlist(F1))[mask]
+  F2 <- as.vector(unlist(F2))[mask]
+
+  sum(weights * F1 * F2)
+}
+
+.inner.fmt.conversion <- function(x, ...)
+  UseMethod(".inner.fmt.conversion")
+
+.inner.fmt.conversion.ssa <- function(x, ...)
+  identical
+
+.inner.fmt.conversion.1d.ssa <- .inner.fmt.conversion.toeplitz.ssa <- function(x, ...)
+  as.numeric
+
+.inner.fmt.conversion.cssa <- function(x, ...)
+  as.complex
+
+.inner.fmt.conversion.2d.ssa <- function(x, ...)
+  as.matrix
+
+.inner.fmt.conversion.mssa <- function(x, ...)
+  .to.series.list
+
 cadzow.ssa <- function(x, rank,
+                       correct = TRUE,
                        eps = 1e-6, numiter = 0,
                        ..., cache = TRUE) {
+  # Get conversion
+  conversion <- .inner.fmt.conversion(x)
+
+  # Get weights and mask
+  weights <- .hweights(x)
+  mask <- weights > 0
+
   # Obtain the initial reconstruction of rank r
   r <- reconstruct(x, groups = list(1:rank), ..., cache = cache)
   stopifnot(length(r) == 1)
@@ -30,36 +78,20 @@ cadzow.ssa <- function(x, rank,
   it <- 0
   repeat {
     s <- clone(x, copy.cache = FALSE, copy.storage = FALSE)
-    .set(s, "F", F)
-    r <- reconstruct(s, groups = list(1:rank), ..., cache = cache)
+    .set(s, "F", conversion(F))
+    r <- reconstruct(s, groups = list(1:rank), ..., cache = FALSE)
     stopifnot(length(r) == 1)
     rF <- r[[1]]
 
     it <- it + 1
-    if ((numiter > 0 && it >= numiter) || max((F-rF)^2) < eps)
+    if ((numiter > 0 && it >= numiter) || .series.sqdistance(F, rF, mask) < eps)
       break
     F <- rF
   }
 
-  F
-}
-
-cadzow.1d.ssa <- function(x, rank,
-                          correct = TRUE,
-                          eps = 1e-6, numiter = 0,
-                          ..., cache = TRUE) {
-  # Get the result w/o any correction
-  fcall <- match.call(expand.dots = FALSE)
-  fcall[[1]] <- cadzow.ssa
-  fcall$correct <- NULL
-  F <- eval(fcall, parent.frame())
-
-  # Correct the stuff if requested
   if (correct) {
-    h1 <- hankel(F, x$window)
-    h2 <- hankel(.get(x, "F"), x$window)
-
-    F <- sum(h1 * h2) / sum(h2 * h2) * F
+    alpha <- .series.winnerprod(.F(x), F, weights) / .series.winnerprod(F, F, weights)
+    F <- .extend.series(F, alpha)
   }
 
   F

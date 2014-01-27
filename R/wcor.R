@@ -182,12 +182,12 @@ wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...) {
   w <- .hweights(x)
 
   # Compute wnorm
-  sqrt(sum(w * as.vector(x$F)^2))
+  sqrt(sum(w * as.vector(.F(x))^2))
 }
 
 wnorm.2d.ssa <- function(x, ...) {
   # Get F
-  F <- .get(x, "F")
+  F <- .F(x)
 
   # Compute weights
   w <- .hweights(x)
@@ -207,10 +207,68 @@ wnorm.mssa <- function(x, ...) {
   w <- .hweights(x)
 
   # Get series
-  F <- .get(x, "F")
+  F <- .F(x)
 
   # Compute wnorm
   sqrt(sum(w * unlist(F)^2))
+}
+
+frobenius.cor <- function(x, groups, ...) {
+  # MB, add class check here too? We can just return identical matrix for non-ossa decompositions
+
+  if (missing(groups))
+    groups <- as.list(seq_len(nsigma(x)))
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
+  idx <- unique(unlist(groups))
+  sigma <- .sigma(x)[idx]
+  U <- .U(x)[, idx, drop = FALSE]
+  V <- calc.v(x, idx)
+
+  # Compute frobenius covariation of elementary matrices
+  cov <- crossprod(U) * crossprod(V) * tcrossprod(sigma)
+
+  # Summing by groups (by columns and then by rows)
+  cov <- sapply(groups, function(group) rowSums(cov[, match(group, idx), drop = FALSE]))
+  cov <- t(cov)
+  cov <- sapply(groups, function(group) rowSums(cov[, match(group, idx), drop = FALSE]))
+
+  # Convert to correlations
+  cor <- cov2cor(cov)
+
+  # Fix possible numeric error
+  cor[cor > 1] <- 1; cor[cor < -1] <- -1
+
+  # Add class
+  class(cor) <- "wcor.matrix"
+
+  # Set names
+  colnames(cor) <- rownames(cor) <- .group.names(groups)
+
+  # Return
+  cor
+}
+
+.is.frobenius.orthogonal <- function(x, groups, eps = sqrt(.Machine$double.eps), ...) {
+  if (!inherits(x, "ossa"))
+    return(TRUE)
+
+  if (missing(groups))
+    groups <- as.list(seq_len(nsigma(x)))
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
+  all(abs(frobenius.cor(x, groups, ...) - diag(length(groups))) < eps)
+}
+
+wcor.ossa <- function(x, groups, ..., cache = TRUE) {
+  if (!.is.frobenius.orthogonal(x, groups, ...))
+    warning("Component matrices are not F-orthogonal. W-cor matrix is irrelevant")
+
+  NextMethod()
 }
 
 #N = 399;

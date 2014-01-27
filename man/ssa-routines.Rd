@@ -4,6 +4,9 @@
 \alias{nsigma}
 \alias{nu}
 \alias{nv}
+\alias{nspecial}
+\alias{nspecial.ssa}
+\alias{nspecial.pssa}
 \alias{summary.ssa}
 \alias{$.ssa}
 
@@ -11,14 +14,16 @@
 
 \description{
   Functions to access various fields of SSA object, query
-  for number of singular values, eigenvectors and factor vectors stored
-  in the SSA object and other miscellaneous info.
+  for number of singular values, eigenvectors, factor vectors and `special' decomposition
+  triples (now, ProjectionSSA triples) in the SSA object and other miscellaneous info.
 }
 
 \usage{
 nsigma(x)
 nu(x)
 nv(x)
+\method{nspecial}{ssa}(x)
+\method{nspecial}{pssa}(x)
 \method{summary}{ssa}(object, digits = max(3, getOption("digits") - 3), \dots)
 \method{$}{ssa}(x, name)
 }
@@ -45,10 +50,20 @@ nv(x)
     \item{U}{The matrix of eigenvectors}
     \item{V}{The matrix of factor vectors. Might not exist depending on the selected SVD method}
   }
+
+  If SSA with projections is being performed, then the eigentriples are ordered as follows:
+  at first, row projection triples, then column projection triples and then
+  SVD-triples. Non-SVD triples (like projection triples) are called `special triples'.
+  The number of special triples can be obtained by calling \code{nspecial} method.
+  Also, one can use the following fields of the SSA object:
+  \describe{
+    \item{nPR}{the number of row projection triples, may be NULL}
+    \item{nPL}{the number of column projection triples, may be NULL}
+  }
 }
 
 \value{
-  an 'integer' of length 1 for \code{nu}, \code{nv}, \code{nsigma}
+  an 'integer' of length 1 for \code{nu}, \code{nv}, \code{nsigma}, \code{nspecial}
   routines, matrix or vector for \code{$} operator.
 }
 
@@ -76,4 +91,10 @@ summary(s)
 print(s$sigma)
 # Show the first eigenvector
 print(s$U[, 1])
+
+# Decompose `co2' series with double centering
+s <- ssa(co2, row.projector = "centering", column.projector = "centering")
+print(nspecial(s))
+# Reconstruct centering trend
+plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }

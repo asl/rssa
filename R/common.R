@@ -28,29 +28,13 @@
   attr(x, ".env");
 
 .get <- function(x, name, default,
-                 allow.null = FALSE, silent = FALSE) {
+                 allow.null = FALSE) {
   ret <- NULL
-  # Make sure default is evaluated only when necessary
-  if (.exists(x, name)) {
-    ret <- get(name, envir = .storage(x))
-    # Check for deprecation
-    if (isTRUE(attr(ret, "deprecated"))) {
-      msg <- paste("the field `", name, "' is deprecated", sep = "")
-      instead <- attr(ret, "instead")
 
-      # If no substitution is available, just stop here
-      if (is.null(instead)) {
-        if (!silent)
-          stop(msg)
-        ret <- NULL
-      } else {
-        # Otherwise, warn and fallback to new name
-        if (!silent)
-          warning(paste(msg, ". use `", instead, "' instead.", sep = ""))
-        ret <- .get(x, instead)
-      }
-    }
-  } else if (!allow.null || !missing(default))
+  # Make sure default is evaluated only when necessary
+  if (.exists(x, name))
+    ret <- get(name, envir = .storage(x))
+  else if (!allow.null || !missing(default))
     ret <- default
 
   ret
@@ -68,9 +52,6 @@
 
 .exists <- function(x, name)
   exists(name, envir = .storage(x), inherits = FALSE);
-
-.is.extptrnull <- function(x)
-  .Call("is_extptrnull", x)
 
 .exists.non.null <- function(x, name) {
   ret <- FALSE
@@ -110,7 +91,7 @@
     }
   }
 
-  .init(obj)
+  obj
 }
 
 .get.series.info <- function(x) {
@@ -141,6 +122,61 @@
   }
   F
 }
+
+.F <- function(x)
+  .get(x, "F")
+
+.decomposition <- function(x, field) {
+  d <- .get(x, "decomposition", allow.null = TRUE)
+  if (missing(field)) d else if (length(field) == 1) d[[field]] else d[field]
+}
+
+.set.decomposition <- function(x, ..., kind = "ssa.decomposition") {
+  val <- list(...)
+  class(val) <- kind
+
+  d <- .get(x, "decomposition", allow.null = TRUE)
+  if (is.null(d))
+    d <- list()
+
+  .set(x, "decomposition", modifyList(d, val))
+}
+
+.U.default <- function(x)
+  x$U
+
+.colspan.default <- function(x, idx)
+  x$U[, idx, drop = FALSE]
+
+.V.default <- function(x)
+  x$V
+
+.rowspan.default <- function(x, idx)
+  x$V[, idx, drop = FALSE]
+
+.sigma.default <- function(x)
+  x$sigma
+
+.U.ssa <- function(x)
+  .decomposition(x, "U")
+
+.colspan.ssa <- function(x, idx)
+  .colspan(.decomposition(x), idx)
+
+.V.ssa <- function(x)
+  .decomposition(x, "V")
+
+.rowspan.ssa <- function(x, idx)
+  .rowspan(.decomposition(x), idx)
+
+.sigma.ssa <- function(x)
+  .decomposition(x, "sigma")
+
+nspecial.ssa <- function(x)
+  return(0)
+
+.is.extptrnull <- function(x)
+  .Call("is_extptrnull", x)
 
 .na.omit <- function(x, ...) {
   # Drop initial and final NAs
@@ -284,6 +320,18 @@ wnorm <- function(x, ...)
   UseMethod(".hankelize.one")
 .hankelize.multi <- function(x, ...)
   UseMethod(".hankelize.multi")
+.U <- function(x, ...)
+  UseMethod(".U")
+.colspan <- function(x, ...)
+  UseMethod(".colspan")
+.V <- function(x, ...)
+  UseMethod(".V")
+.rowspan <- function(x, ...)
+  UseMethod(".rowspan")
+.sigma <- function(x, ...)
+  UseMethod(".sigma")
+nspecial <- function(x)
+  UseMethod("nspecial")
 .elseries <- function(x, ...)
   UseMethod(".elseries")
 .init <- function(x, ...)

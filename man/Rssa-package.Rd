@@ -23,7 +23,9 @@
   frequency estimation (\code{\link[Rssa:parestimate]{parestimate}}) and
   series forecasting (\code{\link[Rssa:forecast.ssa]{forecast}},
   \code{\link[Rssa:rforecast.ssa]{rforecast}},
-  \code{\link[Rssa:vforecast.ssa]{vforecast}}).
+  \code{\link[Rssa:vforecast.ssa]{vforecast}}). In addition, Oblique SSA
+  methods can be used to improve the series separability
+  (\code{\link[Rssa:iossa]{iossa}}, \code{\link[Rssa:fossa]{fossa}}).
 }
 
 \references{
@@ -46,8 +48,16 @@
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
   Pp. 257-268
 
+  Golyandina, N., Korobeynikov, A. (2012, 2014) \emph{Basic Singular Spectrum
+    Analysis and Forecasting with R.} Computational Statistics and Data
+    Analysis, Vol. 71, Pp. 934-954. arXiv:1206.6910
+
   Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
-  Analysis for time series}. Springer Briefs in Statistics. Springer.
+    Analysis for time series}. Springer Briefs in Statistics. Springer.
+
+  Golyandina, N., Korobeynikov, A, Shlemov and Usevich, K.
+  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
+    with the Rssa Package}. arXiv: 1309.5050
 }
 \keyword{package}
 \seealso{
@@ -58,7 +68,9 @@
   \code{\link[Rssa:parestimate]{parestimate}},
   \code{\link[Rssa:rforecast.ssa]{rforecast}},
   \code{\link[Rssa:vforecast.ssa]{vforecast}},
-  \code{\link[Rssa:forecast.ssa]{forecast}}
+  \code{\link[Rssa:forecast.ssa]{forecast}},
+  \code{\link[Rssa:iossa]{iossa}},
+  \code{\link[Rssa:fossa]{fossa}}
 }
 \examples{
 s <- ssa(co2) # Perform the decomposition using the default window length

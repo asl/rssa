@@ -51,17 +51,10 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
   .Call("tmatmul", tmat, v, transposed)
 }
 
-.init.toeplitz.ssa <- function(x, ...) {
-  # Initialize FFT plan
-  .get.or.create.fft.plan(x)
-
-  x
-}
-
 .hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa
 
 .get.or.create.tmat <- function(x) {
-  .get.or.create(x, "tmat", new.tmat(F = x$F, L = x$window))
+  .get.or.create(x, "tmat", new.tmat(F = .F(x), L = x$window))
 }
 
 decompose.toeplitz.ssa.nutrlan <- function(x,
@@ -69,22 +62,18 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
                                            ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
 
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- .get.or.create.hmat(x)
 
-  olambda <- .get(x, "olambda", allow.null = TRUE)
-  U <- .get(x, "U", allow.null = TRUE)
+  lambda <- .decomposition(x)$lambda
+  U <- .U(x)
 
   T <- .get.or.create.tmat(x)
 
   S <- trlan.eigen(T, neig = neig, ...,
-                   lambda = olambda, U = U)
+                   lambda = lambda, U = U)
 
   # Save results
-  .set(x, "olambda", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-
   num <- length(S$d)
   sigma <- numeric(num)
   V <- matrix(nrow = K, ncol = num)
@@ -95,8 +84,9 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma)
-  .set(x, "V", V)
+  .set.decomposition(x,
+                     sigma = sigma, U = S$u, V = V, lambda = S$d,
+                     kind = "toeplitz.decomposition")
 
   x
 }
@@ -112,14 +102,12 @@ decompose.toeplitz.ssa.eigen <- function(x,
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- .get.or.create.hmat(x)
 
   # Do decomposition
   C <- toeplitz(Lcor(F, L))
   S <- eigen(C, symmetric = TRUE)
-
-  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
 
   sigma <- numeric(L)
   V <- matrix(nrow = K, ncol = L)
@@ -130,8 +118,11 @@ decompose.toeplitz.ssa.eigen <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma[1:neig])
-  .set(x, "V", V[, 1:neig, drop = FALSE])
+  .set.decomposition(x,
+                     sigma = sigma[1:neig],
+                     U = S$vectors[, 1:neig, drop = FALSE],
+                     V = V[, 1:neig, drop = FALSE],
+                     kind = "toeplitz.decomposition")
 
   x
 }
@@ -147,14 +138,12 @@ decompose.toeplitz.ssa.svd <- function(x,
     stop("Continuation of decompostion is not supported for this method.")
 
   # Build hankel matrix
-  F <- .get(x, "F")
+  F <- .F(x)
   h <- .get.or.create.hmat(x)
 
   # Do decomposition
   C <- toeplitz(Lcor(F, L))
   S <- svd(C, nu = neig, nv = neig)
-
-  .set(x, "U", S$u)
 
   sigma <- numeric(neig)
   V <- matrix(nrow = K, ncol = neig)
@@ -165,8 +154,9 @@ decompose.toeplitz.ssa.svd <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma)
-  .set(x, "V", V)
+  .set.decomposition(x,
+                     sigma = sigma, U = S$u, V = V,
+                     kind = "toeplitz.decomposition")
 
   x
 }
@@ -181,21 +171,9 @@ decompose.toeplitz.ssa.propack <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.");
 
-  F <- .get(x, "F")
+  S <- propack.svd(.get.or.create.tmat(x), neig = neig, ...)
+
   h <- .get.or.create.hmat(x)
-
-  olambda <- .get(x, "olambda", allow.null = TRUE)
-  U <- .get(x, "U", allow.null = TRUE)
-
-  T <- .get.or.create.tmat(x)
-
-  S <- propack.svd(T, neig = neig, ...)
-
-  # Save results
-  .set(x, "olambda", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-
   num <- length(S$d)
   sigma <- numeric(num)
   V <- matrix(nrow = K, ncol = num)
@@ -206,8 +184,9 @@ decompose.toeplitz.ssa.propack <- function(x,
   }
 
   # Save results
-  .set(x, "sigma", sigma)
-  .set(x, "V", V)
+  .set.decomposition(x,
+                     sigma = sigma, U = S$u, V = V, lambda = S$d,
+                     kind = "toeplitz.decomposition")
 
   x
 }
@@ -221,4 +200,8 @@ decompose.toeplitz.ssa <- function(x,
 }
 
 calc.v.toeplitz.ssa <- function(x, idx, ...)
-  x$V[, idx]
+  .V(x)[, idx, drop = FALSE]
+
+.rowspan.toeplitz.ssa <- function(x, idx) {
+  qr.Q(qr(.V(x)[, idx, drop = FALSE]))
+}

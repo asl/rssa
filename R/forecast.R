@@ -20,6 +20,10 @@
 
 lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
   N <- nrow(U)
+
+  # Return zero LRR coefficients for zero subspace
+  if (ncol(U) == 0) return(rep(0, N - 1))
+
   lpf <- Conj(U) %*% t(U[N, , drop = FALSE])
 
   divider <- 1 - lpf[N]
@@ -38,10 +42,7 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
 
   out <- list()
   for (i in seq_along(groups)) {
-    group <- groups[[i]]
-    U <- .get(x, "U")[, group, drop = FALSE]
-
-    res <- lrr.default(U, ...)
+    res <- lrr.default(.colspan(x, groups[[i]]), ...)
     class(res) <- "lrr"
 
     out[[i]] <- res
@@ -75,7 +76,12 @@ roots.lrr <- function(x, ..., method = c("companion", "polyroot")) {
   res[order(abs(res), decreasing = TRUE)]
 }
 
-apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
+apply.lrr <- function(F, lrr, len = 1, only.new = FALSE, drift = 0) {
+  # Recycle drifts if needed
+  if (length(drift) != len) {
+    drift <- rep(drift, len)[seq_len(len)]
+  }
+
   N <- length(F)
   r <- length(lrr)
 
@@ -86,7 +92,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE) {
   # Run the actual LRR
   F <- c(F, rep(NA, len))
   for (i in 1:len)
-    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr)
+    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr) + drift[i]
 
   if (only.new) F[(N+1):(N+len)] else F
 }
@@ -116,7 +122,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
     group <- groups[[i]]
 
     # Calculate the forecasted values
-    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
+    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .F(x),
                           lf[[i]], len, only.new = only.new)
     out[[i]] <- .apply.attributes(x, out[[i]],
                                   fixup = TRUE,
@@ -177,7 +183,7 @@ rforecast.mssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
-    F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]]) else .get(x, "F")
+    F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]]) else .F(x)
 
     # Calculate the forecasted values
     if (identical(direction, "column")) {
@@ -247,10 +253,9 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
-  sigma <- .get(x, "sigma")
-  U <- .get(x, "U")
-
-  V <- if (nv(x) >= desired) .get(x, "V") else NULL
+  dec <- .decomposition(x)
+  sigma <- .sigma(dec)
+  V <- if (nv(x) >= desired) .rowspan(dec) else NULL
 
   # Grab the FFT plan
   fft.plan <- fft.plan.1d(N)
@@ -259,7 +264,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]])
 
-    Uet <- U[, group, drop = FALSE]
+    Uet <- .colspan(dec, group)
     Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
 
     Z <- rbind(t(sigma[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
@@ -302,12 +307,11 @@ vforecast.mssa <- function(x, groups, len = 1,
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
-  F <- .get(x, "F")
+  F <- .F(x)
 
-  sigma <- .get(x, "sigma")
-  U <- .get(x, "U")
-
-  V <- if (nv(x) >= desired) .get(x, "V") else NULL
+  dec <- .decomposition(x)
+  sigma <- .sigma(dec)
+  V <- if (nv(x) >= desired) .rowspan(dec) else NULL
 
   L <- x$window
   K <- x$length - L + 1
@@ -325,7 +329,7 @@ vforecast.mssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]])
 
-    Uet <- U[, group, drop = FALSE]
+    Uet <- .colspan(dec, group)
     Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
 
     if (identical(direction, "column")) {
@@ -493,7 +497,7 @@ forecast.1d.ssa <- function(object,
     res <- list(model = object,
                 method = switch(method,
                                 recurrent = "SSA (recurrent)",
-                                recurrent = "SSA (vector)",
+                                vector = "SSA (vector)",
                                 `bootstrap-recurrent` = "SSA (bootstrap recurrent)",
                                 `bootstrap-vector` = "SSA (bootstrap vector)"),
                 fitted = r[[1]],
