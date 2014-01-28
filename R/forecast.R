@@ -253,9 +253,9 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   # Continue decomposition, if necessary
   desired <- .maybe.continue(x, groups = groups, ...)
 
-  dec <- .decomposition(x)
-  sigma <- .sigma(dec)
-  V <- if (nv(x) >= desired) .rowspan(dec) else NULL
+  sigma <- .sigma(x)
+  U <- .U(x)
+  V <- if (nv(x) >= desired) .V(x) else NULL
 
   # Grab the FFT plan
   fft.plan <- fft.plan.1d(N)
@@ -264,16 +264,11 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- unique(groups[[i]])
 
-    Uet <- .colspan(dec, group)
+    Uet <- U[, group, drop = FALSE]
     Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
-
     Z <- rbind(t(sigma[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
 
-    U.head <- Uet[-L, , drop = FALSE]
-    U.tail <- Uet[-1, , drop = FALSE]
-    Pi <- Uet[L, ]
-    tUhUt <- t(U.head) %*% Conj(U.tail)
-    P <- tUhUt + 1 / (1 - sum(abs(Pi)^2)) * Pi %*% (t(Conj(Pi)) %*% tUhUt)
+    P <- shift.matrix(Uet)
 
     for (j in (K + 1):(K + len + L - 1)) {
       Z[j, ] <- P %*% Z[j - 1, ]
