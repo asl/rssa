@@ -33,7 +33,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
 }
 
 \value{
-  Object of `ossa' class object. In additional to usual `ssa' class
+  Object of `ossa' class. In additional to usual `ssa' class
   fields, it also contains the following fields:
   \describe{
     \item{iossa.result}{object of `iossa.result' class, a list which contains algorithm parameters,
