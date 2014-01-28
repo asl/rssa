@@ -10,7 +10,7 @@
 }
 
 \usage{
-\method{cadzow}{ssa}(x, rank, correct = TRUE, eps = 1e-6, numiter = 0, \dots, cache = TRUE)
+\method{cadzow}{ssa}(x, rank, correct = TRUE, tol = 1e-6, maxiter = 0, trace = FALSE, \dots, cache = TRUE)
 }
 
 \arguments{
@@ -18,9 +18,10 @@
   \item{rank}{desired rank of approximation}
   \item{correct}{logical, if 'TRUE' then additional correction per
   (Gillard et al, 2013) is performed}
-  \item{eps}{tolerance value used for convergence criteria}
-  \item{numiter}{number of iterations to perform, if zero then
+  \item{tol}{tolerance value used for convergence criteria}
+  \item{maxiter}{number of iterations to perform, if zero then
     iterations are performed until the convergence}
+  \item{trace}{logical, indicates whether the convergence process should be traced}
   \item{\dots}{further arguments passed to \code{reconstruct}}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in the SSA object.}

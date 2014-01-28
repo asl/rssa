@@ -59,7 +59,8 @@
 
 cadzow.ssa <- function(x, rank,
                        correct = TRUE,
-                       eps = 1e-6, numiter = 0,
+                       tol = 1e-6, maxiter = 0,
+                       trace = FALSE,
                        ..., cache = TRUE) {
   # Get conversion
   conversion <- .inner.fmt.conversion(x)
@@ -84,8 +85,10 @@ cadzow.ssa <- function(x, rank,
     rF <- r[[1]]
 
     it <- it + 1
-    if ((numiter > 0 && it >= numiter) || .series.sqdistance(F, rF, mask) < eps)
+    if ((maxiter > 0 && it >= maxiter) || (sqd <- .series.sqdistance(F, rF, mask)) < tol)
       break
+    if (trace)
+      cat(sprintf("Iteration: %d, distance: %s\n", it, format(sqd)))
     F <- rF
   }
 
