@@ -17,32 +17,33 @@
 \usage{
 \method{lrr}{1d.ssa}(x, groups, \dots, drop = TRUE)
 \method{lrr}{toeplitz.ssa}(x, groups, \dots, drop = TRUE)
-\method{lrr}{default}(U, eps = sqrt(.Machine$double.eps), \dots)
+\method{lrr}{default}(x, eps = sqrt(.Machine$double.eps), \dots, orthonormalize = TRUE)
 \method{roots}{lrr}(x, ..., method = c("companion", "polyroot"))
 \method{plot}{lrr}(x, ..., raw = FALSE)
 }
 
 \arguments{
-  \item{x}{SSA object holding the decomposition for \code{lrr} call or 'lrr'
-    object itself for other function calls}
+  \item{x}{SSA object holding the decomposition or matrix containing the basis vectors in columns
+    for \code{lrr} call or 'lrr' object itself for other function calls}
   \item{groups}{list, the grouping of eigentriples used to derive the LRR}
   \item{\dots}{further arguments to be passed to \code{decompose} or
     \code{plot} call, if necessary}
   \item{drop}{logical, if 'TRUE' then the result is coerced to lrr object
     itself, when possible (length of 'groups' is one)}
-  \item{U}{Matrix containing the orthonormal basis vectors in columns}
   \item{eps}{Tolerance for verticality checking}
   \item{method}{methods used for calculation of the polynomial roots: via eigenvalues
     of companion matrix or R's standard \code{polyroot} routine}
   \item{raw}{logical, if 'TRUE' then \code{plot} routine will not add any
     additional plot components (e.g. unit circle)}
+  \item{orthonormalize}{logical, if 'FALSE' then the basis is assumed orthonormal.
+    Otherwise, orthonormalization is performed}
 }
 
 \details{
   Produces the linear recurrence relation from the series. The default
   implementation works as follows.
 
-  Denote by \eqn{U_i} the columns of matrix \eqn{U}. Denote by
+  Denote by \eqn{U_i} the columns of matrix \eqn{x}. Denote by
   \eqn{\tilde{U}_{i}} the same vector \eqn{U_i} but without the
   last coordinate. Denote the last coordinate of \eqn{U_i} by
   \eqn{\pi_i}. The returned value is
