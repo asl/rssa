@@ -22,7 +22,8 @@
 }
 
 \value{
-  Object of class `ossa'.
+  Object of class `ossa'. Also contains field `ossa.set' --- vector of elementary component
+  indices involved in procedure.
 }
 
 \details{
