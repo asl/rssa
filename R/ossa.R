@@ -383,6 +383,14 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   # Save nested components
   .set(x, "ossa.set", idx)
 
+  if (inherits(x, "pssa")) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= nspecial(x))){
+      .set.decomposition(x, nPL = 0)
+    }
+  }
+
   invisible(x)
 }
 
@@ -421,6 +429,14 @@ fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
   if (!is.null(.get(x, "iossa.groups", allow.null = TRUE))) {
     .set(x, "iossa.groups", .fix.iossa.groups(.get(x, "iossa.groups", allow.null = TRUE), idx))
     .set(x, "iossa.groups.all", .fix.iossa.groups(.get(x, "iossa.groups.all", allow.null = TRUE), idx))
+  }
+
+  if (inherits(x, "pssa")) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= nspecial(x))){
+      .set.decomposition(x, nPL = 0)
+    }
   }
 
   # Save nested components
