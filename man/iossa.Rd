@@ -43,7 +43,9 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
     \item{iossa.groups}{list, describes final (after sigma-correction)
       grouping of series components}
     \item{iossa.groups.all}{list, describes cumulative grouping after
-      several sequentional IOSSA applications}
+      several sequential IOSSA applications}
+    \item{ossa.set}{vector of the indices of elementary components used in Iterative O-SSA
+      (that is, used in \code{nested.groups})}
   }
 }
 
@@ -126,9 +128,9 @@ ios <- iossa(s, nested.groups = list(c(1:4, 7:11), c(5:6, 12:13)))
 
 print(ios$iossa.result)
 
-# w-cor matrix before IOSSA and ow-cor matrix after it
+# w-cor matrix before and after IOSSA
 plot(wcor(s, groups = 1:13))
-plot(owcor(ios, groups = 1:13))
+plot(wcor(ios, groups = 1:13))
 
 # eigenvectors before and after Iterative O-SSA
 plot(s, type = "vectors", idx = 1:13)
