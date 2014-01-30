@@ -24,11 +24,11 @@ Cond <- function(A) {
   d[1] / d[length(d)]
 }
 
-high.rank.rate <- function(F, L, r, ...) {
+high.rank.rate <- function(F, L = (N + 1) %/% 2, rank, ...) {
   N <- length(F); K <- N - L + 1
-  ss <- ssa(F, L, neig = min(r + 1, L, K), ...)
+  ss <- ssa(F, L, neig = min(rank + 1, L, K), ...)
 
-  1 - sum(.sigma(ss)[seq_len(r)]^2) / wnorm(F, L)^2
+  1 - sum(.sigma(ss)[seq_len(rank)]^2) / wnorm(F, L)^2
 }
 
 pseudo.inverse <- function(A) {
