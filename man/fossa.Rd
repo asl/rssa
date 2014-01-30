@@ -23,7 +23,7 @@
 
 \value{
   Object of class `ossa'. Also contains field `ossa.set' --- vector of elementary component
-  indices involved in procedure.
+  indices involved in Filter-adjusted O-SSA (that is, used in nested.groups).
 }
 
 \details{
