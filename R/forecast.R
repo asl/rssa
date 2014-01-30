@@ -18,7 +18,13 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-lrr.default <- function(U, eps = sqrt(.Machine$double.eps), ...) {
+lrr.default <- function(x, eps = sqrt(.Machine$double.eps), ..., orthonormalize = TRUE) {
+  if (orthonormalize) {
+    U <- qr.Q(qr(x))
+  } else {
+    U <- x
+  }
+
   N <- nrow(U)
 
   # Return zero LRR coefficients for zero subspace
@@ -42,7 +48,7 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
 
   out <- list()
   for (i in seq_along(groups)) {
-    res <- lrr.default(.colspan(x, groups[[i]]), ...)
+    res <- lrr.default(.colspan(x, groups[[i]]), ..., orthonormalize = FALSE)
     class(res) <- "lrr"
 
     out[[i]] <- res
