@@ -266,7 +266,7 @@ frobenius.cor <- function(x, groups, ...) {
 
 wcor.ossa <- function(x, groups, ..., cache = TRUE) {
   if (!.is.frobenius.orthogonal(x, groups, ...))
-    warning("Component matrices are not F-orthogonal. W-cor matrix is irrelevant")
+    warning("Component matrices are not F-orthogonal. W-cor matrix can be irrelevant")
 
   NextMethod()
 }
