@@ -135,7 +135,7 @@ summary.ossa <- function(object, digits = max(3, getOption("digits") - 3), ...)
 .save.oblique.decomposition <- function(x, nosigma, Y, Z, idx) {
   sigma <- .sigma(x)
   U <- .U(x)
-  V <- if (nv(x) < max(idx)) calc.v.ossa(x, seq_len(max(idx))) else .V(x)
+  V <- if (nv(x) < max(idx)) calc.v(x, seq_len(max(idx))) else .V(x)
 
   ynorms <- sqrt(colSums(Y^2))
   znorms <- sqrt(colSums(Z^2))
@@ -234,7 +234,7 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
 
   sigma <- .sigma(x)[idx]
   U <- .U(x)[, idx, drop = FALSE]
-  V <- if (nv(x) < desired) calc.v.ossa(x, idx) else .V(x)[, idx, drop = FALSE]
+  V <- if (nv(x) < desired) calc.v(x, idx) else .V(x)[, idx, drop = FALSE]
 
   # TODO Perform orthogonolize if it's only needed
   dec <- orthogonalize(U, V, sigma, side = "bi")
@@ -479,28 +479,6 @@ decompose.ossa <- function(x, ...) {
   qr.Q(qr(calc.v(x, idx)))
 }
 
-calc.v.ossa <- function(x, idx, ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-  nV <- nv(x)
-
-  V <- matrix(NA_real_, K, length(idx))
-  idx.old <- idx[idx <= nV]
-  idx.new <- idx[idx > nV]
-
-  if (length(idx.old) > 0) {
-    V[, idx <= nV] <- .V(x)[, idx.old]
-  }
-
-  if (length(idx.new) > 0) {
-    sigma <- .sigma(x)[idx.new]
-    U <- .U(x)[, idx.new, drop = FALSE]
-    h <- .get.or.create.hmat(x)
-    V[, idx > nV] <- sapply(seq_along(idx.new),
-                            function(i) hmatmul(h, U[, i], transposed = TRUE) / sigma[i])
-  }
-
-  invisible(V)
-}
 
 owcor <- function(x, groups, ..., cache = TRUE) {
   # Check class
