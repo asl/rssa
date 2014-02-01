@@ -383,6 +383,14 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   # Save nested components
   .set(x, "ossa.set", idx)
 
+  if (!is.null(.decomposition(x, "nPR"))) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= sum(unlist(.decomposition(x, c("nPR", "nPL")))))){
+      .set.decomposition(x, nPL = 0)
+    }
+  }
+
   invisible(x)
 }
 
@@ -425,6 +433,14 @@ fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
 
   # Save nested components
   .set(x, "ossa.set", idx)
+
+  if (!is.null(.decomposition(x, "nPR"))) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= sum(unlist(.decomposition(x, c("nPR", "nPL")))))){
+      .set.decomposition(x, nPL = 0)
+    }
+  }
 
   if (!inherits(x, "ossa")) {
     class(x) <- c("ossa", class(x))
