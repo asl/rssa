@@ -138,4 +138,34 @@ plot(ios, type = "vectors", idx = 1:13)
 plot(s, type = "paired", idx = c(5, 12))
 plot(ios, type = "paired", idx = c(10, 12), plot.contrib = FALSE)
 }
+
+
+data(AustralianWine)
+N <- 120
+interval <- 30:78
+Fortified <- window(AustralianWine[, "Fortified"], end = time(AustralianWine)[N])
+
+s <- ssa(Fortified[interval], L = 18)
+ios <- iossa(s, nested.groups = list(1, 2:7),
+             kappa = NULL,
+             maxIter = 1)
+fs <- fossa(s, nested.groups = 1:7, gamma = 1000)
+
+res.ssa <- reconstruct(s, groups = list(1, 2:7))
+res.iossa <- reconstruct(ios, groups = ios$iossa.groups);
+res.fossa <- reconstruct(fs, groups = list(7, 1:6))
+
+r.ssa <- r.iossa <- r.fossa <- rep(NA, length(Fortified))
+r.ssa[interval] <- res.ssa$F1
+r.iossa[interval] <- res.iossa$F1
+r.fossa[interval] <- res.fossa$F1
+
+library(lattice)
+xyplot(r.ssa + r.iossa + r.fossa + Fortified ~ time(Fortified),
+       type = "l", xlab = "time", ylab = "Fortified",
+       auto.key = list(text = c("Basic SSA trend",
+                                "Iterative O-SSA trend",
+                                "DerivSSA trend",
+                                "Full series"),
+                       lines = TRUE, points = FALSE))
 }
