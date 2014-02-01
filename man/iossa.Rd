@@ -60,7 +60,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
   eigentriples. Such a procedure is performed until the stationary
   point.
 
-  Sigma-correction procudure does the renormalization of new inner
+  Sigma-correction procedure does the renormalization of new inner
   products. This prevents the mixing of the components during the next
   iteration. Such approach makes the whole procedure more stable and can
   solve lack of strong separability problem (see References).
