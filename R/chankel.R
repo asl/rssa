@@ -192,6 +192,7 @@ decompose.cssa.nutrlan <- function(x,
 
 calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
   sigma <- .sigma[idx]
+  sigma[sigma <= 0] <- Inf
   U <- .U[, idx, drop = FALSE]
   h <- .get.or.create.chmat(x)
 

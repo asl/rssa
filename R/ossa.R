@@ -135,7 +135,7 @@ summary.ossa <- function(object, digits = max(3, getOption("digits") - 3), ...)
 .save.oblique.decomposition <- function(x, nosigma, Y, Z, idx) {
   sigma <- .sigma(x)
   U <- .U(x)
-  V <- if (nv(x) < max(idx)) calc.v.ossa(x, seq_len(max(idx))) else .V(x)
+  V <- if (nv(x) < max(idx)) calc.v(x, seq_len(max(idx))) else .V(x)
 
   ynorms <- sqrt(colSums(Y^2))
   znorms <- sqrt(colSums(Z^2))
@@ -234,7 +234,7 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
 
   sigma <- .sigma(x)[idx]
   U <- .U(x)[, idx, drop = FALSE]
-  V <- if (nv(x) < desired) calc.v.ossa(x, idx) else .V(x)[, idx, drop = FALSE]
+  V <- if (nv(x) < desired) calc.v(x, idx) else .V(x)[, idx, drop = FALSE]
 
   # TODO Perform orthogonolize if it's only needed
   dec <- orthogonalize(U, V, sigma, side = "bi")
@@ -380,6 +380,14 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   .set(x, "iossa.groups",  nested.groups)
   .set(x, "iossa.groups.all", c(nested.groups, iossa.groups.all[valid.groups]))
 
+  if (!is.null(.decomposition(x, "nPR"))) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= sum(unlist(.decomposition(x, c("nPR", "nPL")))))){
+      .set.decomposition(x, nPL = 0)
+    }
+  }
+
   invisible(x)
 }
 
@@ -420,6 +428,14 @@ fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
     .set(x, "iossa.groups.all", .fix.iossa.groups(.get(x, "iossa.groups.all", allow.null = TRUE), idx))
   }
 
+  if (!is.null(.decomposition(x, "nPR"))) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= sum(unlist(.decomposition(x, c("nPR", "nPL")))))){
+      .set.decomposition(x, nPL = 0)
+    }
+  }
+
   if (!inherits(x, "ossa")) {
     class(x) <- c("ossa", class(x))
   }
@@ -455,29 +471,6 @@ decompose.ossa <- function(x, ...) {
 
 .rowspan.ossa <- function(x, idx) {
   qr.Q(qr(calc.v(x, idx)))
-}
-
-calc.v.ossa <- function(x, idx, ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-  nV <- nv(x)
-
-  V <- matrix(NA_real_, K, length(idx))
-  idx.old <- idx[idx <= nV]
-  idx.new <- idx[idx > nV]
-
-  if (length(idx.old) > 0) {
-    V[, idx <= nV] <- .V(x)[, idx.old]
-  }
-
-  if (length(idx.new) > 0) {
-    sigma <- .sigma(x)[idx.new]
-    U <- .U(x)[, idx.new, drop = FALSE]
-    h <- .get.or.create.hmat(x)
-    V[, idx > nV] <- sapply(seq_along(idx.new),
-                            function(i) hmatmul(h, U[, i], transposed = TRUE) / sigma[i])
-  }
-
-  invisible(V)
 }
 
 owcor <- function(x, groups, basis, ..., cache = TRUE) {

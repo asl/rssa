@@ -143,6 +143,7 @@ decompose.mssa.nutrlan <- function(x,
 
 calc.v.mssa<- function(x, idx, ...) {
   sigma <-.sigma(x)[idx]
+  sigma[sigma <= 0] <- Inf
   U <- .U(x)[, idx, drop = FALSE]
   h <- .get.or.create.mhmat(x)
 
