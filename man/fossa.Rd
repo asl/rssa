@@ -22,7 +22,8 @@
 }
 
 \value{
-  Object of class `ossa'.
+  Object of class `ossa'. The field `ossa.set' contains the vector of indices
+  of elementary components used in Filter-adjusted O-SSA (that is, used in nested.groups).
 }
 
 \details{
