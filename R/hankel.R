@@ -209,10 +209,24 @@ decompose.1d.ssa.nutrlan <- function(x,
 }
 
 calc.v.1d.ssa <- function(x, idx, ...) {
-  sigma <- .sigma(x)[idx]
-  U <- .U(x)[, idx, drop = FALSE]
-  h <- .get.or.create.hmat(x)
+  N <- x$length; L <- x$window; K <- N - L + 1
+  nV <- nv(x)
 
-  invisible(sapply(1:length(idx),
-                   function(i) hmatmul(h, U[, i], transposed = TRUE) / sigma[i]))
+  V <- matrix(NA_real_, K, length(idx))
+  idx.old <- idx[idx <= nV]
+  idx.new <- idx[idx > nV]
+
+  if (length(idx.old) > 0) {
+    V[, idx <= nV] <- .V(x)[, idx.old]
+  }
+
+  if (length(idx.new) > 0) {
+    sigma <- .sigma(x)[idx.new]
+    U <- .U(x)[, idx.new, drop = FALSE]
+    h <- .get.or.create.hmat(x)
+    V[, idx > nV] <- sapply(seq_along(idx.new),
+                            function(i) hmatmul(h, U[, i], transposed = TRUE) / sigma[i])
+  }
+
+  invisible(V)
 }
