@@ -7,15 +7,13 @@
 }
 
 \usage{
-  owcor(x, groups, basis, ..., cache = TRUE)
+  owcor(x, groups, ..., cache = TRUE)
 }
 
 \arguments{
   \item{x}{the input object of `ossa' class}
   \item{groups}{list of numeric vectors, indices of elementary components
-    used for reconstruction.}
-  \item{basis}{vector of elementary component indices which are used for
-    inner products construction. If missing, I-OSSA components will be used}
+    used for reconstruction. The elementary components must belong to the current OSSA component set}
   \item{\dots}{further arguments passed to \code{reconstruct} routine}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in 'ssa' object.}
@@ -38,8 +36,9 @@
   where
   \eqn{X_1, X_2} denotes the trajectory matrices of series \eqn{F_1, F_2}
   correspondingly, \eqn{L = [U_{b_1} : ... : U_{b_r}], R = [V_{b_1}: ... V_{b_r}]},
-  where \eqn{b_1, \dots, b_r} are elementary component indices denoted
-  by \code{basis} argument, `\eqn{\langle \cdot, \cdot
+  where \eqn{\\\{b_1, \dots, b_r\\\}}{\{b_1, \dots, \b_r\}} is current OSSA component set
+  (see description of `ossa.set' field of `ossa' object),
+  `\eqn{\langle \cdot, \cdot
   \rangle_\mathrm{F}}{<., .>_F}' denotes Frobenius matrix inner product
   and `\eqn{\dagger}{*}' denotes Moore-Penrose pseudo-inverse matrix.
 
@@ -65,7 +64,8 @@
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:wcor]{wcor}},
-  \code{\link[Rssa:iossa]{iossa}}.
+  \code{\link[Rssa:iossa]{iossa}},
+  \code{\link[Rssa:iossa]{fossa}}.
 }
 
 \examples{

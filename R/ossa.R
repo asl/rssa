@@ -380,6 +380,17 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   .set(x, "iossa.groups",  nested.groups)
   .set(x, "iossa.groups.all", c(nested.groups, iossa.groups.all[valid.groups]))
 
+  # Save nested components
+  .set(x, "ossa.set", idx)
+
+  if (inherits(x, "pssa")) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= nspecial(x))){
+      .set.decomposition(x, nPL = 0)
+    }
+  }
+
   invisible(x)
 }
 
@@ -419,6 +430,17 @@ fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
     .set(x, "iossa.groups", .fix.iossa.groups(.get(x, "iossa.groups", allow.null = TRUE), idx))
     .set(x, "iossa.groups.all", .fix.iossa.groups(.get(x, "iossa.groups.all", allow.null = TRUE), idx))
   }
+
+  if (inherits(x, "pssa")) {
+    if (any(idx <= .decomposition(x, "nPR"))) {
+      .set.decomposition(x, nPR = 0, nPL = 0)
+    } else if (any(idx <= nspecial(x))){
+      .set.decomposition(x, nPL = 0)
+    }
+  }
+
+  # Save nested components
+  .set(x, "ossa.set", idx)
 
   if (!inherits(x, "ossa")) {
     class(x) <- c("ossa", class(x))
@@ -480,21 +502,23 @@ calc.v.ossa <- function(x, idx, ...) {
   invisible(V)
 }
 
-owcor <- function(x, groups, basis, ..., cache = TRUE) {
+owcor <- function(x, groups, ..., cache = TRUE) {
+  # Check class
+  stopifnot(inherits(x, "ossa"))
+
+  # Get basis
+  basis <- .get(x, "ossa.set")
+
   if (missing(groups)) {
-    groups <- x$iossa.groups.all
+    groups <- x$iossa.groups
     if (is.null(groups)) {
-      groups <- as.list(seq_len(min(nu(x), nsigma(x))))
+      groups <- as.list(basis)
     }
   }
 
-  if (missing(basis)) {
-    basis <- unlist(.get(x, "iossa.groups.all", allow.null = TRUE))
-    if (is.null(basis)) {
-      basis <- seq_len(min(nu(x), nsigma(x)))
-    }
-  }
-  basis <- unique(basis)
+  if (!all(unlist(groups) %in% basis))
+    stop(sprintf("groups in `groups' must consist of components from current OSSA set (%s)",
+                 paste0(basis, collapse = ", ")))
 
   # Compute reconstruction.
   F <- reconstruct(x, groups, ..., cache = cache)
