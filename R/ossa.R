@@ -268,7 +268,7 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
 
   idx <- sort(unique(unlist(nested.groups)))
   triples <- .get.orth.triples(x, idx)
-  lambda <- triples$sigma; U <- triples$U; V <- triples$V
+  osigma <- triples$sigma; U <- triples$U; V <- triples$V
 
   # Replace (in nested.groups) ET's numbers for their ranks (order numbers) in set of signal ETs
   nested.groups <- lapply(nested.groups, function(group) match(group, idx))
@@ -297,17 +297,17 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
 
     if (trace) cat(sprintf("LRSS(%d): %s\n", iter, paste0(sqrt(lrss), collapse = " ")))
 
-    lambdas <- lapply(triples.list, function(el) el$sigma)
+    osigmas <- lapply(triples.list, function(el) el$sigma)
     Us <- lapply(triples.list, function(el) el$U)
     Vs <- lapply(triples.list, function(el) el$V)
 
     if (!is.null(kappa)) {
       # If we use reordering, force separability
       for (i in seq_along(nested.groups[-length(nested.groups)])) {
-        div <- lambdas[[i]][ranks[i]] / lambdas[[i + 1]][1]
+        div <- osigmas[[i]][ranks[i]] / osigmas[[i + 1]][1]
         if (div < kappa) {
           mul <- kappa / div
-          lambdas[[i + 1]] <- lambdas[[i + 1]] / mul
+          osigmas[[i + 1]] <- osigmas[[i + 1]] / mul
           Us[[i + 1]] <- Us[[i + 1]] * mul^kappa.balance
           Vs[[i + 1]] <- Vs[[i + 1]] * mul^(1 - kappa.balance)
         }
@@ -318,7 +318,7 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
     basV <- do.call(cbind, Vs)
 
     # Oblique SVD
-    dec <- svd2LRsvd(lambda, U, V, basU, basV, need.project = TRUE)
+    dec <- svd2LRsvd(osigma, U, V, basU, basV, need.project = TRUE)
     sigma <- dec$sigma; Y <- dec$Y; Z <- dec$Z
 
     elem.components <- .hankelize.multi.default(t(sigma * t(Y)), Z, fft.plan)
@@ -402,9 +402,9 @@ fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
 
   idx <- sort(unique(unlist(nested.groups)))
   triples <- .get.orth.triples(x, idx)
-  lambda <- triples$sigma; U <- triples$U; V <- triples$V
+  osigma <- triples$sigma; U <- triples$U; V <- triples$V
 
-  Z <- V * rep(lambda, each = nrow(V))
+  Z <- V * rep(osigma, each = nrow(V))
 
   fZ <- apply(Z, 2, FILTER)
   dec <- eigen(crossprod(rbind(Z, gamma * fZ)), symmetric = TRUE)
