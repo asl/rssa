@@ -78,17 +78,25 @@ plot(reconstruct(fs, groups = list(6:7, 8:9, 10:11)))
 plot(wcor(s, groups = 6:11))
 plot(wcor(fs, groups = 6:11))
 
-
 # Real life example: improving of strong separability
 data(USUnemployment)
-s <- ssa(USUnemployment[, "MALE"])
+unempl.male <- USUnemployment[, "MALE"]
+s <- ssa(unempl.male)
 fs <- fossa(s, nested.groups = 1:13, gamma = 1000)
 
-# w-cor matrices before and after FOSSA
-plot(wcor(s, groups = 1:13))
-plot(wcor(fs, groups = 1:13))
+# Comparison of reconstructions
+rec <- reconstruct(s, groups = list(c(1:4, 7:11), c(5:6, 12:13)))
+frec <- reconstruct(fs, groups <- list(5:13, 1:4))
+# Trends
+matplot(data.frame(frec$F1, rec$F1, unempl.male), type= 'l' , col=c("red","blue","black"), lty=c(1,1,2))
+# Seasonalities
+matplot(data.frame(frec$F2, rec$F2), type = 'l', col=c("red","blue"), lty=c(1,1))
 
-# eigenvectors before and after FOSSA
+# W-cor matrices before and after FOSSA
+plot(wcor(s, groups = 1:30))
+plot(wcor(fs, groups = 1:30))
+
+# Eigenvectors before and after FOSSA
 plot(s, type = "vectors", idx = 1:13)
 plot(fs, type = "vectors", idx = 1:13)
 

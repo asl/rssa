@@ -121,18 +121,26 @@ plot(owcor(ios, groups = 1:4))
 
 
 \donttest{
-# Real life example: improving of strong separability
 data(USUnemployment)
-s <- ssa(USUnemployment[, "MALE"])
+unempl.male <- USUnemployment[, "MALE"]
+
+s <- ssa(unempl.male)
 ios <- iossa(s, nested.groups = list(c(1:4, 7:11), c(5:6, 12:13)))
+summary(ios)
 
-print(ios$iossa.result)
+# Comparison of reconstructions
+rec <- reconstruct(s, groups = list(c(1:4, 7:11), c(5:6, 12:13)))
+iorec <- reconstruct(ios, groups <- ios$iossa.groups)
+# Trends
+matplot(data.frame(iorec$F1, rec$F1, unempl.male), type='l', col=c("red","blue","black"), lty=c(1,1,2))
+# Seasonalities
+matplot(data.frame(iorec$F2, rec$F2), type='l', col=c("red","blue"),lty=c(1,1))
 
-# w-cor matrix before and after IOSSA
-plot(wcor(s, groups = 1:13))
-plot(wcor(ios, groups = 1:13))
+# W-cor matrix before IOSSA and w-cor matrix after it
+plot(wcor(s, groups = 1:30))
+plot(wcor(ios, groups = 1:30))
 
-# eigenvectors before and after Iterative O-SSA
+# Eigenvectors before and after Iterative O-SSA
 plot(s, type = "vectors", idx = 1:13)
 plot(ios, type = "vectors", idx = 1:13)
 
