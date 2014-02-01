@@ -199,8 +199,7 @@ decompose.toeplitz.ssa <- function(x,
   stop("Unsupported SVD method for Toeplitz SSA!")
 }
 
-calc.v.toeplitz.ssa <- function(x, idx, ...)
-  .V(x)[, idx, drop = FALSE]
+calc.v.toeplitz.ssa <- calc.v.1d.ssa
 
 .rowspan.toeplitz.ssa <- function(x, idx) {
   qr.Q(qr(.V(x)[, idx, drop = FALSE]))
