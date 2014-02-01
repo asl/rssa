@@ -117,7 +117,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   if (plot.contrib) {
     # Check for F-orthogonality
     if (!.is.frobenius.orthogonal(x, idx))
-      warning("Elementary matrices are not F-orthogonal. Contributions are irrelevant")
+      warning("Elementary matrices are not F-orthogonal. Contributions can be irrelevant")
 
     total <- wnorm(x)^2
     sigma <- round(100*x$sigma[idx]^2 / total, digits = 2)
@@ -158,7 +158,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   if (plot.contrib) {
     # Check for F-orthogonality
     if (!.is.frobenius.orthogonal(x, idx))
-      warning("Elementary matrices are not F-orthogonal. Contributions are irrelevant")
+      warning("Elementary matrices are not F-orthogonal. Contributions can be irrelevant")
 
     total <- wnorm(x)^2
     sigmax <- round(100*x$sigma[idx]^2 / total, digits = 2)
