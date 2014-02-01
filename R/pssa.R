@@ -262,6 +262,12 @@ calc.v.pssa <- function(x, idx, ...) {
 
   if (length(idx.new) > 0) {
     sigma <- .sigma(x)[idx.new]
+
+    if (any(sigma <= 0)) {
+      sigma[sigma <= 0] <- Inf
+      warning("Some sigmas are equal to zero. The corresponding vectors will be zero filled")
+    }
+
     U <- .U(x)[, idx.new, drop = FALSE]
     ph <- .get.or.create.phmat(x)
 
