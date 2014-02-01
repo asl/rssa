@@ -85,6 +85,10 @@ orthogonalize <- function(Y, Z, sigma, side = c("bi", "left", "right"), normaliz
   # Compute covariations
   cov <- crossprod(mx)
 
+  # Zero check
+  if (any(diag(cov) <= 0))
+    stop("One of components is zero, correlation is undefined")
+
   # Convert to correlations
   cor <- cov2cor(cov)
 
