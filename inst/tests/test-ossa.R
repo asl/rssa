@@ -65,3 +65,22 @@ test_that("FOSSA", {
   expect_equal(rec$F2, F2.real, tolerance = 1e-6)
 })
 
+test_that ("OSSA + PSSA forecast is correct", {
+  N <- 100
+  len <- 20
+  tt <- seq_len(N + len)
+  F <- 0.01 * tt^2 + 10 * sin(2*pi * tt / 10)
+  pss <- ssa(F[seq_len(N)], row.projector = "centering", column.projector = "centering")
+  ios <- iossa(pss, nested.groups = list(c(1:2), c(3:5)))
+  fos <- fossa(ios, nested.groups = ios$iossa.groups, gamma = 1000)
+
+  rforec.ios <- rforecast(ios, groups = list(1:5), len = len, only.new = FALSE)
+  vforec.ios <- vforecast(ios, groups = list(1:5), len = len, only.new = FALSE)
+  expect_equal(rforec.ios, F)
+  expect_equal(vforec.ios, F)
+
+  rforec.fos <- rforecast(fos, groups = list(1:5), len = len, only.new = FALSE)
+  vforec.fos <- vforecast(fos, groups = list(1:5), len = len, only.new = FALSE)
+  expect_equal(rforec.fos, F)
+  expect_equal(vforec.fos, F)
+})
