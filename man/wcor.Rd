@@ -62,11 +62,11 @@
       should be used. 'TRUE' by default.}
   }
 
-  For class `ossa', Frobenius orthogonality checking is performed and if
-  reconstructed matrices are not all F-orthogonal (it is usual for
-  Oblique SSA), corresponding warning will be shown.  In case of lack
-  orthogonality, the W-cor matrix may not represent the weak
-  separability properly. In such a case, the use of
+  For class `ossa', checking of Frobenius orthogonality is performed.
+  If there are reconstructed matrices, which are not F-orthogonal
+  (it is a usual case for Oblique SSA), the warning about possible irrelevancy will be shown,
+  since then weighted correlations do not indicate weak separability properly.
+  In such a case, the use of
   \code{\link[Rssa:owcor]{owcor}} is preferred.
 }
 
