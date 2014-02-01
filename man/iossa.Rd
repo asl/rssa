@@ -138,4 +138,23 @@ plot(ios, type = "vectors", idx = 1:13)
 plot(s, type = "paired", idx = c(5, 12))
 plot(ios, type = "paired", idx = c(10, 12), plot.contrib = FALSE)
 }
+
+
+data(AustralianWine)
+Fortified <- AustralianWine[, "Fortified"]
+s <- ssa(window(Fortified, start = 1982 + 5/12, end = 1986 + 5/12), L = 18)
+ios <- iossa(s, nested.groups = list(trend = 1, 2:7),
+             kappa = NULL,
+             maxIter = 1)
+fs <- fossa(s, nested.groups = 1:7, gamma = 1000)
+
+rec.ssa <- reconstruct(s, groups = list(trend = 1, 2:7))
+rec.iossa <- reconstruct(ios, groups = ios$iossa.groups);
+rec.fossa <- reconstruct(fs, groups = list(trend = 7, 1:6))
+
+Fort <- cbind(`Basic SSA trend` = rec.ssa$trend,
+              `Iterative O-SSA trend` = rec.iossa$trend,
+              `DerivSSA trend` = rec.fossa$trend,
+              `Full series` = Fortified)
+plot(Fort)
 }
