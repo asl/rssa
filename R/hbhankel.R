@@ -254,6 +254,7 @@ decompose.2d.ssa.propack <- function(x,
 
 calc.v.2d.ssa <- function(x, idx, ...) {
   sigma <- .sigma(x)[idx]
+  sigma[sigma <= 0] <- Inf
   U <- .U(x)[, idx, drop = FALSE]
   h <- .get.or.create.hbhmat(x)
 
