@@ -261,12 +261,22 @@ frobenius.cor <- function(x, groups, ...) {
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
 
-  all(abs(frobenius.cor(x, groups, ...) - diag(length(groups))) < eps)
+  fcor <- frobenius.cor(x, groups, ...)
+  diag(fcor) <- 0
+
+  max.fcor <- fcor[which.max(abs(fcor))]
+
+  if (abs(max.fcor) < eps)
+    TRUE
+  else
+    max.fcor
 }
 
 wcor.ossa <- function(x, groups, ..., cache = TRUE) {
-  if (!.is.frobenius.orthogonal(x, groups, ...))
-    warning("Component matrices are not F-orthogonal. W-cor matrix can be irrelevant")
+  isfcor <- .is.frobenius.orthogonal(x, groups, ...)
+  if (!isTRUE(isfcor))
+    warning(sprintf("Component matrices are not F-orthogonal (max F-cor is %s). W-cor matrix can be irrelevant",
+                    format(isfcor, digits = 3)))
 
   NextMethod()
 }
