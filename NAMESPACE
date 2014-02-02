@@ -55,7 +55,8 @@ export(clone,
 # Non-orthogonal decompositions
        iossa,
        owcor,
-       fossa
+       fossa,
+       frobenius.cor
        )
 
 S3method("clone", ssa)
