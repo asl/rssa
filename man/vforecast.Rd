@@ -6,7 +6,6 @@
 \alias{vforecast.toeplitz.ssa}
 \alias{vforecast.mssa}
 \alias{vforecast.cssa}
-\alias{vforecast.pssa}
 \title{Perform vector SSA forecasting of the series}
 
 \description{
@@ -16,15 +15,15 @@
 \usage{
 \method{vforecast}{1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots,
           drop = TRUE, drop.attributes = FALSE)
-\method{vforecast}{cssa}(x, groups, len = 1, only.new = TRUE, \dots,
-          drop = TRUE, drop.attributes = FALSE)
 \method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots,
           drop = TRUE, drop.attributes = FALSE)
-\method{vforecast}{pssa}(x, groups, len = 1, only.new = TRUE, \dots,
+\method{vforecast}{toeplitz.ssa}(x, groups, len = 1, only.new = TRUE, \dots,
           drop = TRUE, drop.attributes = FALSE)
 \method{vforecast}{mssa}(x, groups, len = 1,
           direction = c("row", "column"),
           only.new = TRUE, \dots,
+          drop = TRUE, drop.attributes = FALSE)
+\method{vforecast}{cssa}(x, groups, len = 1, only.new = TRUE, \dots,
           drop = TRUE, drop.attributes = FALSE)
 }
 
