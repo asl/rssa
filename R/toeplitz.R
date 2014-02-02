@@ -20,11 +20,6 @@
 #   Routines for toeplitz SSA
 
 Lcor <- function(F, L, circular = FALSE) {
-  if (length(circular) > 1)
-    warning("Incorrect argument length: length(circular) > 1, the firts value will be used")
-  if (length(circular) != 1)
-    circular <- circular[1]
-
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
   storage.mode(circular) <- "logical"
