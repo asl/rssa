@@ -263,9 +263,9 @@ calc.v.pssa <- function(x, idx, ...) {
   if (length(idx.new) > 0) {
     sigma <- .sigma(x)[idx.new]
 
-    if (any(sigma <= 0)) {
-      sigma[sigma <= 0] <- Inf
-      warning("Some sigmas are equal to zero. The corresponding vectors will be zero filled")
+    if (any(sigma <= .Machine$double.eps)) {
+      sigma[sigma <= .Machine$double.eps] <- Inf
+      warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
     }
 
     U <- .U(x)[, idx.new, drop = FALSE]

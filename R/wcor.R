@@ -35,8 +35,8 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   cov <- crossprod(weights * x, x)
 
   # Zero check
-  if (any(diag(cov) <= 0))
-    stop("One of components is zero, correlation is undefined")
+  if (any(diag(cov) <= .Machine$double.eps))
+    stop("one of components is zero, correlation is undefined")
 
   # Convert to correlations
   cor <- cov2cor(cov)
@@ -240,8 +240,8 @@ frobenius.cor <- function(x, groups, ...) {
   cov <- sapply(groups, function(group) rowSums(cov[, match(group, idx), drop = FALSE]))
 
   # Zero check
-  if (any(diag(cov) <= 0))
-    stop("One of components is zero, correlation is undefined")
+  if (any(diag(cov) <= .Machine$double.eps))
+    stop("one of components is zero, correlation is undefined")
 
   # Convert to correlations
   cor <- cov2cor(cov)

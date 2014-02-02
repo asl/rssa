@@ -193,9 +193,9 @@ decompose.cssa.nutrlan <- function(x,
 calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
   sigma <- .sigma[idx]
 
-  if (any(sigma <= 0)) {
-    sigma[sigma <= 0] <- Inf
-    warning("Some sigmas are equal to zero. The corresponding vectors will be zero filled")
+  if (any(sigma <= .Machine$double.eps)) {
+    sigma[sigma <= .Machine$double.eps] <- Inf
+    warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
   }
 
   U <- .U[, idx, drop = FALSE]

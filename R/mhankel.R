@@ -144,9 +144,9 @@ decompose.mssa.nutrlan <- function(x,
 calc.v.mssa<- function(x, idx, ...) {
   sigma <-.sigma(x)[idx]
 
-  if (any(sigma <= 0)) {
-    sigma[sigma <= 0] <- Inf
-    warning("Some sigmas are equal to zero. The corresponding vectors will be zero filled")
+  if (any(sigma <= .Machine$double.eps)) {
+    sigma[sigma <= .Machine$double.eps] <- Inf
+    warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
   }
 
   U <- .U(x)[, idx, drop = FALSE]
