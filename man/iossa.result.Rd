@@ -45,6 +45,7 @@
 }
 
 \seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:iossa]{iossa}},
   \code{\link[Rssa:owcor]{owcor}},
   \code{\link[Rssa:summary.ssa]{summary.ssa}}.

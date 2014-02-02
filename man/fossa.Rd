@@ -3,7 +3,7 @@
 \title{Nested Filter-adjusted O-SSA decomposition}
 
 \description{
-  Perform nested decomposition by Filter-adjusted O-SSA.
+  Perform nested decomposition by Filter-adjusted O-SSA (FOSSA).
 }
 
 \usage{
@@ -11,9 +11,10 @@
 }
 
 \arguments{
-  \item{x}{SSA object holding the one-dimensional SSA (Basic 1D-SSA, Toeplitz SSA) decomposition}
-  \item{nested.groups}{vector of elementary component indices for
-    nested decomposition. The argument is coerced to a vector, if necessary}
+  \item{x}{SSA object holding the full one-dimensional SSA (Basic 1D-SSA, Toeplitz SSA) decomposition}
+  \item{nested.groups}{vector of numbers of eigentriples from full decomposition
+    for nested decomposition. The argument is coerced to a vector, if
+    necessary }
   \item{FILTER}{function or numeric vector of impulse response
     coefficients for filter adjustment}
   \item{gamma}{weight of filter adjustment. See `Details' and `References'}
@@ -27,9 +28,16 @@
 }
 
 \details{
-  Filter-adjusted O-SSA performs a nested decomposition specified by a
-  number eigentriples via Oblique SSA with a specific inner product in
-  the row space:
+  FOSSA serves for decomposition of series components that are
+  mixed due to equal contributions of their elementary components, e.g. of
+  sinusoids with equal amplitudes or of complex-form trend and
+  periodics. FOSSA performs a new decomposition of a part of the
+  ssa-object, which is given by a set of eigentriples. Note that
+  eigentriples that do not belong to the chosen set are not changed.
+  
+  In particular, Filter-adjusted O-SSA performs a nested decomposition
+  specified by a number of eigentriples via Oblique SSA with a specific
+  inner product in the row space:
   \deqn{%
     \langle x, y \rangle = (x, y) + \gamma^2(\Phi(x), \Phi(y)),
   }{<x, y> = (x, y) + gamma^2(Phi(x), Phi(y))}
@@ -58,16 +66,23 @@
 # Separation of two mixed sine-waves with equal amplitudes
 N <- 150
 L <- 70
-omega1 <- 1/5
+omega1 <- 1/15
 omega2 <- 1/10
 
 v <- sin(2*pi*omega1 * (1:N)) + sin(2*pi*omega2 * (1:N))
 s <- ssa(v, L)
 fs <- fossa(s, nested.groups = 1:4, gamma = 100)
 
-plot(wcor(s, groups = 1:4))
-plot(wcor(fs, groups = 1:4))
+# Rssa does most of the plots via lattice
+ws <- plot(wcor(s, groups = 1:4))
+wfs <- plot(wcor(fs, groups = 1:4))
+plot(ws, split = c(1, 1, 2, 1), more = TRUE)
+plot(wfs, split = c(2, 1, 2, 1), more = FALSE)
 
+opar <- par(mfrow = c(2, 1))
+plot(reconstruct(s, groups = list(1:2, 3:4)))
+plot(reconstruct(fs, groups = list(1:2, 3:4)))
+par(opar)
 
 # Real-life example: Australian Wine Sales
 data(AustralianWine)

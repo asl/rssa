@@ -57,7 +57,7 @@
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:rforecast]{rforecast}},
-  \code{\link[Rssa:bforecast]{bforecast}},
+  \code{\link[Rssa:vforecast]{vforecast}},
   \code{\link[Rssa:forecast]{forecast}}.
 }
 

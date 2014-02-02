@@ -31,7 +31,7 @@
 \references{
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001):
   \emph{Analysis of Time Series Structure: SSA and related techniques.}
-  Chapman and Hall/CRC. ISBN 1584881941
+  Chapman and Hall/CRC. ISBN 1584881941f
 
   Golyandina, N. and Stepanov, D. (2005): \emph{SSA-based approaches to
     analysis and forecast of multidimensional time series}. In
@@ -50,14 +50,14 @@
 
   Golyandina, N., Korobeynikov, A. (2012, 2014) \emph{Basic Singular Spectrum
     Analysis and Forecasting with R.} Computational Statistics and Data
-    Analysis, Vol. 71, Pp. 934-954. arXiv:1206.6910
+    Analysis, Vol. 71, Pp. 934-954. \url{http://arxiv.org/abs/1206.6910}
 
   Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
     Analysis for time series}. Springer Briefs in Statistics. Springer.
 
-  Golyandina, N., Korobeynikov, A, Shlemov and Usevich, K.
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K.
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
-    with the Rssa Package}. arXiv: 1309.5050
+    with the Rssa Package}. \url{http://arxiv.org/abs/1309.5050}
 }
 \keyword{package}
 \seealso{

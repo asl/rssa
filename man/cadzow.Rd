@@ -16,7 +16,7 @@
 \arguments{
   \item{x}{input SSA object}
   \item{rank}{desired rank of approximation}
-  \item{correct}{logical, if 'TRUE' then additional correction per
+  \item{correct}{logical, if 'TRUE' then additional correction as in
   (Gillard et al, 2013) is performed}
   \item{tol}{tolerance value used for convergence criteria}
   \item{maxiter}{number of iterations to perform, if zero then
@@ -30,9 +30,14 @@
 \details{
   Cadzow iterations aim to solve the problem of the approximation of the
   input series by a series of finite rank. The idea of the algorithm is
-  quite simple: the sequence of projections onto the space of Hankel
-  matricies of finite rank is performed until the convergence.
+  quite simple: alternating projections of the trajectory matrix to
+  Hankel and low-rank matrices are performed which hopefully converge to
+  a Hankel low-rank matrix.
 
+  Note that the results of one Cadzow iteration with no correction
+  coincides with the result of reconstruction by the leading \code{rank}
+  components.
+  
   Unfortunately, being simple, the method often yields the solution which is
   far away from the optimum.
 }
@@ -53,11 +58,17 @@
 }
   
 \examples{
-# Decompose 'co2' series with default parameters
+# Decompose co2 series with default parameters
 s <- ssa(co2)
 # Now make rank 3 approximation using the Cadzow iterations
-F <- cadzow(s, rank = 3)
+F <- cadzow(s, rank = 3, tol = 1e-10)
+library(lattice)
+xyplot(cbind(Original = co2, Cadzow = F), superpose = TRUE)
+# All but the first 3 eigenvalues are close to 0
+plot(ssa(F))
+
 # Compare with SSA reconstruction
+F <- cadzow(s, rank = 3, maxiter = 1, correct = FALSE)
 Fr <- reconstruct(s, groups = list(1:3))$F1
-plot(F - Fr, type = "l")
+print(max(abs(F - Fr)))
 }
