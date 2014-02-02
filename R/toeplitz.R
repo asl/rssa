@@ -19,15 +19,23 @@
 
 #   Routines for toeplitz SSA
 
-Lcor <- function(F, L) {
+Lcor <- function(F, L, circular = FALSE) {
+  if (length(circular) > 1)
+    warning("Incorrect argument length: length(circular) > 1, the firts value will be used")
+  if (length(circular) != 1)
+    circular <- circular[1]
+
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
-  .Call("Lcor", F, L)
+  storage.mode(circular) <- "logical"
+  .Call("Lcor", F, L, circular)
 }
 
-new.tmat <- function(F, L = (N + 1) %/% 2, fft.plan = NULL) {
+new.tmat <- function(F, L = (N + 1) %/% 2,
+                     circular = FALSE,
+                     fft.plan = NULL) {
   N <- length(F)
-  R <- Lcor(F, L)
+  R <- Lcor(F, L, circular = circular)
 
   storage.mode(R) <- "double"
   t <- .Call("initialize_tmat", R, if (is.null(fft.plan)) fft.plan.1d(2*L - 1) else fft.plan)
@@ -54,7 +62,8 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 .hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa
 
 .get.or.create.tmat <- function(x) {
-  .get.or.create(x, "tmat", new.tmat(F = .F(x), L = x$window))
+  .get.or.create(x, "tmat", new.tmat(F = x$F, L = x$window,
+                                     circular = x$circular))
 }
 
 decompose.toeplitz.ssa.nutrlan <- function(x,
@@ -106,7 +115,7 @@ decompose.toeplitz.ssa.eigen <- function(x,
   h <- .get.or.create.hmat(x)
 
   # Do decomposition
-  C <- toeplitz(Lcor(F, L))
+  C <- toeplitz(Lcor(F, L, circular = x$circular))
   S <- eigen(C, symmetric = TRUE)
 
   sigma <- numeric(L)
@@ -142,7 +151,7 @@ decompose.toeplitz.ssa.svd <- function(x,
   h <- .get.or.create.hmat(x)
 
   # Do decomposition
-  C <- toeplitz(Lcor(F, L))
+  C <- toeplitz(Lcor(F, L, circular = x$circular))
   S <- svd(C, nu = neig, nv = neig)
 
   sigma <- numeric(neig)
