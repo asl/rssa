@@ -103,7 +103,8 @@ fs <- fossa(s, nested.groups = 1:13, gamma = 1000)
 rec <- reconstruct(s, groups = list(c(1:4, 7:11), c(5:6, 12:13)))
 frec <- reconstruct(fs, groups <- list(5:13, 1:4))
 # Trends
-matplot(data.frame(frec$F1, rec$F1, unempl.male), type= 'l' , col=c("red","blue","black"), lty=c(1,1,2))
+matplot(data.frame(frec$F1, rec$F1, unempl.male), type= 'l',
+        col=c("red","blue","black"), lty=c(1,1,2))
 # Seasonalities
 matplot(data.frame(frec$F2, rec$F2), type = 'l', col=c("red","blue"), lty=c(1,1))
 

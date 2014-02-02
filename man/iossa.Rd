@@ -145,7 +145,8 @@ summary(ios)
 rec <- reconstruct(s, groups = list(c(1:4, 7:11), c(5:6, 12:13)))
 iorec <- reconstruct(ios, groups <- ios$iossa.groups)
 # Trends
-matplot(data.frame(iorec$F1, rec$F1, unempl.male), type='l', col=c("red","blue","black"), lty=c(1,1,2))
+matplot(data.frame(iorec$F1, rec$F1, unempl.male), type='l',
+        col=c("red","blue","black"), lty=c(1,1,2))
 # Seasonalities
 matplot(data.frame(iorec$F2, rec$F2), type='l', col=c("red","blue"),lty=c(1,1))
 

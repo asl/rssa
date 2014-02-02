@@ -31,7 +31,7 @@ frobenius.cor(x, groups, ...)
     fcor (Z, Y) = <Z, Y>_F / (||Z||_F ||Y||_F)).
   }
 
-  Frobenius coorelation is a measure of Frobenius orthogonality of the components.
+  Frobenius correlation is a measure of Frobenius orthogonality of the components.
   If grouped matrices are correlated then the w-correlations of the corresponding reconstructed series is not
   relevant measure of separability (and one should use \code{\link[Rssa:owcor]{owcor}} instead).
   Also, if the elementary matrices \eqn{\mathbf{X}_i = \sigma_i U_i V_i^\mathrm{T}}{X_i = sigma_i U_i (V_i)^T}
