@@ -110,7 +110,7 @@ data(Mars)
 # Decompose only Mars image (without backgroud)
 s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 # Plot wcor for the first 25 components
-plot(wcor(s, groups = 1:25), grid = c(13,15, 17,19))
+plot(wcor(s, groups = 1:25), grid = c(13, 15, 17,19))
 }
 }
 
