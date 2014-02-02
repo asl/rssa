@@ -34,6 +34,10 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   # Compute w-covariation
   cov <- crossprod(weights * x, x)
 
+  # Zero check
+  if (any(diag(cov) <= 0))
+    stop("One of components is zero, correlation is undefined")
+
   # Convert to correlations
   cor <- cov2cor(cov)
 
@@ -182,12 +186,12 @@ wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...) {
   w <- .hweights(x)
 
   # Compute wnorm
-  sqrt(sum(w * as.vector(x$F)^2))
+  sqrt(sum(w * as.vector(.F(x))^2))
 }
 
 wnorm.2d.ssa <- function(x, ...) {
   # Get F
-  F <- .get(x, "F")
+  F <- .F(x)
 
   # Compute weights
   w <- .hweights(x)
@@ -207,10 +211,82 @@ wnorm.mssa <- function(x, ...) {
   w <- .hweights(x)
 
   # Get series
-  F <- .get(x, "F")
+  F <- .F(x)
 
   # Compute wnorm
   sqrt(sum(w * unlist(F)^2))
+}
+
+frobenius.cor <- function(x, groups, ...) {
+  # MB, add class check here too? We can just return identical matrix for non-ossa decompositions
+
+  if (missing(groups))
+    groups <- as.list(seq_len(nsigma(x)))
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
+  idx <- unique(unlist(groups))
+  sigma <- .sigma(x)[idx]
+  U <- .U(x)[, idx, drop = FALSE]
+  V <- calc.v(x, idx)
+
+  # Compute frobenius covariation of elementary matrices
+  cov <- crossprod(U) * crossprod(V) * tcrossprod(sigma)
+
+  # Summing by groups (by columns and then by rows)
+  cov <- sapply(groups, function(group) rowSums(cov[, match(group, idx), drop = FALSE]))
+  cov <- t(cov)
+  cov <- sapply(groups, function(group) rowSums(cov[, match(group, idx), drop = FALSE]))
+
+  # Zero check
+  if (any(diag(cov) <= 0))
+    stop("One of components is zero, correlation is undefined")
+
+  # Convert to correlations
+  cor <- cov2cor(cov)
+
+  # Fix possible numeric error
+  cor[cor > 1] <- 1; cor[cor < -1] <- -1
+
+  # Add class
+  class(cor) <- "wcor.matrix"
+
+  # Set names
+  colnames(cor) <- rownames(cor) <- .group.names(groups)
+
+  # Return
+  cor
+}
+
+.is.frobenius.orthogonal <- function(x, groups, eps = sqrt(.Machine$double.eps), ...) {
+  if (!inherits(x, "ossa"))
+    return(TRUE)
+
+  if (missing(groups))
+    groups <- as.list(seq_len(nsigma(x)))
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
+  fcor <- frobenius.cor(x, groups, ...)
+  diag(fcor) <- 0
+
+  max.fcor <- fcor[which.max(abs(fcor))]
+
+  if (abs(max.fcor) < eps)
+    TRUE
+  else
+    max.fcor
+}
+
+wcor.ossa <- function(x, groups, ..., cache = TRUE) {
+  isfcor <- .is.frobenius.orthogonal(x, groups, ...)
+  if (!isTRUE(isfcor))
+    warning(sprintf("Component matrices are not F-orthogonal (max F-cor is %s). W-cor matrix can be irrelevant",
+                    format(isfcor, digits = 3)))
+
+  NextMethod()
 }
 
 #N = 399;

@@ -5,7 +5,7 @@ year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
 vers <- paste("R package version", desc$Version)
 
 citEntry(entry    = "Article",
-         title    = "Computation- and space-efficient implementation of SSA.",
+         title    = "Computation- and space-efficient implementation of SSA",
          author   = as.person("Anton Korobeynikov"),
          journal  = "Statistics and Its Interface",
          volume   = 3,
@@ -16,6 +16,21 @@ citEntry(entry    = "Article",
 
          textVersion =
          paste("Anton Korobeynikov (2010)",
-  	       "Computation- and space-efficient implementation of SSA.",
+               "Computation- and space-efficient implementation of SSA.",
                "Statistics and Its Interface, Vol. 3, No. 3, Pp. 257-368")
+)
+
+citEntry(entry    = "Article",
+         title    = "Basic Singular Spectrum Analysis and Forecasting with R",
+         author   = c(as.person("Nina Golyandina"), as.person("Anton Korobeynikov")),
+         journal  = "Computational Statistics and Data Analysis",
+         volume   = 71,
+         year     = "2014",
+         pages    = "934--954",
+         note     = vers,
+
+         textVersion =
+         paste("Nina Golyandina and Anton Korobeynikov (2014)",
+               "Basic Singular Spectrum Analysis and Forecasting with R.",
+               "Computational Statistics and Data Analysis, Vol. 71, Pp. 934-954")
 )

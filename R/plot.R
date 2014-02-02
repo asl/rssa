@@ -115,6 +115,12 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   d <- data.frame(A = idx, B = idx)
 
   if (plot.contrib) {
+    # Check for F-orthogonality
+    isfcor <- .is.frobenius.orthogonal(x, idx, ...)
+    if (!isTRUE(isfcor))
+      warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
+                      format(isfcor, digits = 3)))
+
     total <- wnorm(x)^2
     sigma <- round(100*x$sigma[idx]^2 / total, digits = 2)
   }
@@ -152,6 +158,12 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   d <- data.frame(A = idx, B = idy)
 
   if (plot.contrib) {
+    # Check for F-orthogonality
+    isfcor <- .is.frobenius.orthogonal(x, idx, ...)
+    if (!isTRUE(isfcor))
+      warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
+                      format(isfcor, digits = 3)))
+
     total <- wnorm(x)^2
     sigmax <- round(100*x$sigma[idx]^2 / total, digits = 2)
     sigmay <- round(100*x$sigma[idy]^2 / total, digits = 2)
@@ -240,7 +252,7 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
             dots))
 }
 
-.plot.ssa.series.toeplitz.ssa <- .plot.ssa.vectors.1d.ssa
+.plot.ssa.series.toeplitz.ssa <- .plot.ssa.series.1d.ssa
 
 panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot

@@ -25,7 +25,7 @@
 .hmat.striped <- function(x, fft.plan) {
   N <- x$length; L <- x$window
 
-  F <- .get(x, "F")
+  F <- .F(x)
   field <- matrix(0., max(N), length(N))
 
   weights <- .get(x, "weights")
@@ -72,11 +72,7 @@ decompose.mssa.svd <- function(x,
   S <- svd(h, nu = neig, nv = neig)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-  if (!is.null(S$v))
-    .set(x, "V", S$v)
+  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
 
   x
 }
@@ -100,8 +96,9 @@ decompose.mssa.eigen <- function(x, ...,
   S$values[S$values < 0] <- 0
 
   # Save results
-  .set(x, "sigma", sqrt(S$values[1:neig]))
-  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
+  .set.decomposition(x,
+                     sigma = sqrt(S$values[1:neig]),
+                     U = S$vectors[, 1:neig, drop = FALSE])
 
   x
 }
@@ -120,11 +117,7 @@ decompose.mssa.propack <- function(x,
   S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-  if (!is.null(S$v))
-    .set(x, "V", S$v)
+  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
 
   x
 }
@@ -136,23 +129,27 @@ decompose.mssa.nutrlan <- function(x,
 
   h <- .get.or.create.mhmat(x)
 
-  sigma <- .get(x, "sigma", allow.null = TRUE)
-  U <- .get(x, "U", allow.null = TRUE)
+  sigma <- .sigma(x)
+  U <- .U(x)
 
   S <- trlan.svd(h, neig = neig, ...,
                  lambda = sigma, U = U)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
+  .set.decomposition(x, sigma = S$d, U = S$u)
 
   x
 }
 
 calc.v.mssa<- function(x, idx, ...) {
-  sigma <- .get(x, "sigma")[idx]
-  U <- .get(x, "U")[, idx, drop = FALSE]
+  sigma <-.sigma(x)[idx]
+
+  if (any(sigma <= 0)) {
+    sigma[sigma <= 0] <- Inf
+    warning("Some sigmas are equal to zero. The corresponding vectors will be zero filled")
+  }
+
+  U <- .U(x)[, idx, drop = FALSE]
   h <- .get.or.create.mhmat(x)
 
   invisible(sapply(1:length(idx),
@@ -176,16 +173,16 @@ calc.v.mssa<- function(x, idx, ...) {
     stop("Too few eigentriples computed for this decomposition")
 
   N <- x$length
-  sigma <- .get(x, "sigma")
-  U <- .get(x, "U")
-  F <- .get(x, "F")
+  sigma <- .sigma(x)
+  U <- .U(x)
+  F <- .F(x)
 
   res <- numeric(sum(N))
   for (i in idx) {
     if (nv(x) >= i) {
       # FIXME: Check, whether we have factor vectors for reconstruction
       # FIXME: Get rid of .get call
-      V <- .get(x, "V")[, i]
+      V <- .V(x)[, i]
     } else {
       # No factor vectors available. Calculate them on-fly.
       V <- calc.v(x, i)
@@ -411,7 +408,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
     N <- x$length
     L <- x$window
     K <- N - L + 1
-    F <- .get(x, "F")
+    F <- .F(x)
 
     if (plot.contrib) {
       total <- wnorm(x)^2
@@ -424,7 +421,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
       if (nv(x) >= i) {
         # FIXME: Check, whether we have factor vectors for reconstruction
         # FIXME: Get rid of .get call
-        V <- .get(x, "V")[, i]
+        V <- .V(x)[, i]
       } else {
         # No factor vectors available. Calculate them on-fly.
         V <- calc.v(x, i)

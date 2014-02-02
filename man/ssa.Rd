@@ -13,6 +13,8 @@ ssa(x,
     neig = NULL,
     mask = NULL,
     wmask = NULL,
+    column.projector = "none",
+    row.projector = "none",
     \dots,
     kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
     circular = FALSE,
@@ -37,11 +39,14 @@ ssa(x,
     Toeplitz variant of 1d SSA, multichannel variant of SSA and complex
     SSA}
   \item{circular}{logical vector of one or two elements, describes series topology for
-    1d SSA and Toeplitz SSA or field topology
-    for 2d SSA. 'TRUE' means series circularity for 1d case or circularity by a corresponding coordinate
-    for 2d case.}
+    1d SSA and Toeplitz SSA or field topology for 2d SSA. 'TRUE' means
+    series circularity for 1d case or circularity by a corresponding
+    coordinate for 2d case. See (Shlemov, 2014) for more info}
   \item{svd.method}{singular value decomposition method. See 'Details'
-    for more info.}
+    for more info}
+  \item{column.projector, row.projector}{column and row signal subspaces projectors for
+    SSA with projection. See `Details' for information about methods of
+    projectors specification}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
     performed before return.}
 }
@@ -91,6 +96,31 @@ ssa(x,
     These functions are not exported, they defined only for \code{wmask} expression.
     If one has objects with the same names and wants to use them rather than these functions,
     one should use special wrapper function \code{I()} (see 'Examples'). 
+  }
+
+  \subsection{Projectors specification for SSA with projection}{
+    Projectors are specified by means of \code{column.projector} and
+    \code{row.projector} arguments. Each may be a matrix of orthonormal
+    (otherwise QR orthonormalization process will be perfomed) basis of
+    projection subspace, or single integer, which will be interpreted as
+    dimension of orthogonal polynomial basis (note that the dimension
+    equals to degree plus 1, e.g. quadratic basis has dimension 3), or
+    one of following character strings (or unique prefix): 'none',
+    'constant' (or 'centering'), 'linear', 'quadratic' or 'qubic' for
+    orthonormal bases of the corresponding functions.
+
+    Here is the the list of the most used options
+    \describe{
+      \item{both projectors are 'none'}{corresponds to ordinary 1D SSA,}
+      \item{column.projector='centering'}{corresponds to 1D SSA
+        with centering,}
+      \item{column.projector='centering' and
+        row.projector='centering'}{corresponds to 1D SSA with double
+        centering.}
+    }
+
+    SSA with centering and double centering may improve the separation
+    of linear trend (see (Golyandina, 2001) for more information).
   }
 
   \subsection{SVD methods}{
@@ -160,7 +190,21 @@ ssa(x,
 
   Korobeynikov, A. (2010) \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
-    Pp. 257-268
+  Pp. 257-268
+
+  Golyandina, N., Korobeynikov, A. (2012, 2014) \emph{Basic Singular Spectrum
+    Analysis and Forecasting with R.} Computational Statistics and Data
+  Analysis, Vol. 71, Pp. 934-954. \url{http://arxiv.org/abs/1206.6910}
+
+  Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
+    Analysis for time series}. Springer Briefs in Statistics. Springer.
+
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K.
+  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
+    with the Rssa Package}. \url{http://arxiv.org/abs/1309.5050}
+
+  Shlemov, A. and Golyandina, N. \emph{Shaped extensions of singular
+  spectrum analysis}. \url{http://arxiv.org/abs/1401.4980}
 }
 \seealso{
   \code{\link[svd:svd]{svd}},
@@ -229,5 +273,9 @@ s <- ssa(Mars, wmask = circle(R = I(circle)))
 s <- ssa(EuStockMarkets[, 1] + 1.0i*EuStockMarkets[, 2], kind = "cssa")
 r <- reconstruct(s, groups = list(Trend = 1:2))
 plot(r)
+
+# `co2' decomposition with double projection to linear functions
+s <- ssa(co2, column.projector = "centering", row.projector = "centering")
+plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }
 }

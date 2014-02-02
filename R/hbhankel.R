@@ -141,7 +141,7 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
 
 .get.or.create.hbhmat <- function(x) {
   .get.or.create(x, "hmat",
-                 new.hbhmat(x$F, L = x$window, wmask = x$wmask, fmask = x$fmask,
+                 new.hbhmat(.F(x), L = x$window, wmask = x$wmask, fmask = x$fmask,
                             weights = x$weights, circular = x$circular))
 }
 
@@ -181,11 +181,7 @@ decompose.2d.ssa.svd <- function(x,
   S <- svd(h, nu = neig, nv = neig)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-  if (!is.null(S$v))
-    .set(x, "V", S$v)
+  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
 
   x
 }
@@ -210,8 +206,9 @@ decompose.2d.ssa.eigen <- function(x,
   S$values[S$values < 0] <- 0
 
   # Save results
-  .set(x, "sigma", sqrt(S$values[1:neig]))
-  .set(x, "U", S$vectors[, 1:neig, drop = FALSE])
+  .set.decomposition(x,
+                     sigma = sqrt(S$values[1:neig]),
+                     U = S$vectors[, 1:neig, drop = FALSE])
 
   x
 }
@@ -223,16 +220,14 @@ decompose.2d.ssa.nutrlan <- function(x,
 
   h <- .get.or.create.hbhmat(x)
 
-  sigma <- .get(x, "sigma", allow.null = TRUE)
-  U <- .get(x, "U", allow.null = TRUE)
+  sigma <- .sigma(x)
+  U <- .U(x)
 
   S <- trlan.svd(h, neig = neig, ...,
                  lambda = sigma, U = U)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
+  .set.decomposition(x, sigma = S$d, U = S$u)
 
   x
 }
@@ -252,18 +247,20 @@ decompose.2d.ssa.propack <- function(x,
   S <- propack.svd(h, neig = neig, ...)
 
   # Save results
-  .set(x, "sigma", S$d)
-  if (!is.null(S$u))
-    .set(x, "U", S$u)
-  if (!is.null(S$v))
-    .set(x, "V", S$v)
+  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
 
   x
 }
 
 calc.v.2d.ssa <- function(x, idx, ...) {
-  sigma <- .get(x, "sigma")[idx]
-  U <- .get(x, "U")[, idx, drop = FALSE]
+  sigma <- .sigma(x)[idx]
+
+  if (any(sigma <= 0)) {
+    sigma[sigma <= 0] <- Inf
+    warning("Some sigmas are equal to zero. The corresponding vectors will be zero filled")
+  }
+
+  U <- .U(x)[, idx, drop = FALSE]
   h <- .get.or.create.hbhmat(x)
 
   invisible(sapply(1:length(idx),

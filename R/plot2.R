@@ -251,6 +251,12 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
   d <- data.frame(row = idx, column = idx, z = idx)
 
   if (plot.contrib) {
+    # Check for F-orthogonality
+    isfcor <- .is.frobenius.orthogonal(x, idx, ...)
+    if (!isTRUE(isfcor))
+      warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
+                      format(isfcor, digits = 3)))
+
     total <- wnorm(x)^2
     sigma <- round(100*x$sigma[idx]^2 / total, digits = 2);
   }

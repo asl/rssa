@@ -166,14 +166,16 @@ static void toeplitz_tmatmul(double* out,
   fftw_free(ocirc);
 }
 
-static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
+static void calc_Lcor(double *R, const double *F,
+                      R_len_t N, R_len_t L,
+                      int circular) {
   R_len_t No, i;
   double *circ;
   fftw_complex *ocirc;
   fftw_plan p1, p2;
 
   /* Allocate needed memory */
-  No = N + L - 1;
+  No = circular ? N : N + L - 1;
   circ = (double*) fftw_malloc(No * sizeof(double));
   ocirc = (fftw_complex*) fftw_malloc((No/2 + 1) * sizeof(fftw_complex));
 
@@ -182,7 +184,7 @@ static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
   p2 = fftw_plan_dft_c2r_1d(No, ocirc, circ, FFTW_ESTIMATE);
 
   memcpy(circ, F, N*sizeof(double));
-  memset(circ + N, 0, (L - 1)*sizeof(double));
+  memset(circ + N, 0, (No - N)*sizeof(double));
 
   /* Run the plan on input data */
   fftw_execute(p1);
@@ -195,7 +197,7 @@ static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
 
   /* Return */
   for (i = 0; i < L; ++i)
-    R[i] = circ[i] / (N - i) / No;
+    R[i] = circ[i] / (circular ? N : N - i) / No;
 
   /* Cleanup */
   fftw_free(circ);
@@ -321,8 +323,10 @@ static void toeplitz_tmatmul(double* out,
   UNPROTECT(4);
 }
 
-static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
-  R_len_t No = N + L - 1, i;
+static void calc_Lcor(double *R, const double *F,
+                      R_len_t N, R_len_t L,
+                      int circular) {
+  R_len_t No = circular ? N : N + L - 1, i;
   SEXP rcirc, res, rV1, rTrue;
 
   /* Allocate needed memory */
@@ -349,7 +353,7 @@ static void calc_Lcor(double *R, const double *F, R_len_t N, R_len_t L) {
 
   /* Return */
   for (i = 0; i < L; ++i)
-    R[i] = COMPLEX(res)[i].r / (N - i) / No;
+    R[i] = COMPLEX(res)[i].r / (circular ? N : N - i) / No;
 
   /* Cleanup */
   UNPROTECT(4);
@@ -517,18 +521,18 @@ SEXP tmatmul(SEXP tmat, SEXP v, SEXP transposed) {
   return Y;
 }
 
-SEXP Lcor(SEXP F, SEXP L) {
+SEXP Lcor(SEXP F, SEXP L, SEXP circular) {
   SEXP R = NILSXP;
 
   R_len_t N = length(F), intL = INTEGER(L)[0];
 
-  if (intL == 0 || intL > N - 1)
-    error("invalid length of inpur vector 'F'");
+  if (intL <= 0 || intL > N)
+    error("invalid length of input vector 'F'");
 
   /* Allocate output buffer */
   PROTECT(R = allocVector(REALSXP, intL));
 
-  calc_Lcor(REAL(R), REAL(F), length(F), intL);
+  calc_Lcor(REAL(R), REAL(F), length(F), intL, LOGICAL(circular)[0]);
 
   UNPROTECT(1);
 

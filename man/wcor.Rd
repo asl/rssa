@@ -5,6 +5,7 @@
 \alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
 \alias{wcor.mssa}
+\alias{wcor.ossa}
 \alias{plot.wcor.matrix}
 
 \title{Calculate the W-correlation matrix}
@@ -16,6 +17,7 @@
 \method{wcor}{2d.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{mssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{ossa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
      grid = c(),
@@ -59,6 +61,13 @@
     \item{useRaster}{logical. For wcor-plot, indicating whether raster representations
       should be used. 'TRUE' by default.}
   }
+
+  For class `ossa', checking of Frobenius orthogonality is performed.
+  If there are reconstructed matrices, which are not F-orthogonal
+  (it is a usual case for Oblique SSA), the warning about possible irrelevancy will be shown,
+  since then weighted correlations do not indicate weak separability properly.
+  In such a case, the use of
+  \code{\link[Rssa:owcor]{owcor}} is preferred.
 }
 
 \value{
@@ -72,6 +81,7 @@
 }
 \seealso{
   \code{\link[Rssa:reconstruct.ssa]{reconstruct}}
+  \code{\link[Rssa:owcor]{owcor.}}
 }
 
 \examples{
@@ -100,7 +110,7 @@ data(Mars)
 # Decompose only Mars image (without backgroud)
 s <- ssa(Mars, mask = Mars != 0, wmask = circle(50), kind = "2d-ssa")
 # Plot wcor for the first 25 components
-plot(wcor(s, groups = 1:25), grid = c(13,15, 17,19))
+plot(wcor(s, groups = 1:25), grid = c(13, 15, 17,19))
 }
 }
 
