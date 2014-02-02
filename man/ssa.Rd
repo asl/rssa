@@ -39,13 +39,14 @@ ssa(x,
     Toeplitz variant of 1d SSA, multichannel variant of SSA and complex
     SSA}
   \item{circular}{logical vector of one or two elements, describes series topology for
-    1d SSA and Toeplitz SSA or field topology
-    for 2d SSA. 'TRUE' means series circularity for 1d case or circularity by a corresponding coordinate
-    for 2d case.}
+    1d SSA and Toeplitz SSA or field topology for 2d SSA. 'TRUE' means
+    series circularity for 1d case or circularity by a corresponding
+    coordinate for 2d case. See (Shlemov, 2014) for more info}
   \item{svd.method}{singular value decomposition method. See 'Details'
-    for more info.}
+    for more info}
   \item{column.projector, row.projector}{column and row signal subspaces projectors for
-    SSA with projection. See `Details' for information about methods of projectors specification.}
+    SSA with projection. See `Details' for information about methods of
+    projectors specification}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
     performed before return.}
 }
@@ -189,7 +190,21 @@ ssa(x,
 
   Korobeynikov, A. (2010) \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
-    Pp. 257-268
+  Pp. 257-268
+
+  Golyandina, N., Korobeynikov, A. (2012, 2014) \emph{Basic Singular Spectrum
+    Analysis and Forecasting with R.} Computational Statistics and Data
+  Analysis, Vol. 71, Pp. 934-954. \url{http://arxiv.org/abs/1206.6910}
+
+  Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
+    Analysis for time series}. Springer Briefs in Statistics. Springer.
+
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K.
+  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
+    with the Rssa Package}. \url{http://arxiv.org/abs/1309.5050}
+
+  Shlemov, A. and Golyandina, N. \emph{Shaped extensions of singular
+  spectrum analysis}. \url{http://arxiv.org/abs/1401.4980}
 }
 \seealso{
   \code{\link[svd:svd]{svd}},
