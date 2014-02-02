@@ -62,6 +62,72 @@ nv(x)
   }
 }
 
+\section{About decompositions}{
+  The result of Decomposition step of SSA and its modifications can be written down in the following form:
+  \deqn{%
+    {(*)} \quad \mathbf{X} = \sum_i \mathbf{X}_i, \qquad \mathbf{X}_i = \sigma_i U_i V_i^\mathrm{T},}{%
+    (*) X = sum_i X_i, X_i = sigma_i U_i (V_i)^T,}
+  where \eqn{\mathbf{X}}{X} is the trajectory matrix,
+  \eqn{U_i \in R^L}{U_i in R^L}, \eqn{V_i \in R^K}{V_i in R^K}, \eqn{\sigma_i} are non-negative numbers.
+  Also, we assume that \eqn{\|U_i\| = 1}{||U_i|| = 1}, \eqn{\|V_i\| = 1}{||V_i|| = 1}.
+
+  The Singular Value Decomposition is a particular case of \eqn{(*)} and corresponds to orthonormal systems of
+  \eqn{\{U_i\}}{{U_i}} and \eqn{\{V_i\}}{{V_i}}.
+  We call \eqn{(\sigma_i, U_i, V_i)} eigentriple, \eqn{\sigma_i}
+  are singular values, \eqn{U_i} are left singular values or eigenvectors,
+  \eqn{V_i} are right singular vectors or factor vectors, by analogy with the SVD.
+
+  For the most of SSA decompositions, \eqn{U_i} belongs to the column space of \eqn{\mathbf{X}}{X},
+  while \eqn{V_i} belongs to the row space of \eqn{\mathbf{X}}{X}.
+  Therefore, let us consider such decompositions called \emph{consistent.}
+
+  Note that \eqn{(*)} is a decomposition of \eqn{\mathbf{X}}{X} into a sum of rank-one matrices.
+  If the systems \eqn{\{U_i\}}{{U_i}} and \eqn{\{V_i\}}{{V_i}} are linearly-independent,
+  then the decomposition \eqn{(*)} is minimal (has minimal possible number of addends).
+
+  If at least one of the systems is not linear independent,
+  the decomposition \eqn{(*)} is not minimal.
+  If both \eqn{\{U_i\}}{{U_i}} and \eqn{\{V_i\}}{{V_i}} are orthonormal,
+  then the decomposition \eqn{(*)} is called bi-orthogonal.
+  If \eqn{\{U_i\}}{{U_i}} is orthonormal, the decomposition is called left-orthogonal;
+  If \eqn{\{V_i\}}{{V_i}} is orthonormal, the decomposition is called right-orthogonal.
+
+  Let \eqn{r} be rank of \eqn{\mathbf{X}}{X}. Minimal decomposition has exactly \eqn{r} addends.
+  Introduce the Frobenius-inner product as
+  \eqn{\langle \mathbf{Z}, \mathbf{Y} \rangle _\mathrm{F} = \sum_{i, j} z_{i, j} \cdot y_{i, j}}{<Z, Y>_F = sum_{i, j} (z_{i, j} y_{i, j})}.
+  Thus, we can say about F-orthogonality and F-orthogonal decompositions if \eqn{\mathbf{X}_i}{X_i}
+  are F-orthogonal. For F-orthogonality, left or right orthogonality is sufficient.
+
+  Generally, \eqn{\|\mathbf{X}\|^2}{||X||^2} can be not equal to \eqn{\sum_i \|\mathbf{X}_i\|^2}{sum_i ||X_i||^2}.
+  For F-orthogonal decompositions, \eqn{\|\mathbf{X}\|^2 = \sum_i \|\mathbf{X}_i\|^2}{||X||^2 = sum_i ||X_i||^2}.
+
+  The contribution of k-th matrix component is defined as
+  \eqn{{\|\mathbf{X}_k\|^2} / {\|\mathbf{X}\|^2} = {\sigma_k^2} / (\sum_i \sigma_i^2)}{||X_k||^2 / ||X||^2 = sigma_k^2 / (sum_i sigma_i^2)}.
+
+  For F-orthogonal decompositions, the sum of component contributions is equal to 1.
+  Otherwise, this sum can considerably differ from 1
+  (e.g., the sum of component contributions can be 90\% or 146\%).
+
+  \strong{Remark.} If the system \eqn{\{U_i\}}{{U_i}} (or \eqn{\{V_i\}}{{V_i}}) has vectors
+  that do not belong to the column (or row) spaces, then the decomposition can be not minimal even
+  if \eqn{\{U_i\}}{{U_i}} (or \eqn{\{V_i\}}{{V_i}}) are linearly independent,
+  since these projections on the column (or row) space can be dependent.
+}
+
+\section{Decompositions for different SSA modifications}{
+  \describe{
+    \item{Basic SSA}{the SVD, consistent, minimal, bi-orthogonal and therefore F-orthogonal decomposition}
+    \item{FOSSA}{consistent, minimal F-orthogonal decomposition}
+    \item{IOSSA}{consistent, minimal oblique decomposition}
+    \item{SSA with projections}{non-consistent if at least one basis vector used for the projection
+      does not belong to the column (row) trajectory space, F-orthogonal decomposition.
+      The components, which are obtained by projections,
+      are located at the beginning of the decomposition and have numbers
+      \eqn{1, \dots, n_\mathrm{special}}{1, \dots, n_special}}
+    \item{Toeplitz SSA}{generally, non-consistent, non-minimal F-orthogonal decomposition}
+  }
+}
+
 \value{
   an 'integer' of length 1 for \code{nu}, \code{nv}, \code{nsigma}, \code{nspecial}
   routines, matrix or vector for \code{$} operator.
