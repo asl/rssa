@@ -31,7 +31,7 @@ tmatmul(tmat, v, transposed = FALSE)
 }
 
 \details{
-  Fast Fourier Transforms provides a very efficient matrix-vector
+  Fast Fourier Transform provides a very efficient matrix-vector
   multiplication routine for Toeplitz matrices. See the paper in
   'References' for the details of the algorithm.
 }

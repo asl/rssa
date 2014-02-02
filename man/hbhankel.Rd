@@ -39,7 +39,7 @@ hbhmatmul(hmat, v, transposed = FALSE)
 }
 
 \details{
-  Fast Fourier Transforms provides a very efficient matrix-vector
+  Fast Fourier Transform provides a very efficient matrix-vector
   multiplication routine for Hankel with Hankel blocks matrices. See the
   paper in 'References' for the details of the algorithm.
 }

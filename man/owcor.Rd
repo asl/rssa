@@ -13,7 +13,8 @@
 \arguments{
   \item{x}{the input object of `ossa' class}
   \item{groups}{list of numeric vectors, indices of elementary components
-    used for reconstruction. The elementary components must belong to the current OSSA component set}
+    used for reconstruction. The elementary components must belong to
+    the current OSSA component set}
   \item{\dots}{further arguments passed to \code{reconstruct} routine}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
     cached in 'ssa' object.}
@@ -52,7 +53,7 @@
 
   Oblique W-correlation is OSSA analogue of W-correlation, that is, a
   measure of series separability. If I-OSSA procedure separates series
-  exactly, their oblique W-correlation will be close to zero.
+  exactly, their oblique W-correlation will be equal to zero.
 }
 
 \references{
