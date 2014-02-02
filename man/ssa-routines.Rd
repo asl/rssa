@@ -168,9 +168,10 @@ print(s$sigma)
 # Show the first eigenvector
 print(s$U[, 1])
 
-# Decompose `co2' series with double centering
-s <- ssa(co2, row.projector = "centering", column.projector = "centering")
+# Decompose `co2' series with polynomial projections
+s <- ssa(co2, row.projector = 1, column.projector = 2)
 print(nspecial(s))
-# Reconstruct centering trend
+print(c(s$nPL, s$nPR))
+# Reconstruct a polynomial trend
 plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }

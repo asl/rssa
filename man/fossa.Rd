@@ -108,8 +108,10 @@ matplot(data.frame(frec$F1, rec$F1, unempl.male), type= 'l' , col=c("red","blue"
 matplot(data.frame(frec$F2, rec$F2), type = 'l', col=c("red","blue"), lty=c(1,1))
 
 # W-cor matrices before and after FOSSA
-plot(wcor(s, groups = 1:30))
-plot(wcor(fs, groups = 1:30))
+ws <- plot(wcor(s, groups = 1:30), grid = 14)
+wfs <- plot(wcor(fs, groups = 1:30), grid = 14)
+plot(ws, split = c(1, 1, 2, 1), more = TRUE)
+plot(wfs, split = c(2, 1, 2, 1), more = FALSE)
 
 # Eigenvectors before and after FOSSA
 plot(s, type = "vectors", idx = 1:13)

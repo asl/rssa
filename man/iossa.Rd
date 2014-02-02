@@ -150,8 +150,10 @@ matplot(data.frame(iorec$F1, rec$F1, unempl.male), type='l', col=c("red","blue",
 matplot(data.frame(iorec$F2, rec$F2), type='l', col=c("red","blue"),lty=c(1,1))
 
 # W-cor matrix before IOSSA and w-cor matrix after it
-plot(wcor(s, groups = 1:30))
-plot(wcor(ios, groups = 1:30))
+ws <- plot(wcor(s, groups = 1:30), grid = 14)
+wios <- plot(wcor(ios, groups = 1:30), grid = 14)
+plot(ws, split = c(1, 1, 2, 1), more = TRUE)
+plot(wios, split = c(2, 1, 2, 1), more = FALSE)
 
 # Eigenvectors before and after Iterative O-SSA
 plot(s, type = "vectors", idx = 1:13)
@@ -160,8 +162,6 @@ plot(ios, type = "vectors", idx = 1:13)
 # 2D plots of periodic eigenvectors before and after Iterative O-SSA
 plot(s, type = "paired", idx = c(5, 12))
 plot(ios, type = "paired", idx = c(10, 12), plot.contrib = FALSE)
-}
-
 
 data(AustralianWine)
 Fortified <- AustralianWine[, "Fortified"]
@@ -181,5 +181,7 @@ Fort <- cbind(`Basic SSA trend` = rec.ssa$trend,
               `Full series` = Fortified)
 
 library(lattice)
-xyplot(Fort, superpose = TRUE)
+xyplot(Fort, superpose = TRUE, col = c("red", "blue", "green4", "black"))
+}
+
 }

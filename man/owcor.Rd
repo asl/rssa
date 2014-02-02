@@ -82,7 +82,7 @@ s <- ssa(F, L)
 ios <- iossa(s, nested.groups = list(1:2, 3:4), kappa = NULL, maxIter = 200, tol = 1e-8)
 
 p.wcor <- plot(wcor(ios, groups = list(1:2, 3:4)))
-p.owcor <- plot(owcor(ios, groups = list(1:2, 3:4)), main = "GW-correlation matrix")
+p.owcor <- plot(owcor(ios, groups = list(1:2, 3:4)), main = "OW-correlation matrix")
 print(p.wcor, split = c(1, 1, 2, 1), more = TRUE)
 print(p.owcor, split = c(2, 1, 2, 1))
 }
