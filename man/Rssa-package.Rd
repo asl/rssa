@@ -58,6 +58,9 @@
   Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K.
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
     with the Rssa Package}. \url{http://arxiv.org/abs/1309.5050}
+
+  Shlemov, A. and Golyandina, N. \emph{Shaped extensions of singular
+  spectrum analysis}. \url{http://arxiv.org/abs/1401.4980}
 }
 \keyword{package}
 \seealso{
