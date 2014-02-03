@@ -238,6 +238,7 @@ frobenius.cor <- function(x, groups, ...) {
   cov <- sapply(groups, function(group) rowSums(cov[, match(group, idx), drop = FALSE]))
   cov <- t(cov)
   cov <- sapply(groups, function(group) rowSums(cov[, match(group, idx), drop = FALSE]))
+  cov <- as.matrix(cov)
 
   # Zero check
   if (any(diag(cov) <= .Machine$double.eps))
