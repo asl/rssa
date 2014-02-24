@@ -35,8 +35,8 @@
 
 typedef struct {
   R_len_t num;
-  R_len_t *ind; /* Indices in an Nx x Ny array */
-} area2d_indices;
+  R_len_t *ind; /* Indices in an N array or an Nx x Ny array */
+} area_indices;
 
 typedef struct {
 #if HAVE_FFTW3_H
@@ -48,8 +48,8 @@ typedef struct {
   struct {R_len_t x; R_len_t y;} window;
   struct {R_len_t x; R_len_t y;} factor;
   struct {R_len_t x; R_len_t y;} length;
-  area2d_indices *row_ind;
-  area2d_indices *col_ind;
+  area_indices *row_ind;
+  area_indices *col_ind;
   unsigned *weights;
 } hbhankel_matrix;
 
@@ -327,11 +327,11 @@ static R_INLINE void hbhankelize_fft(double *F,
 }
 #endif
 
-static area2d_indices *alloc_area2d(SEXP mask, R_len_t Nx) {
+static area_indices *alloc_area2d(SEXP mask, R_len_t Nx) {
   if (mask == R_NilValue) {
     return NULL;
   }
-  area2d_indices *area = Calloc(1, area2d_indices);
+  area_indices *area = Calloc(1, area_indices);
   int *maskValues = LOGICAL(mask);
   R_len_t *dimMask = INTEGER(getAttrib(mask, R_DimSymbol));
   R_len_t max_ind = dimMask[0] * dimMask[1];
@@ -357,7 +357,7 @@ static area2d_indices *alloc_area2d(SEXP mask, R_len_t Nx) {
   return area;
 }
 
-static void free_area2d(area2d_indices *area) {
+static void free_area(area_indices *area) {
   if (area == NULL) {
     return;
   }
@@ -391,8 +391,8 @@ static void hbhmat_finalizer(SEXP ptr) {
 
   h = e->matrix;
 
-  free_area2d(h->row_ind);
-  free_area2d(h->col_ind);
+  free_area(h->row_ind);
+  free_area(h->col_ind);
   Free(h->weights);
 
   free_circulant(h);
