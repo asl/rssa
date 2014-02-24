@@ -33,4 +33,5 @@ typedef struct {
 } area_indices;
 
 void free_area(area_indices *area);
+unsigned *alloc_weights(SEXP weights);
 #endif /* __MASKS_H__ */

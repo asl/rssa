@@ -30,3 +30,12 @@ void free_area(area_indices *area) {
   Free(area->ind);
   Free(area);
 }
+
+unsigned *alloc_weights(SEXP weights) {
+  if (weights == R_NilValue) {
+    error("the weights should be precomputed.");
+  }
+  unsigned *wcopy = Calloc(length(weights), unsigned);
+  memcpy(wcopy, INTEGER(weights), sizeof(unsigned) * length(weights));
+  return wcopy;
+}

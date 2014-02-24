@@ -351,16 +351,6 @@ static area_indices *alloc_area2d(SEXP mask, R_len_t Nx) {
   return area;
 }
 
-static unsigned *alloc_weights(SEXP weights) {
-  if (weights == R_NilValue) {
-    error("the weights should be precomputed.");
-  }
-  unsigned *wcopy = Calloc(length(weights), unsigned);
-  memcpy(wcopy, INTEGER(weights), sizeof(unsigned) * length(weights));
-  return wcopy;
-}
-
-
 static void hbhmat_finalizer(SEXP ptr) {
   ext_matrix *e;
   hbhankel_matrix *h;
