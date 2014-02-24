@@ -26,17 +26,13 @@
 #include <complex.h>
 
 #include "extmat.h"
+#include "masks.h"
 #include "config.h"
 #if HAVE_FFTW3_H
 #include <fftw3.h>
 #else
 #include <R_ext/Applic.h>
 #endif
-
-typedef struct {
-  R_len_t num;
-  R_len_t *ind; /* Indices in an N array or an Nx x Ny array */
-} area_indices;
 
 typedef struct {
 #if HAVE_FFTW3_H
@@ -353,14 +349,6 @@ static area_indices *alloc_area2d(SEXP mask, R_len_t Nx) {
   }
 
   return area;
-}
-
-static void free_area(area_indices *area) {
-  if (area == NULL) {
-    return;
-  }
-  Free(area->ind);
-  Free(area);
 }
 
 static unsigned *alloc_weights(SEXP weights) {
