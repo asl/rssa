@@ -44,19 +44,19 @@ typedef struct {
   struct {R_len_t x; R_len_t y;} window;
   struct {R_len_t x; R_len_t y;} factor;
   struct {R_len_t x; R_len_t y;} length;
-  area_indices *row_ind;
   area_indices *col_ind;
+  area_indices *row_ind;
   unsigned *weights;
 } hbhankel_matrix;
 
 static unsigned hbhankel_nrow(const void *matrix) {
   const hbhankel_matrix *h = matrix;
-  return h->row_ind != NULL ? h->row_ind->num : h->window.x * h->window.y;
+  return h->col_ind != NULL ? h->col_ind->num : h->window.x * h->window.y;
 }
 
 static unsigned hbhankel_ncol(const void *matrix) {
   const hbhankel_matrix *h = matrix;
-  return h->col_ind != NULL ? h->col_ind->num : h->factor.x * h->factor.y;
+  return h->row_ind != NULL ? h->row_ind->num : h->factor.x * h->factor.y;
 }
 
 #if HAVE_FFTW3_H
@@ -167,13 +167,13 @@ static void hbhankel_matmul(double* out,
 
   /* Fill the arrays */
   memset(circ, 0, Nx * Ny * sizeof(double));
-  if (h->col_ind == NULL) {
+  if (h->row_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
         circ[i + j*Nx] = v[i + j*Kx];
   } else {
-    for (i = 0; i < h->col_ind->num; ++i) {
-      circ[h->col_ind->ind[i]] = v[i];
+    for (i = 0; i < h->row_ind->num; ++i) {
+      circ[h->row_ind->ind[i]] = v[i];
     }
   }
 
@@ -183,13 +183,13 @@ static void hbhankel_matmul(double* out,
                   h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
-  if (h->row_ind == NULL) {
+  if (h->col_ind == NULL) {
     for (j = 0; j < Ly; ++j)
       for (i = 0; i < Lx; ++i)
         out[i + j*Lx] = circ[i + j*Nx];
   } else {
-    for (i = 0; i < h->row_ind->num; ++i) {
-      out[i] = circ[h->row_ind->ind[i]];
+    for (i = 0; i < h->col_ind->num; ++i) {
+      out[i] = circ[h->col_ind->ind[i]];
     }
   }
 
@@ -210,13 +210,13 @@ static void hbhankel_tmatmul(double* out,
 
   /* Fill the arrays */
   memset(circ, 0, Nx * Ny * sizeof(double));
-  if (h->row_ind == NULL) {
+  if (h->col_ind == NULL) {
     for (j = 0; j < Ly; ++j)
       for (i = 0; i < Lx; ++i)
         circ[i + j*Nx] = v[i + j*Lx];
   } else {
-    for (i = 0; i < h->row_ind->num; ++i) {
-      circ[h->row_ind->ind[i]] = v[i];
+    for (i = 0; i < h->col_ind->num; ++i) {
+      circ[h->col_ind->ind[i]] = v[i];
     }
   }
 
@@ -226,13 +226,13 @@ static void hbhankel_tmatmul(double* out,
                   h->r2c_plan, h->c2r_plan);
 
   /* Cleanup and return */
-  if (h->col_ind == NULL) {
+  if (h->row_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
         out[i + j*Kx] = circ[i + j*Nx];
   } else {
-    for (i = 0; i < h->col_ind->num; ++i) {
-      out[i] =  circ[h->col_ind->ind[i]];
+    for (i = 0; i < h->row_ind->num; ++i) {
+      out[i] =  circ[h->row_ind->ind[i]];
     }
   }
 
@@ -255,24 +255,24 @@ static R_INLINE void hbhankelize_fft(double *F,
 
   /* Fill the arrays */
   memset(iU, 0, Nx * Ny * sizeof(double));
-  if (h->row_ind == NULL) {
+  if (h->col_ind == NULL) {
     for (j = 0; j < Ly; ++j)
       for (i = 0; i < Lx; ++i)
         iU[i + j*Nx] = U[i + j*Lx];
   } else {
-    for (i = 0; i < h->row_ind->num; ++i) {
-      iU[h->row_ind->ind[i]] = U[i];
+    for (i = 0; i < h->col_ind->num; ++i) {
+      iU[h->col_ind->ind[i]] = U[i];
     }
   }
 
   memset(iV, 0, Nx * Ny * sizeof(double));
-  if (h->col_ind == NULL) {
+  if (h->row_ind == NULL) {
     for (j = 0; j < Ky; ++j)
       for (i = 0; i < Kx; ++i)
         iV[i + j*Nx] = V[i + j*Kx];
   } else {
-    for (i = 0; i < h->col_ind->num; ++i) {
-      iV[h->col_ind->ind[i]] = V[i];
+    for (i = 0; i < h->row_ind->num; ++i) {
+      iV[h->row_ind->ind[i]] = V[i];
     }
   }
 
@@ -367,8 +367,8 @@ static void hbhmat_finalizer(SEXP ptr) {
 
   h = e->matrix;
 
-  free_area(h->row_ind);
   free_area(h->col_ind);
+  free_area(h->row_ind);
   Free(h->weights);
 
   free_circulant(h);
@@ -402,8 +402,8 @@ SEXP initialize_hbhmat(SEXP F, SEXP windowx, SEXP windowy,
   h = Calloc(1, hbhankel_matrix);
   initialize_circulant(h, REAL(F), Nx, Ny, Lx, Ly, LOGICAL(circular));
   /* TODO: add a check for correct window sizes */
-  h->row_ind = alloc_area2d(wmask, Nx);
-  h->col_ind = alloc_area2d(fmask, Nx);
+  h->col_ind = alloc_area2d(wmask, Nx);
+  h->row_ind = alloc_area2d(fmask, Nx);
   h->weights = alloc_weights(weights);
   e->matrix = h;
 
