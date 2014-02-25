@@ -154,7 +154,15 @@ tcrossprod.hbhmat <- function(x) {
 }
 
 .traj.dim.2d.ssa <- function(x) {
-  c(prod(x$window), prod(x$length - x$window + 1))
+  Ldim <- sum(x$wmask)
+  if (Ldim == 0)
+    Ldim <- prod(x$window)
+
+  Kdim <- sum(x$fmask)
+  if (Kdim == 0)
+    Kdim <- prod(x$length - ifelse(x$circular, 0, x$window - 1))
+
+  c(Ldim, Kdim)
 }
 
 decompose.2d.ssa <- function(x,
