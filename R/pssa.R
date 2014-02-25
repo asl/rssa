@@ -159,7 +159,7 @@ decompose.pssa.eigen <- function(x,
 
   # We will compute (X - P_X) %*% t(X - P_X) = X %*% t(X) - P_X %*% t(X) - X %*% t(P_X) + P_X %*% t(P_X)
   # Get common Lcov matrix, i.e. X %*% t(X)
-  Lcov <- Lcov.matrix(.F(x), L = L, fft.plan = .get.or.create.fft.plan(x))
+  Lcov <- .Lcov.matrix(x)
   # Get hankel circulant
   h <- .get.or.create.hmat(x)
   # Compute X %*% t(P_X)
@@ -407,7 +407,7 @@ vforecast.pssa <- function(x, groups, len = 1,
   V <- if (nv(x) >= desired) .V(x) else NULL
 
   # Grab the FFT plan
-  fft.plan <- fft.plan.1d(N)
+  fft.plan <- fft.plan.1d(N, L = L)
 
   out <- list()
   for (i in seq_along(groups)) {
