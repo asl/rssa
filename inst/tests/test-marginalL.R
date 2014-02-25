@@ -11,7 +11,7 @@ test_that("Lcov works correctly for marginal L values", {
     for (L in c(1, N)) {
       F <- rcauchy(N)
       C.exact <- tcrossprod(hankel(F, L))
-      C.fast <- Lcov.matrix(F, L = L)
+      C.fast <- .Lcov.matrix(ssa(F, L = L))
       expect_equal(C.fast, C.exact,
                    info = sprintf("L = %d, N = %d", L, N))
     }

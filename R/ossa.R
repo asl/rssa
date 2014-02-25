@@ -75,7 +75,7 @@ orthogonalize <- function(Y, Z, sigma, side = c("bi", "left", "right"), normaliz
 }
 
 .owcor <- function(X, L, LM, RM) {
-  fft.plan <- fft.plan.1d(nrow(X))
+  fft.plan <- fft.plan.1d(nrow(X), L = L)
   mx <- apply(X, 2,
               function(v) {
                 h <- new.hmat(v, L = L, fft.plan = fft.plan)

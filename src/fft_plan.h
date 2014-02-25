@@ -25,6 +25,7 @@
 #include <complex.h>
 
 #include "config.h"
+#include "masks.h"
 #if HAVE_FFTW3_H
 #include <fftw3.h>
 #else
@@ -37,6 +38,9 @@ typedef struct {
   fftw_plan c2r_plan;
 #endif
   R_len_t N;
+  area_indices *col_ind;
+  area_indices *row_ind;
+  unsigned *weights;
 } fft_plan;
 
 static inline unsigned valid_plan(const fft_plan *f, R_len_t N) {
