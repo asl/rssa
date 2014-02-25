@@ -70,15 +70,30 @@ ssa <- function(x,
       warning("Incorrect argument length: length(circular) > 1, the first value will be used")
     if (length(circular) != 1)
       circular <- circular[1]
-    if (circular && identical(kind, "1d-ssa"))
-      stop("Circular variant of 1d SSA isn't implemented yet")
 
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x)
 
     N <- length(x)
-    K <- N - L + 1
+
+    if (is.null(mask)) {
+      mask <- !is.na(x)
+    } else {
+      mask <- mask & !is.na(x)
+    }
+
+    if (is.null(wmask)) {
+      wmask <- rep(TRUE, L)
+    } else {
+      L <- length(wmask)
+    }
+
+    if (circular) {
+      K <- N
+    } else {
+      K <- N - L + 1
+    }
 
     if (is.null(neig))
       neig <- min(50, L, K)
@@ -87,7 +102,27 @@ ssa <- function(x,
     if (identical(svd.method, "auto"))
       svd.method <- .determine.svd.method(L, K, neig, ...)
 
-    wmask <- fmask <- weights <- NULL
+    fmask <- factor.mask.1d(mask, wmask, circular = circular)
+
+    if (!all(wmask) || !all(fmask) || any(circular)) {
+      weights <- field.weights.1d(wmask, fmask, circular = circular)
+
+      ommited <- sum(mask & (weights == 0))
+      if (ommited > 0) {
+        warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
+      }
+
+      if (all(weights == 0)) {
+        stop("Nothing to decompose: the given field shape is empty")
+      }
+    } else {
+      weights <- NULL
+    }
+
+    if (all(wmask))
+      wmask <- NULL
+    if (all(fmask))
+      fmask <- NULL
 
     if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
       # Compute projectors
