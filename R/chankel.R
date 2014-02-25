@@ -18,7 +18,8 @@
 #   MA 02139, USA.
 
 .get.or.create.cfft.plan <- function(x) {
-  .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
+  .get.or.create(x, "fft.plan", fft.plan.1d(x$length, L = x$window, circular = x$circular,
+                                            wmask = x$wmask, fmask = x$fmask, weights = x$weights))
 }
 
 .traj.dim.cssa <- function(x) {
@@ -208,8 +209,7 @@ calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
                    }))
 }
 
-.hankelize.one.cssa <- function(x, U, V, fft.plan = NULL) {
-  fft.plan <- (if (is.null(fft.plan)) fft.plan.1d(x$length) else fft.plan)
+.hankelize.one.cssa <- function(x, U, V, fft.plan = .get.or.create.cfft.plan(x)) {
   R1 <- .hankelize.one.default(Re(U), Re(V), fft.plan = fft.plan)
   R2 <- .hankelize.one.default(Im(U), Im(V), fft.plan = fft.plan)
   I1 <- .hankelize.one.default(Re(U), Im(V), fft.plan = fft.plan)

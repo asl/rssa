@@ -1,6 +1,8 @@
 /*
  *   R package for Singular Spectrum Analysis
  *   Copyright (c) 2009-2010 Anton Korobeynikov <asl@math.spbu.ru>
+ *   Copyright (c) 2013 Konstantin Usevich <konstantin.usevich@statmod.ru>
+ *   Copyright (c) 2014 Alex Shlemov <shlemovalex@gmail.com>
  *
  *   This program is free software; you can redistribute it
  *   and/or modify it under the terms of the GNU General Public
@@ -19,31 +21,21 @@
  *   MA 02139, USA.
  */
 
-#include <R.h>
-#include <Rinternals.h>
-
-#include <complex.h>
-
-#include "config.h"
 #include "masks.h"
-#if HAVE_FFTW3_H
-#include <fftw3.h>
-#else
-#include <R_ext/Applic.h>
-#endif
 
-typedef struct {
-#if HAVE_FFTW3_H
-  fftw_plan r2c_plan;
-  fftw_plan c2r_plan;
-#endif
-  R_len_t N;
-  area_indices *col_ind;
-  area_indices *row_ind;
-  unsigned *weights;
-} fft_plan;
-
-static inline unsigned valid_plan(const fft_plan *f, R_len_t N) {
-  return (f->N == N);
+void free_area(area_indices *area) {
+  if (area == NULL) {
+    return;
+  }
+  Free(area->ind);
+  Free(area);
 }
 
+unsigned *alloc_weights(SEXP weights) {
+  if (weights == R_NilValue) {
+    error("the weights should be precomputed.");
+  }
+  unsigned *wcopy = Calloc(length(weights), unsigned);
+  memcpy(wcopy, INTEGER(weights), sizeof(unsigned) * length(weights));
+  return wcopy;
+}

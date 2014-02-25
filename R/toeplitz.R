@@ -33,7 +33,7 @@ new.tmat <- function(F, L = (N + 1) %/% 2,
   R <- Lcor(F, L, circular = circular)
 
   storage.mode(R) <- "double"
-  t <- .Call("initialize_tmat", R, if (is.null(fft.plan)) fft.plan.1d(2*L - 1) else fft.plan)
+  t <- .Call("initialize_tmat", R, if (is.null(fft.plan)) fft.plan.1d(2*L - 1, L = L) else fft.plan)
 }
 
 tcols <- function(t) {
@@ -61,6 +61,8 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
                                      circular = x$circular))
 }
 
+.traj.dim.toeplitz.ssa <- .traj.dim.1d.ssa
+
 decompose.toeplitz.ssa.nutrlan <- function(x,
                                            neig = min(50, L, K),
                                            ...) {
@@ -80,7 +82,7 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   # Save results
   num <- length(S$d)
   sigma <- numeric(num)
-  V <- matrix(nrow = K, ncol = num)
+  V <- matrix(nrow = .traj.dim(x)[2], ncol = num)
   for (i in 1:num) {
     Z <- hmatmul(h, S$u[, i], transposed = TRUE)
     sigma[i] <- sqrt(sum(Z^2))
@@ -114,7 +116,7 @@ decompose.toeplitz.ssa.eigen <- function(x,
   S <- eigen(C, symmetric = TRUE)
 
   sigma <- numeric(L)
-  V <- matrix(nrow = K, ncol = L)
+  V <- matrix(nrow = .traj.dim(x)[2], ncol = L)
   for (i in 1:L) {
     Z <- hmatmul(h, S$vectors[,i], transposed = TRUE)
     sigma[i] <- sqrt(sum(Z^2))
@@ -150,7 +152,7 @@ decompose.toeplitz.ssa.svd <- function(x,
   S <- svd(C, nu = neig, nv = neig)
 
   sigma <- numeric(neig)
-  V <- matrix(nrow = K, ncol = neig)
+  V <- matrix(nrow = .traj.dim(x)[2], ncol = neig)
   for (i in 1:neig) {
     Z <- hmatmul(h, S$u[,i], transposed = TRUE)
     sigma[i] <- sqrt(sum(Z^2))
@@ -180,7 +182,7 @@ decompose.toeplitz.ssa.propack <- function(x,
   h <- .get.or.create.hmat(x)
   num <- length(S$d)
   sigma <- numeric(num)
-  V <- matrix(nrow = K, ncol = num)
+  V <- matrix(nrow = .traj.dim(x)[2], ncol = num)
   for (i in 1:num) {
     Z <- hmatmul(h, S$u[, i], transposed = TRUE)
     sigma[i] <- sqrt(sum(Z^2))
