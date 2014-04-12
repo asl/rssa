@@ -480,6 +480,10 @@ nsigma <- function(x) {
   length(.sigma(x))
 }
 
+is.shaped <- function(x) {
+  !(is.null(x$wmask) && is.null(x$fmask) && is.null(x$weights))
+}
+
 clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
   obj <- .clone(x, copy.storage = copy.storage)
 
