@@ -38,13 +38,62 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1])
 }
 
+convolve1 <- function(x, y, conj = TRUE, type = "circular") {
+  if (length(type) > 1)
+    warning("Incorrect argument length: length(type) > 1, the first value will be used")
+  if (length(type) != 1)
+    type <- type[1]
+  type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
+
+  convolution.size <- function(length.x, length.y, type) {
+    switch(type,
+           circular = list(input = length.x, output = length.x),
+           open = list(input = length.x + length.y - 1, output = length.x + length.y - 1),
+           filter = list(input = length.x, output = length.x - length.y + 1))
+  }
+
+  cs <- convolution.size(length(x), length(y), type)
+
+  input.dim <- cs$input
+  output.dim <- cs$output
+
+  X <- Y <- rep(0, input.dim)
+
+  X[seq_along(x)] <- x
+  Y[seq_along(y)] <- y
+
+  tmp <- Re(fft(fft(X) * if (conj) Conj(fft(Y)) else fft(Y), inverse = TRUE)) / input.dim
+  tmp[seq_len(output.dim)]
+}
+
+factor.mask.1d <- function(field.mask, window.mask, circular = FALSE) {
+  field.mask[] <- as.numeric(field.mask)
+  window.mask[] <- as.numeric(window.mask)
+  tmp <- convolve1(field.mask, window.mask, conj = TRUE,
+                   type = ifelse(circular, "circular", "filter"))
+
+  abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
+}
+
+field.weights.1d <- function(window.mask, factor.mask, circular = FALSE) {
+  window.mask[] <- as.numeric(window.mask)
+  factor.mask[] <- as.numeric(factor.mask)
+  res <- convolve1(factor.mask, window.mask, conj = FALSE,
+                   type = ifelse(circular, "circular", "open"))
+  res[] <- as.integer(round(res))
+
+  res
+}
+
 .get.or.create.fft.plan <- function(x) {
-  .get.or.create(x, "fft.plan", fft.plan.1d(x$length))
+  .get.or.create(x, "fft.plan", fft.plan.1d(x$length, L = x$window, circular = x$circular,
+                                            wmask = x$wmask, fmask = x$fmask, weights = x$weights))
 }
 
 .get.or.create.hmat <- function(x) {
   .get.or.create(x, "hmat",
-                 new.hmat(.F(x), L = x$window,
+                 new.hmat(.F(x), L = x$window, circular = x$circular,
+                          wmask = x$wmask, fmask = x$fmask, weights = x$weights,
                           fft.plan = .get.or.create.fft.plan(x)))
 }
 
@@ -58,7 +107,13 @@ hankel <- function(X, L) {
 .hankelize.one.1d.ssa <- function(x, U, V, fft.plan = NULL) {
   fft.plan <- (if (is.null(fft.plan)) .get.or.create.fft.plan(x) else fft.plan)
   storage.mode(U) <- storage.mode(V) <- "double"
-  .Call("hankelize_one_fft", U, V, fft.plan)
+  F <- .Call("hankelize_one_fft", U, V, fft.plan)
+  w <- .get(x, "weights")
+  if (!is.null(w)) {
+    F[w == 0] <- NA
+  }
+
+  F
 }
 
 .hankelize.multi.default <- function(U, V, fft.plan) {
@@ -67,22 +122,67 @@ hankel <- function(X, L) {
   .Call("hankelize_multi_fft", U, V, fft.plan)
 }
 
-fft.plan.1d <- function(N) {
+fft.plan.1d <- function(N, L, circular = FALSE,
+                        wmask = NULL, fmask = NULL, weights = NULL) {
   storage.mode(N) <- "integer"
-  .Call("initialize_fft_plan", N)
+
+  if (!is.null(wmask)) {
+    storage.mode(wmask) <- "logical"
+  }
+
+  if (!is.null(fmask)) {
+    storage.mode(fmask) <- "logical"
+  }
+
+  if (is.null(weights)) {
+    if (!circular) {
+      weights <- .hweights.default(N, L)
+    } else {
+      weights <- rep(L, N)
+    }
+  }
+  storage.mode(weights) <- "integer"
+
+  .Call("initialize_fft_plan", N, wmask, fmask, weights)
 }
 
 is.fft.plan <- function(fft.plan) {
   .Call("is_fft_plan", fft.plan)
 }
 
-new.hmat <- function(F,
-                     L = (N + 1) %/% 2,
+new.hmat <- function(F, L = (N + 1) %/% 2, circular = FALSE,
+                     wmask = NULL, fmask = NULL, weights = NULL,
                      fft.plan = NULL) {
+  if (length(circular) > 1)
+    warning("Incorrect argument length: length(circular) > 1, the first value will be used")
+  if (length(circular) != 2)
+    circular <- circular[1]
+
   N <- length(F)
+
+  if (!is.null(weights)) {
+    mask <- weights > 0
+    F[!mask] <- mean(F[mask]) # Improve FFT stability & remove NAs
+  }
+
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
-  h <- .Call("initialize_hmat", F, L, if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan)
+  storage.mode(circular) <- "logical"
+
+
+  h <- .Call("initialize_hmat", F, L, circular,
+             if (is.null(fft.plan)) fft.plan.1d(N, L, circular, wmask, fmask, weights) else fft.plan)
+}
+
+.get.trajectory.matrix <- function(x) {
+  if (!is.shaped(x)) {
+    h <- hankel(.F(x), L = x$window)
+  } else {
+    hmat <- .get.or.create.hmat(x)
+    h <- apply(diag(hcols(hmat)), 2, hmatmul, hmat = hmat)
+  }
+
+  h
 }
 
 hcols <- function(h) {
@@ -107,6 +207,18 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   c(x$window, x$length - x$window + 1)
 }
 
+.traj.dim.1d.ssa <- function(x) {
+  Ldim <- sum(x$wmask)
+  if (Ldim == 0)
+    Ldim <- x$window
+
+  Kdim <- sum(x$fmask)
+  if (Kdim == 0)
+    Kdim <- x$length - ifelse(x$circular, 0, x$window - 1)
+
+  c(Ldim, Kdim)
+}
+
 decompose.1d.ssa <- function(x,
                              neig = min(50, L, K),
                              ...,
@@ -125,8 +237,8 @@ decompose.1d.ssa.svd <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
-  h <- hankel(.F(x), L = L)
+  # Get hankel matrix
+  h <- .get.trajectory.matrix(x)
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
@@ -137,13 +249,18 @@ decompose.1d.ssa.svd <- function(x,
   x
 }
 
-Lcov.matrix <- function(F,
-                        L = (N + 1) %/% 2,
-                        fft.plan = NULL) {
-  N <- length(F)
-  storage.mode(F) <- "double"
-  storage.mode(L) <- "integer"
-  .Call("Lcov_matrix", F, L, if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan)
+.Lcov.matrix <- function(x) {
+  if (!is.shaped(x)) {
+    N <- length(F)
+    F <- .F(x)
+    storage.mode(F) <- "double"
+    L <- x$window
+    storage.mode(L) <- "integer"
+    .Call("Lcov_matrix", F, L, .get.or.create.fft.plan(x))
+  } else {
+    h <- .get.or.create.hmat(x)
+    apply(diag(hrows(h)), 2, function(u) hmatmul(hmat = h, hmatmul(hmat = h, u, transposed = TRUE)))
+  }
 }
 
 decompose.1d.ssa.eigen <- function(x,
@@ -160,7 +277,7 @@ decompose.1d.ssa.eigen <- function(x,
   fft.plan <- .get.or.create.fft.plan(x)
 
   # Do decomposition
-  S <- eigen(Lcov.matrix(.F(x), L = L, fft.plan = fft.plan), symmetric = TRUE)
+  S <- eigen(.Lcov.matrix(x), symmetric = TRUE)
 
   # Fix small negative values
   S$values[S$values < 0] <- 0
@@ -212,7 +329,7 @@ calc.v.1d.ssa <- function(x, idx, ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
   nV <- nv(x)
 
-  V <- matrix(NA_real_, K, length(idx))
+  V <- matrix(NA_real_, .traj.dim(x)[2], length(idx))
   idx.old <- idx[idx <= nV]
   idx.new <- idx[idx > nV]
 

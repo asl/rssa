@@ -270,7 +270,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   V <- if (nv(x) >= desired) .V(x) else NULL
 
   # Grab the FFT plan
-  fft.plan <- fft.plan.1d(N)
+  fft.plan <- fft.plan.1d(N, L = L)
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -326,7 +326,9 @@ vforecast.mssa <- function(x, groups, len = 1,
   N <- N.res + switch(direction, column = L, row = K) - 1
 
   # Grab the FFT plan
-  fft.plan <- lapply(N, fft.plan.1d)
+  fft.plan <- switch(direction,
+                     column = lapply(N, fft.plan.1d, L = L),
+                     row = mapply(fft.plan.1d, N = N, L = L + len + K - 1))
 
   cK <- cumsum(K)
   cKs <- cK - K + 1
