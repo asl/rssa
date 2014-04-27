@@ -138,10 +138,10 @@ ssa <- function(x,
     if (identical(svd.method, "auto"))
       svd.method <- .determine.svd.method(prod(L), prod(N - L + 1), neig, ..., svd.method = "nutrlan")
 
-    fmask <- factor.mask(mask, wmask, circular = circular)
+    fmask <- .factor.mask.2d(mask, wmask, circular = circular)
 
     if (!all(wmask) || !all(fmask) || any(circular)) {
-      weights <- field.weights(wmask, fmask, circular = circular)
+      weights <- .field.weights.2d(wmask, fmask, circular = circular)
 
       ommited <- sum(mask & (weights == 0))
       if (ommited > 0) {
