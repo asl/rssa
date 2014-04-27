@@ -287,6 +287,8 @@ static R_INLINE void hbhankelize_fft(double *F,
   for (i = 0; i < Nx * Ny; ++i) {
     if (h->weights[i]) {
       F[i] = iU[i] / h->weights[i];
+    } else {
+      F[i] = NA_REAL;
     }
   }
 

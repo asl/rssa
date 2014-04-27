@@ -270,11 +270,5 @@ calc.v.2d.ssa <- function(x, idx, ...) {
 .hankelize.one.2d.ssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
-  F <- .Call("hbhankelize_one_fft", U, V, h)
-  w <- .get(x, "weights")
-  if (!is.null(w)) {
-    F[w == 0] <- NA
-  }
-
-  F
+  .Call("hbhankelize_one_fft", U, V, h)
 }
