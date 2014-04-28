@@ -328,6 +328,9 @@ rforecast.pssa <- function(x, groups, len = 1,
                            only.new = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  if (is.shaped(x))
+    stop("`forecasting is not implemented for shaped SSA case yet")
+
   L <- x$window
   K <- x$length - L + 1
 
@@ -385,6 +388,9 @@ vforecast.pssa <- function(x, groups, len = 1,
                            only.new = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE) {
+  if (is.shaped(x))
+    stop("`forecasting is not implemented for shaped SSA case yet")
+
   L <- x$window
   K <- x$length - L + 1
   N <- K + L - 1 + len + L - 1

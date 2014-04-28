@@ -92,6 +92,9 @@ parestimate.esprit <- function(U, method = c("esprit-ls", "esprit-tls")) {
 parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
                                ...,
                                drop = TRUE) {
+  if (is.shaped(x))
+    stop("`parameter estimation is not implemented for shaped SSA case yet")
+
   method <- match.arg(method)
 
   if (missing(groups))
