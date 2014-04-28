@@ -70,15 +70,22 @@ ssa <- function(x,
       warning("Incorrect argument length: length(circular) > 1, the first value will be used")
     if (length(circular) != 1)
       circular <- circular[1]
-    if (circular && identical(kind, "1d-ssa"))
-      stop("Circular variant of 1d SSA isn't implemented yet")
 
     # Coerce input to vector if necessary
     if (!is.vector(x))
       x <- as.vector(x)
 
     N <- length(x)
-    K <- N - L + 1
+
+    mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
+
+    if (is.null(wmask)) {
+      wmask <- rep(TRUE, L)
+    } else {
+      L <- length(wmask)
+    }
+
+    K <- if (circular) N else N - L + 1
 
     if (is.null(neig))
       neig <- min(50, L, K)
@@ -87,7 +94,25 @@ ssa <- function(x,
     if (identical(svd.method, "auto"))
       svd.method <- .determine.svd.method(L, K, neig, ...)
 
-    wmask <- fmask <- weights <- NULL
+    fmask <- .factor.mask.1d(mask, wmask, circular = circular)
+
+    if (!all(wmask) || !all(fmask) || any(circular)) {
+      weights <- .field.weights.1d(wmask, fmask, circular = circular)
+
+      ommited <- sum(mask & (weights == 0))
+      if (ommited > 0)
+        warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
+
+      if (all(weights == 0))
+        stop("Nothing to decompose: the given field shape is empty")
+    } else {
+      weights <- NULL
+    }
+
+    if (all(wmask))
+      wmask <- NULL
+    if (all(fmask))
+      fmask <- NULL
 
     if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
       # Compute projectors
@@ -97,6 +122,16 @@ ssa <- function(x,
       # Check projector dimensions
       stopifnot(nrow(column.projector) == L)
       stopifnot(nrow(row.projector) == K)
+
+      # Shape projectors if needed
+      if (!is.null(wmask)) {
+        column.projector <- column.projector[wmask,, drop = FALSE]
+        column.projector <- qr.Q(qr(column.projector))
+      }
+      if (!is.null(fmask)) {
+        row.projector <- row.projector[fmask,, drop = FALSE]
+        row.projector <- qr.Q(qr(row.projector))
+      }
 
       # ProjectionSSA is just a special case of 1d-ssa
       kind <- c("pssa", "1d-ssa")
@@ -138,10 +173,10 @@ ssa <- function(x,
     if (identical(svd.method, "auto"))
       svd.method <- .determine.svd.method(prod(L), prod(N - L + 1), neig, ..., svd.method = "nutrlan")
 
-    fmask <- factor.mask(mask, wmask, circular = circular)
+    fmask <- .factor.mask.2d(mask, wmask, circular = circular)
 
     if (!all(wmask) || !all(fmask) || any(circular)) {
-      weights <- field.weights(wmask, fmask, circular = circular)
+      weights <- .field.weights.2d(wmask, fmask, circular = circular)
 
       ommited <- sum(mask & (weights == 0))
       if (ommited > 0) {
@@ -478,6 +513,10 @@ nlambda <- function(x) {
 
 nsigma <- function(x) {
   length(.sigma(x))
+}
+
+is.shaped <- function(x) {
+  !(is.null(x$wmask) && is.null(x$fmask) && is.null(x$weights)) && !inherits(x, "mssa")
 }
 
 clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {

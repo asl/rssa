@@ -120,8 +120,8 @@ decompose.pssa.svd <- function(x,
   if (!force.continue && nsigma(x) > nspecial)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
-  h <- hankel(.F(x), L = L)
+  # Get trajectory matrix
+  h <- .trajectory.matrix(x)
 
   # Subtract special components
   sigma <- .sigma(x)[seq_len(nspecial)]
@@ -159,7 +159,7 @@ decompose.pssa.eigen <- function(x,
 
   # We will compute (X - P_X) %*% t(X - P_X) = X %*% t(X) - P_X %*% t(X) - X %*% t(P_X) + P_X %*% t(P_X)
   # Get common Lcov matrix, i.e. X %*% t(X)
-  Lcov <- Lcov.matrix(.F(x), L = L, fft.plan = .get.or.create.fft.plan(x))
+  Lcov <- .Lcov.matrix(x)
   # Get hankel circulant
   h <- .get.or.create.hmat(x)
   # Compute X %*% t(P_X)
@@ -328,6 +328,9 @@ rforecast.pssa <- function(x, groups, len = 1,
                            only.new = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  if (is.shaped(x))
+    stop("`forecasting is not implemented for shaped SSA case yet")
+
   L <- x$window
   K <- x$length - L + 1
 
@@ -385,6 +388,9 @@ vforecast.pssa <- function(x, groups, len = 1,
                            only.new = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE) {
+  if (is.shaped(x))
+    stop("`forecasting is not implemented for shaped SSA case yet")
+
   L <- x$window
   K <- x$length - L + 1
   N <- K + L - 1 + len + L - 1
@@ -407,7 +413,7 @@ vforecast.pssa <- function(x, groups, len = 1,
   V <- if (nv(x) >= desired) .V(x) else NULL
 
   # Grab the FFT plan
-  fft.plan <- fft.plan.1d(N)
+  fft.plan <- fft.plan.1d(N, L = L)
 
   out <- list()
   for (i in seq_along(groups)) {

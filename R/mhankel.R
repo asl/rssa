@@ -160,12 +160,7 @@ calc.v.mssa<- function(x, idx, ...) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
   F <- .Call("hbhankelize_one_fft", U, V, h)
-  w <- .get(x, "weights")
-  if (!is.null(w)) {
-    F <- F[w > 0]
-  }
-
-  F
+  F[!is.na(F)]
 }
 
 .elseries.mssa <- function(x, idx, ...) {

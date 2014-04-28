@@ -40,6 +40,9 @@ lrr.default <- function(x, eps = sqrt(.Machine$double.eps), ..., orthonormalize 
 }
 
 lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
+  if (is.shaped(x))
+    stop("`LRR is not implemented for shaped SSA case yet")
+
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
 
@@ -109,6 +112,9 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  if (is.shaped(x))
+    stop("`forecasting is not implemented for shaped SSA case yet")
+
   if (x$circular)
     stop("forecasting is not properly defined for circular SSA")
 
@@ -251,6 +257,9 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE) {
+  if (is.shaped(x))
+    stop("`forecasting is not implemented for shaped SSA case yet")
+
   if (x$circular)
     stop("forecasting is not properly defined for circular SSA")
 
@@ -270,7 +279,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
   V <- if (nv(x) >= desired) .V(x) else NULL
 
   # Grab the FFT plan
-  fft.plan <- fft.plan.1d(N)
+  fft.plan <- fft.plan.1d(N, L = L)
 
   out <- list()
   for (i in seq_along(groups)) {
@@ -326,7 +335,9 @@ vforecast.mssa <- function(x, groups, len = 1,
   N <- N.res + switch(direction, column = L, row = K) - 1
 
   # Grab the FFT plan
-  fft.plan <- lapply(N, fft.plan.1d)
+  fft.plan <- switch(direction,
+                     column = lapply(N, fft.plan.1d, L = L),
+                     row = mapply(fft.plan.1d, N = N, L = L + len + K - 1))
 
   cK <- cumsum(K)
   cKs <- cK - K + 1

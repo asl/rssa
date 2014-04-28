@@ -42,18 +42,19 @@ typedef struct {
   SEXP circ_freq;
 #endif
   R_len_t window;
+  R_len_t factor;
   R_len_t length;
   fft_plan *fft_plan;
 } hankel_matrix;
 
 static unsigned hankel_nrow(const void *matrix) {
   const hankel_matrix *h = matrix;
-  return h->window;
+  return h->fft_plan->col_ind != NULL ? h->fft_plan->col_ind->num : h->window;
 }
 
 static unsigned hankel_ncol(const void *matrix) {
   const hankel_matrix *h = matrix;
-  return h->length - h->window + 1;
+  return h->fft_plan->row_ind != NULL ? h->fft_plan->row_ind->num : h->factor;
 }
 
 #if HAVE_FFTW3_H
@@ -85,7 +86,8 @@ static void free_circulant(hankel_matrix *h) {
 }
 
 static void initialize_circulant(hankel_matrix *h, fft_plan *f,
-                                 const double *F, R_len_t N, R_len_t L) {
+                                 const double *F, R_len_t N, R_len_t L,
+                                 const int *circular) {
   fftw_complex *ocirc;
   double *circ;
 
@@ -108,6 +110,7 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
   h->circ_freq = ocirc;
   h->window = L;
   h->length = N;
+  h->factor = circular[0] ? N : N - L + 1;
   h->fft_plan = f;
 }
 
@@ -117,7 +120,7 @@ static void hankel_matmul(double* out,
   const hankel_matrix *h = matrix;
   const fft_plan *f = h->fft_plan;
   R_len_t N = h->length, L = h->window;
-  R_len_t K = N - L + 1, i;
+  R_len_t K = h->factor, i;
   double *circ;
   fftw_complex *ocirc;
 
@@ -126,8 +129,14 @@ static void hankel_matmul(double* out,
   ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
 
   /* Fill the arrays */
-  memcpy(circ, v, K * sizeof(double));
-  memset(circ + K, 0, (L - 1)*sizeof(double));
+  memset(circ, 0, N * sizeof(double));
+  if (f->row_ind == NULL) {
+    memcpy(circ, v, K * sizeof(double));
+  } else {
+    for (i = 0; i < f->row_ind->num; ++i) {
+      circ[f->row_ind->ind[i]] = v[i];
+    }
+  }
 
   /* Compute the FFT of the reversed vector v */
   fftw_execute_dft_r2c(f->r2c_plan, circ, ocirc);
@@ -140,8 +149,15 @@ static void hankel_matmul(double* out,
   fftw_execute_dft_c2r(f->c2r_plan, ocirc, circ);
 
   /* Cleanup and return */
-  for (i = 0; i < L; ++i)
-    out[i] = circ[i] / N;
+  if (f->col_ind == NULL) {
+    for (i = 0; i < L; ++i) {
+      out[i] = circ[i] / N;
+    }
+  } else {
+    for (i = 0; i < f->col_ind->num; ++i) {
+      out[i] = circ[f->col_ind->ind[i]] / N;
+    }
+  }
 
   fftw_free(circ);
   fftw_free(ocirc);
@@ -153,7 +169,7 @@ static void hankel_tmatmul(double* out,
   const hankel_matrix *h = matrix;
   const fft_plan *f = h->fft_plan;
   R_len_t N = h->length, L = h->window;
-  R_len_t K = N - L + 1, i;
+  R_len_t K = h->factor, i;
   double *circ;
   fftw_complex *ocirc;
 
@@ -162,8 +178,14 @@ static void hankel_tmatmul(double* out,
   ocirc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
 
   /* Fill the arrays */
-  memset(circ + L, 0, (K - 1)*sizeof(double));
-  memcpy(circ, v, L * sizeof(double));
+  memset(circ, 0, N * sizeof(double));
+  if (f->col_ind == NULL) {
+    memcpy(circ, v, L * sizeof(double));
+  } else {
+    for (i = 0; i < f->col_ind->num; ++i) {
+      circ[f->col_ind->ind[i]] = v[i];
+    }
+  }
 
   /* Compute the FFT of the reversed vector v */
   fftw_execute_dft_r2c(f->r2c_plan, circ, ocirc);
@@ -176,8 +198,15 @@ static void hankel_tmatmul(double* out,
   fftw_execute_dft_c2r(f->c2r_plan, ocirc, circ);
 
   /* Cleanup and return */
-  for (i = 0; i < K; ++i)
-    out[i] = circ[i] / N;
+  if (f->row_ind == NULL) {
+    for (i = 0; i < K; ++i) {
+      out[i] = circ[i] / N;
+    }
+  } else {
+    for (i = 0; i < f->row_ind->num; ++i) {
+      out[i] = circ[f->row_ind->ind[i]] / N;
+    }
+  }
 
   fftw_free(circ);
   fftw_free(ocirc);
@@ -187,8 +216,7 @@ static R_INLINE void hankelize_fft(double *F,
                                    const double *U, const double *V,
                                    R_len_t L, R_len_t K,
                                    const fft_plan *f) {
-  R_len_t N = K + L - 1;
-  R_len_t i;
+  R_len_t N = f->N, i;
   double *iU, *iV;
   fftw_complex *cU, *cV;
 
@@ -202,11 +230,23 @@ static R_INLINE void hankelize_fft(double *F,
   cV = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
 
   /* Fill in buffers */
-  memcpy(iU, U, L*sizeof(double));
-  memset(iU + L, 0, (K - 1)*sizeof(double));
+  memset(iU, 0, N * sizeof(double));
+  if (f->col_ind == NULL) {
+    memcpy(iU, U, L * sizeof(double));
+  } else {
+    for (i = 0; i < f->col_ind->num; ++i) {
+      iU[f->col_ind->ind[i]] = U[i];
+    }
+  }
 
-  memcpy(iV, V, K*sizeof(double));
-  memset(iV + K, 0, (L - 1)*sizeof(double));
+  memset(iV, 0, N * sizeof(double));
+  if (f->row_ind == NULL) {
+    memcpy(iV, V, K * sizeof(double));
+  } else {
+    for (i = 0; i < f->row_ind->num; ++i) {
+      iV[f->row_ind->ind[i]] = V[i];
+    }
+  }
 
   /* Compute the FFTs */
   fftw_execute_dft_r2c(f->r2c_plan, iU, cU);
@@ -221,14 +261,11 @@ static R_INLINE void hankelize_fft(double *F,
 
   /* Form the result */
   for (i = 0; i < N; ++i) {
-    R_len_t leftu, rightu, l;
-
-    if (i < L) leftu = i; else leftu = L - 1;
-    if (i < K) rightu = 0; else  rightu = i - K + 1;
-
-    l = (leftu - rightu + 1);
-
-    F[i] = iU[i] / l / N;
+    if (f->weights[i]) {
+      F[i] = iU[i] / N / f->weights[i];
+    } else {
+      F[i] = NA_REAL;
+    }
   }
 
   fftw_free(iU);
@@ -293,7 +330,8 @@ static void free_circulant(hankel_matrix *h) {
 }
 
 static void initialize_circulant(hankel_matrix *h, fft_plan *f,
-                                 const double *F, R_len_t N, R_len_t L) {
+                                 const double *F, R_len_t N, R_len_t L,
+                                 const int *circular) {
   R_len_t i;
   Rcomplex* circ;
   SEXP rcirc;
@@ -318,6 +356,7 @@ static void initialize_circulant(hankel_matrix *h, fft_plan *f,
 
   h->window = L;
   h->length = N;
+  h->factor = circular[0] ? N : N - L + 1;
   h->fft_plan = f;
 }
 
@@ -325,6 +364,7 @@ static void hankel_matmul(double* out,
                           const double* v,
                           const void* matrix) {
   const hankel_matrix *h = matrix;
+  const fft_plan *f = h->fft_plan;
   R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
   SEXP rcirc, rV1, res, rTrue;
@@ -334,8 +374,14 @@ static void hankel_matmul(double* out,
   memset(COMPLEX(rcirc), 0, N * sizeof(Rcomplex));
 
   /* Fill the arrays */
-  for (i = 0; i < K; ++i)
-    COMPLEX(rcirc)[i].r = v[i];
+  if (f->row_ind == NULL) {
+    for (i = 0; i < K; ++i)
+      COMPLEX(rcirc)[i].r = v[i];
+  } else {
+    for (i = 0; i < f->row_ind->num; ++i) {
+      COMPLEX(rcirc)[f->row_ind->ind[i]].r = v[i];
+    }
+  }
 
   /* Compute the FFT of the reversed vector v */
   PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
@@ -353,8 +399,14 @@ static void hankel_matmul(double* out,
   PROTECT(res = eval(lang3(install("fft"), rV1, rTrue), R_GlobalEnv));
 
   /* Cleanup and return */
-  for (i = 0; i < L; ++i)
-    out[i] = COMPLEX(res)[i].r / N;
+  if (f->col_ind == NULL) {
+    for (i = 0; i < L; ++i)
+      out[i] = COMPLEX(res)[i].r / N;
+  } else {
+    for (i = 0; i < f->col_ind->num; ++i) {
+      out[i] = COMPLEX(res)[f->col_ind->ind[i]].r / N;
+    }
+  }
 
   UNPROTECT(4);
 }
@@ -363,6 +415,7 @@ static void hankel_tmatmul(double* out,
                            const double* v,
                            const void* matrix) {
   const hankel_matrix *h = matrix;
+  const fft_plan *f = h->fft_plan;
   R_len_t N = h->length, L = h->window;
   R_len_t K = N - L + 1, i;
   SEXP rcirc, rV1, res, rTrue;
@@ -372,8 +425,14 @@ static void hankel_tmatmul(double* out,
   memset(COMPLEX(rcirc), 0, N * sizeof(Rcomplex));
 
   /* Fill the arrays */
-  for (i = 0; i < L; ++i)
-    COMPLEX(rcirc)[i].r = v[i];
+  if (f->col_ind == NULL) {
+    for (i = 0; i < L; ++i)
+      COMPLEX(rcirc)[i].r = v[i];
+  } else {
+    for (i = 0; i < f->col_ind->num; ++i) {
+      COMPLEX(rcirc)[f->col_ind->ind[i]].r = v[i];
+    }
+  }
 
   /* Compute the FFT of the reversed vector v */
   PROTECT(rV1 = eval(lang2(install("fft"), rcirc), R_GlobalEnv));
@@ -392,8 +451,14 @@ static void hankel_tmatmul(double* out,
   PROTECT(res = eval(lang3(install("fft"), rV1, rTrue), R_GlobalEnv));
 
   /* Cleanup and return */
-  for (i = 0; i < K; ++i)
-    out[i] = COMPLEX(res)[i].r / N;
+  if (f->row_ind == NULL) {
+    for (i = 0; i < K; ++i)
+      out[i] = COMPLEX(res)[i].r / N;
+  } else {
+    for (i = 0; i < f->row_ind->num; ++i) {
+      out[i] = COMPLEX(res)[f->row_ind->ind[i]].r / N;
+    }
+  }
 
   UNPROTECT(4);
 }
@@ -402,7 +467,7 @@ static R_INLINE void hankelize_fft(double *F,
                                    const double *U, const double *V,
                                    R_len_t L, R_len_t K,
                                    const fft_plan *f) {
-  R_len_t N = K + L - 1;
+  R_len_t N = f->N;
   R_len_t i;
   SEXP rU, rU1, rV, rV1, res, rTrue;
 
@@ -416,11 +481,23 @@ static R_INLINE void hankelize_fft(double *F,
   memset(COMPLEX(rV), 0, N * sizeof(Rcomplex));
 
   /* Fill in buffers */
-  for (i = 0; i < L; ++i)
-    COMPLEX(rU)[i].r = U[i];
+  if (f->col_ind == NULL) {
+    for (i = 0; i < L; ++i)
+      COMPLEX(rU)[i].r = U[i];
+  } else {
+    for (i = 0; i < f->col_ind->num; ++i) {
+      COMPLEX(rU)[f->col_ind->ind[i]].r = U[i];
+    }
+  }
 
-  for (i = 0; i < K; ++i)
-    COMPLEX(rV)[i].r = V[i];
+  if (f->row_ind == NULL) {
+    for (i = 0; i < K; ++i)
+      COMPLEX(rV)[i].r = V[i];
+  } else {
+    for (i = 0; i < f->row_ind->num; ++i) {
+      COMPLEX(rV)[f->row_ind->ind[i]].r = V[i];
+    }
+  }
 
   /* Compute the FFTs */
   PROTECT(rU1 = eval(lang2(install("fft"), rU), R_GlobalEnv));
@@ -440,14 +517,11 @@ static R_INLINE void hankelize_fft(double *F,
 
   /* Form the result */
   for (i = 0; i < N; ++i) {
-    R_len_t leftu, rightu, l;
-
-    if (i < L) leftu = i; else leftu = L - 1;
-    if (i < K) rightu = 0; else  rightu = i - K + 1;
-
-    l = (leftu - rightu + 1);
-
-    F[i] = COMPLEX(res)[i].r / l / N;
+    if (f->weights[i]) {
+      F[i] = COMPLEX(res)[i].r / N / f->weights[i];
+    } else {
+      F[i] = NA_REAL;
+    }
   }
 
   UNPROTECT(6);
@@ -504,6 +578,35 @@ static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R
 }
 #endif
 
+static area_indices *alloc_area1d(SEXP mask) {
+  if (mask == R_NilValue) {
+    return NULL;
+  }
+  area_indices *area = Calloc(1, area_indices);
+  int *maskValues = LOGICAL(mask);
+  R_len_t max_ind = length(mask);
+
+  /* Count the number of nonzero elements and allocate the arrays */
+  R_len_t ind;
+  area->num = 0;
+  for (ind = 0; ind < max_ind; ++ind) {
+    area->num += maskValues[ind];
+  }
+
+  area->ind = Calloc(area->num, R_len_t);
+
+  /* Fill in the arrays of indices */
+  R_len_t k;
+  for (ind = 0, k = 0; ind < max_ind; ++ind) {
+    if (maskValues[ind]) {
+      area->ind[k] = ind;
+      ++k;
+    }
+  }
+
+  return area;
+}
+
 static void fft_plan_finalizer(SEXP ptr) {
   fft_plan *f;
 
@@ -515,12 +618,16 @@ static void fft_plan_finalizer(SEXP ptr) {
     return;
 
   free_plan(f);
+  free_area(f->col_ind);
+  free_area(f->row_ind);
+  Free(f->weights);
+
   Free(f);
 
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_fft_plan(SEXP rN) {
+SEXP initialize_fft_plan(SEXP rN, SEXP wmask, SEXP fmask, SEXP weights) {
   R_len_t N;
   fft_plan *f;
   SEXP res;
@@ -532,6 +639,11 @@ SEXP initialize_fft_plan(SEXP rN) {
 
   /* Do actual plan initialization */
   initialize_plan(f, N);
+
+  /* TODO: add a check for correct window sizes */
+  f->col_ind = alloc_area1d(wmask);
+  f->row_ind = alloc_area1d(fmask);
+  f->weights = alloc_weights(weights);
 
   /* Make an external pointer envelope */
   PROTECT(res = R_MakeExternalPtr(f, install("fft plan"), R_NilValue));
@@ -592,7 +704,7 @@ static void hmat_finalizer(SEXP ptr) {
   R_ClearExternalPtr(ptr);
 }
 
-SEXP initialize_hmat(SEXP F, SEXP window, SEXP fft_plan) {
+SEXP initialize_hmat(SEXP F, SEXP window, SEXP circular, SEXP fft_plan) {
   /* Perform a type checking */
   if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
     error("pointer provided is not a fft plan");
@@ -618,7 +730,7 @@ SEXP initialize_hmat(SEXP F, SEXP window, SEXP fft_plan) {
   /* Build toeplitz circulants for hankel matrix */
   h = Calloc(1, hankel_matrix);
 
-  initialize_circulant(h, R_ExternalPtrAddr(fft_plan), REAL(F), N, L);
+  initialize_circulant(h, R_ExternalPtrAddr(fft_plan), REAL(F), N, L, LOGICAL(circular));
   e->matrix = h;
 
   /* Make an external pointer envelope */
@@ -751,10 +863,10 @@ SEXP hankelize_one_fft(SEXP U, SEXP V, SEXP fftplan) {
   R_len_t L, K, N;
 
   L = length(U); K = length(V);
-  N = K + L - 1;
 
   /* Grab needed data */
   plan = R_ExternalPtrAddr(fftplan);
+  N = plan->N;
 
   /* Allocate buffer for output */
   PROTECT(F = allocVector(REALSXP, N));
@@ -787,10 +899,10 @@ SEXP hankelize_multi_fft(SEXP U, SEXP V, SEXP fftplan) {
   L = dimu[0]; K = dimv[0];
   if ((count = dimu[1]) != dimv[1])
     error("Both 'U' and 'V' should have equal number of columns");
-  N = K + L - 1;
 
   /* Grab needed data */
   plan = R_ExternalPtrAddr(fftplan);
+  N = plan->N;
 
   /* Allocate buffer for output */
   PROTECT(F = allocMatrix(REALSXP, N, count));

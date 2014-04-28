@@ -54,7 +54,7 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
   tmp[seq_len(output.dim[1]), seq_len(output.dim[2]), drop = FALSE]
 }
 
-factor.mask <- function(field.mask, window.mask, circular = FALSE) {
+.factor.mask.2d <- function(field.mask, window.mask, circular = FALSE) {
   field.mask[] <- as.numeric(field.mask)
   window.mask[] <- as.numeric(window.mask)
   tmp <- convolve2(field.mask, window.mask, conj = TRUE,
@@ -63,7 +63,7 @@ factor.mask <- function(field.mask, window.mask, circular = FALSE) {
   abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
 }
 
-field.weights <- function(window.mask, factor.mask, circular = FALSE) {
+.field.weights.2d <- function(window.mask, factor.mask, circular = FALSE) {
   window.mask[] <- as.numeric(window.mask)
   factor.mask[] <- as.numeric(factor.mask)
   res <- convolve2(factor.mask, window.mask, conj = FALSE,
@@ -154,7 +154,15 @@ tcrossprod.hbhmat <- function(x) {
 }
 
 .traj.dim.2d.ssa <- function(x) {
-  c(prod(x$window), prod(x$length - x$window + 1))
+  Ldim <- sum(x$wmask)
+  if (Ldim == 0)
+    Ldim <- prod(x$window)
+
+  Kdim <- sum(x$fmask)
+  if (Kdim == 0)
+    Kdim <- prod(x$length - ifelse(x$circular, 0, x$window - 1))
+
+  c(Ldim, Kdim)
 }
 
 decompose.2d.ssa <- function(x,
@@ -270,11 +278,5 @@ calc.v.2d.ssa <- function(x, idx, ...) {
 .hankelize.one.2d.ssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
-  F <- .Call("hbhankelize_one_fft", U, V, h)
-  w <- .get(x, "weights")
-  if (!is.null(w)) {
-    F[w == 0] <- NA
-  }
-
-  F
+  .Call("hbhankelize_one_fft", U, V, h)
 }
