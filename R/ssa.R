@@ -123,6 +123,16 @@ ssa <- function(x,
       stopifnot(nrow(column.projector) == L)
       stopifnot(nrow(row.projector) == K)
 
+      # Shape projectors if needed
+      if (!is.null(wmask)) {
+        column.projector <- column.projector[wmask,, drop = FALSE]
+        column.projector <- qr.Q(qr(column.projector))
+      }
+      if (!is.null(fmask)) {
+        row.projector <- row.projector[fmask,, drop = FALSE]
+        row.projector <- qr.Q(qr(row.projector))
+      }
+
       # ProjectionSSA is just a special case of 1d-ssa
       kind <- c("pssa", "1d-ssa")
     } else {

@@ -120,8 +120,8 @@ decompose.pssa.svd <- function(x,
   if (!force.continue && nsigma(x) > nspecial)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
-  h <- hankel(.F(x), L = L)
+  # Get trajectory matrix
+  h <- .trajectory.matrix(x)
 
   # Subtract special components
   sigma <- .sigma(x)[seq_len(nspecial)]
