@@ -516,7 +516,7 @@ nsigma <- function(x) {
 }
 
 is.shaped <- function(x) {
-  !(is.null(x$wmask) && is.null(x$fmask) && is.null(x$weights))
+  !(is.null(x$wmask) && is.null(x$fmask) && is.null(x$weights)) && !inherits(x, "mssa")
 }
 
 clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
