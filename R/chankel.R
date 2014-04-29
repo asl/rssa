@@ -192,14 +192,14 @@ decompose.cssa.nutrlan <- function(x,
 }
 
 calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
-  sigma <- .sigma[idx]
+  sigma <- .sigma(x)[idx]
 
   if (any(sigma <= .Machine$double.eps)) {
     sigma[sigma <= .Machine$double.eps] <- Inf
     warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
   }
 
-  U <- .U[, idx, drop = FALSE]
+  U <- .U(x)[, idx, drop = FALSE]
   h <- .get.or.create.chmat(x)
 
   invisible(sapply(1:length(idx),
