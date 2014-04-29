@@ -47,30 +47,7 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   cor
 }
 
-wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
-  N <- prod(x$length)
-  if (missing(groups))
-    groups <- as.list(1:nsigma(x))
-
-  # Compute reconstruction.
-  F <- reconstruct(x, groups, ..., cache = cache)
-  mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
-  colnames(mx) <- names(F)
-
-  # Get weights
-  w <- .hweights(x)
-
-  if (any(w == 0)) {
-    # Omit uncovered elements
-    mx <- mx[as.vector(w > 0),, drop = FALSE]
-    w <- as.vector(w[w > 0])
-  }
-
-  # Finally, compute w-correlations and return
-  wcor.default(mx, weights = w)
-}
-
-wcor.2d.ssa <- function(x, groups, ..., cache = TRUE) {
+wcor.2d.ssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
   N <- prod(x$length)
   if (missing(groups))
     groups <- as.list(1:nsigma(x))
