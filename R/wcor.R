@@ -32,10 +32,13 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   }
 
   # Compute w-covariation
-  cov <- crossprod(weights * x, x)
+  cov <- crossprod(weights * Conj(x), x)
 
   # Convert to correlations
-  cor <- cov2cor(cov)
+  Is <- sqrt(1 / abs(diag(cov)))
+  cor <- cov
+  cor[] <- Is * cov * rep(Is, each = nrow(cov))
+  cor[cbind(seq_len(nrow(cov)), seq_len(ncol(cov)))] <- 1
 
   # Fix possible numeric error
   cor[cor > 1] <- 1; cor[cor < -1] <- -1
@@ -47,7 +50,7 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   cor
 }
 
-wcor.2d.ssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
+wcor.2d.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
   N <- prod(x$length)
   if (missing(groups))
     groups <- as.list(1:nsigma(x))
@@ -122,7 +125,7 @@ clusterify.wcor.matrix <- function(x,
   .hweights.default(N, L)
 }
 
-.hweights.1d.ssa <- .hweights.toeplitz.ssa <- function(x, ...) {
+.hweights.1d.ssa <- .hweights.toeplitz.ssa <- .hweights.cssa <- function(x, ...) {
   w <- .get(x, "weights")
 
   if (!is.null(w)) {
@@ -170,7 +173,7 @@ wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
   sqrt(sum(w * x^2))
 }
 
-wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...) {
+wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- function(x, ...) {
   # Get F
   F <- .F(x)
 
@@ -184,7 +187,7 @@ wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- function(x, ...) {
   }
 
   # Compute wnorm
-  sqrt(sum(w * F^2))
+  sqrt(sum(w * abs(F)^2))
 }
 
 wnorm.mssa <- function(x, ...) {
