@@ -125,7 +125,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
         stop("`pairs' parameter estimation method is not implemented for shaped SSA case yet")
       if (length(group) != 2)
         stop("can estimate for pair of eigenvectors only using `pairs' method")
-      res <- parestimate.pairs(x$U[, group])
+      res <- parestimate.pairs(x$U[, group, drop = FALSE])
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
       res <- parestimate.esprit(x$U[, group, drop = FALSE], wmask = x$wmask, method = method)
     }
