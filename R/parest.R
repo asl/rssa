@@ -73,6 +73,7 @@ tls.solve <- function(A, B) {
 
 shift.matrix <- function(U,
                          wmask = NULL,
+                         topology = Inf,
                          solve.method = c("ls", "tls")) {
   solve.method <- match.arg(solve.method)
   solver <- switch(solve.method,
@@ -88,16 +89,22 @@ shift.matrix <- function(U,
 
   lmA <- U[lm1.mask,, drop = FALSE]
   lmB <- U[lm2.mask,, drop = FALSE]
+  if (topology == length(wmask) && wmask[1] && wmask[length(wmask)]) {
+    lmA <- rbind(lmA, U[length(wmask),, drop = FALSE])
+    lmB <- rbind(lmB, U[1,, drop = FALSE])
+  }
 
   Conj(solver(lmA, lmB))
 }
 
 parestimate.esprit <- function(U,
                                wmask = NULL,
+                               topology = Inf,
                                method = c("esprit-ls", "esprit-tls")) {
   method <- match.arg(method)
   Z <- shift.matrix(U,
                     wmask = wmask,
+                    topology = topology,
                     solve.method = switch(method,
                                           `esprit-ls` = "ls",
                                           `esprit-tls` = "tls"))
@@ -127,7 +134,10 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
         stop("can estimate for pair of eigenvectors only using `pairs' method")
       res <- parestimate.pairs(x$U[, group, drop = FALSE])
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
-      res <- parestimate.esprit(x$U[, group, drop = FALSE], wmask = x$wmask, method = method)
+      res <- parestimate.esprit(x$U[, group, drop = FALSE],
+                                wmask = x$wmask,
+                                topology = ifelse(x$circular, x$length, Inf),
+                                method = method)
     }
     out[[i]] <- res
   }
@@ -144,6 +154,7 @@ parestimate.mssa <- parestimate.1d.ssa
 
 shift.matrices.2d <- function(U, L,
                               wmask = NULL,
+                              topology = c(Inf, Inf),
                               solve.method = c("ls", "tls")) {
   solve.method <- match.arg(solve.method)
   solver <- switch(solve.method,
@@ -164,9 +175,23 @@ shift.matrices.2d <- function(U, L,
 
   lmA <- U[lm1.mask,, drop = FALSE]
   lmB <- U[lm2.mask,, drop = FALSE]
+  if (topology[1] == L[1]) {
+    lmc.mask <- wmask[1,, drop = FALSE] & wmask[L[1],, drop = FALSE]
+    lmc1.mask <- as.vector(rbind(matrix(FALSE, L[1] - 1, L[2]), lmc.mask)[wmask])
+    lmc2.mask <- as.vector(rbind(lmc.mask, matrix(FALSE, L[1] - 1, L[2]))[wmask])
+    lmA <- rbind(lmA, U[lmc1.mask,, drop = FALSE])
+    lmB <- rbind(lmB, U[lmc2.mask,, drop = FALSE])
+  }
 
   muA <- U[mu1.mask,, drop = FALSE]
   muB <- U[mu2.mask,, drop = FALSE]
+  if (topology[2] == L[2]) {
+    muc.mask <- wmask[, 1, drop = FALSE] & wmask[, L[2], drop = FALSE]
+    muc1.mask <- as.vector(cbind(matrix(FALSE, L[1], L[2] - 1), muc.mask)[wmask])
+    muc2.mask <- as.vector(cbind(muc.mask, matrix(FALSE, L[1], L[2] - 1))[wmask])
+    muA <- rbind(muA, U[muc1.mask,, drop = FALSE])
+    muB <- rbind(muB, U[muc2.mask,, drop = FALSE])
+  }
 
   Zx = solver(lmA, lmB)
   Zy = solver(muA, muB)
@@ -195,6 +220,7 @@ est_exp_memp_new <- function(Zs, beta = 8) {
 
 parestimate.esprit2d <- function(U, L,
                                  wmask = NULL,
+                                 topology = c(Inf, Inf),
                                  method = c("esprit-diag-ls", "esprit-diag-tls",
                                             "esprit-memp-ls", "esprit-memp-tls"),
                                  beta = 8) {
@@ -203,7 +229,11 @@ parestimate.esprit2d <- function(U, L,
                          `esprit-diag-ls`  =, `esprit-memp-ls`  = "ls",
                          `esprit-diag-tls` =, `esprit-memp-tls` = "tls")
 
-  Zs <- shift.matrices.2d(U, L = L, wmask = wmask, solve.method = solve.method)
+  Zs <- shift.matrices.2d(U,
+                          L = L,
+                          wmask = wmask,
+                          topology = topology,
+                          solve.method = solve.method)
 
   r <- switch(method,
               `esprit-diag-ls` =, `esprit-diag-tls` = est_exp_2desprit(Zs, beta = beta),
@@ -234,6 +264,7 @@ parestimate.2d.ssa <- function(x, groups,
     out[[i]] <- parestimate.esprit2d(x$U[, group, drop = FALSE],
                                      L = x$window,
                                      wmask = x$wmask,
+                                     topology = ifelse(x$circular, x$length, Inf),
                                      method = method,
                                      beta = beta)
   }
