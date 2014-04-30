@@ -68,7 +68,7 @@ tls.solve <- function(A, B) {
   stopifnot(ncol(A) == ncol(B))
   r <- ncol(A)
   V <- svd(cbind(A, B))$v[, 1:r, drop = FALSE]
-  qr.solve(V[1:r,, drop = FALSE], V[-(1:r),, drop = FALSE])
+  qr.solve(t(V[1:r,, drop = FALSE]), t(V[-(1:r),, drop = FALSE]))
 }
 
 shift.matrix <- function(U,
