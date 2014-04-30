@@ -71,19 +71,36 @@ tls.solve <- function(A, B) {
   qr.solve(V[1:r,, drop = FALSE], V[-(1:r),, drop = FALSE])
 }
 
-shift.matrix <- function(U, solve.method = c("ls", "tls")) {
+shift.matrix <- function(U,
+                         wmask = NULL,
+                         solve.method = c("ls", "tls")) {
   solve.method <- match.arg(solve.method)
   solver <- switch(solve.method,
                    ls = qr.solve,
                    tls = tls.solve)
-  Conj(solver(U[-nrow(U),, drop = FALSE], U[-1,, drop = FALSE]))
+
+  if (is.null(wmask))
+    wmask <- rep(TRUE, nrow(U))
+
+  lm.mask <- wmask[-1] & wmask[-length(wmask)]
+  lm1.mask <- c(lm.mask, FALSE)[wmask]
+  lm2.mask <- c(FALSE, lm.mask)[wmask]
+
+  lmA <- U[lm1.mask,, drop = FALSE]
+  lmB <- U[lm2.mask,, drop = FALSE]
+
+  Conj(solver(lmA, lmB))
 }
 
-parestimate.esprit <- function(U, method = c("esprit-ls", "esprit-tls")) {
+parestimate.esprit <- function(U,
+                               wmask = NULL,
+                               method = c("esprit-ls", "esprit-tls")) {
   method <- match.arg(method)
-  Z <- shift.matrix(U, solve.method = switch(method,
-                                             `esprit-ls` = "ls",
-                                             `esprit-tls` = "tls"))
+  Z <- shift.matrix(U,
+                    wmask = wmask,
+                    solve.method = switch(method,
+                                          `esprit-ls` = "ls",
+                                          `esprit-tls` = "tls"))
 
   r <- eigen(Z, only.values = TRUE)$values
   roots2pars(r)
@@ -92,9 +109,6 @@ parestimate.esprit <- function(U, method = c("esprit-ls", "esprit-tls")) {
 parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
                                ...,
                                drop = TRUE) {
-  if (is.shaped(x))
-    stop("`parameter estimation is not implemented for shaped SSA case yet")
-
   method <- match.arg(method)
 
   if (missing(groups))
@@ -107,11 +121,13 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
   for (i in seq_along(groups)) {
     group <- groups[[i]]
     if (identical(method, "pairs")) {
+      if (is.shaped(x))
+        stop("`pairs' parameter estimation method is not implemented for shaped SSA case yet")
       if (length(group) != 2)
         stop("can estimate for pair of eigenvectors only using `pairs' method")
       res <- parestimate.pairs(x$U[, group])
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
-      res <- parestimate.esprit(x$U[, group, drop = FALSE], method = method)
+      res <- parestimate.esprit(x$U[, group, drop = FALSE], wmask = x$wmask, method = method)
     }
     out[[i]] <- res
   }
