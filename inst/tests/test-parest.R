@@ -32,3 +32,41 @@ test_that("parestimate.esprit works correctly for two sines", {
   expect_true(is_multisets_approx_equal(mu, expectred.mu),
               label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct", T1, T2));
 });
+
+test_that("parestimate works correctly for two sines", {
+  r <- 4
+  N <- 40
+  T1 <- 6
+  T2 <- 11
+  v <- sin(2 * pi * (1:N) / T1) + sin(2 * pi * (1:N) / T2)
+  ss <- ssa(v)
+  for (method in c("esprit-ls", "esprit-tls")) {
+    par <- parestimate(ss, groups = list(sines = 1:4), method = method)
+    mu <- par$moduli * exp(pi * 2i / par$periods)
+    expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
+
+    expect_true(is_multisets_approx_equal(mu, expectred.mu),
+                label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct", T1, T2))
+  }
+})
+
+test_that("parestimate works correctly for two sines in shaped case", {
+  r <- 4
+  N <- 80
+  L <- 15
+  T1 <- 6
+  T2 <- 11
+  v <- sin(2 * pi * (1:N) / T1) + sin(2 * pi * (1:N) / T2)
+  v[20:25] <- NA
+  v[50:55] <- NA
+
+  ss <- ssa(v, L = L)
+  for (method in c("esprit-ls", "esprit-tls")) {
+    par <- parestimate(ss, groups = list(sines = 1:4), method = method)
+    mu <- par$moduli * exp(pi * 2i / par$periods)
+    expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
+
+    expect_true(is_multisets_approx_equal(mu, expectred.mu),
+                label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct", T1, T2))
+  }
+})
