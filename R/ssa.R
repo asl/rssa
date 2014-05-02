@@ -166,12 +166,14 @@ ssa <- function(x,
       L <- dim(wmask)
     }
 
+    K <- ifelse(circular, N, N - L + 1)
+
     if (is.null(neig))
-      neig <- min(50, prod(L), prod(N - L + 1))
+      neig <- min(50, prod(L), prod(K))
 
     # Fix SVD method.
     if (identical(svd.method, "auto"))
-      svd.method <- .determine.svd.method(prod(L), prod(N - L + 1), neig, ..., svd.method = "nutrlan")
+      svd.method <- .determine.svd.method(prod(L), prod(K), neig, ..., svd.method = "nutrlan")
 
     fmask <- .factor.mask.2d(mask, wmask, circular = circular)
 

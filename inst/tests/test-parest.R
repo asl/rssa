@@ -70,3 +70,91 @@ test_that("parestimate works correctly for two sines in shaped case", {
                 label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct", T1, T2))
   }
 })
+
+test_that("parestimate works correctly for two sines in circular case", {
+  r <- 4
+  N <- 40
+  T1 <- 5
+  T2 <- 8
+  v <- sin(2 * pi * (1:N) / T1) + sin(2 * pi * (1:N) / T2)
+  ss <- ssa(v, L = N, circular = TRUE)
+  for (method in c("esprit-ls", "esprit-tls")) {
+    par <- parestimate(ss, groups = list(sines = 1:4), method = method)
+    mu <- par$roots
+    expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
+
+    expect_true(is_multisets_approx_equal(mu, expectred.mu),
+                label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct", T1, T2))
+  }
+})
+
+test_that("parestimate works correctly for two sines in 2d case", {
+  r <- 4
+  N1 <- 55
+  N2 <- 40
+  T1 <- 5
+  T2 <- 8
+  v1 <- sin(2 * pi * (1:N1) / T1)
+  v2 <- sin(2 * pi * (1:N2) / T2)
+  mx <- outer(v1, v2)
+  ss <- ssa(mx, kind = "2d-ssa")
+  for (method in c("esprit-diag-ls", "esprit-diag-tls", "esprit-memp-ls", "esprit-memp-tls")) {
+    par <- parestimate(ss, groups = list(sines = 1:4), method = method)
+    lm <- par[[1]]$roots
+    mu <- par[[2]]$roots
+    expectred.lm <- exp(pi * 2i / c(T1, -T1, T1, -T1))
+    expectred.mu <- exp(pi * 2i / c(T2, -T2, T2, -T2))
+
+    expect_true(is_multisets_approx_equal(mu, expectred.mu) && is_multisets_approx_equal(lm , expectred.lm),
+                label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct (method = %s)",
+                                T1, T2, method))
+  }
+})
+
+test_that("parestimate works correctly for two sines in circular 2d case", {
+  r <- 4
+  N1 <- 55
+  N2 <- 40
+  T1 <- 5
+  T2 <- 8
+  expectred.lm <- exp(pi * 2i / c(T1, -T1, T1, -T1))
+  expectred.mu <- exp(pi * 2i / c(T2, -T2, T2, -T2))
+
+  v1 <- sin(2 * pi * (1:N1) / T1)
+  v2 <- sin(2 * pi * (1:N2) / T2)
+  mx <- outer(v1, v2)
+  ss <- ssa(mx, kind = "2d-ssa", L = c(N1, N2), circular = TRUE)
+  for (method in c("esprit-diag-ls", "esprit-diag-tls", "esprit-memp-ls", "esprit-memp-tls")) {
+    par <- parestimate(ss, groups = list(sines = 1:4), method = method)
+    lm <- par[[1]]$roots
+    mu <- par[[2]]$roots
+
+    expect_true(is_multisets_approx_equal(mu, expectred.mu) && is_multisets_approx_equal(lm , expectred.lm),
+                label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct (method = %s)",
+                                T1, T2, method))
+  }
+})
+
+test_that("parestimate works correctly for two sines in cylindrical 2d case", {
+  r <- 4
+  N1 <- 55
+  N2 <- 40
+  T1 <- 5
+  T2 <- 8
+  expectred.lm <- exp(pi * 2i / c(T1, -T1, T1, -T1))
+  expectred.mu <- exp(pi * 2i / c(T2, -T2, T2, -T2))
+
+  v1 <- sin(2 * pi * (1:N1) / T1)
+  v2 <- sin(2 * pi * (1:N2) / T2)
+  mx <- outer(v1, v2)
+  ss <- ssa(mx, kind = "2d-ssa", L = c(N1, 20), circular = c(TRUE, FALSE))
+  for (method in c("esprit-diag-ls", "esprit-diag-tls", "esprit-memp-ls", "esprit-memp-tls")) {
+    par <- parestimate(ss, groups = list(sines = 1:4), method = method)
+    lm <- par[[1]]$roots
+    mu <- par[[2]]$roots
+
+    expect_true(is_multisets_approx_equal(mu, expectred.mu) && is_multisets_approx_equal(lm , expectred.lm),
+                label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct (method = %s)",
+                                T1, T2, method))
+  }
+})
