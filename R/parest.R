@@ -114,6 +114,7 @@ parestimate.esprit <- function(U,
 }
 
 parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+                               subspace = c("column", "row"),
                                ...,
                                drop = TRUE) {
   method <- match.arg(method)
@@ -124,6 +125,15 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
 
+  subspace <- match.arg(subspace)
+  if (identical(subspace, "column")) {
+    span <- .colspan
+    wmask <- x$wmask
+  } else if (identical(subspace, "row")) {
+    span <- .rowspan
+    wmask <- x$fmask
+  }
+
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
@@ -132,10 +142,10 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
         stop("`pairs' parameter estimation method is not implemented for shaped SSA case yet")
       if (length(group) != 2)
         stop("can estimate for pair of eigenvectors only using `pairs' method")
-      res <- parestimate.pairs(x$U[, group, drop = FALSE])
+      res <- parestimate.pairs(span(x, group))
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
-      res <- parestimate.esprit(x$U[, group, drop = FALSE],
-                                wmask = x$wmask,
+      res <- parestimate.esprit(span(x, group),
+                                wmask = wmask,
                                 topology = ifelse(x$circular, x$length, Inf),
                                 method = method)
     }
@@ -247,6 +257,7 @@ parestimate.esprit2d <- function(U, L,
 parestimate.2d.ssa <- function(x, groups,
                                method = c("esprit-diag-ls", "esprit-diag-tls",
                                           "esprit-memp-ls", "esprit-memp-tls"),
+                               subspace = c("column", "row"),
                                ...,
                                beta = 8,
                                drop = TRUE) {
@@ -257,13 +268,24 @@ parestimate.2d.ssa <- function(x, groups,
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
 
+  subspace <- match.arg(subspace)
+  if (identical(subspace, "column")) {
+    span <- .colspan
+    wmask <- x$wmask
+    window <- x$window
+  } else if (identical(subspace, "row")) {
+    span <- .rowspan
+    wmask <- x$fmask
+    window <- ifelse(x$circular, x$length - x$window + 1, x$window)
+  }
+
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
-    out[[i]] <- parestimate.esprit2d(x$U[, group, drop = FALSE],
-                                     L = x$window,
-                                     wmask = x$wmask,
+    out[[i]] <- parestimate.esprit2d(span(x, group),
+                                     L = window,
+                                     wmask = wmask,
                                      topology = ifelse(x$circular, x$length, Inf),
                                      method = method,
                                      beta = beta)
