@@ -167,7 +167,7 @@
   .decomposition(x, "V")
 
 .rowspan.ssa <- function(x, idx)
-  .rowspan(.decomposition(x), idx)
+  calc.v(x, idx)
 
 .sigma.ssa <- function(x)
   .decomposition(x, "sigma")
