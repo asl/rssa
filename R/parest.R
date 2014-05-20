@@ -160,7 +160,21 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
 }
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
-parestimate.mssa <- parestimate.1d.ssa
+parestimate.mssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+                             subspace = c("column", "row"),
+                             normalize.roots = NULL,
+                             ...,
+                             drop = TRUE) {
+  subspace <- match.arg(subspace)
+
+  if (identical(subspace, "row"))
+    stop("Row space parameter estimation is not implemented for MSSA yet")
+  parestimate.1d.ssa(x = x, groups = groups, method = method,
+                     subspace = subspace,
+                     normalize.roots = normalize.roots,
+                     ...,
+                     drop = drop)
+}
 
 shift.matrices.2d <- function(U, L,
                               wmask = NULL,
