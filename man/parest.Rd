@@ -12,14 +12,22 @@
 
 \usage{
 \method{parestimate}{1d.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
             \dots, drop = TRUE)
 \method{parestimate}{toeplitz.ssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
             \dots, drop = TRUE)
 \method{parestimate}{mssa}(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
             \dots, drop = TRUE)
 \method{parestimate}{2d.ssa}(x, groups,
             method = c("esprit-diag-ls", "esprit-diag-tls",
                        "esprit-memp-ls", "esprit-memp-tls"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
             \dots,
             beta = 8,
             drop = TRUE)
@@ -39,6 +47,9 @@
     (2D-ESPRIT diagonalization) and
     'esprit-memp-ls' or `esprit-memp-tls' for `MEMP with an improved pairing step'.
     Suffix '-ls' or '-tls' means approximate matrix equation solve method, as in 1D-ESPRIT case.}
+  \item{subspace}{which subspace will be used for parameter estimation}
+  \item{normalize.roots}{logical vector or 'NULL', force signal roots to lie on unit circle.
+    'NULL' means automatic selection: normalize iff circular topology OR Toeplitz SSA used}
   \item{beta}{In 2D-ESPRIT, coefficient in convex linear combination of
     shifted matrices.}
 }
