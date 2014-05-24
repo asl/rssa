@@ -46,7 +46,7 @@ print.fdimpars.1d <- function(x, ...) {
   }
 }
 
-parestimate.pairs <- function(U) {
+parestimate.pairs <- function(U, normalize = FALSE) {
   # Sanity check
   stopifnot(ncol(U) == 2)
 
@@ -61,6 +61,9 @@ parestimate.pairs <- function(U) {
     warning("too big deviation of estimates, period estimates might be unreliable")
 
   r <- exp(1i * acos(median(scos)))
+
+  if (normalize) r <- r / abs(r)
+
   roots2pars(r)
 }
 
@@ -100,6 +103,7 @@ shift.matrix <- function(U,
 parestimate.esprit <- function(U,
                                wmask = NULL,
                                topology = Inf,
+                               normalize = FALSE,
                                method = c("esprit-ls", "esprit-tls")) {
   method <- match.arg(method)
   Z <- shift.matrix(U,
@@ -110,10 +114,15 @@ parestimate.esprit <- function(U,
                                           `esprit-tls` = "tls"))
 
   r <- eigen(Z, only.values = TRUE)$values
+
+  if (normalize) r <- r / abs(r)
+
   roots2pars(r)
 }
 
 parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+                               subspace = c("column", "row"),
+                               normalize.roots = NULL,
                                ...,
                                drop = TRUE) {
   method <- match.arg(method)
@@ -124,6 +133,18 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
 
+  subspace <- match.arg(subspace)
+  if (identical(subspace, "column")) {
+    span <- .colspan
+    wmask <- x$wmask
+  } else if (identical(subspace, "row")) {
+    span <- .rowspan
+    wmask <- x$fmask
+  }
+
+  if (is.null(normalize.roots))
+    normalize.roots <- x$circular || inherits(x, "toeplitz.ssa")
+
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
@@ -132,11 +153,12 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
         stop("`pairs' parameter estimation method is not implemented for shaped SSA case yet")
       if (length(group) != 2)
         stop("can estimate for pair of eigenvectors only using `pairs' method")
-      res <- parestimate.pairs(x$U[, group, drop = FALSE])
+      res <- parestimate.pairs(span(x, group), normalize = normalize.roots)
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
-      res <- parestimate.esprit(x$U[, group, drop = FALSE],
-                                wmask = x$wmask,
+      res <- parestimate.esprit(span(x, group),
+                                wmask = wmask,
                                 topology = ifelse(x$circular, x$length, Inf),
+                                normalize = normalize.roots,
                                 method = method)
     }
     out[[i]] <- res
@@ -150,7 +172,21 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
 }
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
-parestimate.mssa <- parestimate.1d.ssa
+parestimate.mssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+                             subspace = c("column", "row"),
+                             normalize.roots = NULL,
+                             ...,
+                             drop = TRUE) {
+  subspace <- match.arg(subspace)
+
+  if (identical(subspace, "row"))
+    stop("Row space parameter estimation is not implemented for MSSA yet")
+  parestimate.1d.ssa(x = x, groups = groups, method = method,
+                     subspace = subspace,
+                     normalize.roots = normalize.roots,
+                     ...,
+                     drop = drop)
+}
 
 shift.matrices.2d <- function(U, L,
                               wmask = NULL,
@@ -221,6 +257,7 @@ est_exp_memp_new <- function(Zs, beta = 8) {
 parestimate.esprit2d <- function(U, L,
                                  wmask = NULL,
                                  topology = c(Inf, Inf),
+                                 normalize = c(FALSE, FALSE),
                                  method = c("esprit-diag-ls", "esprit-diag-tls",
                                             "esprit-memp-ls", "esprit-memp-tls"),
                                  beta = 8) {
@@ -239,6 +276,9 @@ parestimate.esprit2d <- function(U, L,
               `esprit-diag-ls` =, `esprit-diag-tls` = est_exp_2desprit(Zs, beta = beta),
               `esprit-memp-ls` =, `esprit-memp-tls` = est_exp_memp_new(Zs, beta = beta))
 
+  for (k in 1:2)
+    if (normalize[k]) r[[k]] <- r[[k]] / abs(r[[k]])
+
   out <- lapply(r, roots2pars)
   class(out) <- "fdimpars.2d"
   out
@@ -247,6 +287,8 @@ parestimate.esprit2d <- function(U, L,
 parestimate.2d.ssa <- function(x, groups,
                                method = c("esprit-diag-ls", "esprit-diag-tls",
                                           "esprit-memp-ls", "esprit-memp-tls"),
+                               subspace = c("column", "row"),
+                               normalize.roots = NULL,
                                ...,
                                beta = 8,
                                drop = TRUE) {
@@ -257,14 +299,32 @@ parestimate.2d.ssa <- function(x, groups,
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
 
+  subspace <- match.arg(subspace)
+  if (identical(subspace, "column")) {
+    span <- .colspan
+    wmask <- x$wmask
+    window <- x$window
+  } else if (identical(subspace, "row")) {
+    span <- .rowspan
+    wmask <- x$fmask
+    window <- ifelse(x$circular, x$length - x$window + 1, x$window)
+  }
+
+  if (is.null(normalize.roots))
+    normalize.roots <- x$circular | inherits(x, "toeplitz.ssa")
+  if (length(normalize.roots) > 2)
+    warning("Incorrect argument length: length(normalize.roots) > 2, two leading values will be used")
+  normalize.roots <- rep(normalize.roots, 2)[1:2]
+
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
-    out[[i]] <- parestimate.esprit2d(x$U[, group, drop = FALSE],
-                                     L = x$window,
-                                     wmask = x$wmask,
+    out[[i]] <- parestimate.esprit2d(span(x, group),
+                                     L = window,
+                                     wmask = wmask,
                                      topology = ifelse(x$circular, x$length, Inf),
+                                     normalize = normalize.roots,
                                      method = method,
                                      beta = beta)
   }
