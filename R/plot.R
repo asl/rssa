@@ -254,9 +254,14 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
 
 .plot.ssa.series.toeplitz.ssa <- .plot.ssa.series.1d.ssa
 
-panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
+panel.levelplot.wcor <- function(x, y, z, at, ..., grid, .useRaster = FALSE) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
-  panel(x, y, z, ...)
+
+  # Cutoff outstanding values
+  z[z < min(at)] <- min(at)
+  z[z > max(at)] <- max(at)
+
+  panel(x, y, z, at = at, ...)
 
   if (!is.list(grid))
     grid <- list(h = grid, v = grid)
