@@ -273,6 +273,7 @@ panel.levelplot.wcor <- function(x, y, z, at, ..., grid, .useRaster = FALSE) {
 plot.wcor.matrix <- function(x,
                              grid = c(),
                              ...,
+                             col = grey(c(1, 0)),
                              cuts = 20,
                              zlim = range(abs(x), 0, 1)) {
   # Provide convenient defaults
@@ -285,8 +286,9 @@ plot.wcor.matrix <- function(x,
                     aspect = "iso",
                     xlim = rownames(x),
                     ylim = colnames(x),
-                    par.settings = list(regions = list(col = colorRampPalette(grey(c(1, 0))))),
                     useRaster = TRUE)
+  dots <- modifyList(dots,
+                     list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
   data$x <- as.vector(as.numeric(x))
