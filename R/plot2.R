@@ -87,6 +87,7 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                                        add.original = TRUE,
                                        add.residuals = TRUE,
                                        add.ranges,
+                                       col = grey(c(0, 1)),
                                        at) {
   dots <- list(...)
   type <- match.arg(type)
@@ -139,13 +140,14 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "same"),
                     aspect = "iso",
-                    par.settings = list(regions = list(col = colorRampPalette(grey(c(0, 1))))),
                     cuts = 20,
                     colorkey = !identical(at, "free"),
                     symmetric = FALSE,
                     ref = FALSE,
                     useRaster = TRUE,
                     fill.uncovered = "void")
+  dots <- modifyList(dots,
+                     list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   # Disable colorkey if subplots are drawing in different scales
   if (identical(at, "free"))
@@ -246,6 +248,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
 .plot.ssa.vectors.2d.ssa <- function(x, ...,
                                      what = c("eigen", "factor"),
+                                     col = grey(c(0, 1)),
                                      plot.contrib = FALSE, idx, at) {
   dots <- list(...)
   what <- match.arg(what)
@@ -277,11 +280,12 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "same"),
                     aspect = "iso",
-                    par.settings = list(regions = list(col = colorRampPalette(grey(c(0, 1))))),
                     cuts = 20,
                     symmetric = FALSE,
                     ref = FALSE,
                     useRaster = TRUE)
+  dots <- modifyList(dots,
+                     list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   # Disable colorkey if subplots are drawed in different scales
   if (identical(at, "free"))
