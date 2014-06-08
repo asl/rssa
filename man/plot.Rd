@@ -56,6 +56,10 @@
     \item{symmetric}{logical. Whether to use symmetric scales in series-plot, eigenvectors-plot and paired-plot.}
     \item{useRaster}{logical. For 2d-eigenvector-plot and wcor-plot, indicating whether raster representations
       should be used. 'TRUE' by default.}
+    \item{col}{color vector for colorscale (for 2d- and wcor-plots),
+      given by two or more colors,
+      the first color corresponds to the minimal value,
+      while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
     \item{at}{for 2d-eigenvectors-plot, a numeric vector giving breakpoints along the range of \code{z}.
       Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
       special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}

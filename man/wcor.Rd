@@ -22,6 +22,7 @@
 \method{plot}{wcor.matrix}(x,
      grid = c(),
      \dots,
+     col = grey(c(1, 0)),
      cuts = 20,
      zlim = range(abs(x), 0, 1))
 }
@@ -44,6 +45,10 @@
     Also this argument can be list of two numeric vectors
     with names 'x' and 'y', for control vertical and horizontal
     grid lines separately.}
+  \item{col}{color vector for colorscale,
+    given by two or more colors,
+    the first color corresponds to the minimal value,
+    while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
   \item{cuts}{integer, the number of levels the range of W-cor
     values will be divided into.}
   \item{zlim}{range of displaying W-cor values.
