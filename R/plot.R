@@ -275,7 +275,8 @@ plot.wcor.matrix <- function(x,
                              ...,
                              col = grey(c(1, 0)),
                              cuts = 20,
-                             zlim = range(abs(x), 0, 1)) {
+                             zlim = range(abs(x), 0, 1),
+                             at) {
   # Provide convenient defaults
   dots <- list(...)
   dots <- .defaults(dots,
@@ -296,10 +297,13 @@ plot.wcor.matrix <- function(x,
   # Rename args for transfer to panel function
   names(dots)[names(dots) == "useRaster"] <- ".useRaster"
 
+  if (missing(at))
+    at <- pretty(zlim, n = cuts)
+
   do.call("levelplot",
           c(list(x = abs(x) ~ row * column,
                  data = data,
-                 at = seq(zlim[1], zlim[2], length.out = cuts + 2),
+                 at = at,
                  panel = panel.levelplot.wcor,
                  grid = grid),
             dots))
