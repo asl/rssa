@@ -24,7 +24,8 @@
      \dots,
      col = grey(c(1, 0)),
      cuts = 20,
-     zlim = range(abs(x), 0, 1))
+     zlim = range(abs(x), 0, 1),
+     at)
 }
 
 \arguments{
@@ -51,8 +52,9 @@
     while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
   \item{cuts}{integer, the number of levels the range of W-cor
     values will be divided into.}
-  \item{zlim}{range of displaying W-cor values.
-    Values outside the range will be not shown.}
+  \item{zlim}{range of displayed W-cor values.}
+  \item{at}{A numeric vector giving breakpoints along the range of the image.
+    if missing, will be evaluated automatically (see description of the \code{cuts} argument).}
 }
 \details{
   W-correlation matrix is a standard way of checking for weak
