@@ -88,10 +88,13 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                                        add.residuals = TRUE,
                                        add.ranges,
                                        col = grey(c(0, 1)),
+                                       zlim,
                                        at) {
   dots <- list(...)
   type <- match.arg(type)
 
+  if (!missing(zlim))
+    at <- "same"
   if (missing(at))
     at <- if (identical(type, "cumsum")) "same" else "free"
   if (is.character(at))
@@ -154,7 +157,7 @@ plot.2d.ssa.reconstruction <- function(x, ...,
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {
-    all.values <- unlist(x)
+    all.values <- if (missing(zlim)) unlist(x) else zlim
     at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
   }
 
@@ -249,10 +252,14 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 .plot.ssa.vectors.2d.ssa <- function(x, ...,
                                      what = c("eigen", "factor"),
                                      col = grey(c(0, 1)),
-                                     plot.contrib = FALSE, idx, at) {
+                                     zlim,
+                                     at,
+                                     plot.contrib = FALSE, idx) {
   dots <- list(...)
   what <- match.arg(what)
 
+  if (!missing(zlim))
+    at <- "same"
   if (missing(at))
     at <- "free"
   if (is.character(at))
@@ -292,7 +299,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {
-    all.values <- x$U[, idx]
+    all.values <- if (missing(zlim)) x$U[, idx] else zlim
     at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
   }
 

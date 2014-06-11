@@ -39,6 +39,7 @@
      add.residuals = TRUE,
      add.ranges,
      col = grey(c(0, 1)),
+     zlim,
      at)
 }
 
@@ -65,6 +66,7 @@
     given by two or more colors,
     the first color corresponds to the minimal value,
     while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
+  \item{zlim}{for 2d-plot, range of displaying values}
   \item{at}{A numeric vector giving breakpoints along the range of the image.
     Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
     special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
