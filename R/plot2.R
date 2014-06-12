@@ -36,6 +36,9 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
   if (!is.null(fill.color))
     panel.fill(col = fill.color)
 
+  if (is.list(at))
+    at <- at[[(subscripts - 1) %% length(at) + 1]]
+
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   N <- dim(recon[[subscripts]])
   data <- expand.grid(y = rev(seq_len(N[1])), x = seq_len(N[2]))
@@ -144,7 +147,7 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                     scales = list(draw = FALSE, relation = "same"),
                     aspect = "iso",
                     cuts = 20,
-                    colorkey = !identical(at, "free"),
+                    colorkey = !(identical(at, "free") || is.list(at) && length(at) > 1),
                     symmetric = FALSE,
                     ref = FALSE,
                     useRaster = TRUE,
@@ -153,7 +156,7 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                      list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   # Disable colorkey if subplots are drawing in different scales
-  if (identical(at, "free"))
+  if (identical(at, "free") || is.list(at) && length(at) > 1)
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {
@@ -204,6 +207,9 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       fill.color = NULL) {
   if (!is.null(fill.color))
     panel.fill(col = fill.color)
+
+  if (is.list(at))
+    at <- at[[(subscripts - 1) %% length(at) + 1]]
 
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
 
@@ -295,7 +301,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                      list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   # Disable colorkey if subplots are drawed in different scales
-  if (identical(at, "free"))
+  if (identical(at, "free") || is.list(at) && length(at) > 1)
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {

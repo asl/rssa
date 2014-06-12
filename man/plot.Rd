@@ -65,7 +65,9 @@
       Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
       special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
       argument in 'Details') for each component. 'same' means one breakpoints' vector for all
-      component (will be evaluated automatically too).}
+      component (will be evaluated automatically too).
+      If list will be given, corresponding list element
+      (with recycling) will be using for each plot panel}
     \item{cuts}{for 2d-reconstruction-plot, the number of levels the range of \code{z} would be divided into.}
     \item{fill.color}{color or 'NULL'. Defines background color for shaped 2d-eigenvectors plot. If 'NULL', standard white
       background will be used.}

@@ -67,11 +67,13 @@
     the first color corresponds to the minimal value,
     while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
   \item{zlim}{for 2d-plot, range of displaying values}
-  \item{at}{A numeric vector giving breakpoints along the range of the image.
+  \item{at}{a numeric vector giving breakpoints along the range of the image.
     Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
     special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
     argument in 'Details') for each component. 'same' means one breakpoints' vector for all
-    component (will be evaluated automatically too)}
+    component (will be evaluated automatically too).
+    If list will be given, corresponding list element
+    (with recycling) will be using for each plot panel}
   \item{add.ranges}{logical, if 'TRUE', the range of the components values
     will be printed in panels captions}
 }
