@@ -33,6 +33,10 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
                                         region, contour,
                                         fill.uncovered = "void",
                                         fill.color = NULL) {
+  if (is.list(fill.uncovered))
+    fill.uncovered <- fill.uncovered[[(subscripts - 1) %% length(fill.uncovered) + 1]]
+  if (is.list(fill.color))
+    fill.color <- fill.color[[(subscripts - 1) %% length(fill.color) + 1]]
   if (!is.null(fill.color))
     panel.fill(col = fill.color)
 
@@ -205,6 +209,8 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       .useRaster = FALSE,
                                       region, contour,
                                       fill.color = NULL) {
+  if (is.list(fill.color))
+    fill.color <- fill.color[[(subscripts - 1) %% length(fill.color) + 1]]
   if (!is.null(fill.color))
     panel.fill(col = fill.color)
 

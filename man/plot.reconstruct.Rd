@@ -87,12 +87,14 @@
     \item{ref}{logical, whether to plot zero-level isolines}
     \item{symmetric}{logical, whether to use symmetric image range scale}
     \item{useRaster}{logical, indicates whether raster representations should be used. 'TRUE' by default.}
-    \item{fill.uncovered}{single number, matrix or one of the following strings: 'mean', 'original', 'void'.
+    \item{fill.uncovered}{single number, matrix, one of the following strings: 'mean', 'original', 'void'
+      or a list of such objects.
       For shaped 2d-reconstruction-plot this argument defines filling
       method for uncovered by window array elements on components and residuals plots.
       If number, all uncovered elements will be replaced by it. If matrix, all uncovered elements will be replaced by
       corresponding matrix elements. If 'mean', they will be replaced by mean value of current component. If 'original',
-      they will be replaced by corresponding elements of original array. 'void' (by default) means no filling.}
+      they will be replaced by corresponding elements of original array. 'void' (by default) means no filling.
+    If list is given, corresponding list element (with recycling) will be used for each plot panel.}
     \item{fill.color}{color or 'NULL'. Defines background color for shaped 2d-reconstruction plot. If 'NULL', standard white
       background will be used.}
   }
