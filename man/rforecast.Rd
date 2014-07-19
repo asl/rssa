@@ -14,14 +14,17 @@
 
 \usage{
 \method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{mssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           direction = c("row", "column"), only.new = TRUE, \dots, drop = TRUE,
           drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{cssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, \dots, drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 
 \arguments{
@@ -31,7 +34,9 @@
   \item{base}{series used as a 'seed' of forecast: original or
     reconstructed according to the value of \code{groups} argument}
   \item{direction}{direction of forecast in multichannel SSA case, "column"
-    stands for so-called L-forecast and "row" stands for K-forecast}
+    stands for so-called L-forecast and "row" stands for K-forecast;
+    direction of forecast in 1D SSA case, "forward" (default) means that
+    the forecast moves forward in the time and "backward" means the opposite}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}}

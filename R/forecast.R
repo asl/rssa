@@ -18,7 +18,11 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-lrr.default <- function(x, eps = sqrt(.Machine$double.eps), ..., orthonormalize = TRUE) {
+lrr.default <- function(x, eps = sqrt(.Machine$double.eps),
+                        direction = c("forward", "backward"),
+                        ...,
+                        orthonormalize = TRUE) {
+  direction <- match.arg(direction)
   if (orthonormalize) {
     U <- qr.Q(qr(x))
   } else {
@@ -30,16 +34,20 @@ lrr.default <- function(x, eps = sqrt(.Machine$double.eps), ..., orthonormalize 
   # Return zero LRR coefficients for zero subspace
   if (ncol(U) == 0) return(rep(0, N - 1))
 
-  lpf <- Conj(U) %*% t(U[N, , drop = FALSE])
+  idx <- if (identical(direction, "forward")) N else 1
+  lpf <- Conj(U) %*% t(U[idx, , drop = FALSE])
 
-  divider <- 1 - lpf[N]
+  divider <- 1 - lpf[idx]
   if (Mod(divider) < eps)
     stop("Verticality coefficient equals to 1")
 
-  lpf[-N] / divider
+  lpf[-idx] / divider
 }
 
-lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
+lrr.1d.ssa <- function(x, groups,
+                       direction = c("forward", "backward"),
+                       ..., drop = TRUE) {
+  direction <- match.arg(direction)
   if (is.shaped(x))
     stop("`LRR is not implemented for shaped SSA case yet")
 
@@ -51,7 +59,8 @@ lrr.1d.ssa <- function(x, groups, ..., drop = TRUE) {
 
   out <- list()
   for (i in seq_along(groups)) {
-    res <- lrr.default(.colspan(x, groups[[i]]), ..., orthonormalize = FALSE)
+      res <- lrr.default(.colspan(x, groups[[i]]), direction = direction,
+                         ..., orthonormalize = FALSE)
     class(res) <- "lrr"
 
     out[[i]] <- res
@@ -85,7 +94,10 @@ roots.lrr <- function(x, ..., method = c("companion", "polyroot")) {
   res[order(abs(res), decreasing = TRUE)]
 }
 
-apply.lrr <- function(F, lrr, len = 1, only.new = FALSE, drift = 0) {
+apply.lrr <- function(F, lrr, len = 1, only.new = FALSE,
+                      drift = 0, direction = c("forward", "backward")) {
+  direction <- match.arg(direction)
+
   # Recycle drifts if needed
   if (length(drift) != len) {
     drift <- rep(drift, len)[seq_len(len)]
@@ -99,17 +111,26 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE, drift = 0) {
     stop("Wrong length of LRR")
 
   # Run the actual LRR
-  F <- c(F, rep(NA, len))
-  for (i in 1:len)
-    F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr) + drift[i]
+  if (identical(direction, "forward")) {
+    F <- c(F, rep(NA, len))
+    for (i in 1:len)
+      F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr) + drift[i]
 
-  if (only.new) F[(N+1):(N+len)] else F
+    if (only.new) F[(N+1):(N+len)] else F
+  } else {
+    F <- c(rep(NA, len), F)
+
+    for (i in 1:len)
+      F[len-i+1] <- sum(F[(len-i+1 + 1) : (len-i+1 + r)]*lrr) + drift[i]
+
+    if (only.new) F[1:len] else F
+  }
 }
-
 
 rforecast.1d.ssa <- function(x, groups, len = 1,
                              base = c("reconstructed", "original"),
                              only.new = TRUE,
+                             direction = c("forward", "backward"),
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   if (is.shaped(x))
@@ -118,6 +139,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   if (x$circular)
     stop("forecasting is not properly defined for circular SSA")
 
+  direction <- match.arg(direction)
   L <- x$window
 
   base <- match.arg(base)
@@ -129,7 +151,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
     r <- reconstruct(x, groups = groups, ..., cache = cache)
 
   # Calculate the LRR corresponding to groups
-  lf <- lrr(x, groups = groups, drop = FALSE)
+  lf <- lrr(x, groups = groups, direction = direction, drop = FALSE)
   stopifnot(length(lf) == length(groups))
 
   out <- list()
@@ -138,9 +160,9 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .F(x),
-                          lf[[i]], len, only.new = only.new)
+                          lf[[i]], len, only.new = only.new, direction = direction)
     out[[i]] <- .apply.attributes(x, out[[i]],
-                                  fixup = TRUE,
+                                  fixup = TRUE, direction = direction,
                                   only.new = only.new, drop = drop.attributes)
   }
 
