@@ -1,6 +1,0 @@
-This is some tentative list of ToDo items as of 2012-02-19
-  - Implement serialization / deserialization routines
-  - Implement wcor for 2d SSA
-  - Add gap filling methods
-  - Add more SSA prediction
-  - More stuff? Monte-Carlo SSA? Something else?
