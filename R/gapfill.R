@@ -93,7 +93,7 @@ pi.project.missing <- function(U, v) {
 classify.gaps <- function(na.idx, L, N) {
   ## First, split the na.idx into separate clusters
   d <- which(diff(na.idx) > L)
-  cl.borders <- sort(unique(c(min(na.idx), na.idx[d], na.idx[d+1], max(na.idx))))
+  cl.borders <- if (length(na.idx) == 1) c(na.idx, na.idx) else sort(unique(c(min(na.idx), na.idx[d], na.idx[d+1], max(na.idx))))
   stopifnot(length(cl.borders) %% 2 == 0)
   left <- cl.borders[c(TRUE, FALSE)]
   right <- cl.borders[c(FALSE, TRUE)]
