@@ -46,10 +46,8 @@ pi.project.complete <- function(U, v) {
   fidx <- !midx
 
   # Skip the processing in case of no complete values
-  if (all(midx)) {
-#    print(vidx)
+  if (all(midx))
     return (numeric(0))
-  }
   
   W <- U[midx, , drop = FALSE]
   V <- U[fidx, , drop = FALSE]
@@ -57,11 +55,8 @@ pi.project.complete <- function(U, v) {
   # FIXME: Cache a for later use
   a <- qr(diag(nrow = sum(midx)) - W %*% t(W))
   nc <- ncol(a$qr)
-  if (a$rank != nc) {
-#    print(vidx)
-#    print(c(a$rank, nc))
+  if (a$rank != nc)
     return (numeric(0))
-  }
 
   V %*% t(V) %*% v[fidx] + VtW %*% qr.coef(a, t(VtW) %*% v[fidx])
 }
@@ -70,22 +65,16 @@ pi.project.missing <- function(U, v) {
   midx <- is.na(v)
   fidx <- !midx
 
-  if (all(midx)) {
-    # print(vidx)
+  if (all(midx))
     return (numeric(0))
-  }
-#    stopifnot(any(fidx))
     
   W <- U[midx, , drop = FALSE]
   V <- U[fidx, , drop = FALSE]
 
   a <- qr(diag(nrow = sum(midx)) - W %*% t(W))
   nc <- ncol(a$qr)
-  if (a$rank != nc) {
-#    print(vidx)
-#    print(c(a$rank, nc))
+  if (a$rank != nc)
     return (numeric(0))
-  }
 
   qr.coef(a, W %*% t(V) %*% v[fidx])
 }

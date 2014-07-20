@@ -56,7 +56,11 @@ export(clone,
        iossa,
        owcor,
        fossa,
-       frobenius.cor
+       frobenius.cor,
+# Gapfilling
+       igapfill,
+       clplot,
+       gapfill
        )
 
 S3method("clone", ssa)

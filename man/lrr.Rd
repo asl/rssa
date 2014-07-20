@@ -17,7 +17,8 @@
 \usage{
 \method{lrr}{1d.ssa}(x, groups, direction = c("forward", "backward"), \dots, drop = TRUE)
 \method{lrr}{toeplitz.ssa}(x, groups, direction = c("forward", "backward"), \dots, drop = TRUE)
-\method{lrr}{default}(x, eps = sqrt(.Machine$double.eps), direction = c("forward", "backward"), \dots, orthonormalize = TRUE)
+\method{lrr}{default}(x, eps = sqrt(.Machine$double.eps),
+        direction = c("forward", "backward"), \dots, orthonormalize = TRUE)
 \method{roots}{lrr}(x, ..., method = c("companion", "polyroot"))
 \method{plot}{lrr}(x, ..., raw = FALSE)
 }
