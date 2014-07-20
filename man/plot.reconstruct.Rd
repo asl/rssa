@@ -67,8 +67,12 @@
     the first color corresponds to the minimal value,
     while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
   \item{zlim}{for 2d-plot, range of displayed values}
-  \item{at}{A numeric vector giving breakpoints along the range of the image.
-    Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
+  \item{at}{for 2d-eigenvectors-plot, a numeric vector giving breakpoints along the range of \code{z},
+    a list of such vectors
+    or a character string.
+    If a list is given, corresponding list element (with recycling) will be used for each
+    plot panel.
+    For character strings, values 'free' and 'same' are allowed: 'free' means
     special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
     argument in 'Details') for each component. 'same' means one breakpoints' vector for all
     component (will be evaluated automatically too)}
