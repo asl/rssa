@@ -56,11 +56,20 @@
     \item{symmetric}{logical. Whether to use symmetric scales in series-plot, eigenvectors-plot and paired-plot.}
     \item{useRaster}{logical. For 2d-eigenvector-plot and wcor-plot, indicating whether raster representations
       should be used. 'TRUE' by default.}
-    \item{at}{for 2d-eigenvectors-plot, a numeric vector giving breakpoints along the range of \code{z}.
-      Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
+    \item{col}{color vector for colorscale (for 2d- and wcor-plots),
+      given by two or more colors,
+      the first color corresponds to the minimal value,
+      while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
+    \item{zlim}{for 2d-plot, range of displayed values}
+    \item{at}{for 2d-eigenvectors-plot, a numeric vector giving breakpoints along the range of \code{z},
+      a list of such vectors
+      or a character string.
+      If a list is given, corresponding list element (with recycling) will be used for each
+      plot panel.
+      For character strings, values 'free' and 'same' are allowed: 'free' means
       special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
       argument in 'Details') for each component. 'same' means one breakpoints' vector for all
-      component (will be evaluated automatically too).}
+      component (will be evaluated automatically too)}
     \item{cuts}{for 2d-reconstruction-plot, the number of levels the range of \code{z} would be divided into.}
     \item{fill.color}{color or 'NULL'. Defines background color for shaped 2d-eigenvectors plot. If 'NULL', standard white
       background will be used.}

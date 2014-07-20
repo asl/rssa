@@ -38,6 +38,8 @@
      add.original = TRUE,
      add.residuals = TRUE,
      add.ranges,
+     col = grey(c(0, 1)),
+     zlim,
      at)
 }
 
@@ -60,8 +62,17 @@
     to the plot}
   \item{add.residuals}{logical, if 'TRUE' then the residuals are added
   to the plot}
-  \item{at}{A numeric vector giving breakpoints along the range of the image.
-    Also can be a character string. Values 'free' and 'same' are allowed. 'free' means
+  \item{col}{color vector for colorscale,
+    given by two or more colors,
+    the first color corresponds to the minimal value,
+    while the last one corresponds to the maximal value (will be interpolated by \code{colorRamp})}
+  \item{zlim}{for 2d-plot, range of displayed values}
+  \item{at}{for 2d-eigenvectors-plot, a numeric vector giving breakpoints along the range of \code{z},
+    a list of such vectors
+    or a character string.
+    If a list is given, corresponding list element (with recycling) will be used for each
+    plot panel.
+    For character strings, values 'free' and 'same' are allowed: 'free' means
     special breakpoints' vectors (will be evaluated automatically, see description of \code{cuts}
     argument in 'Details') for each component. 'same' means one breakpoints' vector for all
     component (will be evaluated automatically too)}
@@ -76,12 +87,14 @@
     \item{ref}{logical, whether to plot zero-level isolines}
     \item{symmetric}{logical, whether to use symmetric image range scale}
     \item{useRaster}{logical, indicates whether raster representations should be used. 'TRUE' by default.}
-    \item{fill.uncovered}{single number, matrix or one of the following strings: 'mean', 'original', 'void'.
+    \item{fill.uncovered}{single number, matrix, one of the following strings: 'mean', 'original', 'void'
+      or a list of such objects.
       For shaped 2d-reconstruction-plot this argument defines filling
       method for uncovered by window array elements on components and residuals plots.
       If number, all uncovered elements will be replaced by it. If matrix, all uncovered elements will be replaced by
       corresponding matrix elements. If 'mean', they will be replaced by mean value of current component. If 'original',
-      they will be replaced by corresponding elements of original array. 'void' (by default) means no filling.}
+      they will be replaced by corresponding elements of original array. 'void' (by default) means no filling.
+    If list is given, corresponding list element (with recycling) will be used for each plot panel.}
     \item{fill.color}{color or 'NULL'. Defines background color for shaped 2d-reconstruction plot. If 'NULL', standard white
       background will be used.}
   }

@@ -254,9 +254,14 @@ panel.series <- function(x, y, recon, ..., ref = FALSE) {
 
 .plot.ssa.series.toeplitz.ssa <- .plot.ssa.series.1d.ssa
 
-panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
+panel.levelplot.wcor <- function(x, y, z, at, ..., grid, .useRaster = FALSE) {
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
-  panel(x, y, z, ...)
+
+  # Cutoff outstanding values
+  z[z < min(at)] <- min(at)
+  z[z > max(at)] <- max(at)
+
+  panel(x, y, z, at = at, ...)
 
   if (!is.list(grid))
     grid <- list(h = grid, v = grid)
@@ -268,8 +273,10 @@ panel.levelplot.wcor <- function(x, y, z, ..., grid, .useRaster = FALSE) {
 plot.wcor.matrix <- function(x,
                              grid = c(),
                              ...,
+                             col = grey(c(1, 0)),
                              cuts = 20,
-                             zlim = range(abs(x), 0, 1)) {
+                             zlim = range(abs(x), 0, 1),
+                             at) {
   # Provide convenient defaults
   dots <- list(...)
   dots <- .defaults(dots,
@@ -280,8 +287,9 @@ plot.wcor.matrix <- function(x,
                     aspect = "iso",
                     xlim = rownames(x),
                     ylim = colnames(x),
-                    par.settings = list(regions = list(col = colorRampPalette(grey(c(1, 0))))),
                     useRaster = TRUE)
+  dots <- modifyList(dots,
+                     list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   data <- expand.grid(row = seq_len(nrow(x)), column = seq_len(ncol(x)))
   data$x <- as.vector(as.numeric(x))
@@ -289,10 +297,13 @@ plot.wcor.matrix <- function(x,
   # Rename args for transfer to panel function
   names(dots)[names(dots) == "useRaster"] <- ".useRaster"
 
+  if (missing(at))
+    at <- pretty(zlim, n = cuts)
+
   do.call("levelplot",
           c(list(x = abs(x) ~ row * column,
                  data = data,
-                 at = seq(zlim[1], zlim[2], length.out = cuts + 2),
+                 at = at,
                  panel = panel.levelplot.wcor,
                  grid = grid),
             dots))

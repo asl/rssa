@@ -33,8 +33,15 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
                                         region, contour,
                                         fill.uncovered = "void",
                                         fill.color = NULL) {
+  if (is.list(fill.uncovered))
+    fill.uncovered <- fill.uncovered[[(subscripts - 1) %% length(fill.uncovered) + 1]]
+  if (is.list(fill.color))
+    fill.color <- fill.color[[(subscripts - 1) %% length(fill.color) + 1]]
   if (!is.null(fill.color))
     panel.fill(col = fill.color)
+
+  if (is.list(at))
+    at <- at[[(subscripts - 1) %% length(at) + 1]]
 
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
   N <- dim(recon[[subscripts]])
@@ -65,6 +72,10 @@ panel.reconstruction.2d.ssa <- function(x, y, z, recon, subscripts, at, ...,
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
 
+  # Cutoff outstanding values
+  data$z[data$z < min(at)] <- min(at)
+  data$z[data$z > max(at)] <- max(at)
+
   panel(data$x, data$y, data$z, subscripts = seq_len(nrow(data)),
         at = at, contour = FALSE, region = TRUE, ...)
 
@@ -83,10 +94,14 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                                        add.original = TRUE,
                                        add.residuals = TRUE,
                                        add.ranges,
+                                       col = grey(c(0, 1)),
+                                       zlim,
                                        at) {
   dots <- list(...)
   type <- match.arg(type)
 
+  if (!missing(zlim))
+    at <- "same"
   if (missing(at))
     at <- if (identical(type, "cumsum")) "same" else "free"
   if (is.character(at))
@@ -135,20 +150,21 @@ plot.2d.ssa.reconstruction <- function(x, ...,
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "same"),
                     aspect = "iso",
-                    par.settings = list(regions = list(col = colorRampPalette(grey(c(0, 1))))),
                     cuts = 20,
-                    colorkey = !identical(at, "free"),
+                    colorkey = !(identical(at, "free") || (is.list(at) && length(at) > 1)),
                     symmetric = FALSE,
                     ref = FALSE,
                     useRaster = TRUE,
                     fill.uncovered = "void")
+  dots <- modifyList(dots,
+                     list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   # Disable colorkey if subplots are drawing in different scales
-  if (identical(at, "free"))
+  if (identical(at, "free") || (is.list(at) && length(at) > 1))
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {
-    all.values <- unlist(x)
+    all.values <- if (missing(zlim)) unlist(x) else zlim
     at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
   }
 
@@ -193,8 +209,13 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                                       .useRaster = FALSE,
                                       region, contour,
                                       fill.color = NULL) {
+  if (is.list(fill.color))
+    fill.color <- fill.color[[(subscripts - 1) %% length(fill.color) + 1]]
   if (!is.null(fill.color))
     panel.fill(col = fill.color)
+
+  if (is.list(at))
+    at <- at[[(subscripts - 1) %% length(at) + 1]]
 
   panel <- if (.useRaster) panel.levelplot.raster else panel.levelplot
 
@@ -224,6 +245,10 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
     at <- seq(z.range[1], z.range[2], length.out = .cuts + 2)
   }
 
+  # Cutoff outstanding values
+  data$z[data$z < min(at)] <- min(at)
+  data$z[data$z > max(at)] <- max(at)
+
   panel(data$x, data$y, data$z, subscripts = seq_len(nrow(data)),
         at = at, contour = FALSE, region = TRUE, ...)
 
@@ -238,10 +263,15 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
 .plot.ssa.vectors.2d.ssa <- function(x, ...,
                                      what = c("eigen", "factor"),
-                                     plot.contrib = FALSE, idx, at) {
+                                     col = grey(c(0, 1)),
+                                     zlim,
+                                     at,
+                                     plot.contrib = FALSE, idx) {
   dots <- list(...)
   what <- match.arg(what)
 
+  if (!missing(zlim))
+    at <- "same"
   if (missing(at))
     at <- "free"
   if (is.character(at))
@@ -269,18 +299,19 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
                     as.table = TRUE,
                     scales = list(draw = FALSE, relation = "same"),
                     aspect = "iso",
-                    par.settings = list(regions = list(col = colorRampPalette(grey(c(0, 1))))),
                     cuts = 20,
                     symmetric = FALSE,
                     ref = FALSE,
                     useRaster = TRUE)
+  dots <- modifyList(dots,
+                     list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 
   # Disable colorkey if subplots are drawed in different scales
-  if (identical(at, "free"))
+  if (identical(at, "free") || (is.list(at) && length(at) > 1))
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {
-    all.values <- x$U[, idx]
+    all.values <- if (missing(zlim)) x$U[, idx] else zlim
     at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
   }
 
