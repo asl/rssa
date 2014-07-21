@@ -68,18 +68,6 @@ static inline R_len_t hprod(R_len_t rank, const R_len_t *N) {
   return res;
 }
 
-static inline R_len_t *rev(R_len_t rank, R_len_t *N) {
-  R_len_t i, j, tmp;
-
-  i = 0; j = rank - 1;
-  while (i < j) {
-    tmp = N[i]; N[i] = N[j]; N[j] = tmp;
-    ++i; --j;
-  }
-
-  return N;
-}
-
 static unsigned hbhankel_nrow(const void *matrix) {
   const hbhankel_matrix *h = matrix;
   return h->col_ind != NULL ? h->col_ind->num : prod(h->rank, h->window);
@@ -104,13 +92,13 @@ static void free_circulant(hbhankel_matrix *h) {
 static void initialize_circulant(hbhankel_matrix *h,
                                  const double *F,
                                  R_len_t rank,
-                                 R_len_t *N,
-                                 R_len_t *L,
+                                 const R_len_t *N,
+                                 const R_len_t *L,
                                  const int *circular) {
   fftw_complex *ocirc;
   fftw_plan p1, p2;
   double *circ;
-  R_len_t *NN, r;
+  R_len_t *revN, r;
 
   /* Allocate needed memory */
   circ = (double*) fftw_malloc(prod(rank, N) * sizeof(double));
@@ -119,12 +107,11 @@ static void initialize_circulant(hbhankel_matrix *h,
   /* Estimate the best plans for given input length, note, that input data is
      stored in column-major mode, that's why we're passing dimensions in
      *reverse* order */
-  NN = Calloc(rank, R_len_t);
-  memcpy(NN, N, rank * sizeof(R_len_t));
-  rev(rank, NN);
-  p1 = fftw_plan_dft_r2c(rank, NN, circ, ocirc, FFTW_ESTIMATE);
-  p2 = fftw_plan_dft_c2r(rank, NN, ocirc, circ, FFTW_ESTIMATE);
-  Free(NN);
+  revN = Calloc(rank, R_len_t);
+  for (r = 0; r < rank; ++r) revN[r] = N[rank - 1 - r];
+  p1 = fftw_plan_dft_r2c(rank, revN, circ, ocirc, FFTW_ESTIMATE);
+  p2 = fftw_plan_dft_c2r(rank, revN, ocirc, circ, FFTW_ESTIMATE);
+  Free(revN);
 
   /* Fill input buffer */
   memcpy(circ, F, prod(rank, N) * sizeof(double));
@@ -138,38 +125,43 @@ static void initialize_circulant(hbhankel_matrix *h,
   h->circ_freq = ocirc;
   h->r2c_plan = p1;
   h->c2r_plan = p2;
+
   h->rank = rank;
-  h->window = Calloc(rank, R_len_t); memcpy(h->window, L, rank * sizeof(R_len_t));
-  h->length = Calloc(rank, R_len_t); memcpy(h->length, N, rank * sizeof(R_len_t));
+
+  h->window = Calloc(rank, R_len_t);
+  memcpy(h->window, L, rank * sizeof(R_len_t));
+
+  h->length = Calloc(rank, R_len_t);
+  memcpy(h->length, N, rank * sizeof(R_len_t));
+
   h->factor = Calloc(rank, R_len_t);
-  for (r = 0; r < rank; ++r)
-    h->factor[r] = circular[r] ? N[r] : N[r] - L[r] + 1;
+  for (r = 0; r < rank; ++r) h->factor[r] = circular[r] ? N[r] : N[r] - L[r] + 1;
 }
 
 static void convolveNd_half(const fftw_complex *ox,
                             double *y,
                             R_len_t rank,
-                            R_len_t *N,
+                            const R_len_t *N,
                             int conjugate,
                             fftw_plan r2c_plan,
                             fftw_plan c2r_plan) {
   R_len_t i;
   fftw_complex *oy;
-  R_len_t pN = prod(rank, N), pNN = hprod(rank, N);
+  R_len_t pN = prod(rank, N), phN = hprod(rank, N);
 
   /* Allocate needed memory */
-  oy = (fftw_complex*) fftw_malloc(pNN * sizeof(fftw_complex));
+  oy = (fftw_complex*) fftw_malloc(phN * sizeof(fftw_complex));
 
   /* Compute the Nd-FFT of the matrix y */
   fftw_execute_dft_r2c(r2c_plan, y, oy);
 
   /* Compute conjugation if needed */
   if (conjugate)
-    for (i = 0; i < pNN; ++i)
+    for (i = 0; i < phN; ++i)
       oy[i] = conj(oy[i]);
 
   /* Dot-multiply ox and oy, and divide by Nx*...*Nz*/
-  for (i = 0; i < pNN; ++i)
+  for (i = 0; i < phN; ++i)
     oy[i] *= ox[i] / pN;
 
   /* Compute the reverse transform to obtain result */
@@ -182,15 +174,15 @@ static void convolveNd_half(const fftw_complex *ox,
 static void convolveNd(double *x,
                        double *y,
                        R_len_t rank,
-                       R_len_t *N,
+                       const R_len_t *N,
                        int conjugate,
                        fftw_plan r2c_plan,
                        fftw_plan c2r_plan) {
   fftw_complex *ox;
-  R_len_t pNN = hprod(rank, N);
+  R_len_t phN = hprod(rank, N);
 
   /* Allocate needed memory */
-  ox = (fftw_complex*) fftw_malloc(pNN * sizeof(fftw_complex));
+  ox = (fftw_complex*) fftw_malloc(phN * sizeof(fftw_complex));
 
   /* Compute the NdFFT of the arrays x and y */
   fftw_execute_dft_r2c(r2c_plan, x, ox);
@@ -201,7 +193,7 @@ static void convolveNd(double *x,
   fftw_free(ox);
 }
 
-
+/* TODO Get rid off this ugly slow complicated function */
 static inline void fill_subarray(double *big,
                                  double *small,
                                  R_len_t rank,
