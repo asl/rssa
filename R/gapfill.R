@@ -104,6 +104,7 @@ classify.gaps <- function(na.idx, L, N) {
 gapfill.1d.ssa <- function(x, groups,
                            base = c("reconstructed", "original"),
                            method = c("sequential", "simultaneous"),
+                           alpha = 0.5,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
@@ -111,6 +112,9 @@ gapfill.1d.ssa <- function(x, groups,
 
   if (!is.shaped(x))
     stop("gapfilling should start from shaped SSA object")
+
+  if (alpha < 0 || alpha > 1)
+    stop("`alpha' should be between 0 and 1")
 
   L <- x$window; N <- x$length; K <- N - L + 1
 
@@ -170,11 +174,13 @@ gapfill.1d.ssa <- function(x, groups,
           stopifnot(identical(gap$pos, "internal"))
 
           res[to.fill] <-
-                  (apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
+                  (alpha *
+                   apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
                              len = len, only.new = TRUE, direction = "backward")
                    +
+                   (1 - alpha) *
                    apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
-                             len = len, only.new = TRUE, direction = "forward")) / 2
+                             len = len, only.new = TRUE, direction = "forward"))
         }
       }
     }
