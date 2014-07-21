@@ -35,7 +35,7 @@ clplot <- function(x, ...,
 }
 
 # FIXME: This is ugly
-complete.idx <- function(na.idx, N, L) 
+complete.idx <- function(na.idx, N, L)
   which(sapply(1:(N-L+1), is.complete, na.idx = na.idx, L = L))
 
 sproject <- function(U, X)
@@ -48,7 +48,7 @@ pi.project.complete <- function(U, v) {
   # Skip the processing in case of no complete values
   if (all(midx))
     return (numeric(0))
-  
+
   W <- U[midx, , drop = FALSE]
   V <- U[fidx, , drop = FALSE]
   VtW <- V %*% t(W)
@@ -67,7 +67,7 @@ pi.project.missing <- function(U, v) {
 
   if (all(midx))
     return (numeric(0))
-    
+
   W <- U[midx, , drop = FALSE]
   V <- U[fidx, , drop = FALSE]
 
@@ -86,7 +86,7 @@ classify.gaps <- function(na.idx, L, N) {
   stopifnot(length(cl.borders) %% 2 == 0)
   left <- cl.borders[c(TRUE, FALSE)]
   right <- cl.borders[c(FALSE, TRUE)]
-  
+
   # Iterate over borders classifying the gaps
   res <- list()
   for (idx in seq_along(left)) {
@@ -101,165 +101,92 @@ classify.gaps <- function(na.idx, L, N) {
   res
 }
 
-fill.in.left <- function(Xr, blrr) {
-  leftpos <- 1
-  rightpos <- ncol(Xr) - 1
-  len <- rightpos - leftpos + 1
-  L <- nrow(Xr)
-
-  f <- apply.lrr(Xr[, rightpos + 1], blrr,
-                 len = len,
-                 direction = "backward", only.new = TRUE)
-
-  for (vidx in seq(rightpos, leftpos)) {
-    v <- Xr[, vidx]
-    # First, fill in full entries
-    if (rightpos - vidx < L - 1) {
-      fidx <- seq.int(rightpos - vidx + 1 + 1, L)
-      Xr[fidx, vidx] <- Xr[, vidx + 1][fidx - 1]
-    }
-
-    # Now, add missed entries from the LRR prediction
-    midx <- seq.int(1, min(L, rightpos - vidx + 1))
-    mfidx <- seq.int(from = vidx, length.out = length(midx))
-    Xr[midx, vidx] <- f[mfidx]
-  }
-
-  Xr
-}
-
-fill.in.right <- function(Xr, flrr, L) {
-  leftpos <- 2
-  rightpos <- ncol(Xr)
-  len <- rightpos - leftpos + 1
-  L <- nrow(Xr)
-
-  f <- apply.lrr(Xr[, leftpos - 1], flrr,
-                 len = len,
-                 direction = "forward", only.new = TRUE)
-  for (vidx in seq(leftpos, rightpos)) {
-    v <- Xr[, vidx]
-
-    # First, fill in full entries
-    if (vidx <= L) { 
-      fidx <- seq.int(1, L - vidx + 1)
-      Xr[fidx, vidx] <- Xr[, vidx - 1][fidx + 1]
-    }
-
-    # Now, add missed entries from the LRR prediction
-    midx <- seq.int(to = L, length.out = min(L, vidx - 1))
-    mfidx <- seq.int(to = vidx - 1, length.out = length(midx))
-    Xr[midx, vidx] <- f[mfidx]
-  }
-
-  Xr
-}
-
-gapfill <- function(F, groups, L = (N + 1) %/% 2,
-                    base = c("reconstructed", "original"),
-                    method = c("stepwise", "simultaneous"),
-                    ...,
-                    drop.attributes = FALSE) {
+gapfill.1d.ssa <- function(x, groups,
+                           base = c("reconstructed", "original"),
+                           method = c("sequential", "simultaneous"),
+                           ...,
+                           drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
   base <- match.arg(base)
-  N <- length(F)
-  K <- N - L + 1
 
-  groups <- unlist(groups)
+  if (!is.shaped(x))
+    stop("gapfilling should start from shaped SSA object")
 
-  s <- suppressWarnings(ssa(F, L = L, kind = "1d-ssa"))
- 
+  L <- x$window; N <- x$length; K <- N - L + 1
+
   # Grab the reconstructed series if we're basing on them
-  if (identical(base, "reconstructed")) {
-    r <- reconstruct(s, groups = list(groups), ...)
-    stopifnot(length(r) == 1)
-    F <- r[[1]]
-  }
+  if (identical(base, "reconstructed"))
+    r <- reconstruct(x, groups = groups, ..., cache = cache)
 
-  na.idx <- which(is.na(F))
-  complete <- complete.idx(na.idx, N, L)
-  incomplete <- setdiff(1:K, complete)
- 
-  #Ug <- s$U[, groups, drop = FALSE]
-  Ug <- .colspan(s, groups)
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+    F <- if (identical(base, "reconstructed")) r[[i]] else .F(x)
+    na.idx <- which(is.na(F))
 
-  ## Project the complete trajectory vectors onto subspace
-  Xr <- hankel(F, L)
-  Xr[, complete] <- sproject(Ug, Xr[, complete, drop = FALSE])
+    Ug <- .colspan(s, group)
 
-  if (identical(method, "simultaneous")) {
+    if (identical(method, "simultaneous")) {
+      Xr <- hankel(F, L)
+
+      complete <- complete.idx(na.idx, N, L)
+      incomplete <- setdiff(1:K, complete)
+
+      ## Project the complete trajectory vectors onto subspace
+      Xr[, complete] <- sproject(Ug, Xr[, complete, drop = FALSE])
+
       ## Now iterate over incomplete vectors building the projections for
       ## entries via so-called Pi-projection operator
       for (vidx in incomplete) {
-          v <- Xr[, vidx]
-          fidx <- !is.na(v)
-          midx <- is.na(v)
- 
-          if (length(resf <- pi.project.complete(Ug, v)) == 0)
-              next
-          if (length(resm <- pi.project.missing(Ug, v)) == 0)
-              next
+        v <- Xr[, vidx]
+        fidx <- !is.na(v)
+        midx <- is.na(v)
 
-          Xr[fidx, vidx] <- resf
-          Xr[midx, vidx] <- resm
+        if (length(resf <- pi.project.complete(Ug, v)) == 0)
+                next
+        if (length(resm <- pi.project.missing(Ug, v)) == 0)
+                next
+
+        Xr[fidx, vidx] <- resf
+        Xr[midx, vidx] <- resm
       }
-  } else {
-    gaps <- classify.gaps(na.idx, L, N)
-    blrr <- lrr(Ug, direction = "backward")
-    flrr <- lrr(Ug, direction = "forward")
+      out[[i]] <- hankel(Xr)
+    } else {
+      res <- F
+      gaps <- classify.gaps(na.idx, L, N)
+      blrr <- lrr(Ug, direction = "backward")
+      flrr <- lrr(Ug, direction = "forward")
 
-    for (gap in gaps) {
-      if (identical(gap$pos, "left")) {
-        leftpos <- gap$left
-        rightpos <- gap$right
-        to.fill <- seq(leftpos, rightpos + 1)
-        len <- rightpos - leftpos + 1
-        Xr[, to.fill] <- fill.in.left(Xr[, to.fill], blrr)
+      for (gap in gaps) {
+        leftpos <- gap$left; rightpos <- gap$right; len <- rightpos - leftpos + 1
+        to.fill <- seq.int(leftpos, rightpos)
+        if (identical(gap$pos, "left")) {
+          res[to.fill] <- apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
+                                    len = len, only.new = TRUE, direction = "backward")
+        } else if (identical(gap$pos, "right")) {
+          res[to.fill] <- apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
+                                    len = len, only.new = TRUE, direction = "forward")
+        } else {
+          stopifnot(identical(gap$pos, "internal"))
 
-        ## Additional handling for non-border left gaps - fill in and project
-        if (leftpos > 1) {
-          cidx <- seq(leftpos - 1, 1)
-          for (vidx in cidx) {
-            fidx <- seq(leftpos - vidx + 1, L)
-            Xr[fidx, vidx] <- Xr[, vidx + 1][fidx - 1]
-          }
-          Xr[, cidx] <- sproject(Ug, Xr[, cidx])
+          res[to.fill] <-
+                  (apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
+                             len = len, only.new = TRUE, direction = "backward")
+                   +
+                   apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
+                             len = len, only.new = TRUE, direction = "forward")) / 2
         }
-      } else if (identical(gap$pos, "right")) {
-        leftpos <- gap$left - L + 1
-        rightpos <- gap$right - L + 1
-        to.fill <- seq(leftpos - 1, rightpos)
-        len <- rightpos - leftpos + 1
-        Xr[, to.fill] <- fill.in.right(Xr[, to.fill], flrr)
-
-        ## Additional handling for non-border right gaps - fill in and project
-        if (rightpos < K) {
-          cidx <- seq(rightpos + 1, K)
-          for (vidx in cidx) {
-            fidx <- seq(1, L - (vidx - rightpos))
-            Xr[fidx, vidx] <- Xr[, vidx - 1][fidx + 1]
-          }
-          Xr[, cidx] <- sproject(Ug, Xr[, cidx])
-        }
-
-      } else {
-        stopifnot(identical(gap$pos, "internal"))
-
-        ## Fill in in left direction
-        leftpos <- gap$left - L + 1
-        rightpos <- gap$right
-        to.fill <- seq(leftpos, rightpos + 1)
-        Xr[, to.fill] <- fill.in.left(Xr[, to.fill], blrr)
-
-        ## Fill in in right direction
-        leftpos <- gap$left - L + 1
-        rightpos <- gap$right
-        to.fill <- seq(leftpos - 1, rightpos)
-        Xr[, to.fill] <- (Xr[, to.fill] + fill.in.right(Xr[, to.fill], flrr)) / 2
-#        Xr[, to.fill] <-  fill.in.right(Xr[, to.fill], flrr)
       }
     }
+    out[[i]] <- .apply.attributes(x, res, fixup = FALSE, only.new = FALSE, drop = drop.attributes)
   }
 
-  .apply.attributes(s, hankel(Xr), fixup = FALSE, drop = drop.attributes)
+  names(out) <- .group.names(groups)
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  out
 }
+
+gapfill <- function(x, ...)
+  UseMethod("gapfill")
