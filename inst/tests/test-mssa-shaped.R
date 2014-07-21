@@ -20,6 +20,10 @@ new.hmat.striped.old <- function(F, L) {
   extmat(matmul, tmatmul, nrow = L, ncol = sum(K))
 }
 
+as.matrix.extmat <- function (x) {
+  apply(diag(extmat.ncol(x)), 2, ematmul, emat = x)
+}
+
 test_that("new.hmat.striped and new.hmat.striped.old produce equal matrices", {
   set.seed(1)
   Ns <- list(10, 11, c(113, 113), 100, c(10, 14, 13, 11, 17))
