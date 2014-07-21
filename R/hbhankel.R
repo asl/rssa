@@ -118,7 +118,7 @@ new.hbhmat <- function(F, L = (N + 1) %/% 2,
   }
   storage.mode(weights) <- "integer"
 
-  h <- .Call("initialize_hbhmat", F, L[1], L[2], wmask, fmask, weights, circular)
+  h <- .Call("initialize_hbhmat", F, L, wmask, fmask, weights, circular)
 }
 
 hbhcols <- function(h) {
