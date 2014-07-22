@@ -121,7 +121,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE,
     F <- c(rep(NA, len), F)
 
     for (i in 1:len)
-      F[len-i+1] <- sum(F[(len-i+1 + 1) : (len-i+1 + r)]*lrr) + drift[i]
+      F[len-i+1] <- sum(F[(len-i+1 + 1) : (len-i+1 + r)]*lrr) + drift[len-i+1]
 
     if (only.new) F[1:len] else F
   }
