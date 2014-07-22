@@ -26,6 +26,37 @@ fft2 <- function(X, inverse = FALSE) {
   t(mvfft(t(mvfft(X, inverse = inverse)), inverse = inverse))
 }
 
+.convolution.dims <- function(x.dim, y.dim, type = "circular") {
+  type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
+
+  stopifnot(length(x.dim) == length(y.dim))
+  rank <- length(x.dim)
+
+  if (length(type) != rank) {
+    # Use recycling
+
+    if (rank %% length(type) != 0)
+      warning("longer object length is not a multiple of shorter object length")
+
+    type <- type[(seq_len(rank) - 1) %% length(type) + 1]
+  }
+
+  stopifnot(x.dim[type == "filter"] >= y.dim[type == "filter"])
+
+  output.dim <- ifelse(type == "circular",
+                       x.dim,
+                       ifelse(type == "open",
+                              x.dim + y.dim - 1,
+                              x.dim - y.dim + 1))
+
+  input.dim <- ifelse(type == "open",
+                      x.dim + y.dim - 1,
+                      x.dim)
+
+  list(input.dim = input.dim,
+       output.dim = output.dim)
+}
+
 convolve2 <- function(x, y, conj = TRUE, type = "circular") {
   if (length(type) > 2)
     warning("Incorrect argument length: length(type) > 2, two leading values will be used")
@@ -33,24 +64,21 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
     type <- rep(type, 2)[1:2]
   type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
 
-  convolution.size <- function(length.x, length.y, type) {
-    switch(type,
-           circular = list(input = length.x, output = length.x),
-           open = list(input = length.x + length.y - 1, output = length.x + length.y - 1),
-           filter = list(input = length.x, output = length.x - length.y + 1))
-  }
-
-  cs <- lapply(1:2, function(j) convolution.size(dim(x)[j], dim(y)[j], type[j]))
-
-  input.dim <- c(cs[[1]]$input, cs[[2]]$input)
-  output.dim <- c(cs[[1]]$output, cs[[2]]$output)
+  io.dims <- .convolution.dims(dim(x), dim(y), type)
+  input.dim <- io.dims$input.dim
+  output.dim <- io.dims$output.dim
 
   X <- Y <- matrix(0, input.dim[1], input.dim[2])
 
   X[seq_len(nrow(x)), seq_len(ncol(x))] <- x
   Y[seq_len(nrow(y)), seq_len(ncol(y))] <- y
 
-  tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
+  if (is.null(dim(X))) dim(X) <- length(X)
+  if (is.null(dim(Y))) dim(Y) <- length(Y)
+  storage.mode(X) <- storage.mode(Y) <- "double"
+  storage.mode(conj) <- "logical"
+  # tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
+  tmp <- .Call("convolveN", X, Y, conj)
   tmp[seq_len(output.dim[1]), seq_len(output.dim[2]), drop = FALSE]
 }
 
