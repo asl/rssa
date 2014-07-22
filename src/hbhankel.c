@@ -617,3 +617,70 @@ SEXP hbhankelize_one_fft(SEXP U, SEXP V, SEXP hmat) {
 
   return F;
 }
+
+SEXP convolveN(SEXP X, SEXP Y, SEXP Conj) {
+  SEXP DIM = getAttrib(X, R_DimSymbol);
+  R_len_t rank = length(DIM);
+  R_len_t *N = INTEGER(DIM);
+  R_len_t pN = prod(rank, N), phN = hprod(rank, N);
+  int conjugate = LOGICAL(Conj)[0];
+
+  fftw_complex *ox, *oy;
+  fftw_plan r2c_plan, c2r_plan;
+  double *circ;
+  R_len_t *revN, r, i;
+
+  /* Allocate needed memory */
+  circ = (double*) fftw_malloc(pN * sizeof(double));
+  ox = (fftw_complex*) fftw_malloc(phN * sizeof(fftw_complex));
+  oy = (fftw_complex*) fftw_malloc(phN * sizeof(fftw_complex));
+
+  /* Estimate the best plans for given input length, note, that input data is
+     stored in column-major mode, that's why we're passing dimensions in
+     *reverse* order */
+  revN = Calloc(rank, R_len_t);
+  for (r = 0; r < rank; ++r) revN[r] = N[rank - 1 - r];
+  r2c_plan = fftw_plan_dft_r2c(rank, revN, circ, ox, FFTW_ESTIMATE);
+  c2r_plan = fftw_plan_dft_c2r(rank, revN, ox, circ, FFTW_ESTIMATE);
+  Free(revN);
+
+  /* Fill input buffer by X values*/
+  memcpy(circ, REAL(X), pN * sizeof(double));
+
+  /* Run the plan on X-input data */
+  fftw_execute_dft_r2c(r2c_plan, circ, ox);
+
+  /* Fill input buffer by Y values*/
+  memcpy(circ, REAL(Y), pN * sizeof(double));
+
+  /* Run the plan on Y-input data */
+  fftw_execute_dft_r2c(r2c_plan, circ, oy);
+
+  /* Compute conjugation if needed */
+  if (conjugate)
+    for (i = 0; i < phN; ++i)
+      oy[i] = conj(oy[i]);
+
+
+  /* Dot-multiply ox and oy, and divide by Nx*...*Nz*/
+  for (i = 0; i < phN; ++i)
+    oy[i] *= ox[i] / pN;
+
+  /* Compute the reverse transform to obtain result */
+  fftw_execute_dft_c2r(c2r_plan, oy, circ);
+
+
+  SEXP res;
+  PROTECT(res = allocVector(REALSXP, pN));
+  memcpy(REAL(res), circ, pN * sizeof(double));
+  setAttrib(res, R_DimSymbol, DIM);
+
+  /* Cleanup */
+  fftw_free(ox);
+  fftw_free(oy);
+  fftw_free(circ);
+
+  /* Return */
+  UNPROTECT(1);
+  return res;
+}
