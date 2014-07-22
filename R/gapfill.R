@@ -128,7 +128,7 @@ gapfill.1d.ssa <- function(x, groups,
     F <- if (identical(base, "reconstructed")) r[[i]] else .F(x)
     na.idx <- which(is.na(F))
 
-    Ug <- .colspan(s, group)
+    Ug <- .colspan(x, group)
 
     if (identical(method, "simultaneous")) {
       Xr <- hankel(F, L)
