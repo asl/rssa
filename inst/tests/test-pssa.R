@@ -180,3 +180,68 @@ test_that("PSSA (double centerging) forecast test", {
                    column.projector = "centering")
   }
 })
+
+test_that("PSSA backward predict finite rank series exactly", {
+  svd.methods <- c("svd")
+  N <- 500
+  len <- 50
+  tt <- seq_len(N + len)
+  vvs <- list(tt^4 + 2 * tt - 13,
+              sin(2 * pi * tt/13),
+              cos(tt) * exp(tt/N),
+              sin(2 * pi * tt/11) + tt^2,
+              tt^3 + 1)
+  vvs <- lapply(vvs, rev)
+  pranks <- c(5, 0, 0, 3, 4)
+  npranks <- c(0, 2, 2, 2, 0)
+  ranks <- npranks + pranks
+
+  for (vvi in seq_along(vvs)) {
+    vv <- vvs[[vvi]]
+    nprank <- npranks[vvi]
+    prank <- pranks[vvi]
+
+    v <- vv[len + seq_len(N)]
+
+    rc.projectors <- expand.grid(row.projector = 0:pranks[vvi], column.projector = 0:pranks[vvi])
+
+    for (rci in seq_len(nrow(rc.projectors))) {
+      row.projector <- rc.projectors$row.projector[rci]
+      column.projector <- rc.projectors$column.projector[rci]
+      rank <- max(prank, column.projector + row.projector) + nprank
+      neig <- rank - (column.projector + row.projector) + 1
+
+      for (svd.method in svd.methods) {
+        pss <- ssa(v, row.projector = row.projector, column.projector = column.projector,
+                   svd.method = svd.method, neig = neig)
+
+        expect_equal(reconstruct(pss, groups = list(all = 1:rank))$all, v,
+                     tolerance = 1e-6)
+
+        expect_equal(rforecast(pss,
+                               groups = list(all = 1:rank),
+                               direction = "backward",
+                               len = len,
+                               base = "original",
+                               only.new = FALSE),
+                     vv,
+                     tolerance = 1e-6)
+        expect_equal(rforecast(pss,
+                               groups = list(all = 1:rank),
+                               direction = "backward",
+                               len = len,
+                               base = "reconstructed",
+                               only.new = FALSE),
+                     vv,
+                     tolerance = 1e-6)
+
+        # expect_equal(vforecast(pss,
+        #                        groups = list(all = 1:rank),
+        #                        len = 50,
+        #                        only.new = FALSE),
+        #              vv,
+        #              tolerance = 1e-6)
+      }
+    }
+  }
+})
