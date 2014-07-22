@@ -50,7 +50,12 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
   X[seq_len(nrow(x)), seq_len(ncol(x))] <- x
   Y[seq_len(nrow(y)), seq_len(ncol(y))] <- y
 
-  tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
+  if (is.null(dim(X))) dim(X) <- length(X)
+  if (is.null(dim(Y))) dim(Y) <- length(Y)
+  storage.mode(X) <- storage.mode(Y) <- "double"
+  storage.mode(conj) <- "logical"
+  # tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
+  tmp <- .Call("convolveN", X, Y, conj)
   tmp[seq_len(output.dim[1]), seq_len(output.dim[2]), drop = FALSE]
 }
 
