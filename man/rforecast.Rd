@@ -6,6 +6,7 @@
 \alias{rforecast.toeplitz.ssa}
 \alias{rforecast.mssa}
 \alias{rforecast.cssa}
+\alias{rforecast.pssa}
 \title{Perform recurrent SSA forecasting of the series}
 
 \description{
@@ -23,6 +24,9 @@
           direction = c("row", "column"), only.new = TRUE, \dots, drop = TRUE,
           drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{cssa}(x, groups, len = 1, base = c("reconstructed", "original"),
+          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{rforecast}{pssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           only.new = TRUE, direction = c("forward", "backward"), \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
