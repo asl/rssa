@@ -129,34 +129,32 @@ clusterify.wcor.matrix <- function(x,
     rep(1, N)
 }
 
+.hweightsn <- function(N, L) {
+  stopifnot(length(N) == length(L))
+  ws <- lapply(seq_along(N),
+               function(r) .hweights.default(N[r], L[r]))
+
+  if (length(N) > 1)
+    for (r in 2:length(N))
+      ws[[1]] <- as.vector(tcrossprod(ws[[1]], ws[[r]]))
+
+  ws[[1]]
+}
+
 .hweights.matrix <- function(x, L = (N + 1) %/% 2, ...) {
   N <- nrow(x)
 
   .hweights.default(N, L)
 }
 
-.hweights.1d.ssa <- .hweights.toeplitz.ssa <- .hweights.cssa <- function(x, ...) {
+.hweights.1d.ssa <- .hweights.toeplitz.ssa <- .hweights.cssa <- .hweights.2d.ssa <- function(x, ...) {
   w <- .get(x, "weights")
 
   if (!is.null(w)) {
     # Just return stored weights
     w
   } else {
-    .hweights.default(x$length, x$window)
-  }
-}
-
-.hweights.2d.ssa <- function(x, ...) {
-  w <- .get(x, "weights")
-
-  if (!is.null(w)) {
-    # Just return stored weights
-    w
-  } else {
-    N <- x$length; L <- x$window
-
-    as.vector(tcrossprod(.hweights.default(N[1], L[1]),
-                         .hweights.default(N[2], L[2])))
+    .hweightsn(x$length, x$window)
   }
 }
 
