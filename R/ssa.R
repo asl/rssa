@@ -63,12 +63,10 @@ ssa <- function(x,
   # Grab class separately. This way we will capture the inherit class as well
   xclass <- class(x)
 
-  call <- match.call(); cname <- call[[1]]; cargs <- as.list(call)[-1]
+  call <- match.call(); cargs <- as.list(call)[-1]
   ## wmask is special and will be treated separately later
   cargs$wmask <- NULL
-  ecall <- do.call("call", 
-                   c(list(as.character(cname)),
-                     lapply(cargs, eval, parent.frame())))
+  ecall <- do.call("call", c("ssa", lapply(cargs, eval, parent.frame())))
 
   ## Provide some sane defaults, e.g. complex inputs should default to cssa
   if (missing(kind)) {
