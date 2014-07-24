@@ -20,8 +20,9 @@
 
 prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
   V <- ssaobj$U[, y]
-  U <- if (identical(x, y)) 1:length(V)
-       else ssaobj$U[, x]
+  if (is.complex(V)) V <- c(Re(V), Im(V))
+  U <- if (identical(x, y)) 1:length(V) else ssaobj$U[, x]
+  if (is.complex(U)) U <- c(Re(U), Im(U))
 
   res <- prepanel.default.xyplot(U, V)
   if (symmetric) {
@@ -35,8 +36,9 @@ prepanel.eigenvectors <- function(x, y, ssaobj, symmetric = FALSE) {
 
 panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   V <- ssaobj$U[, y]
-  U <- if (identical(x, y)) 1:length(V)
-       else ssaobj$U[, x]
+  if (is.complex(V)) V <- c(Re(V), Im(V))
+  U <- if (identical(x, y)) 1:length(V) else ssaobj$U[, x]
+  if (is.complex(U)) U <- c(Re(U), Im(U))
 
   if (ref) {
     panel.abline(h = 0, ..., reference = TRUE)
@@ -49,7 +51,9 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 
 prepanel.factorvectors <- function(x, y, ssaobj, symmetric = FALSE) {
   V <- if (y <= nv(ssaobj)) ssaobj$V[, y] else calc.v(ssaobj, idx = y)
+  if (is.complex(V)) V <- c(Re(V), Im(V))
   U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$V[, x] else calc.v(ssaobj, idx = x)
+  if (is.complex(U)) V <- c(Re(U), Im(U))
 
   res <- prepanel.default.xyplot(U, V)
   if (symmetric) {
@@ -63,7 +67,9 @@ prepanel.factorvectors <- function(x, y, ssaobj, symmetric = FALSE) {
 
 panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   V <- if (y <= nv(ssaobj)) ssaobj$V[, y] else calc.v(ssaobj, idx = y)
+  if (is.complex(V)) V <- c(Re(V), Im(V))
   U <- if (identical(x, y)) 1:length(V) else if (x <= nv(ssaobj)) ssaobj$V[, x] else calc.v(ssaobj, idx = x)
+  if (is.complex(U)) V <- c(Re(U), Im(U))
 
   if (ref) {
     panel.abline(h = 0, ..., reference = TRUE)
@@ -147,6 +153,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 }
 
 .plot.ssa.vectors.toeplitz.ssa <- `.plot.ssa.vectors.1d.ssa`
+.plot.ssa.vectors.cssa <- `.plot.ssa.vectors.1d.ssa`
 
 .plot.ssa.paired <- function(x, ...,
                              what = c("eigen", "factor"),
