@@ -64,6 +64,13 @@ ssa <- function(x,
   # Grab class separately. This way we will capture the inherit class as well
   xclass <- class(x)
 
+  call <- match.call(); cname <- call[[1]]; cargs <- as.list(call)[-1]
+  ## wmask is special and will be treated separately later
+  cargs$wmask <- NULL
+  ecall <- do.call("call", 
+                   c(list(as.character(cname)),
+                     lapply(cargs, eval, parent.frame())))
+
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
     if (length(circular) > 1)
@@ -160,6 +167,7 @@ ssa <- function(x,
                           envir = parent.frame(),
                           circle = circle.mask,
                           triangle = triangle.mask)
+    ecall$wmask <- wmask
     if (is.null(wmask)) {
       wmask <- matrix(TRUE, L[1], L[2])
     } else {
@@ -270,7 +278,8 @@ ssa <- function(x,
   # Create information body
   this <- list(length = N,
                window = L,
-               call = match.call(),
+               call = call,
+               ecall = ecall,
                kind = kind,
                series = deparse(substitute(x)),
                svd.method = svd.method)
