@@ -58,7 +58,6 @@ ssa <- function(x,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method)
-  kind <- match.arg(kind)
   xattr <- attributes(x)
   iattr <- NULL
   # Grab class separately. This way we will capture the inherit class as well
@@ -70,6 +69,15 @@ ssa <- function(x,
   ecall <- do.call("call", 
                    c(list(as.character(cname)),
                      lapply(cargs, eval, parent.frame())))
+
+  ## Provide some sane defaults, e.g. complex inputs should default to cssa
+  if (missing(kind)) {
+    if (is.complex(x))
+      kind <- "cssa"
+    else if (is.matrix(x))
+      kind <- "2d-ssa"
+  }
+  kind <- match.arg(kind)
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
