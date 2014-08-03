@@ -105,6 +105,17 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
           c(list(x = B ~ A , data = d, ssaobj = x), dots))
 }
 
+.contribution <- function(x, idx, ...) {
+  ## Check for F-orthogonality
+  isfcor <- .is.frobenius.orthogonal(x, idx, ...)
+  if (!isTRUE(isfcor))
+    warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
+                    format(isfcor, digits = 3)))
+
+  total <- wnorm(x)^2
+  round(100*x$sigma[idx]^2 / total, digits = 2)
+}
+
 .plot.ssa.vectors <- function(x, ...)
   UseMethod(".plot.ssa.vectors")
 
@@ -120,17 +131,6 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idx)
 
-  if (plot.contrib) {
-    # Check for F-orthogonality
-    isfcor <- .is.frobenius.orthogonal(x, idx, ...)
-    if (!isTRUE(isfcor))
-      warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
-                      format(isfcor, digits = 3)))
-
-    total <- wnorm(x)^2
-    sigma <- round(100*x$sigma[idx]^2 / total, digits = 2)
-  }
-
   # Provide convenient defaults
   dots <- .defaults(dots,
                     type = plot.type,
@@ -145,7 +145,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 
   do.call("xyplot",
           c(list(x = A ~ B | factor(A,
-                   labels = if (!plot.contrib) A else paste(A, " (", sigma, "%)", sep = "")),
+                   labels = if (!plot.contrib) A else paste(A, " (", .contribution(x, idx, ...), "%)", sep = "")),
                  data = d, ssaobj = x,
                  panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
                  prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
@@ -164,18 +164,6 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idy)
 
-  if (plot.contrib) {
-    # Check for F-orthogonality
-    isfcor <- .is.frobenius.orthogonal(x, idx, ...)
-    if (!isTRUE(isfcor))
-      warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
-                      format(isfcor, digits = 3)))
-
-    total <- wnorm(x)^2
-    sigmax <- round(100*x$sigma[idx]^2 / total, digits = 2)
-    sigmay <- round(100*x$sigma[idy]^2 / total, digits = 2)
-  }
-
   # Provide convenient defaults
   dots <- .defaults(dots,
                     type = plot.type,
@@ -191,7 +179,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   do.call("xyplot",
           c(list(x = A ~ B | factor(A,
                    labels = if (!plot.contrib) paste(A, "vs", B)
-                   else paste(A, " (", sigmax, "%) vs ", B, " (", sigmay, "%)", sep = "")),
+                   else paste(A, " (", .contribution(x, idx, ...), "%) vs ", B, " (", .contribution(x, idy, ...), "%)", sep = "")),
                  data = d, ssaobj = x,
                  panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
                  prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
