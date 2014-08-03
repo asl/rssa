@@ -46,7 +46,10 @@ panel.eigenvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
       panel.abline(v = 0, ..., reference = TRUE)
   }
 
-  panel.xyplot(U, V, ...)
+  groups <- if (inherits(ssaobj, "cssa")) 2 else 1
+  panel.superpose(U, V,
+                  panel.groups = panel.xyplot,
+                  groups = gl(n = groups, length(V) / groups), ..., subscripts = 1:length(U))
 }
 
 prepanel.factorvectors <- function(x, y, ssaobj, symmetric = FALSE) {
@@ -77,7 +80,10 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
       panel.abline(v = 0, ..., reference = TRUE)
   }
 
-  panel.xyplot(U, V, ...)
+  groups <- if (inherits(ssaobj, "cssa")) 2 else if (inherits(ssaobj, "mssa")) length(ssaobj$length) else 1
+  panel.superpose(U, V,
+                  panel.groups = panel.xyplot,
+                  groups = gl(n = groups, length(V) / groups), ..., subscripts = 1:length(U))
 }
 
 .defaults <- function(x, ...) {
@@ -128,8 +134,11 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   dots <- list(...)
   what <- match.arg(what)
 
-  # FIXME: check for proper lengths
+  ## FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idx)
+  plot.formula <-
+    A ~ B | factor(A,
+                   labels = if (!plot.contrib) A else paste(A, " (", .contribution(x, idx, ...), "%)", sep = ""))
 
   # Provide convenient defaults
   dots <- .defaults(dots,
@@ -144,8 +153,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     ref = TRUE)
 
   do.call("xyplot",
-          c(list(x = A ~ B | factor(A,
-                   labels = if (!plot.contrib) A else paste(A, " (", .contribution(x, idx, ...), "%)", sep = "")),
+          c(list(x = plot.formula,
                  data = d, ssaobj = x,
                  panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
                  prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
@@ -163,6 +171,10 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
 
   # FIXME: check for proper lengths
   d <- data.frame(A = idx, B = idy)
+  plot.formula <- A ~ B | factor(A,
+                                 labels =
+                                 if (!plot.contrib) paste(A, "vs", B)
+                                 else paste(A, " (", .contribution(x, idx, ...), "%) vs ", B, " (", .contribution(x, idy, ...), "%)", sep = ""))
 
   # Provide convenient defaults
   dots <- .defaults(dots,
@@ -177,9 +189,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
                     ref = TRUE)
 
   do.call("xyplot",
-          c(list(x = A ~ B | factor(A,
-                   labels = if (!plot.contrib) paste(A, "vs", B)
-                   else paste(A, " (", .contribution(x, idx, ...), "%) vs ", B, " (", .contribution(x, idy, ...), "%)", sep = "")),
+          c(list(x = plot.formula,
                  data = d, ssaobj = x,
                  panel = if (identical(what, "eigen")) panel.eigenvectors else panel.factorvectors,
                  prepanel = if (identical(what, "eigen")) prepanel.eigenvectors else prepanel.factorvectors),
