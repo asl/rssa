@@ -72,6 +72,8 @@ ssa <- function(x,
   if (missing(kind)) {
     if (is.complex(x))
       kind <- "cssa"
+    else if (inherits(x, "mts"))
+      kind <- "mssa"
     else if (is.matrix(x))
       kind <- "2d-ssa"
   }
