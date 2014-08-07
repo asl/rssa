@@ -94,6 +94,7 @@ ssa <- function(x,
 
     mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
 
+    ecall$wmask <- wmask
     if (is.null(wmask)) {
       wmask <- rep(TRUE, L)
     } else {
@@ -165,11 +166,7 @@ ssa <- function(x,
 
     N <- dim(x);
 
-    if (is.null(mask)) {
-      mask <- !is.na(x)
-    } else {
-      mask <- mask & !is.na(x)
-    }
+    mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
 
     wmask <- .fiface.eval(substitute(wmask),
                           envir = parent.frame(),
