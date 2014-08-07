@@ -541,7 +541,15 @@ nsigma <- function(x) {
 }
 
 is.shaped <- function(x) {
-  !(is.null(x$wmask) && is.null(x$fmask) && is.null(x$weights)) && !inherits(x, "mssa")
+  ## Easy case: non-null masks in case of non-mssa
+  if ((!is.null(x$wmask) || !is.null(x$fmask) || !is.null(x$weights)) && !inherits(x, "mssa"))
+    return (TRUE)
+
+  ## In case of mssa, check whether we have any zero meaningfull weights
+  if (inherits(x, "mssa") && any(.hweights(x) == 0))
+    return (TRUE)
+
+  return (FALSE)
 }
 
 clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
