@@ -17,13 +17,13 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-igapfill.ssa <- function(x,
-                         groups,
-                         fill = NULL, eps = 1e-6, numiter = 0,
-                         base = c("original", "reconstructed"),
-                         ...,
-                         trace = FALSE,
-                         drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+igapfill.1d.ssa <- function(x,
+                            groups,
+                            fill = NULL, eps = 1e-6, numiter = 0,
+                            base = c("original", "reconstructed"),
+                            ...,
+                            trace = FALSE,
+                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   base <- match.arg(base)
   N <- x$length
 
@@ -90,6 +90,11 @@ igapfill.ssa <- function(x,
 
   out
 }
+
+igapfill.2d.ssa <- igapfill.1d.ssa
+
+igapfill.ssa <- function(x, ...)
+  stop("iterative gap filling is not available for this kind of SSA yet")
 
 igapfill <- function(x, ...)
   UseMethod("igapfill")
