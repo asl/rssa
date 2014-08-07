@@ -79,12 +79,22 @@ wcor.mssa <- function(x, groups, ..., cache = TRUE) {
     groups <- as.list(1:nsigma(x))
 
   # Compute reconstruction.
+  ## FIXME: Is this correct when we'll have zero weights in the beginning?
   F <- lapply(reconstruct(x, groups, ..., cache = cache), .to.series.list)
   mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
   colnames(mx) <- names(F)
 
+  # Get weights
+  w <- .hweights(x)
+
+  if (any(w == 0)) {
+    # Omit uncovered elements
+    mx <- mx[as.vector(w > 0),, drop = FALSE]
+    w <- as.vector(w[w > 0])
+  }
+
   # Finally, compute w-correlations and return
-  wcor.default(mx, weights = .hweights(x))
+  wcor.default(mx, weights = w)
 }
 
 wcor.ssa <- function(x, groups, ..., cache = TRUE)
@@ -154,8 +164,10 @@ clusterify.wcor.matrix <- function(x,
   w <- .get(x, "weights")
 
   if (!is.null(w)) {
-    # Return positive weights
-    w[w > 0]
+    ## Return meaningfull weights
+    N <- x$length; mN <- max(N)
+    cidx <- unlist(lapply(seq_along(N), function(idx) seq_len(N[idx]) + mN * (idx - 1)))
+    w[cidx]
   } else {
     N <- x$length; L <- x$window
 
@@ -195,10 +207,16 @@ wnorm.mssa <- function(x, ...) {
   w <- .hweights(x)
 
   # Get series
-  F <- .F(x)
+  F <- unlist(.F(x))
+
+  if (any(w == 0)) {
+    # Omit uncovered elements
+    F <- as.vector(F[w > 0])
+    w <- as.vector(w[w > 0])
+  }
 
   # Compute wnorm
-  sqrt(sum(w * unlist(F)^2))
+  sqrt(sum(w * F^2))
 }
 
 frobenius.cor <- function(x, groups, ...) {

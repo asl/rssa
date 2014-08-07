@@ -34,7 +34,10 @@
   else
     mask <- matrix(TRUE, max(N), length(N))
 
-  field[mask] <- unlist(F)
+  for (idx in seq_along(N)) {
+    imask <- mask[seq_len(N[idx]), idx]
+    field[imask, idx] <- F[[idx]][imask]
+  }
 
   new.hbhmat(field, L = c(L, 1),
              wmask = NULL,
@@ -160,7 +163,12 @@ calc.v.mssa<- function(x, idx, ...) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
   F <- .Call("hbhankelize_one_fft", U, V, h)
-  F[!is.na(F)]
+
+  ## FIXME: This is ugly
+  N <- x$length; mN <- max(N)
+  cidx <- unlist(lapply(seq_along(N), function(idx) seq_len(N[idx]) + mN * (idx - 1)))
+
+  F[cidx]
 }
 
 .elseries.mssa <- function(x, idx, ...) {

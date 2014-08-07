@@ -48,10 +48,8 @@ new.ssa <- function(...) {
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 neig = NULL,
-                mask = NULL,
-                wmask = NULL,
-                column.projector = "none",
-                row.projector = "none",
+                mask = NULL, wmask = NULL,
+                column.projector = "none", row.projector = "none",
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 circular = FALSE,
@@ -241,14 +239,16 @@ ssa <- function(x,
       svd.method <- .determine.svd.method(L, sum(N - L + 1), neig, ...)
 
     wmask <- NULL
-    if (!all(N == max(N))) {
+    if (!all(N == max(N)) || any(sapply(x, anyNA))) {
       K <- N - L + 1
 
       weights <- matrix(0, max(N), length(N))
       fmask <- matrix(FALSE, max(K), length(N))
+      wmask <- rep(TRUE, L)
       for (idx in seq_along(N)) {
-        weights[seq_len(N[idx]), idx] <- .hweights.default(N[idx], L)
-        fmask[seq_len(K[idx]), idx] <- TRUE
+        mask <- !is.na(x[[idx]])
+        fmask[seq_len(K[idx]), idx] <- .factor.mask.1d(mask, wmask)
+        weights[seq_len(N[idx]), idx] <- .field.weights.1d(wmask, fmask[seq_len(K[idx]), idx])
       }
     } else {
       fmask <- weights <- NULL

@@ -206,9 +206,6 @@ nspecial.ssa <- function(x)
     if (!is.null(cls)) class(x) <- cls
   }
 
-  if (any(is.na(x)))
-    stop("time series contains internal NAs")
-
   x
 }
 
