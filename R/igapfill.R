@@ -19,7 +19,7 @@
 
 igapfill.1d.ssa <- function(x,
                             groups,
-                            fill = NULL, eps = 1e-6, numiter = 0,
+                            fill = NULL, tol = 1e-6, maxiter = 0,
                             base = c("original", "reconstructed"),
                             ...,
                             trace = FALSE,
@@ -64,7 +64,7 @@ igapfill.1d.ssa <- function(x,
     rss <- max((F-rF)^2)
     if (trace) cat(sprintf("RSS(%d): %s\n", it, paste0(rss, collapse = " ")))
     it <- it + 1
-    if ((numiter > 0 && it >= numiter) || rss < eps)
+    if ((maxiter > 0 && it >= maxiter) || rss < tol)
       break
     F <- rF
   }
