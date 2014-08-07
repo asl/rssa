@@ -22,16 +22,18 @@ is.complete <- function(idx, na.idx, L)
   # stuff we can optimize out here
   length(na.idx[match(seq(from = idx, length.out = L), na.idx, 0)]) == 0
 
-clplot <- function(x, ...,
-                   main = "Ratio of complete lag vectors given window length",
-                   xlab = "window length, L", ylab = "Ratio",
-                   type = "l") {
+clplot <- function(x, ...) {
   N <- length(x)
   na.idx <- which(is.na(x))
   # FIME: This is really, really ugly
   cr <- sapply(2:(N + 1) %/% 2,
                function(L) sum(sapply(1:(N-L+1), is.complete, na.idx = na.idx, L = L)) / (N - L + 1))
-  plot(2:(N + 1) %/% 2, cr, ..., main = main, xlab = xlab, type = type)
+
+  dots <- list(...)
+  dots <- modifyList(list(main = "Ratio of complete lag vectors given window length",
+                          xlab = "window length, L", ylab = "Ratio",
+                          type = "l"), dots)
+  do.call(plot, c(list(2:(N + 1) %/% 2, cr), dots))
 }
 
 # FIXME: This is ugly
