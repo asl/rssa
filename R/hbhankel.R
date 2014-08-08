@@ -53,34 +53,34 @@ fft2 <- function(X, inverse = FALSE) {
                       x.dim + y.dim - 1,
                       x.dim)
 
+  names(input.dim) <- names(output.dim) <- names(x.dim)
+
   list(input.dim = input.dim,
        output.dim = output.dim)
 }
 
-convolve2 <- function(x, y, conj = TRUE, type = "circular") {
-  if (length(type) > 2)
-    warning("Incorrect argument length: length(type) > 2, two leading values will be used")
-  if (length(type) != 2)
-    type <- rep(type, 2)[1:2]
-  type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
+convolven <- function(x, y, conj = TRUE, type = "circular") {
+  if (is.null(dim(x))) dim(x) <- length(x)
+  if (is.null(dim(y))) dim(y) <- length(y)
 
   io.dims <- .convolution.dims(dim(x), dim(y), type)
   input.dim <- io.dims$input.dim
   output.dim <- io.dims$output.dim
 
-  X <- Y <- matrix(0, input.dim[1], input.dim[2])
-
-  X[seq_len(nrow(x)), seq_len(ncol(x))] <- x
-  Y[seq_len(nrow(y)), seq_len(ncol(y))] <- y
-
-  if (is.null(dim(X))) dim(X) <- length(X)
-  if (is.null(dim(Y))) dim(Y) <- length(Y)
-  storage.mode(X) <- storage.mode(Y) <- "double"
+  storage.mode(x) <- storage.mode(y) <- "double"
   storage.mode(conj) <- "logical"
-  # tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
-  tmp <- .Call("convolveN", X, Y, conj)
-  tmp[seq_len(output.dim[1]), seq_len(output.dim[2]), drop = FALSE]
+  storage.mode(input.dim) <- storage.mode(output.dim) <- "integer"
+
+  res <- .Call("convolveN", x, y, input.dim, output.dim, conj)
+  if (length(output.dim) == 1)
+    dim(res) <- NULL
+  else
+    dim(res) <- output.dim
+
+  res
 }
+
+convolve2 <- convolven
 
 .factor.mask.2d <- function(field.mask, window.mask, circular = FALSE) {
   field.mask[] <- as.numeric(field.mask)
@@ -101,6 +101,7 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
   res
 }
 
+# TODO generalize to ndim case
 circle.mask <- function(R) {
   I <- matrix(seq_len(2*R - 1), 2*R - 1, 2*R - 1)
   J <- t(I)
@@ -118,10 +119,11 @@ triangle.mask <- function(side) {
 new.hbhmat <- function(F, L = (N + 1) %/% 2,
                        wmask = NULL, fmask = NULL, weights = NULL,
                        circular = FALSE) {
-  if (length(circular) > 2)
-    warning("Incorrect argument length: length(circular) > 2, two leading values will be used")
-  if (length(circular) != 2)
-    circular <- rep(circular, 2)[1:2]
+  rank <- length(dim(F))
+  if (length(circular) > rank)
+    warning("Incorrect argument length: length(circular) > rank, two leading values will be used")
+  if (length(circular) != rank)
+    circular <- circular[(seq_len(rank) - 1) %% length(circular) + 1]
 
   N <- dim(F)
 
@@ -141,8 +143,7 @@ new.hbhmat <- function(F, L = (N + 1) %/% 2,
     mask <- weights > 0
     F[!mask] <- mean(F[mask]) # Improve FFT stability & remove NAs
   } else {
-    weights <- tcrossprod(.hweights.default(N[1], L[1]),
-                          .hweights.default(N[2], L[2]))
+    weights <- .hweightsn(N, L)
   }
   storage.mode(weights) <- "integer"
 
