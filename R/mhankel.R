@@ -35,7 +35,7 @@
     mask <- matrix(TRUE, max(N), length(N))
 
   for (idx in seq_along(N)) {
-    imask <- mask[seq_len(N[idx]), idx]
+    imask <- which(mask[seq_len(N[idx]), idx])
     field[imask, idx] <- F[[idx]][imask]
   }
 
