@@ -47,3 +47,18 @@ test_that("new.hmat.striped and new.hmat.striped.old produce equal matrices", {
     }
   }
 })
+
+test_that("shaped MSSA works correct with gaps", {
+  v1 <- 1:100
+  v2 <- 1:200
+  v1[60:63] <- NA
+  v2[50:55] <- NA
+  v1[1:3] <- NA
+  v2[198:200] <- NA
+
+  v <- list(v1, v2)
+  r <- 2
+
+  ss <- ssa(v, L = 10, kind = "mssa")
+  expect_equal(reconstruct(ss, groups = list(1:r))$F1, v)
+})
