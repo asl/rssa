@@ -618,10 +618,13 @@ SEXP hbhankelize_one_fft(SEXP U, SEXP V, SEXP hmat) {
   return F;
 }
 
-SEXP convolveN(SEXP X, SEXP Y, SEXP Conj) {
-  SEXP DIM = getAttrib(X, R_DimSymbol);
-  R_len_t rank = length(DIM);
-  R_len_t *N = INTEGER(DIM);
+SEXP convolveN(SEXP x, SEXP y,
+               SEXP input_dim, SEXP output_dim,
+               SEXP Conj) {
+  SEXP x_dim = getAttrib(x, R_DimSymbol);
+  SEXP y_dim = getAttrib(y, R_DimSymbol);
+  R_len_t rank = length(input_dim);
+  R_len_t *N = INTEGER(input_dim);
   R_len_t pN = prod(rank, N), phN = hprod(rank, N);
   int conjugate = LOGICAL(Conj)[0];
 
@@ -645,13 +648,15 @@ SEXP convolveN(SEXP X, SEXP Y, SEXP Conj) {
   Free(revN);
 
   /* Fill input buffer by X values*/
-  memcpy(circ, REAL(X), pN * sizeof(double));
+  memset(circ, 0, pN * sizeof(double));
+  fill_subarray(circ, REAL(x), rank, N, INTEGER(x_dim), 1);
 
   /* Run the plan on X-input data */
   fftw_execute_dft_r2c(r2c_plan, circ, ox);
 
   /* Fill input buffer by Y values*/
-  memcpy(circ, REAL(Y), pN * sizeof(double));
+  memset(circ, 0, pN * sizeof(double));
+  fill_subarray(circ, REAL(y), rank, N, INTEGER(y_dim), 1);
 
   /* Run the plan on Y-input data */
   fftw_execute_dft_r2c(r2c_plan, circ, oy);
@@ -661,7 +666,6 @@ SEXP convolveN(SEXP X, SEXP Y, SEXP Conj) {
     for (i = 0; i < phN; ++i)
       oy[i] = conj(oy[i]);
 
-
   /* Dot-multiply ox and oy, and divide by Nx*...*Nz*/
   for (i = 0; i < phN; ++i)
     oy[i] *= ox[i] / pN;
@@ -669,11 +673,12 @@ SEXP convolveN(SEXP X, SEXP Y, SEXP Conj) {
   /* Compute the reverse transform to obtain result */
   fftw_execute_dft_c2r(c2r_plan, oy, circ);
 
-
   SEXP res;
-  PROTECT(res = allocVector(REALSXP, pN));
-  memcpy(REAL(res), circ, pN * sizeof(double));
-  setAttrib(res, R_DimSymbol, DIM);
+  PROTECT(res = allocVector(REALSXP, prod(rank, INTEGER(output_dim))));
+  fill_subarray(circ, REAL(res), rank, N, INTEGER(output_dim), 0);
+  /* setAttrib(output_dim, R_NamesSymbol, R_NilValue); */
+  setAttrib(res, R_DimSymbol, output_dim);
+  /* setAttrib(res, R_DimNamesSymbol, R_NilValue); */
 
   /* Cleanup */
   fftw_free(ox);
