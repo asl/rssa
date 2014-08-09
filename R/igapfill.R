@@ -153,7 +153,6 @@ igapfill.mssa <- function(x,
   scall$x <- .apply.attributes(s, F, fixup = FALSE, drop = FALSE)
   s <- eval(scall)
   r <- reconstruct(s, groups = groups, ..., drop.attributes = drop.attributes, cache = cache)
-  print(r)
 
   out <- list()
   for (i in seq_along(r)) {
