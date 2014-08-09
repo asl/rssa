@@ -200,5 +200,55 @@ gapfill.1d.ssa <- function(x, groups,
   out
 }
 
+gapfill.mssa <- function(x, groups,
+                         base = c("original", "reconstructed"),
+                         alpha = 0.5,
+                         ...,
+                         drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  base <- match.arg(base)
+
+  if (!is.shaped(x))
+    stop("gapfilling should start from shaped SSA object")
+
+  if (alpha < 0 || alpha > 1)
+    stop("`alpha' should be between 0 and 1")
+
+  L <- x$window; N <- x$length; K <- N - L + 1
+
+  # Grab the reconstructed series if we're basing on them
+  if (identical(base, "reconstructed"))
+    r <- reconstruct(x, groups = groups, ..., cache = cache)
+
+  out <- list()
+  for (i in seq_along(groups)) {
+    group <- groups[[i]]
+    F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]], na.rm = FALSE) else .F(x)
+
+    Ug <- .colspan(x, group)
+    blrr <- lrr(Ug, direction = "backward")
+    flrr <- lrr(Ug, direction = "forward")
+
+    res <- F
+    for (idx in seq_along(N)) {
+      na.idx <- which(is.na(F[[idx]]))
+      gaps <- classify.gaps(na.idx, L, N[[idx]])
+
+      for (gap in gaps) {
+        to.fill <- seq.int(gap$left, gap$right)
+        res[[idx]][to.fill] <- .fill.in(F[[idx]], L, gap, flrr, blrr, alpha)
+      }
+    }
+    out[[i]] <- .apply.attributes(x, res, fixup = FALSE, only.new = FALSE, drop = drop.attributes)
+  }
+
+  names(out) <- .group.names(groups)
+  if (length(out) == 1 && drop)
+    out <- out[[1]]
+
+  out
+}
+
+gapfill.cssa <- gapfill.toeplitz.ssa <- gapfill.1d.ssa
+
 gapfill <- function(x, ...)
   UseMethod("gapfill")
