@@ -91,7 +91,7 @@ igapfill.1d.ssa <- function(x,
   out
 }
 
-igapfill.2d.ssa <- igapfill.1d.ssa
+igapfill.2d.ssa <- igapfill.mssa <- igapfill.1d.ssa
 
 igapfill.ssa <- function(x, ...)
   stop("iterative gap filling is not available for this kind of SSA yet")
