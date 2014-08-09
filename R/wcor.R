@@ -56,9 +56,9 @@ wcor.2d.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, grou
     groups <- as.list(1:nsigma(x))
 
   # Compute reconstruction.
-  F <- reconstruct(x, groups, ..., cache = cache)
+  F <- lapply(groups, function(idx) unlist(.elseries(x, idx)))
   mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
-  colnames(mx) <- names(F)
+  colnames(mx) <- .group.names(groups)
 
   # Get weights
   w <- .hweights(x)
@@ -79,10 +79,9 @@ wcor.mssa <- function(x, groups, ..., cache = TRUE) {
     groups <- as.list(1:nsigma(x))
 
   # Compute reconstruction.
-  ## FIXME: Is this correct when we'll have zero weights in the beginning?
-  F <- lapply(reconstruct(x, groups, ..., cache = cache), .to.series.list)
+  F <- lapply(groups, function(idx) unlist(.elseries(x, idx)))
   mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
-  colnames(mx) <- names(F)
+  colnames(mx) <- .group.names(groups)
 
   # Get weights
   w <- .hweights(x)
