@@ -79,6 +79,7 @@ ssa(x,
       \item{cssa}{Complex variant of 1d SSA.}
       \item{2d-ssa}{2d SSA for decomposition of images and arrays. See
         (Golyandina and Usevich, 2009) for more information.}
+      \item{nd-ssa}{Multidimensional SSA decomposition for arrays (tensors).}
     }
   }
 
@@ -277,5 +278,33 @@ plot(r)
 # `co2' decomposition with double projection to linear functions
 s <- ssa(co2, column.projector = "centering", row.projector = "centering")
 plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
+}
+
+# 3D-SSA example (2D-MSSA)
+data(Barbara)
+Barbara.noised <- Barbara
+
+# Corrupt image by regular noise
+noise <- outer(seq_len(dim(Barbara)[1]),
+               seq_len(dim(Barbara)[2]),
+               function(i, j) sin(2*pi * (i/13 + j/23)))
+Barbara.noised[,, 1] <- Barbara.noised[,, 1] + 10 * noise
+Barbara.noised[,, 2] <- Barbara.noised[,, 2] + 30 * noise
+Barbara.noised[,, 3] <- Barbara.noised[,, 3] + 5 * noise
+
+# Normalize image for plotting
+Barbara.noised <- (Barbara.noised - min(Barbara.noised)) / diff(range(Barbara.noised))
+
+plot(c(0, 1), c(0, 1), type = "n", xlab = "", ylab = "")
+rasterImage(Barbara.noised, 0, 0, 1, 1, interpolate = FALSE)
+
+\donttest{
+# Multichannel 2D-SSA
+ss <- ssa(Barbara.noised, L = c(50, 50, 1))
+plot(ss, type = "series", groups = 1:18, slice = list(k = 1))
+# Denoise image
+Barbara.rec <- residuals(ss, groups = 5:6)
+plot(c(0, 1), c(0, 1), type = "n", xlab = "", ylab = "")
+rasterImage(Barbara.rec, 0, 0, 1, 1, interpolate = FALSE)
 }
 }
