@@ -4,7 +4,7 @@
 \alias{igapfill.1d.ssa}
 \alias{igapfill.cssa}
 \alias{igapfill.toeplitz.ssa}
-\alias{igapfill.2d.ssa}
+\alias{igapfill.nd.ssa}
 \title{Perform SSA gapfilling via iterative reconstruction}
 
 \description{
@@ -15,6 +15,7 @@
 \method{igapfill}{1d.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+<<<<<<< HEAD
 \method{igapfill}{cssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
@@ -22,6 +23,9 @@
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{igapfill}{2d.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+=======
+\method{igapfill}{nd.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+>>>>>>> 293a073... Add special kind for nd-ssa
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }

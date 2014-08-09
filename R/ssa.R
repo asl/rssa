@@ -51,7 +51,7 @@ ssa <- function(x,
                 mask = NULL, wmask = NULL,
                 column.projector = "none", row.projector = "none",
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+                kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 circular = FALSE,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
@@ -72,8 +72,12 @@ ssa <- function(x,
       kind <- "cssa"
     else if (inherits(x, "mts") || inherits(x, "data.frame") || inherits(x, "list") || inherits(x, "series.list"))
       kind <- "mssa"
-    else if (is.matrix(x) || is.array(x))
+    else if (is.matrix(x))
       kind <- "2d-ssa"
+    else if (is.array(x))
+      kind <- "nd-ssa"
+    else
+      kind <- "1d-ssa"
   }
   kind <- match.arg(kind)
 
@@ -152,7 +156,7 @@ ssa <- function(x,
     } else {
       column.projector <- row.projector <- NULL
     }
-  } else if (identical(kind, "2d-ssa")) {
+  } else if (identical(kind, "2d-ssa") || identical(kind, "nd-ssa")) {
     # Coerce input to array if necessary
     if (!is.array(x))
       x <- as.array(x)
@@ -214,6 +218,9 @@ ssa <- function(x,
       fmask <- NULL
 
     column.projector <- row.projector <- NULL
+
+    # 2d-SSA is just a special case of nd-ssa
+    kind <- c("2d-ssa", "nd-ssa")
   } else if (identical(kind, "mssa")) {
     if (any(circular))
       stop("Circular variant of multichannel SSA isn't implemented yet")
