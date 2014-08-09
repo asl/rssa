@@ -185,24 +185,7 @@ wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
   sqrt(sum(w * x^2))
 }
 
-wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- function(x, ...) {
-  # Get F
-  F <- .F(x)
-
-  # Compute weights
-  w <- .hweights(x)
-
-  if (any(w == 0)) {
-    # Omit uncovered elements
-    F <- as.vector(F[w > 0])
-    w <- as.vector(w[w > 0])
-  }
-
-  # Compute wnorm
-  sqrt(sum(w * abs(F)^2))
-}
-
-wnorm.mssa <- function(x, ...) {
+wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- wnorm.mssa <- function(x, ...) {
   # Compute weights
   w <- .hweights(x)
 
