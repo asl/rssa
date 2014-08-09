@@ -29,6 +29,11 @@
     will be used as a mask.
   }
 
+  \subsection{nd SSA}{
+    Input assumed to be an array of arbitrary dimension. If there are any
+    \code{NA}'s then the shaped variant will be used.
+  }
+
   \subsection{MSSA}{
     While the representation of a one dimensional time series in
     R is pretty obvious, there are multiple possible ways of
