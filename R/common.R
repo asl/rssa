@@ -210,6 +210,9 @@ nspecial.ssa <- function(x)
 }
 
 .to.series.list <- function(x, na.rm = TRUE) {
+  if (inherits(x, "series.list"))
+    return(x)
+
   # Note that this will correctly remove leading and trailing NA, but will fail for internal NA's
   NA.fun <- (if (na.rm) .na.omit else identity)
   if (is.list(x)) {
