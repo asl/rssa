@@ -3,7 +3,7 @@
 \alias{decompose.default}
 \alias{decompose.ssa}
 \alias{decompose.1d.ssa}
-\alias{decompose.2d.ssa}
+\alias{decompose.nd.ssa}
 \alias{decompose.mssa}
 \alias{decompose.cssa}
 \alias{decompose.toeplitz.ssa}
@@ -18,7 +18,7 @@
 \method{decompose}{toeplitz.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
 \method{decompose}{mssa}(x, neig = min(50, L, sum(K)), \dots, force.continue = FALSE) 
 \method{decompose}{cssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
-\method{decompose}{2d.ssa}(x, neig = min(50, prod(L), prod(K)), \dots)
+\method{decompose}{nd.ssa}(x, neig = min(50, prod(L), prod(K)), \dots)
 }
 
 \arguments{

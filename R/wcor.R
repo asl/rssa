@@ -50,7 +50,7 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   cor
 }
 
-wcor.2d.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
+wcor.nd.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
   N <- prod(x$length)
   if (missing(groups))
     groups <- as.list(1:nsigma(x))
@@ -147,7 +147,7 @@ clusterify.wcor.matrix <- function(x,
   .hweights.default(N, L)
 }
 
-.hweights.1d.ssa <- .hweights.toeplitz.ssa <- .hweights.cssa <- .hweights.2d.ssa <- function(x, ...) {
+.hweights.1d.ssa <- .hweights.toeplitz.ssa <- .hweights.cssa <- .hweights.nd.ssa <- function(x, ...) {
   w <- .get(x, "weights")
 
   if (!is.null(w)) {
@@ -183,7 +183,7 @@ wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
   sqrt(sum(w * x^2))
 }
 
-wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- function(x, ...) {
+wnorm.nd.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- function(x, ...) {
   # Get F
   F <- .F(x)
 

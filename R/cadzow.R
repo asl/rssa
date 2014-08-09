@@ -51,7 +51,7 @@
 .inner.fmt.conversion.cssa <- function(x, ...)
   as.complex
 
-.inner.fmt.conversion.2d.ssa <- function(x, ...)
+.inner.fmt.conversion.nd.ssa <- function(x, ...)
   as.matrix
 
 .inner.fmt.conversion.mssa <- function(x, ...)

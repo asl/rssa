@@ -182,7 +182,7 @@ tcrossprod.hbhmat <- function(x) {
   apply(diag(hbhrows(x)), 2, function(u) hbhmatmul(hmat = x, hbhmatmul(hmat = x, u, transposed = TRUE)))
 }
 
-.traj.dim.2d.ssa <- function(x) {
+.traj.dim.nd.ssa <- function(x) {
   Ldim <- sum(x$wmask)
   if (Ldim == 0)
     Ldim <- prod(x$window)
@@ -194,14 +194,14 @@ tcrossprod.hbhmat <- function(x) {
   c(Ldim, Kdim)
 }
 
-decompose.2d.ssa <- function(x,
+decompose.nd.ssa <- function(x,
                              neig = min(50, prod(L), prod(K)),
                              ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for 2D.SSA!")
 }
 
-decompose.2d.ssa.svd <- function(x,
+decompose.nd.ssa.svd <- function(x,
                                  neig = min(50, prod(L), prod(K)),
                                  ...,
                                  force.continue = FALSE) {
@@ -223,7 +223,7 @@ decompose.2d.ssa.svd <- function(x,
   x
 }
 
-decompose.2d.ssa.eigen <- function(x,
+decompose.nd.ssa.eigen <- function(x,
                                    neig = min(50, prod(L), prod(K)),
                                    ...,
                                    force.continue = FALSE) {
@@ -250,7 +250,7 @@ decompose.2d.ssa.eigen <- function(x,
   x
 }
 
-decompose.2d.ssa.nutrlan <- function(x,
+decompose.nd.ssa.nutrlan <- function(x,
                                      neig = min(50, prod(L), prod(K)),
                                      ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
@@ -269,7 +269,7 @@ decompose.2d.ssa.nutrlan <- function(x,
   x
 }
 
-decompose.2d.ssa.propack <- function(x,
+decompose.nd.ssa.propack <- function(x,
                                      neig = min(50, prod(L), prod(K)),
                                      ...,
                                      force.continue = FALSE) {
@@ -289,7 +289,7 @@ decompose.2d.ssa.propack <- function(x,
   x
 }
 
-calc.v.2d.ssa <- function(x, idx, ...) {
+calc.v.nd.ssa <- function(x, idx, ...) {
   sigma <- .sigma(x)[idx]
 
   if (any(sigma <= .Machine$double.eps)) {
@@ -304,7 +304,7 @@ calc.v.2d.ssa <- function(x, idx, ...) {
                    function(i) hbhmatmul(h, U[, i], transposed = TRUE) / sigma[i]))
 }
 
-.hankelize.one.2d.ssa <- function(x, U, V) {
+.hankelize.one.nd.ssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hbhankelize_one_fft", U, V, h)
