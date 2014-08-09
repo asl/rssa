@@ -103,6 +103,28 @@ classify.gaps <- function(na.idx, L, N) {
   res
 }
 
+.fill.in <- function(F, L, gap, flrr, blrr, alpha) {
+  leftpos <- gap$left; rightpos <- gap$right; len <- rightpos - leftpos + 1
+  to.fill <- seq.int(leftpos, rightpos)
+  if (identical(gap$pos, "left")) {
+     apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
+               len = len, only.new = TRUE, direction = "backward")
+   } else if (identical(gap$pos, "right")) {
+     apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
+               len = len, only.new = TRUE, direction = "forward")
+   } else {
+     stopifnot(identical(gap$pos, "internal"))
+
+     (alpha *
+      apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
+                len = len, only.new = TRUE, direction = "backward")
+      +
+      (1 - alpha) *
+      apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
+                len = len, only.new = TRUE, direction = "forward"))
+   }
+}
+
 gapfill.1d.ssa <- function(x, groups,
                            base = c("original", "reconstructed"),
                            method = c("sequential", "simultaneous"),
@@ -164,26 +186,8 @@ gapfill.1d.ssa <- function(x, groups,
       flrr <- lrr(Ug, direction = "forward")
 
       for (gap in gaps) {
-        leftpos <- gap$left; rightpos <- gap$right; len <- rightpos - leftpos + 1
-        to.fill <- seq.int(leftpos, rightpos)
-        if (identical(gap$pos, "left")) {
-          res[to.fill] <- apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
-                                    len = len, only.new = TRUE, direction = "backward")
-        } else if (identical(gap$pos, "right")) {
-          res[to.fill] <- apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
-                                    len = len, only.new = TRUE, direction = "forward")
-        } else {
-          stopifnot(identical(gap$pos, "internal"))
-
-          res[to.fill] <-
-                  (alpha *
-                   apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
-                             len = len, only.new = TRUE, direction = "backward")
-                   +
-                   (1 - alpha) *
-                   apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
-                             len = len, only.new = TRUE, direction = "forward"))
-        }
+        to.fill <- seq.int(gap$left, gap$right)
+        res[to.fill] <- .fill.in(F, L, gap, flrr, blrr, alpha)
       }
     }
     out[[i]] <- .apply.attributes(x, res, fixup = FALSE, only.new = FALSE, drop = drop.attributes)
