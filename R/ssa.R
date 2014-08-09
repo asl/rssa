@@ -384,9 +384,8 @@ cleanup <- function(x) {
 
 .apply.attributes.default <- function(x, F,
                                       fixup = FALSE, only.new = TRUE,
-                                      direction = c("forward", "backward"),
+                                      reverse = FALSE,
                                       drop = FALSE) {
-  direction <- match.arg(direction)
   a <- (if (drop) NULL else .get(x, "Fattr"))
   cls <- (if (drop) NULL else .get(x, "Fclass"))
 
@@ -394,7 +393,7 @@ cleanup <- function(x) {
      # Try to guess the indices of known time series classes
     if ("ts" %in% cls) {
       tsp <- a$tsp
-      return (if (identical(direction, "forward"))
+      return (if (!reverse)
                 ts(F,
                    start = if (only.new) tsp[2] + 1/tsp[3] else tsp[1],
                    frequency = tsp[3])

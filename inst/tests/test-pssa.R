@@ -220,7 +220,7 @@ test_that("PSSA backward predict finite rank series exactly", {
 
         expect_equal(rforecast(pss,
                                groups = list(all = 1:rank),
-                               direction = "backward",
+                               reverse = TRUE,
                                len = len,
                                base = "original",
                                only.new = FALSE),
@@ -228,7 +228,7 @@ test_that("PSSA backward predict finite rank series exactly", {
                      tolerance = 1e-6)
         expect_equal(rforecast(pss,
                                groups = list(all = 1:rank),
-                               direction = "backward",
+                               reverse = TRUE,
                                len = len,
                                base = "reconstructed",
                                only.new = FALSE),

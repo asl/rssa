@@ -15,19 +15,19 @@
 
 \usage{
 \method{rforecast}{1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          only.new = TRUE, reverse = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{toeplitz.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          only.new = TRUE, reverse = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{mssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           direction = c("row", "column"), only.new = TRUE, \dots, drop = TRUE,
           drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{cssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          only.new = TRUE, reverse = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{pssa}(x, groups, len = 1, base = c("reconstructed", "original"),
-          only.new = TRUE, direction = c("forward", "backward"), \dots,
+          only.new = TRUE, reverse = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 
@@ -38,11 +38,12 @@
   \item{base}{series used as a 'seed' of forecast: original or
     reconstructed according to the value of \code{groups} argument}
   \item{direction}{direction of forecast in multichannel SSA case, "column"
-    stands for so-called L-forecast and "row" stands for K-forecast;
-    direction of forecast in 1D SSA case, "forward" (default) means that
-    the forecast moves forward in the time and "backward" means the opposite}
+    stands for so-called L-forecast and "row" stands for K-forecast}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
+  \item{reverse}{logical, direction of forecast in 1D SSA case, 'FALSE'
+    (default) means that the forecast moves forward in the time and
+    'TRUE' means the opposite}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}}
     routines}
   \item{drop}{logical, if 'TRUE' then the result is coerced to series

@@ -108,20 +108,20 @@ classify.gaps <- function(na.idx, L, N) {
   to.fill <- seq.int(leftpos, rightpos)
   if (identical(gap$pos, "left")) {
      apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
-               len = len, only.new = TRUE, direction = "backward")
+               len = len, only.new = TRUE, reverse = TRUE)
    } else if (identical(gap$pos, "right")) {
      apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
-               len = len, only.new = TRUE, direction = "forward")
+               len = len, only.new = TRUE, reverse = FALSE)
    } else {
      stopifnot(identical(gap$pos, "internal"))
 
      (alpha *
       apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
-                len = len, only.new = TRUE, direction = "backward")
+                len = len, only.new = TRUE, reverse = TRUE)
       +
       (1 - alpha) *
       apply.lrr(F[seq.int(to = leftpos - 1, length.out = L)], flrr,
-                len = len, only.new = TRUE, direction = "forward"))
+                len = len, only.new = TRUE, reverse = FALSE))
    }
 }
 
@@ -182,8 +182,8 @@ gapfill.1d.ssa <- function(x, groups,
     } else {
       res <- F
       gaps <- classify.gaps(na.idx, L, N)
-      blrr <- lrr(Ug, direction = "backward")
-      flrr <- lrr(Ug, direction = "forward")
+      blrr <- lrr(Ug, reverse = TRUE)
+      flrr <- lrr(Ug, reverse = FALSE)
 
       for (gap in gaps) {
         to.fill <- seq.int(gap$left, gap$right)
@@ -225,8 +225,8 @@ gapfill.mssa <- function(x, groups,
     F <- if (identical(base, "reconstructed")) .to.series.list(r[[i]], na.rm = FALSE) else .F(x)
 
     Ug <- .colspan(x, group)
-    blrr <- lrr(Ug, direction = "backward")
-    flrr <- lrr(Ug, direction = "forward")
+    blrr <- lrr(Ug, reverse = TRUE)
+    flrr <- lrr(Ug, reverse = FALSE)
 
     res <- F
     for (idx in seq_along(N)) {

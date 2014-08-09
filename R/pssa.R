@@ -326,7 +326,7 @@ enlarge.basis <- function(B, len, ...) {
 rforecast.pssa <- function(x, groups, len = 1,
                            base = c("reconstructed", "original"),
                            only.new = TRUE,
-                           direction = c("forward", "backward"),
+                           reverse = FALSE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   if (is.shaped(x))
@@ -336,7 +336,6 @@ rforecast.pssa <- function(x, groups, len = 1,
   K <- x$length - L + 1
 
   base <- match.arg(base)
-  direction <- match.arg(direction)
   if (missing(groups))
     groups <- as.list(seq_len(min(nsigma(x), nu(x))))
 
@@ -352,19 +351,19 @@ rforecast.pssa <- function(x, groups, len = 1,
   nonright.groups <- lapply(groups, function(group) setdiff(group, right.special.triples))
 
   # Calculate the LRR corresponding to groups
-  lf <- lrr(x, groups = nonright.groups, direction = direction, drop = FALSE)
+  lf <- lrr(x, groups = nonright.groups, reverse = reverse, drop = FALSE)
   stopifnot(length(lf) == length(groups))
 
   rlf <- lapply(right.groups,
                 function(group) {
                   lrr.default(.rowspan(x, group),
-                              direction = direction,
+                              reverse = reverse,
                               orthonormalize = FALSE)
                 })
   stopifnot(length(rlf) == length(groups))
 
   rlf.all <- lrr.default(.rowspan(x, right.special.triples),
-                         direction =  direction,
+                         reverse = reverse,
                          orthonormalize = FALSE)
 
   sigma <- .sigma(x)
@@ -380,19 +379,20 @@ rforecast.pssa <- function(x, groups, len = 1,
     # Calculate drifts
     Uet <- U[, right.group, drop = FALSE]
     Vet <- if (is.null(V)) calc.v(x, idx = right.group) else V[, right.group, drop = FALSE]
-    drift <- (((if (identical(direction, "forward")) c(-lf[[i]], 1) else c(1, -lf[[i]])) %*% Uet) *
+    drift <- (((if (!reverse) c(-lf[[i]], 1) else c(1, -lf[[i]])) %*% Uet) *
               sigma[right.group]) %*% t(Vet)
     drift <- apply.lrr(drift, right.lrr,
-                       direction = direction,
+                       reverse = reverse,
                        len = len, only.new = TRUE)
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .get(x, "F"),
                           lf[[i]],
-                          direction = direction,
+                          reverse = reverse,
                           len, only.new = only.new, drift = drift)
     out[[i]] <- .apply.attributes(x, out[[i]],
                                   fixup = TRUE,
+                                  reverse = reverse,
                                   only.new = only.new, drop = drop.attributes)
   }
 

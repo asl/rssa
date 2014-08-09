@@ -19,10 +19,9 @@
 #   MA 02139, USA.
 
 lrr.default <- function(x, eps = sqrt(.Machine$double.eps),
-                        direction = c("forward", "backward"),
+                        reverse = FALSE,
                         ...,
                         orthonormalize = TRUE) {
-  direction <- match.arg(direction)
   if (orthonormalize) {
     U <- qr.Q(qr(x))
   } else {
@@ -34,7 +33,7 @@ lrr.default <- function(x, eps = sqrt(.Machine$double.eps),
   # Return zero LRR coefficients for zero subspace
   if (ncol(U) == 0) return(rep(0, N - 1))
 
-  idx <- if (identical(direction, "forward")) N else 1
+  idx <- if (!reverse) N else 1
   lpf <- Conj(U) %*% t(U[idx, , drop = FALSE])
 
   divider <- 1 - lpf[idx]
@@ -45,9 +44,8 @@ lrr.default <- function(x, eps = sqrt(.Machine$double.eps),
 }
 
 lrr.1d.ssa <- function(x, groups,
-                       direction = c("forward", "backward"),
+                       reverse = FALSE,
                        ..., drop = TRUE) {
-  direction <- match.arg(direction)
   if (is.shaped(x))
     stop("`LRR is not implemented for shaped SSA case yet")
 
@@ -59,7 +57,7 @@ lrr.1d.ssa <- function(x, groups,
 
   out <- list()
   for (i in seq_along(groups)) {
-      res <- lrr.default(.colspan(x, groups[[i]]), direction = direction,
+      res <- lrr.default(.colspan(x, groups[[i]]), reverse = reverse,
                          ..., orthonormalize = FALSE)
     class(res) <- "lrr"
 
@@ -95,9 +93,7 @@ roots.lrr <- function(x, ..., method = c("companion", "polyroot")) {
 }
 
 apply.lrr <- function(F, lrr, len = 1, only.new = FALSE,
-                      drift = 0, direction = c("forward", "backward")) {
-  direction <- match.arg(direction)
-
+                      drift = 0, reverse = FALSE) {
   # Recycle drifts if needed
   if (length(drift) != len) {
     drift <- rep(drift, len)[seq_len(len)]
@@ -111,7 +107,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE,
     stop("Wrong length of LRR")
 
   # Run the actual LRR
-  if (identical(direction, "forward")) {
+  if (!reverse) {
     F <- c(F, rep(NA, len))
     for (i in 1:len)
       F[N+i] <- sum(F[(N+i-r) : (N+i-1)]*lrr) + drift[i]
@@ -130,7 +126,7 @@ apply.lrr <- function(F, lrr, len = 1, only.new = FALSE,
 rforecast.1d.ssa <- function(x, groups, len = 1,
                              base = c("reconstructed", "original"),
                              only.new = TRUE,
-                             direction = c("forward", "backward"),
+                             reverse = FALSE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   if (is.shaped(x))
@@ -139,7 +135,6 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   if (x$circular)
     stop("forecasting is not properly defined for circular SSA")
 
-  direction <- match.arg(direction)
   L <- x$window
 
   base <- match.arg(base)
@@ -151,7 +146,7 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
     r <- reconstruct(x, groups = groups, ..., cache = cache)
 
   # Calculate the LRR corresponding to groups
-  lf <- lrr(x, groups = groups, direction = direction, drop = FALSE)
+  lf <- lrr(x, groups = groups, reverse = reverse, drop = FALSE)
   stopifnot(length(lf) == length(groups))
 
   out <- list()
@@ -160,9 +155,9 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
 
     # Calculate the forecasted values
     out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .F(x),
-                          lf[[i]], len, only.new = only.new, direction = direction)
+                          lf[[i]], len, only.new = only.new, reverse = reverse)
     out[[i]] <- .apply.attributes(x, out[[i]],
-                                  fixup = TRUE, direction = direction,
+                                  fixup = TRUE, reverse = reverse,
                                   only.new = only.new, drop = drop.attributes)
   }
 
