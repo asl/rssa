@@ -8,7 +8,7 @@
 }
 
 \usage{
-\method{gapfill}{1d.ssa}(x, groups, base = c("reconstructed", "original"),
+\method{gapfill}{1d.ssa}(x, groups, base = c("original", "reconstructed"),
         method = c("sequential", "simultaneous"), alpha = 0.5, \dots,
         drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }

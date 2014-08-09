@@ -104,7 +104,7 @@ classify.gaps <- function(na.idx, L, N) {
 }
 
 gapfill.1d.ssa <- function(x, groups,
-                           base = c("reconstructed", "original"),
+                           base = c("original", "reconstructed"),
                            method = c("sequential", "simultaneous"),
                            alpha = 0.5,
                            ...,

@@ -11,10 +11,10 @@
 
 \usage{
 \method{igapfill}{1d.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
-          base = c("original", "reconstructed"), \dots, trace = FALSE,
+          base = c("reconstructed", "original"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{igapfill}{2d.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
-          base = c("original", "reconstructed"), \dots, trace = FALSE,
+          base = c("reconstructed", "original"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 
