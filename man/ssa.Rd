@@ -79,6 +79,7 @@ ssa(x,
       \item{cssa}{Complex variant of 1d SSA.}
       \item{2d-ssa}{2d SSA for decomposition of images and arrays. See
         (Golyandina and Usevich, 2009) for more information.}
+      \item{nd-ssa}{Multidimensional SSA decomposition for arrays (tensors).}
     }
   }
 
