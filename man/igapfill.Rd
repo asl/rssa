@@ -2,6 +2,8 @@
 \alias{igapfill}
 \alias{igapfill.ssa}
 \alias{igapfill.1d.ssa}
+\alias{igapfill.cssa}
+\alias{igapfill.toeplitz.ssa}
 \alias{igapfill.2d.ssa}
 \title{Perform SSA gapfilling via iterative reconstruction}
 
@@ -11,10 +13,16 @@
 
 \usage{
 \method{igapfill}{1d.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
-          base = c("reconstructed", "original"), \dots, trace = FALSE,
+          base = c("original", "reconstructed"), \dots, trace = FALSE,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{igapfill}{cssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+          base = c("original", "reconstructed"), \dots, trace = FALSE,
+          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{igapfill}{toeplitz.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+          base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{igapfill}{2d.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
-          base = c("reconstructed", "original"), \dots, trace = FALSE,
+          base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 

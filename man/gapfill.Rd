@@ -1,6 +1,10 @@
 \name{gapfill}
 \alias{gapfill}
 \alias{gapfill.1d.ssa}
+\alias{gapfill.toeplitz.ssa}
+\alias{gapfill.mssa}
+\alias{gapfill.cssa}
+
 \title{Perform SSA gapfilling via forecast}
 
 \description{
@@ -9,6 +13,15 @@
 
 \usage{
 \method{gapfill}{1d.ssa}(x, groups, base = c("original", "reconstructed"),
+        method = c("sequential", "simultaneous"), alpha = 0.5, \dots,
+        drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{gapfill}{mssa}(x, groups, base = c("original", "reconstructed"),
+        alpha = 0.5, \dots,
+        drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{gapfill}{cssa}(x, groups, base = c("original", "reconstructed"),
+        method = c("sequential", "simultaneous"), alpha = 0.5, \dots,
+        drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{gapfill}{toeplitz.ssa}(x, groups, base = c("original", "reconstructed"),
         method = c("sequential", "simultaneous"), alpha = 0.5, \dots,
         drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
