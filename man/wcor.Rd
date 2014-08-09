@@ -1,7 +1,7 @@
 \name{wcor}
 \alias{wcor}
 \alias{wcor.1d.ssa}
-\alias{wcor.2d.ssa}
+\alias{wcor.nd.ssa}
 \alias{wcor.toeplitz.ssa}
 \alias{wcor.default}
 \alias{wcor.mssa}
@@ -14,7 +14,7 @@
 }
 \usage{
 \method{wcor}{1d.ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{2d.ssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{nd.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{mssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{ossa}(x, groups, \dots, cache = TRUE)

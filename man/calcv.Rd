@@ -3,7 +3,7 @@
 \alias{calc.v.ssa}
 \alias{calc.v.1d.ssa}
 \alias{calc.v.toeplitz.ssa}
-\alias{calc.v.2d.ssa}
+\alias{calc.v.nd.ssa}
 \alias{calc.v.mssa}
 
 \title{Calculate Factor Vector(s)}
@@ -17,7 +17,7 @@
 \method{calc.v}{1d.ssa}(x, idx, \dots)
 \method{calc.v}{toeplitz.ssa}(x, idx, \dots)
 \method{calc.v}{mssa}(x, idx, \dots)
-\method{calc.v}{2d.ssa}(x, idx, \dots)
+\method{calc.v}{nd.ssa}(x, idx, \dots)
 }
 
 \arguments{
