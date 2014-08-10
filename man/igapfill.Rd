@@ -86,7 +86,7 @@
 F <- co2; F[100:200] <- NA
 # Perform shaped SSA
 s <- ssa(F, L = 72)
-# Fill in gaps using the trend and 2 periodicty compenets
+# Fill in gaps using the trend and 2 periodicty components
 g <- igapfill(s, groups = list(1:6))
 # Compare the result
 plot(g)
