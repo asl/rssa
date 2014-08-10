@@ -16,7 +16,7 @@ ssa(x,
     column.projector = "none",
     row.projector = "none",
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+    kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
     circular = FALSE,
     svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
     force.decompose = TRUE)

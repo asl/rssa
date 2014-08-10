@@ -54,6 +54,9 @@
 .inner.fmt.conversion.2d.ssa <- function(x, ...)
   as.matrix
 
+.inner.fmt.conversion.nd.ssa <- function(x, ...)
+  as.array
+
 .inner.fmt.conversion.mssa <- function(x, ...)
   .to.series.list
 
