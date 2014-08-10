@@ -62,3 +62,22 @@ test_that("shaped MSSA works correct with gaps", {
   ss <- ssa(v, L = 10, kind = "mssa")
   expect_equal(reconstruct(ss, groups = list(1:r))$F1, v)
 })
+
+test_that("shaped MSSA works correct with gaps and uncovered points", {
+  v1 <- 1:100
+  v2 <- 1:200
+  v1[60:63] <- NA
+  v2[50:55] <- NA
+  v1[3:5] <- NA
+  v2[197:199] <- NA
+
+  L <- 10
+  v <- list(v1, v2)
+  r <- 2
+  v.res <- v
+  v.res[[1]][1:2] <- NA
+  v.res[[2]][200] <- NA
+
+  ss <- ssa(v, L = L, kind = "mssa")
+  expect_equal(reconstruct(ss, groups = list(1:r))$F1, v.res)
+})
