@@ -61,6 +61,12 @@ test_that("shaped MSSA works correct with gaps", {
 
   ss <- ssa(v, L = 10, kind = "mssa")
   expect_equal(reconstruct(ss, groups = list(1:r))$F1, v)
+
+  w.exp <- structure(c(1, 0.0372400664289056, 0.0372400664289056, 1),
+                     .Dim = c(2L, 2L),
+                     .Dimnames = list(c("F1", "F2"), c("F1", "F2")),
+                     class = "wcor.matrix")
+  expect_equal(wcor(ss, 1:r), w.exp)
 })
 
 test_that("shaped MSSA works correct with gaps and uncovered points", {
@@ -80,4 +86,10 @@ test_that("shaped MSSA works correct with gaps and uncovered points", {
 
   ss <- ssa(v, L = L, kind = "mssa")
   expect_equal(reconstruct(ss, groups = list(1:r))$F1, v.res)
+
+  w.exp <- structure(c(1, 0.0365310054106304, 0.0365310054106304, 1),
+                     .Dim = c(2L, 2L),
+                     .Dimnames = list(c("F1", "F2"), c("F1", "F2")),
+                     class = "wcor.matrix")
+  expect_equal(wcor(ss, 1:r), w.exp)
 })
