@@ -381,11 +381,15 @@ plot.mssa.reconstruction <- function(x,
 }
 
 xyplot.matrix <- function(x, ..., outer = TRUE) {
+  dots <- list(...)
   x <- cbind(1:nrow(x), as.data.frame(x))
   stopifnot(nrow(x) > 1)
   nms <- sprintf("`%s`", colnames(x))
   form <- sprintf("%s ~ %s", paste(nms[-1], collapse = "+"), nms[1])
-  xyplot(as.formula(form), data = x, ..., outer = outer)
+  # Provide convenient defaults
+  dots <- .defaults(dots,
+                    as.table = TRUE)
+  do.call(xyplot, c(list(as.formula(form), data = x), dots, list(outer = outer)))
 }
 
 .plot.ssa.vectors.mssa <- function(x, ...,
