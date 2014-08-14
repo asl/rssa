@@ -1,4 +1,8 @@
 *.o
+*.swp
+*.swo
+*.dll
+*.win
 *~
 R/init.R
 *.Rcheck
