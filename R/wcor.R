@@ -174,14 +174,14 @@ clusterify.wcor.matrix <- function(x,
   }
 }
 
-wnorm.default <- function(x, L = (N + 1) %/% 2, ...) {
+wnorm.default <- wnorm.complex <- function(x, L = (N + 1) %/% 2, ...) {
   N <- length(x)
 
   # Compute weights
   w <- .hweights.default(x, L)
 
   # Compute wnorm
-  sqrt(sum(w * x^2))
+  sqrt(sum(w * abs(x)^2))
 }
 
 wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- wnorm.mssa <- function(x, ...) {
@@ -198,7 +198,7 @@ wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- wnorm.mssa <
   }
 
   # Compute wnorm
-  sqrt(sum(w * F^2))
+  sqrt(sum(w * abs(F)^2))
 }
 
 frobenius.cor <- function(x, groups, ...) {
