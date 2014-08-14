@@ -60,7 +60,9 @@ export(clone,
 # Gapfilling
        igapfill,
        clplot,
-       gapfill
+       gapfill,
+# Convolution routines
+       convolven
        )
 
 S3method("clone", ssa)
