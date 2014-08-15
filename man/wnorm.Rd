@@ -5,6 +5,7 @@
 \alias{wnorm.toeplitz.ssa}
 \alias{wnorm.mssa}
 \alias{wnorm.default}
+\alias{wnorm.complex}
 
 \title{Calculate Weighted Norm of series}
 \description{
@@ -16,6 +17,7 @@
 \method{wnorm}{toeplitz.ssa}(x, ...)
 \method{wnorm}{mssa}(x, ...)
 \method{wnorm}{default}(x, L = (N + 1) \%/\% 2, ...)
+\method{wnorm}{complex}(x, L = (N + 1) \%/\% 2, ...)
 }
 
 \arguments{

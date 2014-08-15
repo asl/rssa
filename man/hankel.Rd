@@ -20,6 +20,7 @@ is.hmat(h)
 hcols(h)
 hrows(h)
 hmatmul(hmat, v, transposed = FALSE)
+hankel(X, L)
 }
 
 \arguments{
@@ -36,6 +37,7 @@ hmatmul(hmat, v, transposed = FALSE)
   \item{transposed}{logical, if 'TRUE' the multiplication is performed
     with the transposed matrix.}
   \item{v}{vector to multiply with.}
+  \item{X}{series to construct the trajectory matrix for or matrix for hankelization}
 }
 
 \details{
