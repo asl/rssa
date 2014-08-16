@@ -5,11 +5,11 @@ source(system.file("extdata", "common.test.methods.R", package = "Rssa"))
 context("Shaped 2dSSA")
 
 convolve2.open <- function(X, Y, conj = FALSE) {
-  convolven(X, Y, conj = conj, type = "open")
+  .convolven(X, Y, conj = conj, type = "open")
 }
 
 convolve2.filter <- function(X, Y, conj = TRUE) {
-  convolven(X, Y, conj = conj, type = "filter")
+  .convolven(X, Y, conj = conj, type = "filter")
 }
 
 test_that("new.hbhmat returns matrix with proper dimension", {

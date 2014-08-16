@@ -59,7 +59,7 @@ fft2 <- function(X, inverse = FALSE) {
        output.dim = output.dim)
 }
 
-convolven <- function(x, y, conj = TRUE, type = "circular") {
+.convolven <- function(x, y, conj = TRUE, type = "circular") {
   if (is.null(dim(x))) dim(x) <- length(x)
   if (is.null(dim(y))) dim(y) <- length(y)
 
@@ -83,7 +83,7 @@ convolven <- function(x, y, conj = TRUE, type = "circular") {
 .factor.mask.2d <- function(field.mask, window.mask, circular = FALSE) {
   field.mask[] <- as.numeric(field.mask)
   window.mask[] <- as.numeric(window.mask)
-  tmp <- convolven(field.mask, window.mask, conj = TRUE,
+  tmp <- .convolven(field.mask, window.mask, conj = TRUE,
                    type = ifelse(circular, "circular", "filter"))
 
   abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
@@ -92,7 +92,7 @@ convolven <- function(x, y, conj = TRUE, type = "circular") {
 .field.weights.2d <- function(window.mask, factor.mask, circular = FALSE) {
   window.mask[] <- as.numeric(window.mask)
   factor.mask[] <- as.numeric(factor.mask)
-  res <- convolven(factor.mask, window.mask, conj = FALSE,
+  res <- .convolven(factor.mask, window.mask, conj = FALSE,
                    type = ifelse(circular, "circular", "open"))
   res[] <- as.integer(round(res))
 

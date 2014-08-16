@@ -38,7 +38,7 @@ hankel <- function(X, L) {
   outer(1:L, 1:K, function(x,y) X[x+y-1])
 }
 
-convolve1 <- function(x, y, conj = TRUE, type = "circular") {
+.convolve1 <- function(x, y, conj = TRUE, type = "circular") {
   if (length(type) > 1) {
     warning("Incorrect argument length: length(type) > 1, the first value will be used")
     type <- type[1]
@@ -70,7 +70,7 @@ convolve1 <- function(x, y, conj = TRUE, type = "circular") {
 .factor.mask.1d <- function(field.mask, window.mask, circular = FALSE) {
   field.mask[] <- as.numeric(field.mask)
   window.mask[] <- as.numeric(window.mask)
-  tmp <- convolve1(field.mask, window.mask, conj = TRUE,
+  tmp <- .convolve1(field.mask, window.mask, conj = TRUE,
                    type = ifelse(circular, "circular", "filter"))
 
   abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
@@ -79,7 +79,7 @@ convolve1 <- function(x, y, conj = TRUE, type = "circular") {
 .field.weights.1d <- function(window.mask, factor.mask, circular = FALSE) {
   window.mask[] <- as.numeric(window.mask)
   factor.mask[] <- as.numeric(factor.mask)
-  res <- convolve1(factor.mask, window.mask, conj = FALSE,
+  res <- .convolve1(factor.mask, window.mask, conj = FALSE,
                    type = ifelse(circular, "circular", "open"))
   res[] <- as.integer(round(res))
 
