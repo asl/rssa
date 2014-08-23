@@ -5,6 +5,7 @@
 \alias{plot.toeplitz.ssa.reconstruction}
 \alias{plot.mssa.reconstruction}
 \alias{plot.2d.ssa.reconstruction}
+\alias{plot.nd.ssa.reconstruction}
 
 \title{Plot the results of SSA reconstruction}
 \description{
@@ -41,13 +42,17 @@
      col = grey(c(0, 1)),
      zlim,
      at)
+\method{plot}{nd.ssa.reconstruction}(x, slice, \dots)
 }
 
 \arguments{
   \item{x}{SSA object holding the decomposition}
-  \item{slice}{list with elements named 'series' and 'components';
+  \item{slice}{for `mssa': list with elements named 'series' and 'components';
+    for `nd.ssa': list with elements named 'i', 'j', 'k' or 'x', 'y', 'z', 't'
+    or 'd1', 'd2', ... or `1`, `2`, ...; works like '['-operator,
     allows one to select which components from the reconstruction of
-  multivariate time series to draw}
+    multivariate time series or which subarray from reconstruction of
+    multidimentional array to draw.}
   \item{type}{Type of the plot (see 'Details' for more information)}
   \item{\dots}{Arguments to be passed to methods, such as graphical
     parameters}
@@ -143,5 +148,10 @@ plot(r, plot.method = "xyplot", add.residuals = FALSE,
      screens = list(colnames(EuStockMarkets)),
      col = c("blue", "green", "red", "violet"),
      lty = c(rep(1, 4), rep(2, 4), rep(3, 4)))
+
+# 3D-SSA example (2D-MSSA)
+data(Barbara)
+ss <- ssa(Barbara, L = c(50, 50, 1))
+plot(reconstruct(ss, groups = 1), slice = list(k = 1))
 }
 }

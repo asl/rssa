@@ -26,38 +26,64 @@ fft2 <- function(X, inverse = FALSE) {
   t(mvfft(t(mvfft(X, inverse = inverse)), inverse = inverse))
 }
 
-convolve2 <- function(x, y, conj = TRUE, type = "circular") {
-  if (length(type) > 2)
-    warning("Incorrect argument length: length(type) > 2, two leading values will be used")
-  if (length(type) != 2)
-    type <- rep(type, 2)[1:2]
+.convolution.dims <- function(x.dim, y.dim, type = "circular") {
   type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
 
-  convolution.size <- function(length.x, length.y, type) {
-    switch(type,
-           circular = list(input = length.x, output = length.x),
-           open = list(input = length.x + length.y - 1, output = length.x + length.y - 1),
-           filter = list(input = length.x, output = length.x - length.y + 1))
+  stopifnot(length(x.dim) == length(y.dim))
+  rank <- length(x.dim)
+
+  if (length(type) != rank) {
+    # Use recycling
+
+    if (rank %% length(type) != 0)
+      warning("longer object length is not a multiple of shorter object length")
+
+    type <- type[(seq_len(rank) - 1) %% length(type) + 1]
   }
 
-  cs <- lapply(1:2, function(j) convolution.size(dim(x)[j], dim(y)[j], type[j]))
+  stopifnot(x.dim[type == "filter"] >= y.dim[type == "filter"])
 
-  input.dim <- c(cs[[1]]$input, cs[[2]]$input)
-  output.dim <- c(cs[[1]]$output, cs[[2]]$output)
+  output.dim <- ifelse(type == "circular",
+                       x.dim,
+                       ifelse(type == "open",
+                              x.dim + y.dim - 1,
+                              x.dim - y.dim + 1))
 
-  X <- Y <- matrix(0, input.dim[1], input.dim[2])
+  input.dim <- ifelse(type == "open",
+                      x.dim + y.dim - 1,
+                      x.dim)
 
-  X[seq_len(nrow(x)), seq_len(ncol(x))] <- x
-  Y[seq_len(nrow(y)), seq_len(ncol(y))] <- y
+  names(input.dim) <- names(output.dim) <- names(x.dim)
 
-  tmp <- Re(fft2(fft2(X) * if (conj) Conj(fft2(Y)) else fft2(Y), inverse = TRUE)) / prod(input.dim)
-  tmp[seq_len(output.dim[1]), seq_len(output.dim[2]), drop = FALSE]
+  list(input.dim = input.dim,
+       output.dim = output.dim)
+}
+
+.convolven <- function(x, y, conj = TRUE, type = "circular") {
+  if (is.null(dim(x))) dim(x) <- length(x)
+  if (is.null(dim(y))) dim(y) <- length(y)
+
+  io.dims <- .convolution.dims(dim(x), dim(y), type)
+  input.dim <- io.dims$input.dim
+  output.dim <- io.dims$output.dim
+
+  storage.mode(x) <- storage.mode(y) <- "double"
+  storage.mode(conj) <- "logical"
+  storage.mode(input.dim) <- storage.mode(output.dim) <- "integer"
+
+  res <- .Call("convolveN", x, y, input.dim, output.dim, conj)
+  if (length(output.dim) == 1)
+    dim(res) <- NULL
+  else
+    dim(res) <- output.dim
+
+  res
 }
 
 .factor.mask.2d <- function(field.mask, window.mask, circular = FALSE) {
   field.mask[] <- as.numeric(field.mask)
   window.mask[] <- as.numeric(window.mask)
-  tmp <- convolve2(field.mask, window.mask, conj = TRUE,
+  tmp <- .convolven(field.mask, window.mask, conj = TRUE,
                    type = ifelse(circular, "circular", "filter"))
 
   abs(tmp - sum(window.mask)) < 0.5 # ==0, but not exact in case of numeric error
@@ -66,13 +92,14 @@ convolve2 <- function(x, y, conj = TRUE, type = "circular") {
 .field.weights.2d <- function(window.mask, factor.mask, circular = FALSE) {
   window.mask[] <- as.numeric(window.mask)
   factor.mask[] <- as.numeric(factor.mask)
-  res <- convolve2(factor.mask, window.mask, conj = FALSE,
+  res <- .convolven(factor.mask, window.mask, conj = FALSE,
                    type = ifelse(circular, "circular", "open"))
   res[] <- as.integer(round(res))
 
   res
 }
 
+# TODO generalize to ndim case
 circle.mask <- function(R) {
   I <- matrix(seq_len(2*R - 1), 2*R - 1, 2*R - 1)
   J <- t(I)
@@ -90,10 +117,11 @@ triangle.mask <- function(side) {
 new.hbhmat <- function(F, L = (N + 1) %/% 2,
                        wmask = NULL, fmask = NULL, weights = NULL,
                        circular = FALSE) {
-  if (length(circular) > 2)
-    warning("Incorrect argument length: length(circular) > 2, two leading values will be used")
-  if (length(circular) != 2)
-    circular <- rep(circular, 2)[1:2]
+  rank <- length(dim(F))
+  if (length(circular) > rank)
+    warning("Incorrect argument length: length(circular) > rank, two leading values will be used")
+  if (length(circular) != rank)
+    circular <- circular[(seq_len(rank) - 1) %% length(circular) + 1]
 
   N <- dim(F)
 
@@ -113,12 +141,11 @@ new.hbhmat <- function(F, L = (N + 1) %/% 2,
     mask <- weights > 0
     F[!mask] <- mean(F[mask]) # Improve FFT stability & remove NAs
   } else {
-    weights <- tcrossprod(.hweights.default(N[1], L[1]),
-                          .hweights.default(N[2], L[2]))
+    weights <- .hweightsn(N, L)
   }
   storage.mode(weights) <- "integer"
 
-  h <- .Call("initialize_hbhmat", F, L[1], L[2], wmask, fmask, weights, circular)
+  h <- .Call("initialize_hbhmat", F, L, wmask, fmask, weights, circular)
 }
 
 hbhcols <- function(h) {
@@ -153,7 +180,7 @@ tcrossprod.hbhmat <- function(x) {
   apply(diag(hbhrows(x)), 2, function(u) hbhmatmul(hmat = x, hbhmatmul(hmat = x, u, transposed = TRUE)))
 }
 
-.traj.dim.2d.ssa <- function(x) {
+.traj.dim.nd.ssa <- function(x) {
   Ldim <- sum(x$wmask)
   if (Ldim == 0)
     Ldim <- prod(x$window)
@@ -165,14 +192,14 @@ tcrossprod.hbhmat <- function(x) {
   c(Ldim, Kdim)
 }
 
-decompose.2d.ssa <- function(x,
+decompose.nd.ssa <- function(x,
                              neig = min(50, prod(L), prod(K)),
                              ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for 2D.SSA!")
 }
 
-decompose.2d.ssa.svd <- function(x,
+decompose.nd.ssa.svd <- function(x,
                                  neig = min(50, prod(L), prod(K)),
                                  ...,
                                  force.continue = FALSE) {
@@ -194,7 +221,7 @@ decompose.2d.ssa.svd <- function(x,
   x
 }
 
-decompose.2d.ssa.eigen <- function(x,
+decompose.nd.ssa.eigen <- function(x,
                                    neig = min(50, prod(L), prod(K)),
                                    ...,
                                    force.continue = FALSE) {
@@ -221,7 +248,7 @@ decompose.2d.ssa.eigen <- function(x,
   x
 }
 
-decompose.2d.ssa.nutrlan <- function(x,
+decompose.nd.ssa.nutrlan <- function(x,
                                      neig = min(50, prod(L), prod(K)),
                                      ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
@@ -240,7 +267,7 @@ decompose.2d.ssa.nutrlan <- function(x,
   x
 }
 
-decompose.2d.ssa.propack <- function(x,
+decompose.nd.ssa.propack <- function(x,
                                      neig = min(50, prod(L), prod(K)),
                                      ...,
                                      force.continue = FALSE) {
@@ -260,7 +287,7 @@ decompose.2d.ssa.propack <- function(x,
   x
 }
 
-calc.v.2d.ssa <- function(x, idx, ...) {
+calc.v.nd.ssa <- function(x, idx, ...) {
   sigma <- .sigma(x)[idx]
 
   if (any(sigma <= .Machine$double.eps)) {
@@ -275,7 +302,7 @@ calc.v.2d.ssa <- function(x, idx, ...) {
                    function(i) hbhmatmul(h, U[, i], transposed = TRUE) / sigma[i]))
 }
 
-.hankelize.one.2d.ssa <- function(x, U, V) {
+.hankelize.one.nd.ssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hbhankelize_one_fft", U, V, h)

@@ -50,7 +50,7 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   cor
 }
 
-wcor.2d.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
+wcor.nd.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
   N <- prod(x$length)
   if (missing(groups))
     groups <- as.list(1:nsigma(x))
@@ -128,34 +128,32 @@ clusterify.wcor.matrix <- function(x,
     rep(1, N)
 }
 
+.hweightsn <- function(N, L) {
+  stopifnot(length(N) == length(L))
+  ws <- lapply(seq_along(N),
+               function(r) .hweights.default(N[r], L[r]))
+
+  if (length(N) > 1)
+    for (r in 2:length(N))
+      ws[[1]] <- as.vector(tcrossprod(ws[[1]], ws[[r]]))
+
+  ws[[1]]
+}
+
 .hweights.matrix <- function(x, L = (N + 1) %/% 2, ...) {
   N <- nrow(x)
 
   .hweights.default(N, L)
 }
 
-.hweights.1d.ssa <- .hweights.toeplitz.ssa <- .hweights.cssa <- function(x, ...) {
+.hweights.1d.ssa <- .hweights.toeplitz.ssa <- .hweights.cssa <- .hweights.nd.ssa <- function(x, ...) {
   w <- .get(x, "weights")
 
   if (!is.null(w)) {
     # Just return stored weights
     w
   } else {
-    .hweights.default(x$length, x$window)
-  }
-}
-
-.hweights.2d.ssa <- function(x, ...) {
-  w <- .get(x, "weights")
-
-  if (!is.null(w)) {
-    # Just return stored weights
-    w
-  } else {
-    N <- x$length; L <- x$window
-
-    as.vector(tcrossprod(.hweights.default(N[1], L[1]),
-                         .hweights.default(N[2], L[2])))
+    .hweightsn(x$length, x$window)
   }
 }
 
@@ -184,7 +182,7 @@ wnorm.default <- wnorm.complex <- function(x, L = (N + 1) %/% 2, ...) {
   sqrt(sum(w * abs(x)^2))
 }
 
-wnorm.2d.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- wnorm.mssa <- function(x, ...) {
+wnorm.nd.ssa <- wnorm.1d.ssa <- wnorm.toeplitz.ssa <- wnorm.cssa <- wnorm.mssa <- function(x, ...) {
   # Compute weights
   w <- .hweights(x)
 

@@ -51,7 +51,7 @@ ssa <- function(x,
                 mask = NULL, wmask = NULL,
                 column.projector = "none", row.projector = "none",
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "toeplitz-ssa", "mssa", "cssa"),
+                kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 circular = FALSE,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
@@ -74,6 +74,10 @@ ssa <- function(x,
       kind <- "mssa"
     else if (is.matrix(x))
       kind <- "2d-ssa"
+    else if (is.array(x))
+      kind <- "nd-ssa"
+    else
+      kind <- "1d-ssa"
   }
   kind <- match.arg(kind)
 
@@ -152,19 +156,11 @@ ssa <- function(x,
     } else {
       column.projector <- row.projector <- NULL
     }
-  } else if (identical(kind, "2d-ssa")) {
-    if (length(circular) > 2)
-      warning("Incorrect argument length: length(circular) > 2, two leading values will be used")
-    if (length(circular) != 2)
-      circular <- rep(circular, 2)[1:2]
-
-    # Coerce input to matrix if necessary
-    if (!is.matrix(x))
-      x <- as.matrix(x)
-
-    N <- dim(x);
-
-    mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
+  } else if (identical(kind, "2d-ssa") || identical(kind, "nd-ssa")) {
+    # Coerce input to array if necessary
+    if (!is.array(x))
+      x <- as.array(x)
+    N <- dim(x)
 
     wmask <- .fiface.eval(substitute(wmask),
                           envir = parent.frame(),
@@ -172,10 +168,23 @@ ssa <- function(x,
                           triangle = triangle.mask)
     ecall$wmask <- wmask
     if (is.null(wmask)) {
-      wmask <- matrix(TRUE, L[1], L[2])
+      wmask <- array(TRUE, dim = L)
     } else {
       L <- dim(wmask)
     }
+
+    # Fix rank (ndims) of x
+    rank <- length(L)
+    if (length(dim(x)) < rank)
+      dim(x) <- c(dim(x), rep(1, rank - length(dim(x))))
+
+    mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
+
+    # Check `circular' argument
+    if (length(circular) > rank)
+      warning("Incorrect argument length: length(circular) > rank, the leading values will be used")
+    if (length(circular) != rank)
+      circular <- circular[(seq_len(rank) - 1) %% length(circular) + 1]
 
     K <- ifelse(circular, N, N - L + 1)
 
@@ -209,6 +218,12 @@ ssa <- function(x,
       fmask <- NULL
 
     column.projector <- row.projector <- NULL
+
+    # 2d-SSA is just a special case of nd-ssa
+    if (length(N) == 2)
+      kind <- c("2d-ssa", "nd-ssa")
+    else
+      kind <- "nd-ssa"
   } else if (identical(kind, "mssa")) {
     if (any(circular))
       stop("Circular variant of multichannel SSA isn't implemented yet")

@@ -5,11 +5,11 @@ source(system.file("extdata", "common.test.methods.R", package = "Rssa"))
 context("Shaped 2dSSA")
 
 convolve2.open <- function(X, Y, conj = FALSE) {
-  convolve2(X, Y, conj = conj, type = "open")
+  .convolven(X, Y, conj = conj, type = "open")
 }
 
 convolve2.filter <- function(X, Y, conj = TRUE) {
-  convolve2(X, Y, conj = conj, type = "filter")
+  .convolven(X, Y, conj = conj, type = "filter")
 }
 
 test_that("new.hbhmat returns matrix with proper dimension", {
@@ -125,7 +125,7 @@ test_that("Shaped SSA is common case of 2dSSA", {
                label = "matmul, 2D-SSA")
 
   # Test Hankelization
-  Frec_res <- .hankelize.one.2d.ssa(s,
+  Frec_res <- .hankelize.one.nd.ssa(s,
                                     as.vector(Frec[1:2, 1:3]),
                                     as.vector(Frec[1:3, 1:4]))
   dim(Frec_res) <- dim(Frec)
@@ -160,7 +160,7 @@ test_that("Shaped SSA is common case of 2dSSA", {
                label = "matmul, 2D-SH-SSA")
 
   # Test Hankelization
-  Frec_res <- .hankelize.one.2d.ssa(s3,
+  Frec_res <- .hankelize.one.nd.ssa(s3,
                                     as.vector(Frec[1:2, 1:3]),
                                     as.vector(Frec[1:3, 1:4]))
   dim(Frec_res) <- dim(Frec)
@@ -201,7 +201,7 @@ test_that("Shaped 2D-SSA test", {
 
   # Test hankelization
   rec.R <- .hankelize.one.shaped2d.ssa(s, utest, vtest)
-  rec.CPP <- .hankelize.one.2d.ssa(s, utest, vtest)
+  rec.CPP <- .hankelize.one.nd.ssa(s, utest, vtest)
   dim(rec.CPP) <- dim(F)
   expect_equal(is.na(rec.R), is.na(rec.CPP))
   mask <- !is.na(rec.R)

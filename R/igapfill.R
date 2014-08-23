@@ -91,7 +91,7 @@ igapfill.1d.ssa <- function(x,
   out
 }
 
-igapfill.2d.ssa <- igapfill.cssa <- igapfill.toeplitz.ssa <- igapfill.1d.ssa
+igapfill.nd.ssa <- igapfill.cssa <- igapfill.toeplitz.ssa <- igapfill.1d.ssa
 
 igapfill.mssa <- function(x,
                           groups,
