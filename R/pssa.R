@@ -252,7 +252,7 @@ calc.v.pssa <- function(x, idx, ...) {
   N <- x$length; L <- x$window; K <- N - L + 1
   nV <- nv(x)
 
-  V <- matrix(NA_real_, K, length(idx))
+  V <- matrix(NA_real_, .traj.dim(x)[2], length(idx))
   idx.old <- idx[idx <= nV]
   idx.new <- idx[idx > nV]
 
