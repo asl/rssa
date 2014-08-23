@@ -36,3 +36,33 @@ test_that("nd-SSA works for 4d arrays of the finite rank", {
 
   expect_equal(rec, x)
 })
+
+test_that("igapfill works exactly for finite-rank 3d arrays", {
+  sssin <- function(x, y, z) sin(x + y + z)
+  r <- 2
+
+  original <- mouter(list(1:10, 1:9, 1:12), sssin)
+
+  x <- original
+  x[1] <- x[10] <- x[70] <- NA
+
+  ss <- ssa(x)
+  g <- igapfill(ss, groups = list(1:r), tol = 1e-7)
+
+  expect_equal(g, original, tolerance = 1e-5)
+})
+
+test_that("igapfill works exactly for finite-rank 4d arrays", {
+  ssssin <- function(x, y, z, t) sin(x + y + z + t)
+  r <- 2
+
+  original <- mouter(list(1:10, 1:9, 1:12, 1:5), ssssin)
+
+  x <- original
+  x[1] <- x[10] <- x[70] <- NA
+
+  ss <- ssa(x)
+  g <- igapfill(ss, groups = list(1:r), tol = 1e-7)
+
+  expect_equal(g, original, tolerance = 1e-5)
+})
