@@ -270,6 +270,9 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
   dots <- list(...)
   what <- match.arg(what)
 
+  if (max(idx) > nsigma(x))
+    stop("Too few eigentriples computed for this decomposition")
+
   if (!missing(zlim))
     at <- "same"
   if (missing(at))
@@ -279,17 +282,6 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
   # FIXME: check for proper lengths
   d <- data.frame(row = idx, column = idx, z = idx)
-
-  if (plot.contrib) {
-    # Check for F-orthogonality
-    isfcor <- .is.frobenius.orthogonal(x, idx, ...)
-    if (!isTRUE(isfcor))
-      warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
-                      format(isfcor, digits = 3)))
-
-    total <- wnorm(x)^2
-    sigma <- round(100*x$sigma[idx]^2 / total, digits = 2);
-  }
 
   # Provide convenient defaults
   dots <- .defaults(dots,
@@ -311,7 +303,15 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {
-    all.values <- if (missing(zlim)) x$U[, idx] else zlim
+    if (missing(zlim)) {
+      if (identical(what, "eigen")) {
+        all.values <- range(.U(x)[, idx])
+      } else if (identical(what, "factor")) {
+        all.values <- range(calc.v(x, idx))
+      }
+    } else {
+      all.values <- zlim
+    }
     at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
   }
 
@@ -321,7 +321,7 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
 
   do.call("levelplot",
           c(list(x = z ~ row * column | factor(z,
-                                               labels = if (!plot.contrib) z else paste(z, " (", sigma, "%)", sep = "")),
+                                               labels = if (!plot.contrib) z else paste(z, " (", .contribution(x, z, ...), "%)", sep = "")),
                  data = d, ssaobj = x,
                  what = what,
                  at = at,

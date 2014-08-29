@@ -111,5 +111,15 @@ plot(s, type = "vectors", vectors = "factor", idx = 1:6,
      plot.contrib = TRUE, symmetric = TRUE)
 # Plot wcor for first 12 components
 plot(s, type = "wcor", groups = 1:12, grid = c(2, 6))
+
+# 3D-SSA example (2D-MSSA)
+data(Barbara)
+ss <- ssa(Barbara, L = c(50, 50, 1))
+plot(ss, type = "values")
+plot(ss, type = "vectors", idx = 1:12, slice = list(k = 1),
+     cuts = 50, plot.contrib = TRUE)
+plot(ss, type = "vectors", idx = 1:12, slice = list(k = 1, i = 1))
+plot(ss, type = "vectors", vectors = "factor", idx = 1:12, slice = list(k = 3),
+     cuts = 50, plot.contrib = FALSE)
 }
 }

@@ -302,6 +302,8 @@ rasterImage(Barbara.noised, 0, 0, 1, 1, interpolate = FALSE)
 # Multichannel 2D-SSA
 ss <- ssa(Barbara.noised, L = c(50, 50, 1))
 plot(ss, type = "series", groups = 1:18, slice = list(k = 1))
+plot(ss, type = "vectors", idx = 1:12, slice = list(k = 1))
+plot(ss, type = "vectors", vectors = "factor", idx = 1:12, slice = list(k = 3))
 # Denoise image
 Barbara.rec <- residuals(ss, groups = 5:6)
 plot(c(0, 1), c(0, 1), type = "n", xlab = "", ylab = "")

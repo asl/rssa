@@ -417,11 +417,6 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
     K <- N - L + 1
     F <- .F(x)
 
-    if (plot.contrib) {
-      total <- wnorm(x)^2
-      sigma <- round(100*x$sigma[idx]^2 / total, digits = 2)
-    }
-
     cK <- c(0, cumsum(K))
     res <- list()
     for (i in idx) {
@@ -462,7 +457,7 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
     attr(res, "series") <- .apply.attributes(x, oF,
                                              fixup = TRUE, only.new = FALSE, drop = FALSE)
 
-    names(res) <- if (!plot.contrib) idx else paste(idx, " (", sigma, "%)", sep = "")
+    names(res) <- if (!plot.contrib) idx else paste(idx, " (", .contribution(x, idx, ...), "%)", sep = "")
 
     # Provide convenient defaults
     dots <- .defaults(dots,
