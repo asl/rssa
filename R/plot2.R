@@ -270,6 +270,9 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
   dots <- list(...)
   what <- match.arg(what)
 
+  if (max(idx) > nsigma(x))
+    stop("Too few eigentriples computed for this decomposition")
+
   if (!missing(zlim))
     at <- "same"
   if (missing(at))
