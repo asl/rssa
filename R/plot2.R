@@ -303,7 +303,15 @@ panel.eigenvectors.2d.ssa <- function(x, y, z, ssaobj, subscripts, at, ...,
     dots$colorkey <- FALSE
 
   if (identical(at, "same")) {
-    all.values <- if (missing(zlim)) x$U[, idx] else zlim
+    if (missing(zlim)) {
+      if (identical(what, "eigen")) {
+        all.values <- range(.U(x)[, idx])
+      } else if (identical(what, "factor")) {
+        all.values <- range(calc.v(x, idx))
+      }
+    } else {
+      all.values <- zlim
+    }
     at <- pretty(if (dots$symmetric) c(all.values, -all.values) else all.values, n = dots$cuts)
   }
 
