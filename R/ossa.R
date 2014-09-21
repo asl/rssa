@@ -153,8 +153,11 @@ summary.ossa <- function(object, digits = max(3, getOption("digits") - 3), ...)
   .set.decomposition(x, sigma = sigma, U = U, V = V)
 }
 
-.make.ossa.result <- function(x, Fs, ranks, IBL, IBR, initial.Fs, svd.method = "auto") {
+.make.ossa.result <- function(x, Fs, ranks, idx, initial.Fs, svd.method = "auto") {
   L <- x$window
+
+  IBL <- pseudo.inverse(.U(x)[, idx, drop = FALSE])
+  IBR <- pseudo.inverse(calc.v(x, idx))
 
   tau <- sapply(seq_along(Fs),
                 function(i) {
@@ -346,9 +349,6 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
     Fs <- Fs.new
   }
 
-  IBL <- pseudo.inverse(Y)
-  IBR <- pseudo.inverse(Z)
-
   x <- clone(x, copy.cache = FALSE) # TODO Maybe preserve relevant part of cache?
   .save.oblique.decomposition(x, sigma, Y, Z, idx)
 
@@ -360,7 +360,8 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   # Save call info
   x$call <- match.call()
 
-  out <- .make.ossa.result(x, Fs, ranks, IBL, IBR, rec, svd.method = svd.method)
+  out <- .make.ossa.result(x, Fs, ranks, idx,
+                           rec, svd.method = svd.method)
   out[c("iter", "converged", "kappa", "maxiter", "tol", "call")] <-
       list(iter, converged, kappa, maxiter, tol, match.call())
 
