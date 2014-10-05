@@ -10,7 +10,9 @@
 }
 
 \usage{
-\method{cadzow}{ssa}(x, rank, correct = TRUE, tol = 1e-6, maxiter = 0, trace = FALSE, \dots, cache = TRUE)
+\method{cadzow}{ssa}(x, rank, correct = TRUE, tol = 1e-6, maxiter = 0,
+         norm = function(x) sqrt(max(x^2)),
+         trace = FALSE, \dots, cache = TRUE)
 }
 
 \arguments{
@@ -21,6 +23,7 @@
   \item{tol}{tolerance value used for convergence criteria}
   \item{maxiter}{number of iterations to perform, if zero then
     iterations are performed until the convergence}
+  \item{norm}{distance function used for covergence criterion}
   \item{trace}{logical, indicates whether the convergence process should be traced}
   \item{\dots}{further arguments passed to \code{reconstruct}}
   \item{cache}{logical, if 'TRUE' then intermediate results will be

@@ -13,15 +13,19 @@
 
 \usage{
 \method{igapfill}{1d.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+          norm = function(x) sqrt(max(x^2)),
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{igapfill}{cssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+          norm = function(x) sqrt(max(x^2)),
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{igapfill}{toeplitz.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+          norm = function(x) sqrt(max(x^2)),
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{igapfill}{nd.ssa}(x, groups, fill = NULL, tol = 1e-6, maxiter = 0,
+          norm = function(x) sqrt(max(x^2)),
           base = c("original", "reconstructed"), \dots, trace = FALSE,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
@@ -33,6 +37,7 @@
       if missed, then average of the series will be used}
   \item{tol}{tolerance for reconstruction iterations}
   \item{maxiter}{upper bound for the number of iterations}
+  \item{norm}{distance function used for covergence criterion}
   \item{base}{series used as a 'seed' for gapfilling: original or
     reconstructed according to the value of \code{groups} argument}
   \item{\dots}{additional arguments passed to \code{\link{reconstruct}}

@@ -21,12 +21,12 @@
   if (is.list(x)) lapply(x, sys.function(), alpha = alpha) else alpha * x
 }
 
-.series.sqdistance <- function(F1, F2, mask = TRUE) {
+.series.norm <- function(F1, F2, norm, mask = TRUE) {
   mask <- as.logical(mask)
   F1 <- as.vector(unlist(F1))[mask]
   F2 <- as.vector(unlist(F2))[mask]
 
-  max((F1 - F2) ^ 2)
+  norm(F1 - F2)
 }
 
 .series.winnerprod <- function(F1, F2, weights = 1) {
@@ -63,6 +63,7 @@
 cadzow.ssa <- function(x, rank,
                        correct = TRUE,
                        tol = 1e-6, maxiter = 0,
+                       norm = function(x) sqrt(max(x^2)),
                        trace = FALSE,
                        ..., cache = TRUE) {
   # Get conversion
@@ -88,7 +89,7 @@ cadzow.ssa <- function(x, rank,
     rF <- r[[1]]
 
     it <- it + 1
-    if ((maxiter > 0 && it >= maxiter) || (sqd <- .series.sqdistance(F, rF, mask)) < tol)
+    if ((maxiter > 0 && it >= maxiter) || (sqd <- .series.norm(F, rF, norm, mask)) < tol)
       break
     if (trace)
       cat(sprintf("Iteration: %d, distance: %s\n", it, format(sqd)))

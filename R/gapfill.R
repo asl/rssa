@@ -36,6 +36,15 @@ clplot <- function(x, ...) {
   do.call(plot, c(list(2:(N + 1) %/% 2, cr), dots))
 }
 
+
+clplot2 <- function(x, L, ...) {
+  N <- length(x)
+  na.idx <- which(is.na(x))
+  left  <- na.idx[which(diff(c(-L, na.idx)) > L)]
+  right <- na.idx[which(diff(c(na.idx, N+L)) > L)]
+  complete <- setdiff(1:N, sapply(seq_along(left), function(idx) seq(left[idx], right[idx])))
+}
+
 # FIXME: This is ugly
 complete.idx <- function(na.idx, N, L)
   which(sapply(1:(N-L+1), is.complete, na.idx = na.idx, L = L))

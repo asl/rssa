@@ -20,6 +20,7 @@
 igapfill.1d.ssa <- function(x,
                             groups,
                             fill = NULL, tol = 1e-6, maxiter = 0,
+                            norm = function(x) sqrt(max(x^2)),
                             base = c("original", "reconstructed"),
                             ...,
                             trace = FALSE,
@@ -61,7 +62,7 @@ igapfill.1d.ssa <- function(x,
     rF <- F
     rF[na.idx] <- r[[1]][na.idx]
 
-    rss <- max((F-rF)^2)
+    rss <- norm(F - rF)
     if (trace) cat(sprintf("RSS(%d): %s\n", it, paste0(rss, collapse = " ")))
     it <- it + 1
     if ((maxiter > 0 && it >= maxiter) || rss < tol)
@@ -96,6 +97,7 @@ igapfill.nd.ssa <- igapfill.cssa <- igapfill.toeplitz.ssa <- igapfill.1d.ssa
 igapfill.mssa <- function(x,
                           groups,
                           fill = NULL, tol = 1e-6, maxiter = 0,
+                          norm = function(x) sqrt(max(x^2)),
                           base = c("original", "reconstructed"),
                           ...,
                           trace = FALSE,
@@ -142,7 +144,7 @@ igapfill.mssa <- function(x,
       cna.idx <- na.idx[[idx]]
       rF[[idx]][cna.idx] <- r[[1]][cna.idx]
     }
-    rss <- max((unlist(F)-unlist(rF))^2)
+    rss <- norm(unlist(F) - unlist(rF))
     if (trace) cat(sprintf("RSS(%d): %s\n", it, paste0(rss, collapse = " ")))
     it <- it + 1
     if ((maxiter > 0 && it >= maxiter) || rss < tol)
