@@ -90,8 +90,8 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
   }
   o <- order(sigma, decreasing = TRUE)
   sigma <- sigma[o]
-  U <- S$u[, o]
-  V <- V[, o]
+  U <- S$u[, o, drop = FALSE]
+  V <- V[, o, drop = FALSE]
   lambda <- S$d[o]
 
   # Save results
@@ -169,8 +169,8 @@ decompose.toeplitz.ssa.svd <- function(x,
 
   o <- order(sigma, decreasing = TRUE)
   sigma <- sigma[o]
-  U <- S$u[, o]
-  V <- V[, o]
+  U <- S$u[, o, drop = FALSE]
+  V <- V[, o, drop = FALSE]
 
   # Save results
   .set.decomposition(x,
@@ -204,8 +204,8 @@ decompose.toeplitz.ssa.propack <- function(x,
 
   o <- order(sigma, decreasing = TRUE)
   sigma <- sigma[o]
-  U <- S$u[, o]
-  V <- V[, o]
+  U <- S$u[, o, drop = FALSE]
+  V <- V[, o, drop = FALSE]
   lambda <- S$d[o]
 
   # Save results
