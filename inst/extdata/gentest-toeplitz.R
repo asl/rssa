@@ -15,7 +15,7 @@ co2.td <- make.test.data(series = co2,
                          svd.method = "e",
                          svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                          svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
-                         tolerance = 2e-7,
+                         tolerance = 1e-5,
                          neig = 10);
 test.test.data(test.data = co2.td);
 
@@ -94,6 +94,7 @@ fr1k.nz.td <- make.test.data(series = fr1k + rnorm(fr1k),
                              svd.method = "e",
                              svd.methods = list(svd.wo.nutrlan, all.svd, all.svd, all.svd, all.svd),
                              svd.methods.forecast = list(svd.wo.nutrlan, all.svd, all.svd, all.svd),
+                             tolerance = 1e-5,
                              neig = 15);
 test.test.data(test.data = fr1k.nz.td);
 
