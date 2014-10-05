@@ -128,10 +128,10 @@ decompose.toeplitz.ssa.eigen <- function(x,
     V[, i] <- Z / sigma[i]
   }
 
-  o <- order(sigma[1:neig], decreasing = TRUE)
+  o <- order(sigma[seq_len(neig)], decreasing = TRUE)
   sigma <- sigma[o]
-  U <- S$vectors[1:neig, o, drop = FALSE]
-  V <- V[1:neig, o, drop = FALSE]
+  U <- S$vectors[, o, drop = FALSE]
+  V <- V[, o, drop = FALSE]
 
   # Save results
   .set.decomposition(x,
@@ -206,11 +206,10 @@ decompose.toeplitz.ssa.propack <- function(x,
   sigma <- sigma[o]
   U <- S$u[, o, drop = FALSE]
   V <- V[, o, drop = FALSE]
-  lambda <- S$d[o]
 
   # Save results
   .set.decomposition(x,
-                     sigma = sigma, U = S$u, V = V, lambda = lambda,
+                     sigma = sigma, U = U, V = V,
                      kind = "toeplitz.decomposition")
 
   x
