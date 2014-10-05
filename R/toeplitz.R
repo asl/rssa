@@ -88,10 +88,15 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
     sigma[i] <- sqrt(sum(Z^2))
     V[, i] <- Z / sigma[i]
   }
+  o <- order(sigma, decreasing = TRUE)
+  sigma <- sigma[o]
+  U <- S$u[, o]
+  V <- V[, o]
+  lambda <- S$d[o]
 
   # Save results
   .set.decomposition(x,
-                     sigma = sigma, U = S$u, V = V, lambda = S$d,
+                     sigma = sigma, U = U, V = V, lambda = lambda,
                      kind = "toeplitz.decomposition")
 
   x
@@ -123,11 +128,14 @@ decompose.toeplitz.ssa.eigen <- function(x,
     V[, i] <- Z / sigma[i]
   }
 
+  o <- order(sigma[1:neig], decreasing = TRUE)
+  sigma <- sigma[o]
+  U <- S$vectors[1:neig, o, drop = FALSE]
+  V <- V[1:neig, o, drop = FALSE]
+
   # Save results
   .set.decomposition(x,
-                     sigma = sigma[1:neig],
-                     U = S$vectors[, 1:neig, drop = FALSE],
-                     V = V[, 1:neig, drop = FALSE],
+                     sigma = sigma, U = U, V = V,
                      kind = "toeplitz.decomposition")
 
   x
@@ -159,9 +167,14 @@ decompose.toeplitz.ssa.svd <- function(x,
     V[, i] <- Z / sigma[i]
   }
 
+  o <- order(sigma, decreasing = TRUE)
+  sigma <- sigma[o]
+  U <- S$u[, o]
+  V <- V[, o]
+
   # Save results
   .set.decomposition(x,
-                     sigma = sigma, U = S$u, V = V,
+                     sigma = sigma, U = U, V = V,
                      kind = "toeplitz.decomposition")
 
   x
@@ -189,9 +202,15 @@ decompose.toeplitz.ssa.propack <- function(x,
     V[, i] <- Z / sigma[i]
   }
 
+  o <- order(sigma, decreasing = TRUE)
+  sigma <- sigma[o]
+  U <- S$u[, o]
+  V <- V[, o]
+  lambda <- S$d[o]
+
   # Save results
   .set.decomposition(x,
-                     sigma = sigma, U = S$u, V = V, lambda = S$d,
+                     sigma = sigma, U = S$u, V = V, lambda = lambda,
                      kind = "toeplitz.decomposition")
 
   x
