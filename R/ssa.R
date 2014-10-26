@@ -88,9 +88,8 @@ ssa <- function(x,
     if (length(circular) != 1)
       circular <- circular[1]
 
-    # Coerce input to vector if necessary
-    if (!is.vector(x))
-      x <- as.vector(x)
+    # Coerce input to vector (we have already saved attrs)
+    x <- as.vector(x)
 
     N <- length(x)
 

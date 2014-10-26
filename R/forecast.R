@@ -153,9 +153,10 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
+    F <- if (identical(base, "reconstructed")) as.vector(r[[i]]) else .F(x)
+
     # Calculate the forecasted values
-    out[[i]] <- apply.lrr(if (identical(base, "reconstructed")) r[[i]] else .F(x),
-                          lf[[i]], len, only.new = only.new, reverse = reverse)
+    out[[i]] <- apply.lrr(F, lf[[i]], len, only.new = only.new, reverse = reverse)
     out[[i]] <- .apply.attributes(x, out[[i]],
                                   fixup = TRUE, reverse = reverse,
                                   only.new = only.new, drop = drop.attributes)
