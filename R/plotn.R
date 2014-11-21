@@ -109,7 +109,7 @@ plot.nd.ssa.reconstruction <- function(x, slice, ...) {
   } else if (identical(what, "factor")) {
     mask <- x$fmask
     dimension <- K
-    vmatrix <- matrix(NA_real_, nrow = prod(dimension), ncol = length(idx))
+    vmatrix <- matrix(NA_real_, nrow = .traj.dim(x)[2], ncol = length(idx))
 
     vmatrix[, idx <= nv(x)] <- .V(x)[, idx[idx <= nv(x)]]
     if (any(idx > nv(x))) {
