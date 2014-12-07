@@ -107,7 +107,7 @@ nspecial.pssa <- function(x) {
 }
 
 decompose.pssa.svd <- function(x,
-                               neig = min(50, L, K),
+                               neig = min(50, L - max(nPR, nPL), K - max(nPR, nPL)),
                                ...,
                                force.continue = FALSE) {
   # Compute special eigentriples if needed
@@ -115,6 +115,8 @@ decompose.pssa.svd <- function(x,
 
   N <- x$length; L <- x$window; K <- N - L + 1
   nspecial <- nspecial(x)
+  nPR <- .decomposition(x, "nPR")
+  nPL <- .decomposition(x, "nPL")
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > nspecial)
@@ -140,7 +142,7 @@ decompose.pssa.svd <- function(x,
 }
 
 decompose.pssa.eigen <- function(x,
-                                 neig = min(50, L, K),
+                                 neig = min(50, L - max(nPR, nPL), K - max(nPR, nPL)),
                                  ...,
                                  force.continue = FALSE) {
   # Compute special eigentriples if needed
@@ -148,6 +150,8 @@ decompose.pssa.eigen <- function(x,
 
   N <- x$length; L <- x$window; K <- N - L + 1
   nspecial <- nspecial(x)
+  nPR <- .decomposition(x, "nPR")
+  nPL <- .decomposition(x, "nPL")
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > nspecial)
@@ -185,7 +189,7 @@ decompose.pssa.eigen <- function(x,
 }
 
 decompose.pssa.propack <- function(x,
-                                   neig = min(50, L, K),
+                                   neig = min(50, L - max(nPR, nPL), K - max(nPR, nPL)),
                                    ...,
                                    force.continue = FALSE) {
   # Compute special eigentriples if needed
@@ -193,6 +197,8 @@ decompose.pssa.propack <- function(x,
 
   N <- x$length; L <- x$window; K <- N - L + 1
   nspecial <- nspecial(x)
+  nPR <- .decomposition(x, "nPR")
+  nPL <- .decomposition(x, "nPL")
 
   # We will use special (first nspecial) entries below
   sigma <- .sigma(x)
@@ -219,14 +225,16 @@ decompose.pssa.propack <- function(x,
 }
 
 decompose.pssa.nutrlan <- function(x,
-                                   neig = min(50, L, K),
+                                   neig = min(50, L - max(nPR, nPL), K - max(nPR, nPL)),
                                    ...) {
   # Compute special eigentriples if needed
   .calc.projections(x)
 
   N <- x$length; L <- x$window; K <- N - L + 1
-
   nspecial <- nspecial(x)
+  nPR <- .decomposition(x, "nPR")
+  nPL <- .decomposition(x, "nPL")
+
   # We will use special (first nspecial) entries below
   sigma <- .sigma(x)
   U <- .U(x)

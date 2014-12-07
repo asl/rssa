@@ -150,6 +150,10 @@ ssa <- function(x,
         row.projector <- qr.Q(qr(row.projector))
       }
 
+      # Fix neig maximum value
+      # TODO  Use `.traj.dim` in such places (instead of L and K)
+      neig <- min(neig, min(L, K) - max(ncol(column.projector), ncol(row.projector)))
+
       # ProjectionSSA is just a special case of 1d-ssa
       kind <- c("pssa", "1d-ssa")
     } else {
