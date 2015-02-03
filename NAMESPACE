@@ -60,7 +60,9 @@ export(clone,
 # Gapfilling
        igapfill,
        clplot,
-       gapfill
+       gapfill,
+# Auto-grouping routines
+       grouping.auto
        )
 
 S3method("clone", ssa)
@@ -174,3 +176,6 @@ S3method("igapfill", "ssa")
 S3method("igapfill", "1d.ssa")
 S3method("igapfill", "nd.ssa")
 S3method("igapfill", "mssa")
+S3method("grouping.auto", "ssa")
+S3method("grouping.auto", "1d.ssa")
+S3method("grouping.auto", "toeplitz.ssa")
