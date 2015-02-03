@@ -470,7 +470,9 @@ reconstruct.ssa <- function(x, groups, ...,
     } else if (length(cached)) {
       out[[i]] <- .get.series(x, cached)
     } else {
-      stop("group cannot be empty")
+      out[[i]] <- 0. * .F(x)
+      if (!is.null(x$weights))
+        out[[i]][x$weights == 0] <- NA
     }
 
     # Propagate attributes (e.g. dimension for 2d-SSA)
