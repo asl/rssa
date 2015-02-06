@@ -7,7 +7,7 @@
 }
 
 \usage{
-  fossa(x, nested.groups, FILTER = diff, gamma = 1, \dots)
+  fossa(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, \dots)
 }
 
 \arguments{
@@ -18,6 +18,7 @@
   \item{FILTER}{function or numeric vector of impulse response
     coefficients for filter adjustment}
   \item{gamma}{weight of filter adjustment. See `Details' and `References'}
+  \item{normalize}{logical, whether to normalize left decomposition vectors before filtering}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
 }
@@ -121,4 +122,19 @@ plot(fs, type = "vectors", idx = 1:13)
 # 2D plots of periodic eigenvectors before and after FOSSA
 plot(s, type = "paired", idx = c(5, 12))
 plot(fs, type = "paired", idx = c(1, 3))
+
+# Compare FOSSA with and without normalize
+N <- 150
+L <- 70
+omega1 <- 1/15
+omega2 <- 1/10
+
+v <- 3*sin(2*pi*omega1 * (1:N)) + 2*sin(2*pi*omega2 * (1:N))
+s <- ssa(v, L)
+fs <- fossa(s, nested.groups = 1:4, gamma = 100)
+fs.norm <- fossa(s, nested.groups = 1:4, gamma = 100, normalize = TRUE)
+opar <- par(mfrow = c(2, 1))
+plot(reconstruct(fs, groups = list(1:2, 3:4)))
+plot(reconstruct(fs.norm, groups = list(1:2, 3:4)))
+par(opar)
 }
