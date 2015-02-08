@@ -60,7 +60,8 @@ export(clone,
 # Gapfilling
        igapfill,
        clplot,
-       gapfill
+       gapfill,
+       summarize.gaps
        )
 
 S3method("clone", ssa)
@@ -174,3 +175,6 @@ S3method("igapfill", "ssa")
 S3method("igapfill", "1d.ssa")
 S3method("igapfill", "nd.ssa")
 S3method("igapfill", "mssa")
+S3method("summarize.gaps", "1d.ssa")
+S3method("summarize.gaps", "cssa")
+S3method("summarize.gaps", "toeplitz.ssa")
