@@ -22,14 +22,13 @@ is.complete <- function(idx, na.idx, L)
   # stuff we can optimize out here
   length(na.idx[match(seq(from = idx, length.out = L), na.idx, 0)]) == 0
 
-num.complete <- function(x, L, na.idx) {
-  N <- length(x)
+num.complete <- function(N, L, na.idx) {
   left  <- na.idx[which(diff(c(-L, na.idx)) > L)]
   right <- na.idx[which(diff(c(na.idx, N + L + 1)) > L)]
 
   cl.left <- c(1, right + 1)
   cl.right <- c(left - 1, N)
-  
+
   num <- cl.right - cl.left + 1 - L + 1
   sum(ifelse(num > 0, num, 0))
 }
@@ -37,14 +36,14 @@ num.complete <- function(x, L, na.idx) {
 clplot <- function(x, ...) {
   N <- length(x)
   na.idx <- which(is.na(x))
-  cr <- sapply(2:(N + 1) %/% 2,
-               function(L) num.complete(x, L = L, na.idx = na.idx) / (N - L + 1) * 100) 
+  cr <- sapply(2:((N + 1) %/% 2),
+               function(L) num.complete(N, L = L, na.idx = na.idx) / (N - L + 1) * 100)
 
   dots <- list(...)
-  dots <- modifyList(list(main = "Proprtion of complete lag vectors",
-                          xlab = "window length, L", ylab = "Ratio",
+  dots <- modifyList(list(main = "Proportion of complete lag vectors",
+                          xlab = "window length, L", ylab = "Percents",
                           type = "l"), dots)
-  do.call(plot, c(list(2:(N + 1) %/% 2, cr), dots))
+  do.call(plot, c(list(2:((N + 1) %/% 2), cr), dots))
 }
 
 # FIXME: This is ugly
@@ -112,6 +111,36 @@ classify.gaps <- function(na.idx, L, N) {
   }
 
   res
+}
+
+summarize.gaps.1d.ssa <- function(x, L) {
+  na.idx <- which(is.na(F))
+  N <- length(x)
+  res <- list()
+
+  L.range <- if (missing(L)) 2:((N + 1) %/% 2) else L
+  for (L in L.range)
+    res[[L]] <- classify.gaps(na.idx, L, N)
+
+  res$N <- N
+  res$na.idx <- na.idx
+
+  class(res) <- "ssa.gaps"
+  res
+}
+
+plot.ssa.gaps <- function(x, ...) {
+  N <- x$N
+  na.idx <- x$na.idx
+
+  cr <- sapply(2:((N + 1) %/% 2),
+               function(L) num.complete(N, L = L, na.idx = na.idx) / (N - L + 1) * 100)
+
+  dots <- list(...)
+  dots <- modifyList(list(main = "Proportion of complete lag vectors",
+                          xlab = "window length, L", ylab = "Percents",
+                          type = "l"), dots)
+  do.call(plot, c(list(2:((N + 1) %/% 2), cr), dots))
 }
 
 .fill.in <- function(F, L, gap, flrr, blrr, alpha) {
