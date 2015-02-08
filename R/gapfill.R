@@ -22,27 +22,29 @@ is.complete <- function(idx, na.idx, L)
   # stuff we can optimize out here
   length(na.idx[match(seq(from = idx, length.out = L), na.idx, 0)]) == 0
 
+num.complete <- function(x, L, na.idx) {
+  N <- length(x)
+  left  <- na.idx[which(diff(c(-L, na.idx)) > L)]
+  right <- na.idx[which(diff(c(na.idx, N + L + 1)) > L)]
+
+  cl.left <- c(1, right + 1)
+  cl.right <- c(left - 1, N)
+  
+  num <- cl.right - cl.left + 1 - L + 1
+  sum(ifelse(num > 0, num, 0))
+}
+
 clplot <- function(x, ...) {
   N <- length(x)
   na.idx <- which(is.na(x))
-  # FIME: This is really, really ugly
   cr <- sapply(2:(N + 1) %/% 2,
-               function(L) sum(sapply(1:(N-L+1), is.complete, na.idx = na.idx, L = L)) / (N - L + 1))
+               function(L) num.complete(x, L = L, na.idx = na.idx) / (N - L + 1) * 100) 
 
   dots <- list(...)
-  dots <- modifyList(list(main = "Ratio of complete lag vectors given window length",
+  dots <- modifyList(list(main = "Proprtion of complete lag vectors",
                           xlab = "window length, L", ylab = "Ratio",
                           type = "l"), dots)
   do.call(plot, c(list(2:(N + 1) %/% 2, cr), dots))
-}
-
-
-clplot2 <- function(x, L, ...) {
-  N <- length(x)
-  na.idx <- which(is.na(x))
-  left  <- na.idx[which(diff(c(-L, na.idx)) > L)]
-  right <- na.idx[which(diff(c(na.idx, N+L)) > L)]
-  complete <- setdiff(1:N, sapply(seq_along(left), function(idx) seq(left[idx], right[idx])))
 }
 
 # FIXME: This is ugly
@@ -93,7 +95,7 @@ pi.project.missing <- function(U, v) {
 classify.gaps <- function(na.idx, L, N) {
   ## First, split the na.idx into separate clusters
   left  <- na.idx[which(diff(c(-L, na.idx)) > L)]
-  right <- na.idx[which(diff(c(na.idx, N+L)) > L)]
+  right <- na.idx[which(diff(c(na.idx, N + L + 1)) > L)]
 
   stopifnot(length(left) == length(right))
   stopifnot(all(left <= right))
