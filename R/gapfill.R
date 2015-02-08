@@ -113,20 +113,52 @@ classify.gaps <- function(na.idx, L, N) {
   res
 }
 
-summarize.gaps.1d.ssa <- function(x, L) {
+summarize.gaps.default <- function(x, L) {
   na.idx <- which(is.na(F))
   N <- length(x)
   res <- list()
 
-  L.range <- if (missing(L)) 2:((N + 1) %/% 2) else L
+  L.range <- if (missing(L)) 1:((N + 1) %/% 2) else L
   for (L in L.range)
     res[[L]] <- classify.gaps(na.idx, L, N)
 
   res$N <- N
+  res$L.range <- L.range
   res$na.idx <- na.idx
+  res$call <- match.call()
 
   class(res) <- "ssa.gaps"
   res
+}
+
+summarize.gaps.1d.ssa <- summarize.toeplitz.ssa <- summarize.gaps.cssa <- function(x, ...) {
+  summarize.gaps.default(x$F, ...)
+}
+
+summarize.gaps.ssa <- function(x, ...) {
+  error("this function is not available for this SSA type")
+}
+
+summarize.gaps <- function(x, ...)
+  UseMethod("summarize.gaps")
+
+print.ssa.gaps <- function(x) {
+  N <- x$N
+  L.range <- x$L.range
+  cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
+  cat("Gaps summary:\n")
+  nogaps <- TRUE
+  for (i in L.range) {
+    gaps <- x[[i]]
+    if (is.null(gaps) || length(gaps) == 0)
+      next
+    nogaps <- FALSE
+    cat("L =", i, "\n")
+    for (gap in gaps)
+      cat("  [", gap$left, ", ", gap$right, "], ", gap$pos, ", ", gap$kind, "\n", sep = "")
+  }
+  if (nogaps)
+    cat("  no gaps\n")
 }
 
 plot.ssa.gaps <- function(x, ...) {
