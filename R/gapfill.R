@@ -131,7 +131,7 @@ summarize.gaps.default <- function(x, L) {
   res
 }
 
-summarize.gaps.1d.ssa <- summarize.toeplitz.ssa <- summarize.gaps.cssa <- function(x, ...) {
+summarize.gaps.1d.ssa <- summarize.gaps.toeplitz.ssa <- summarize.gaps.cssa <- function(x, ...) {
   summarize.gaps.default(x$F, ...)
 }
 
@@ -243,14 +243,14 @@ gapfill.1d.ssa <- function(x, groups,
         midx <- is.na(v)
 
         if (length(resf <- pi.project.complete(Ug, v)) == 0)
-                next
+          next
         if (length(resm <- pi.project.missing(Ug, v)) == 0)
-                next
+          next
 
         Xr[fidx, vidx] <- resf
         Xr[midx, vidx] <- resm
       }
-      out[[i]] <- hankel(Xr)
+      res <- hankel(Xr)
     } else {
       res <- F
       gaps <- classify.gaps(na.idx, L, N)
