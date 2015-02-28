@@ -15,7 +15,7 @@ test_that("I-OSSA separates 3 sines exactly", {
   F3.real <- sin(2*pi*omega3*(1:N))
   F <- F1.real + F2.real + F3.real
   ss <- ssa(F, L)
-  ioss <- iossa(ss, nested.groups = list(1:2, 3:4, 5:6), maxIter = 200, tol = 1e-8, kappa = NULL)
+  ioss <- iossa(ss, nested.groups = list(1:2, 3:4, 5:6), maxiter = 200, tol = 1e-8, kappa = NULL)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, F1.real, tolerance = 1e-6)
@@ -33,7 +33,7 @@ test_that("I-OSSA and F-OSSA", {
   F2.real <- 2*sin(2*pi*omega2*(1:N))
   ss <- ssa(F1.real + F2.real, L, svd.method = "eigen", neig = 28)
   fss <- fossa(ss, nested.groups = list(c(1,2), c(3,4)), kappa = 100)
-  ioss <- iossa(fss, nested.groups = list(c(1,2), c(3,4)), maxIter = 1000, kappa = 2, tol = 1e-8)
+  ioss <- iossa(fss, nested.groups = list(c(1,2), c(3,4)), maxiter = 1000, kappa = 2, tol = 1e-8)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, F1.real, tolerance = 1e-6)
