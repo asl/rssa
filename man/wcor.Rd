@@ -1,11 +1,8 @@
 \name{wcor}
 \alias{wcor}
-\alias{wcor.1d.ssa}
-\alias{wcor.nd.ssa}
-\alias{wcor.toeplitz.ssa}
-\alias{wcor.default}
-\alias{wcor.mssa}
+\alias{wcor.ssa}
 \alias{wcor.ossa}
+\alias{wcor.default}
 \alias{plot.wcor.matrix}
 
 \title{Calculate the W-correlation matrix}
@@ -13,10 +10,7 @@
   Function calculates the W-correlation matrix for the series.
 }
 \usage{
-\method{wcor}{1d.ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{nd.ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{mssa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{ssa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{ossa}(x, groups, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
