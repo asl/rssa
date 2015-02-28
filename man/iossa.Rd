@@ -11,8 +11,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
       maxiter = 100,
       norm = function(x) sqrt(mean(x^2)),
       trace = FALSE,
-      kappa.balance = 0.5,
-      svd.method = "auto")
+      kappa.balance = 0.5)
 }
 
 \arguments{
@@ -29,9 +28,6 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
   \item{trace}{logical, indicates whether the convergence process should be traced}
   \item{kappa.balance}{sharing proportion of sigma-correction multiplier
     between column and row inner products}
-  \item{svd.method}{singular value decomposition method, passed to
-    \code{ssa} routine (IOSSA method uses Basic 1D SSA for rank and
-    signal subspace estimations)}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
 }
