@@ -24,7 +24,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
   \item{maxiter}{upper bound for the number of iterations}
   \item{norm}{function, calculates a norm of a vector; this norm is
     applied to the difference between the reconstructed series at
-    sequential iterations and is used for convergence detection} 
+    sequential iterations and is used for convergence detection}
   \item{trace}{logical, indicates whether the convergence process should be traced}
   \item{kappa.balance}{sharing proportion of sigma-correction multiplier
     between column and row inner products}
@@ -46,7 +46,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
     \item{iossa.groups.all}{list, describes cumulative grouping after
       after sequential Iterative O-SSA decompositions in the case of
       non-intersecting \code{nested.groups}. Otherwise,
-      \code{iossa.groups.all} coincides with \code{iossa.groups}} 
+      \code{iossa.groups.all} coincides with \code{iossa.groups}}
     \item{ossa.set}{vector of the indices of elementary components used
       in Iterative O-SSA (that is, used in \code{nested.groups})}
   }
@@ -65,7 +65,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
   product. Iterative O-SSA find the separating inner products by
   iterations that are hopefully converges to a stationary point. See
   References for more details.
-  
+
   Sigma-correction procedure does the renormalization of new inner
   products. This prevents the mixing of the components during the next
   iteration. Such approach makes the whole procedure more stable and can
@@ -80,7 +80,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
 
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
-  \code{\link[Rssa:ssa-object]{ssa-object}},  
+  \code{\link[Rssa:ssa-object]{ssa-object}},
   \code{\link[Rssa:fossa]{fossa}},
   \code{\link[Rssa:owcor]{owcor}},
   \code{\link[Rssa:iossa.result]{iossa.result}}.
