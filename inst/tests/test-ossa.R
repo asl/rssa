@@ -2,7 +2,7 @@ library(testthat)
 library(Rssa)
 context("OSSA")
 
-test_that("I-OSSA separate 3 sines exactly", {
+test_that("I-OSSA separates 3 sines exactly", {
   N <- 150
   L <- 70
 
