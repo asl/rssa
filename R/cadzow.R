@@ -57,8 +57,14 @@
 .inner.fmt.conversion.nd.ssa <- function(x, ...)
   as.array
 
-.inner.fmt.conversion.mssa <- function(x, ...)
-  .to.series.list
+.inner.fmt.conversion.mssa <- function(x, ...) {
+  template <- x$F
+
+  # Prevent storing huge ssa-object in closure
+  x <- NULL
+
+  function(x) .to.series.list(x, template = template)
+}
 
 cadzow.ssa <- function(x, rank,
                        correct = TRUE,
