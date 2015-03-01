@@ -121,7 +121,7 @@ ssa <- function(x,
         warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
 
       if (all(weights == 0))
-        stop("Nothing to decompose: the given field shape is empty")
+        warning("Nothing to decompose: the given field shape is empty")
     } else {
       weights <- NULL
     }
@@ -209,7 +209,7 @@ ssa <- function(x,
       }
 
       if (all(weights == 0)) {
-        stop("Nothing to decompose: the given field shape is empty")
+        warning("Nothing to decompose: the given field shape is empty")
       }
     } else {
       weights <- NULL
@@ -349,8 +349,12 @@ ssa <- function(x,
   .init(this)
 
   # Decompose, if necessary
-  if (force.decompose)
+  if (force.decompose) {
+    if (all(weights == 0))
+      stop("Nothing to decompose: the given field shape is empty")
+
     this <- decompose(this, neig = neig, ...);
+  }
 
   this;
 }
