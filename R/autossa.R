@@ -40,8 +40,17 @@ grouping.auto.wcor.ssa <- function(x,
   
   w <- wcor(x, groups = groups, ...)
   h <- hclust(as.dist((1 - w) / 2), ...)
-  split(groups, cutree(h, k = nclust))
+  res <- split(groups, cutree(h, k = nclust))
+
+  attr(res, "hclust") <- h
+  attr(res, "wcor") <- w
+  class(res) <- "grouping.auto.wcor"
+
+  res
 }
+
+plot.grouping.auto.wcor <- function(x, ...)
+  plot(attr(x, "hclust"), ...)
 
 grouping.auto.pgram <- function(x, ...)
   UseMethod("grouping.auto.pgram")

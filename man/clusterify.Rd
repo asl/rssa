@@ -41,6 +41,7 @@ lst <- grouping.auto(s, grouping.method = "wcor",
                      groups = 1:6, nclust=3)
 # Automatic grouping:
 print(lst)
+plot(lst)
 # Check separability
 w <- wcor(s, groups = lst)
 plot(w)
