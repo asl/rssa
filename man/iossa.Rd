@@ -181,4 +181,47 @@ library(lattice)
 xyplot(Fort, superpose = TRUE, col = c("red", "blue", "green4", "black"))
 }
 
+
+# Shaped 2D I. O-SSA separates finite rank fields exactly
+mx1 <- outer(1:50, 1:50,
+             function(i, j) exp(i/25 - j/20))
+mx2 <- outer(1:50, 1:50,
+             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7))
+
+mask <- matrix(TRUE, 50, 50)
+mask[23:25, 23:27] <- FALSE
+mask[1:2, 1] <- FALSE
+mask[50:49, 1] <- FALSE
+mask[1:2, 50] <- FALSE
+
+mx1[!mask] <- mx2[!mask] <- NA
+
+s <- ssa(mx1 + mx2, kind = "2d-ssa", L = c(10, 10))
+plot(reconstruct(s, groups = list(1, 2:5)))
+
+ios <- iossa(s, nested.groups = list(1, 2:5), kappa = NULL)
+plot(reconstruct(ios, groups = ios$iossa.groups))
+
+\donttest{
+# I. O-SSA for MSSA
+N.A <- 150
+N.B <- 120
+L <- 40
+
+omega1 <- 0.05
+omega2 <- 0.055
+
+tt.A <- 1:N.A
+tt.B <- 1:N.B
+F1 <- list(A = 2 * sin(2*pi * omega1 * tt.A), B = cos(2*pi * omega1 * tt.B))
+F2 <- list(A = 1 * sin(2*pi * omega2 * tt.A), B = cos(2*pi * omega2 * tt.B))
+
+F <- list(A = F1$A + F2$A, B = F1$B + F2$B)
+
+s <- ssa(F, kind = "mssa")
+plot(reconstruct(s, groups = list(1:2, 3:4)), plot.method = "xyplot")
+
+ios <- iossa(s, nested.groups = list(1:2, 3:4), kappa = NULL)
+plot(reconstruct(ios, groups = ios$iossa.groups), plot.method = "xyplot")
+}
 }
