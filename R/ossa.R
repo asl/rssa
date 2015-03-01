@@ -394,7 +394,7 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   invisible(x)
 }
 
-fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
+fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, ...) {
   if (!is.function(FILTER)) {
     FILTER.coeffs <- FILTER
     FILTER <- function(x) {
@@ -417,8 +417,10 @@ fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, ...) {
 
   Z <- V * rep(osigma, each = nrow(V))
 
-  fZ <- apply(Z, 2, FILTER)
-  dec <- eigen(crossprod(rbind(Z, gamma * fZ)), symmetric = TRUE)
+  Y <- if (normalize) V else Z
+
+  fY <- apply(Y, 2, FILTER)
+  dec <- eigen(crossprod(rbind(Y, gamma * fY)), symmetric = TRUE)
   U <- U %*% dec$vectors
   Z <- Z %*% dec$vectors
   sigma <- rep(1, ncol(U))
