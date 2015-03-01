@@ -15,7 +15,7 @@ test_that("I-OSSA separates 3 sines exactly", {
   F3.real <- sin(2*pi*omega3*(1:N))
   F <- F1.real + F2.real + F3.real
   ss <- ssa(F, L)
-  ioss <- iossa(ss, nested.groups = list(1:2, 3:4, 5:6), maxiter = 200, tol = 1e-8, kappa = NULL)
+  ioss <- iossa(ss, nested.groups = list(1:2, 3:4, 5:6), maxiter = 200, tol = 1e-8, kappa = NULL, trace = TRUE)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, F1.real, tolerance = 1e-6)
@@ -33,7 +33,7 @@ test_that("I-OSSA and F-OSSA", {
   F2.real <- 2*sin(2*pi*omega2*(1:N))
   ss <- ssa(F1.real + F2.real, L, svd.method = "eigen", neig = 28)
   fss <- fossa(ss, nested.groups = list(c(1,2), c(3,4)), kappa = 100)
-  ioss <- iossa(fss, nested.groups = list(c(1,2), c(3,4)), maxiter = 1000, kappa = 2, tol = 1e-8)
+  ioss <- iossa(fss, nested.groups = list(c(1,2), c(3,4)), maxiter = 1000, kappa = 2, tol = 1e-8, trace = TRUE)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, F1.real, tolerance = 1e-6)
@@ -71,7 +71,7 @@ test_that ("OSSA + PSSA forecast is correct", {
   tt <- seq_len(N + len)
   F <- 0.01 * tt^2 + 10 * sin(2*pi * tt / 10)
   pss <- ssa(F[seq_len(N)], row.projector = "centering", column.projector = "centering")
-  ios <- iossa(pss, nested.groups = list(c(1:2), c(3:5)))
+  ios <- iossa(pss, nested.groups = list(c(1:2), c(3:5)), trace = TRUE)
   fos <- fossa(ios, nested.groups = ios$iossa.groups, gamma = 1000)
 
   rforec.ios <- rforecast(ios, groups = list(1:5), len = len, only.new = FALSE)
@@ -101,7 +101,7 @@ test_that("Shaped I-OSSA separates 3 sines exactly", {
   F3.real <- sin(2*pi * omega3 * tt)
   F <- F1.real + F2.real + F3.real
   ss <- ssa(F, L)
-  ioss <- iossa(ss, nested.groups = list(1:2, 3:4, 5:6), maxiter = 1000, tol = 1e-8, kappa = NULL)
+  ioss <- iossa(ss, nested.groups = list(1:2, 3:4, 5:6), maxiter = 1000, tol = 1e-8, kappa = NULL, trace = TRUE)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, F1.real, tolerance = 1e-6)
@@ -116,7 +116,7 @@ test_that("2D I-OSSA separates finite rank fields exactly", {
                function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7))
 
   ss <- ssa(mx1 + mx2, kind = "2d-ssa")
-  ioss <- iossa(ss, nested.groups = list(1, 2:5), maxiter = 1000, tol = 1e-8, kappa = NULL)
+  ioss <- iossa(ss, nested.groups = list(1, 2:5), maxiter = 1000, tol = 1e-8, kappa = NULL, trace = TRUE)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, mx1, tolerance = 1e-6)
@@ -138,7 +138,7 @@ test_that("Shaped 2D I-OSSA separates finite rank fields exactly", {
   mx1[!mask] <- mx2[!mask] <- NA
 
   ss <- ssa(mx1 + mx2, kind = "2d-ssa", L = c(10, 10))
-  ioss <- iossa(ss, nested.groups = list(1, 2:5), maxiter = 1000, tol = 1e-8, kappa = NULL)
+  ioss <- iossa(ss, nested.groups = list(1, 2:5), maxiter = 1000, tol = 1e-8, kappa = NULL, trace = TRUE)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, mx1, tolerance = 1e-6)
@@ -161,7 +161,7 @@ test_that("MSSA-I-OSSA separates finite rank multivariate time series exactly", 
   F <- list(F1[[1]] + F2[[1]], F1[[2]] + F2[[2]])
 
   ss <- ssa(F, kind = "mssa")
-  ioss <- iossa(ss, nested.groups = list(1:2, 3:4), maxiter = 1000, tol = 1e-8, kappa = NULL)
+  ioss <- iossa(ss, nested.groups = list(1:2, 3:4), maxiter = 1000, tol = 1e-8, kappa = NULL, trace = TRUE)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
   expect_equal(rec$F1, F1, tolerance = 1e-6)
