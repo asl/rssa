@@ -24,11 +24,22 @@ Cond <- function(A) {
   d[1] / d[length(d)]
 }
 
-high.rank.rate <- function(F, L = (N + 1) %/% 2, rank, ...) {
-  N <- length(F); K <- N - L + 1
-  ss <- ssa(F, L, neig = min(rank + 1, L, K), ...)
+.remove.ossa.pssa <- function(class) {
+  class <- class[(class != "ossa") & !grepl("^pssa", class)]
+}
 
-  1 - sum(.sigma(ss)[seq_len(rank)]^2) / wnorm(F, L)^2
+high.rank.rate <- function(F, rank, ssaobj = ssa(F), ...) {
+  # Get conversion
+  conversion <- .inner.fmt.conversion(ssaobj)
+
+  s <- clone(ssaobj, copy.cache = FALSE, copy.storage = FALSE)
+  .set(s, "F", conversion(F))
+  class(s) <- .remove.ossa.pssa(class(s))
+
+  # Decompose for computation leading singular values
+  .maybe.continue(s, groups = seq_len(rank), ...)
+
+  1 - sum(.sigma(s)[seq_len(rank)]^2) / wnorm(s)^2
 }
 
 pseudo.inverse <- function(A) {
@@ -74,13 +85,60 @@ orthogonalize <- function(Y, Z, sigma, side = c("bi", "left", "right"), normaliz
   }
 }
 
-.owcor <- function(X, L, LM, RM) {
-  fft.plan <- fft.plan.1d(nrow(X), L = L)
-  mx <- apply(X, 2,
-              function(v) {
-                h <- new.hmat(v, L = L, fft.plan = fft.plan)
-                as.vector(LM %*% hmatmul.wrap(h, t(RM), transposed = FALSE))
+.wcor <- function(F, ssaobj) {
+  # Get conversion
+  conversion <- .inner.fmt.conversion(ssaobj)
+
+  F <- lapply(F, function(x) as.vector(unlist(conversion(x))))
+  mx <- do.call(cbind, F)
+  colnames(mx) <- names(F)
+
+  # Get weights
+  w <- .hweights(ssaobj)
+
+  if (any(w == 0)) {
+    # Omit uncovered elements
+    mx <- mx[as.vector(w > 0),, drop = FALSE]
+    w <- as.vector(w[w > 0])
+  }
+
+  # Finally, compute w-correlations and return
+  wcor.default(mx, weights = w)
+}
+
+.owcor <- function(F, LM, RM, ssaobj) {
+  # Get conversion
+  conversion <- .inner.fmt.conversion(ssaobj)
+
+  # TODO Make emat really polymorphic class
+  get.mat <- if (inherits(ssaobj, "1d.ssa") || inherits(ssaobj, "toeplitz.ssa"))
+    .get.or.create.hmat
+  else if (inherits(ssaobj, "nd.ssa"))
+    .get.or.create.hbhmat
+  else if (inherits(ssaobj, "mssa"))
+    .get.or.create.mhmat
+
+  hbhmatmul.wrap <- function(h, mx, transposed = TRUE) {
+    if (ncol(mx) == 0)
+      return(matrix(NA_real_, if (transposed) hbhcols(h) else hbhrows(h), 0))
+
+    apply(mx, 2, hbhmatmul, hmat = h, transposed = transposed)
+  }
+
+  matmul.wrap <- if (inherits(ssaobj, "1d.ssa") || inherits(ssaobj, "toeplitz.ssa"))
+    hmatmul.wrap
+  else if (inherits(ssaobj, "nd.ssa") || inherits(ssaobj, "mssa"))
+    hbhmatmul.wrap
+
+  mx <- lapply(F,
+               function(f) {
+                 s <- clone(ssaobj, copy.cache = FALSE, copy.storage = FALSE)
+                 .set(s, "F", conversion(f))
+                 h <- get.mat(s)
+
+                 as.vector(LM %*% matmul.wrap(h, t(RM), transposed = FALSE))
               })
+  mx <- do.call(cbind, mx)
 
   # Compute covariations
   cov <- crossprod(mx)
@@ -152,40 +210,31 @@ summary.ossa <- function(object, digits = max(3, getOption("digits") - 3), ...)
   .set.decomposition(x, sigma = sigma, U = U, V = V)
 }
 
-.make.ossa.result <- function(x, Fs, ranks, idx, initial.Fs, svd.method = "auto") {
-  L <- x$window
-
+.make.ossa.result <- function(x, Fs, ranks, idx, initial.Fs) {
   IBL <- pseudo.inverse(.U(x)[, idx, drop = FALSE])
   IBR <- pseudo.inverse(calc.v(x, idx))
 
   tau <- sapply(seq_along(Fs),
                 function(i) {
-                  high.rank.rate(Fs[[i]], L, ranks[i], svd.method = svd.method)
+                  high.rank.rate(Fs[[i]], ranks[i], ssaobj = x)
                 })
 
   initial.tau <- sapply(seq_along(initial.Fs),
                         function(i) {
-                          high.rank.rate(initial.Fs[[i]], L, ranks[i], svd.method = svd.method)
+                          high.rank.rate(initial.Fs[[i]], ranks[i], ssaobj = x)
                         })
 
   names(Fs) <- paste("F", seq_along(Fs), sep = "")
   out <- list(cond = c(Cond(IBL), Cond(IBR)),
-              owcor = .owcor(do.call(cbind, Fs), L, IBL, IBR),
-              wcor = wcor(do.call(cbind, Fs), L),
-              initial.wcor = wcor(do.call(cbind, initial.Fs), L),
+              owcor = .owcor(Fs, IBL, IBR, ssaobj = x), #MB just call owcor(x) here?
+              wcor = .wcor(Fs, ssaobj = x),
+              initial.wcor = .wcor(initial.Fs, ssaobj = x),
               tau = tau,
               initial.tau = initial.tau,
               initial.rec = initial.Fs)
   class(out) <- "iossa.result"
 
   invisible(out)
-}
-
-.component.grouping <- function(elem.components, groups) {
-  lapply(groups,
-         function(group) {
-           rowSums(elem.components[, group, drop = FALSE])
-         })
 }
 
 svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRUE) {
@@ -252,9 +301,15 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
                   maxiter = 100,
                   norm = function(x) sqrt(mean(x^2)),
                   trace = FALSE,
-                  kappa.balance = 0.5,
-                  svd.method = "auto") {
-  N <- x$length; L <- x$window; K <- N - L + 1
+                  kappa.balance = 0.5) {
+  if (inherits(x, "cssa"))
+    stop("I-OSSA is not implemented for Complex SSA yet")
+
+  # Get mask
+  mask <- .hweights(x) > 0
+
+  # Get conversion
+  conversion <- .inner.fmt.conversion(x)
 
   if (missing(nested.groups))
     nested.groups <- as.list(1:min(nsigma(x), nu(x)))
@@ -284,15 +339,16 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
     }
   }
 
-  # Grab the FFT plan
-  fft.plan <- .get.or.create.fft.plan(x)
-
   converged <- FALSE
   for (iter in seq_len(maxiter)) {
     lrss <- numeric(length(nested.groups))
     triples.list <- list()
     for (i in seq_along(nested.groups)) {
-      cur.ssa <- ssa(Fs[[i]], L, svd.method = svd.method, neig = min(ranks[i] + 1, L, K))
+      cur.ssa <- clone(x, copy.cache = FALSE, copy.storage = FALSE)
+      .set(cur.ssa, "F", conversion(Fs[[i]]))
+      class(cur.ssa) <- .remove.ossa.pssa(class(cur.ssa))
+      .maybe.continue(cur.ssa, seq_len(ranks[i]))
+
       lrss[i] <- sum(cur.ssa$sigma[-seq_len(ranks[i])]^2)
       triples.list[[i]] <- .get.orth.triples(cur.ssa, seq_len(ranks[i]))
     }
@@ -323,22 +379,28 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
     dec <- svd2LRsvd(osigma, U, V, basU, basV, need.project = TRUE)
     sigma <- dec$sigma; Y <- dec$Y; Z <- dec$Z
 
-    elem.components <- .hankelize.multi.default(t(sigma * t(Y)), Z, fft.plan)
-    Fs.new <- .component.grouping(elem.components, nested.groups)
+    s <- clone(x, copy.cache = FALSE, copy.storage = TRUE)
 
-    if (trace) {
-      Xs <- lapply(nested.groups,
-                   function(group) Y[, group, drop = FALSE] %*% (sigma[group] * t(Z[, group, drop = FALSE])))
-      svddist <- sapply(seq_along(Xs),
-                        function(i) sum((Xs[[i]] - hankel(Fs[[i]], L)) ^ 2))
-      cat(sprintf("SVDD(%d): %s\n", iter, paste0(sqrt(svddist), collapse = " ")))
+    # Add `ossa` class for prevent redecomposition
+    class(s) <- c("ossa", class(s)[class(s) != "ossa"])
 
-      nonhankeleness <- sapply(seq_along(Xs),
-                               function(i) sum((Xs[[i]] - hankel(Fs.new[[i]], L)) ^ 2))
-      cat(sprintf("NHNK(%d): %s\n", iter, paste0(sqrt(nonhankeleness), collapse = " ")))
-    }
+    .set.decomposition(s, sigma = sigma, U = Y, V = Z)
+    Fs.new <- reconstruct(s, groups = nested.groups)
 
-    deltas <- sapply(seq_along(nested.groups), function(i) norm(Fs.new[[i]] - Fs[[i]]))
+    # TODO Reenable it
+    # if (trace) {
+    #   Xs <- lapply(nested.groups,
+    #                function(group) Y[, group, drop = FALSE] %*% (sigma[group] * t(Z[, group, drop = FALSE])))
+    #   svddist <- sapply(seq_along(Xs),
+    #                     function(i) sum((Xs[[i]] - hankel(Fs[[i]], L)) ^ 2))
+    #   cat(sprintf("SVDD(%d): %s\n", iter, paste0(sqrt(svddist), collapse = " ")))
+    #
+    #   nonhankeleness <- sapply(seq_along(Xs),
+    #                            function(i) sum((Xs[[i]] - hankel(Fs.new[[i]], L)) ^ 2))
+    #   cat(sprintf("NHNK(%d): %s\n", iter, paste0(sqrt(nonhankeleness), collapse = " ")))
+    # }
+
+    deltas <- sapply(seq_along(nested.groups), function(i) .series.dist(Fs.new[[i]], Fs[[i]], norm, mask))
     if (max(deltas) < tol) {
       converged <- TRUE
       Fs <- Fs.new
@@ -359,8 +421,7 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   # Save call info
   x$call <- match.call()
 
-  out <- .make.ossa.result(x, Fs, ranks, idx,
-                           rec, svd.method = svd.method)
+  out <- .make.ossa.result(x, Fs, ranks, idx, rec)
   out[c("iter", "converged", "kappa", "maxiter", "tol", "call")] <-
       list(iter, converged, kappa, maxiter, tol, match.call())
 
@@ -505,7 +566,7 @@ owcor <- function(x, groups, ..., cache = TRUE) {
   RM <- pseudo.inverse(calc.v(x, basis)) # No rowspan here!!!!
 
   # Compute oblique w-correlations and return
-  res <- .owcor(do.call(cbind, F), L = x$window, LM, RM)
+  res <- .owcor(F, LM, RM, ssaobj = x)
   colnames(res) <- rownames(res) <- names(F)
 
   res

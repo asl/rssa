@@ -21,7 +21,7 @@
   if (is.list(x)) lapply(x, sys.function(), alpha = alpha) else alpha * x
 }
 
-.series.norm <- function(F1, F2, norm, mask = TRUE) {
+.series.dist <- function(F1, F2, norm, mask = TRUE) {
   mask <- as.logical(mask)
   F1 <- as.vector(unlist(F1))[mask]
   F2 <- as.vector(unlist(F2))[mask]
@@ -57,8 +57,40 @@
 .inner.fmt.conversion.nd.ssa <- function(x, ...)
   as.array
 
-.inner.fmt.conversion.mssa <- function(x, ...)
-  .to.series.list
+.to.series.list.template <- function(x, template) {
+  if (inherits(x, "series.list"))
+    return(x)
+
+  if (!is.list(x)) {
+    if (!is.matrix(x))
+      x <- as.matrix(x)
+
+    x <- lapply(seq_len(ncol(x)), function(i) x[, i])
+  }
+
+  res <- lapply(seq_along(x),
+                function(i) {
+                  res <- x[[i]]
+                  remove <- attr(res, "na.action") <- attr(template[[i]], "na.action")
+                  if (!is.null(remove))
+                    res <- res[-remove]
+
+                  res
+                })
+
+  class(res) <- "series.list"
+
+  res
+}
+
+.inner.fmt.conversion.mssa <- function(x, ...) {
+  template <- x$F
+
+  # Prevent storing huge ssa-object in closure
+  x <- NULL
+
+  function(x) .to.series.list.template(x, template)
+}
 
 cadzow.ssa <- function(x, rank,
                        correct = TRUE,
@@ -89,7 +121,7 @@ cadzow.ssa <- function(x, rank,
     rF <- r[[1]]
 
     it <- it + 1
-    if ((maxiter > 0 && it >= maxiter) || (sqd <- .series.norm(F, rF, norm, mask)) < tol)
+    if ((maxiter > 0 && it >= maxiter) || (sqd <- .series.dist(F, rF, norm, mask)) < tol)
       break
     if (trace)
       cat(sprintf("Iteration: %d, distance: %s\n", it, format(sqd)))
