@@ -103,15 +103,6 @@ wcor <- function(x, ...) {
   UseMethod("wcor")
 }
 
-clusterify.wcor.matrix <- function(x,
-                                   nclust = N,
-                                   ...,
-                                   dist = function(X) (1 - X) / 2) {
-  N <- nrow(x)
-  h <- cutree(hclust(as.dist(dist(x)), ...), k = nclust)
-  split(1:N, h)
-}
-
 .hweights <- function(x, ...) {
   UseMethod(".hweights")
 }

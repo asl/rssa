@@ -309,8 +309,6 @@ clone <- function(x, ...)
   UseMethod("clone");
 reconstruct <- function(x, ...)
   UseMethod("reconstruct");
-clusterify <- function(x, ...)
-  UseMethod("clusterify");
 calc.v <- function(x, ...)
   UseMethod("calc.v");
 wnorm <- function(x, ...)

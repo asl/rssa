@@ -589,24 +589,6 @@ clone.ssa <- function(x, copy.storage = TRUE, copy.cache = TRUE, ...) {
   obj;
 }
 
-clusterify.ssa <- function(x, group, nclust = length(group) / 2,
-                           ...,
-                           type = c("wcor"), cache = TRUE) {
-  type <- match.arg(type)
-
-  if (missing(group))
-    group <- as.list(1:nsigma(x));
-
-  if (identical(type, "wcor")) {
-    w <- wcor(x, groups = group, ..., cache = cache);
-    g <- clusterify(w, nclust = nclust, ...);
-    out <- lapply(g, function(idx) unlist(group[idx]));
-  } else {
-    stop("Unsupported clusterification method!");
-  }
-  out;
-}
-
 '$.ssa' <- function(x, name) {
   # First, check the fields of the object itself
   if (ind <- charmatch(name, names(x), nomatch = 0))

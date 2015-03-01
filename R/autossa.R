@@ -52,6 +52,38 @@ grouping.auto <- function(x, ...)
 grouping.auto.ssa <- function(x, ...)
   stop("grouping.auto is not implemented for this kind of SSA yet")
 
+
+clusterify <- function(x, ...)
+  UseMethod("clusterify")
+
+clusterify.ssa <- function(x, group, nclust = length(group) / 2,
+                           ...,
+                           type = c("wcor"), cache = TRUE) {
+  type <- match.arg(type)
+
+  if (missing(group))
+    group <- as.list(1:nsigma(x))
+
+  if (identical(type, "wcor")) {
+    w <- wcor(x, groups = group, ..., cache = cache)
+    g <- clusterify(w, nclust = nclust, ...)
+    out <- lapply(g, function(idx) unlist(group[idx]))
+  } else {
+    stop("Unsupported clusterification method!")
+  }
+
+  out
+}
+
+clusterify.wcor.matrix <- function(x,
+                                   nclust = N,
+                                   ...,
+                                   dist = function(X) (1 - X) / 2) {
+  N <- nrow(x)
+  h <- cutree(hclust(as.dist(dist(x)), ...), k = nclust)
+  split(1:N, h)
+}
+
 grouping.auto.1d.ssa <- function(x, groups,
                                  base = c("series", "eigen", "factor"),
                                  freq.bins = 2,
