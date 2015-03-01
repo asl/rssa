@@ -50,15 +50,24 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   cor
 }
 
-wcor.nd.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, groups, ..., cache = TRUE) {
-  N <- prod(x$length)
-  if (missing(groups))
-    groups <- as.list(1:nsigma(x))
+wcor.ssa <- function(x, groups, Fs, ..., cache = TRUE) {
+  # Get conversion
+  conversion <- .inner.fmt.conversion(x)
 
-  # Compute reconstruction.
-  F <- lapply(groups, function(idx) unlist(.elseries(x, idx)))
-  mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
-  colnames(mx) <- .group.names(groups)
+  if (!missing(Fs) && !missing(groups)) {
+    stop("Only one of `groups' and `Fs' shoud be passed")
+  }
+
+  if (missing(Fs)) {
+    if (missing(groups))
+      groups <- as.list(1:nsigma(x))
+
+    # Compute reconstruction.
+    Fs <- reconstruct(x, groups = groups, ..., cache = cache)
+  }
+
+  Fs <- lapply(Fs, function(x) as.vector(unlist(conversion(x))))
+  mx <- do.call(cbind, Fs)
 
   # Get weights
   w <- .hweights(x)
@@ -72,32 +81,6 @@ wcor.nd.ssa <- wcor.cssa <- wcor.toeplitz.ssa <- wcor.1d.ssa <- function(x, grou
   # Finally, compute w-correlations and return
   wcor.default(mx, weights = w)
 }
-
-wcor.mssa <- function(x, groups, ..., cache = TRUE) {
-  N <- sum(x$length)
-  if (missing(groups))
-    groups <- as.list(1:nsigma(x))
-
-  # Compute reconstruction.
-  F <- lapply(groups, function(idx) unlist(.elseries(x, idx)))
-  mx <- matrix(unlist(F), nrow = N, ncol = length(groups))
-  colnames(mx) <- .group.names(groups)
-
-  # Get weights
-  w <- .hweights(x)
-
-  if (any(w == 0)) {
-    # Omit uncovered elements
-    mx <- mx[as.vector(w > 0),, drop = FALSE]
-    w <- as.vector(w[w > 0])
-  }
-
-  # Finally, compute w-correlations and return
-  wcor.default(mx, weights = w)
-}
-
-wcor.ssa <- function(x, groups, ..., cache = TRUE)
-  stop("Unsupported SVD method for SSA!")
 
 wcor <- function(x, ...) {
   UseMethod("wcor")
@@ -249,11 +232,13 @@ frobenius.cor <- function(x, groups, ...) {
     max.fcor
 }
 
-wcor.ossa <- function(x, groups, ..., cache = TRUE) {
-  isfcor <- .is.frobenius.orthogonal(x, groups, ...)
-  if (!isTRUE(isfcor))
-    warning(sprintf("Component matrices are not F-orthogonal (max F-cor is %s). W-cor matrix can be irrelevant",
-                    format(isfcor, digits = 3)))
+wcor.ossa <- function(x, groups, Fs, ..., cache = TRUE) {
+  if (!missing(groups) && missing(Fs)) {
+    isfcor <- .is.frobenius.orthogonal(x, groups, ...)
+    if (!isTRUE(isfcor))
+      warning(sprintf("Component matrices are not F-orthogonal (max F-cor is %s). W-cor matrix can be irrelevant",
+                      format(isfcor, digits = 3)))
+  }
 
   NextMethod()
 }
