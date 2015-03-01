@@ -11,8 +11,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
       maxiter = 100,
       norm = function(x) sqrt(mean(x^2)),
       trace = FALSE,
-      kappa.balance = 0.5,
-      svd.method = "auto")
+      kappa.balance = 0.5)
 }
 
 \arguments{
@@ -25,13 +24,10 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
   \item{maxiter}{upper bound for the number of iterations}
   \item{norm}{function, calculates a norm of a vector; this norm is
     applied to the difference between the reconstructed series at
-    sequential iterations and is used for convergence detection} 
+    sequential iterations and is used for convergence detection}
   \item{trace}{logical, indicates whether the convergence process should be traced}
   \item{kappa.balance}{sharing proportion of sigma-correction multiplier
     between column and row inner products}
-  \item{svd.method}{singular value decomposition method, passed to
-    \code{ssa} routine (IOSSA method uses Basic 1D SSA for rank and
-    signal subspace estimations)}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
 }
@@ -50,7 +46,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
     \item{iossa.groups.all}{list, describes cumulative grouping after
       after sequential Iterative O-SSA decompositions in the case of
       non-intersecting \code{nested.groups}. Otherwise,
-      \code{iossa.groups.all} coincides with \code{iossa.groups}} 
+      \code{iossa.groups.all} coincides with \code{iossa.groups}}
     \item{ossa.set}{vector of the indices of elementary components used
       in Iterative O-SSA (that is, used in \code{nested.groups})}
   }
@@ -69,7 +65,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
   product. Iterative O-SSA find the separating inner products by
   iterations that are hopefully converges to a stationary point. See
   References for more details.
-  
+
   Sigma-correction procedure does the renormalization of new inner
   products. This prevents the mixing of the components during the next
   iteration. Such approach makes the whole procedure more stable and can
@@ -84,7 +80,7 @@ iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
 
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
-  \code{\link[Rssa:ssa-object]{ssa-object}},  
+  \code{\link[Rssa:ssa-object]{ssa-object}},
   \code{\link[Rssa:fossa]{fossa}},
   \code{\link[Rssa:owcor]{owcor}},
   \code{\link[Rssa:iossa.result]{iossa.result}}.
@@ -185,4 +181,47 @@ library(lattice)
 xyplot(Fort, superpose = TRUE, col = c("red", "blue", "green4", "black"))
 }
 
+
+# Shaped 2D I. O-SSA separates finite rank fields exactly
+mx1 <- outer(1:50, 1:50,
+             function(i, j) exp(i/25 - j/20))
+mx2 <- outer(1:50, 1:50,
+             function(i, j) sin(2*pi * i/17) * cos(2*pi * j/7))
+
+mask <- matrix(TRUE, 50, 50)
+mask[23:25, 23:27] <- FALSE
+mask[1:2, 1] <- FALSE
+mask[50:49, 1] <- FALSE
+mask[1:2, 50] <- FALSE
+
+mx1[!mask] <- mx2[!mask] <- NA
+
+s <- ssa(mx1 + mx2, kind = "2d-ssa", L = c(10, 10))
+plot(reconstruct(s, groups = list(1, 2:5)))
+
+ios <- iossa(s, nested.groups = list(1, 2:5), kappa = NULL)
+plot(reconstruct(ios, groups = ios$iossa.groups))
+
+\donttest{
+# I. O-SSA for MSSA
+N.A <- 150
+N.B <- 120
+L <- 40
+
+omega1 <- 0.05
+omega2 <- 0.055
+
+tt.A <- 1:N.A
+tt.B <- 1:N.B
+F1 <- list(A = 2 * sin(2*pi * omega1 * tt.A), B = cos(2*pi * omega1 * tt.B))
+F2 <- list(A = 1 * sin(2*pi * omega2 * tt.A), B = cos(2*pi * omega2 * tt.B))
+
+F <- list(A = F1$A + F2$A, B = F1$B + F2$B)
+
+s <- ssa(F, kind = "mssa")
+plot(reconstruct(s, groups = list(1:2, 3:4)), plot.method = "xyplot")
+
+ios <- iossa(s, nested.groups = list(1:2, 3:4), kappa = NULL)
+plot(reconstruct(ios, groups = ios$iossa.groups), plot.method = "xyplot")
+}
 }

@@ -209,20 +209,34 @@ nspecial.ssa <- function(x)
   x
 }
 
-.to.series.list <- function(x, na.rm = TRUE) {
+.to.series.list <- function(x, na.rm = TRUE, template = NULL) {
   if (inherits(x, "series.list"))
     return(x)
 
-  # Note that this will correctly remove leading and trailing NA, but will fail for internal NA's
-  NA.fun <- (if (na.rm) .na.omit else identity)
-  if (is.list(x)) {
-    res <- lapply(x, NA.fun)
-  } else {
-    # Coerce input to matrix. This will "normalize" cases like vector / data frame as input
+  # Coerce to list if necessary
+  if (!is.list(x)) {
     if (!is.matrix(x))
       x <- as.matrix(x)
 
-    res <- lapply(seq_len(ncol(x)), function(i) NA.fun(x[, i]))
+    x <- lapply(seq_len(ncol(x)), function(i) x[, i])
+  }
+
+  # Note that this will correctly remove leading and trailing NA, but will fail for internal NA's
+  if (is.null(template)) {
+    # If no template, remove leading and trailing NAs
+    NA.fun <- (if (na.rm) .na.omit else identity)
+    res <- lapply(x, NA.fun)
+  } else {
+    # Elsewise omit elements from the same places as in template series (it's necessary for correct conversion to inner format)
+    res <- lapply(seq_along(x),
+                  function(i) {
+                    res <- x[[i]]
+                    remove <- attr(res, "na.action") <- attr(template[[i]], "na.action")
+                    if (!is.null(remove))
+                      res <- res[-remove]
+
+                    res
+                  })
   }
 
   class(res) <- "series.list"

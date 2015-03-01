@@ -1,11 +1,8 @@
 \name{wcor}
 \alias{wcor}
-\alias{wcor.1d.ssa}
-\alias{wcor.nd.ssa}
-\alias{wcor.toeplitz.ssa}
-\alias{wcor.default}
-\alias{wcor.mssa}
+\alias{wcor.ssa}
 \alias{wcor.ossa}
+\alias{wcor.default}
 \alias{plot.wcor.matrix}
 
 \title{Calculate the W-correlation matrix}
@@ -13,11 +10,8 @@
   Function calculates the W-correlation matrix for the series.
 }
 \usage{
-\method{wcor}{1d.ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{nd.ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{toeplitz.ssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{mssa}(x, groups, \dots, cache = TRUE)
-\method{wcor}{ossa}(x, groups, \dots, cache = TRUE)
+\method{wcor}{ssa}(x, groups, Fs, \dots, cache = TRUE)
+\method{wcor}{ossa}(x, groups, Fs, \dots, cache = TRUE)
 \method{wcor}{default}(x, L = (N + 1) \%/\% 2, \dots, weights = NULL)
 \method{plot}{wcor.matrix}(x,
      grid = c(),
@@ -36,6 +30,8 @@
   \item{weights}{additional weights}
   \item{groups}{list of numeric vectors, indices of elementary components
     used for reconstruction.}
+  \item{Fs}{list of series (e.g. 'ssa.reconstruction' object) for W-cor computation.
+    If missing, reconstructed series from the input 'ssa' object \code{x} will be used.}
   \item{\dots}{further arguments passed to \code{reconstruct} routine
   for \code{wcor} or to \code{plot} for \code{plot.wcor.matrix}}
   \item{cache}{logical, if 'TRUE' then intermediate results will be
