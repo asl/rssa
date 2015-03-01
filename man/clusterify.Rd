@@ -1,25 +1,22 @@
-\name{clusterify}
-\alias{clusterify}
-\alias{clusterify.ssa}
-\title{Automatic Grouping of the Elementary Components}
+\name{grouping.auto.wcor}
+\alias{grouping.auto.wcor}
+\alias{grouping.auto.wcor.ssa}
+\title{Group Elementary Series Using W-correlation Matrix}
 
-\description{Try to perform the grouping step of the SSA via clusterization.}
+\description{Group elemenatry series automatically via
+  the hierarchical clustering with w-correlation matrix as a proximity
+  matrix}
 
 \usage{
-\method{clusterify}{ssa}(x, group, nclust = length(group) / 2,
-           \dots,
-           type = c("wcor"), cache = TRUE)
+\method{grouping.auto.wcor}{ssa}(x, groups, nclust = length(groups) / 2, \dots)
 }
 
 \arguments{
   \item{x}{SSA object}
-  \item{group}{list of numeric vectors, indices of elementary components
+  \item{groups}{list of numeric vectors, indices of elementary components
     used for reconstruction}
-  \item{nclust}{integer, desired number of output objects}
-  \item{\dots}{further arguments passed to clusterization methods}
-  \item{type}{algorithm of clusterization, see 'Details' for more info}
-  \item{cache}{logical, if 'TRUE' then the results of the intermediate
-    calculations are saved and reused as much as possible}
+  \item{nclust}{integer, desired number of output series}
+  \item{\dots}{further arguments passed to \code{hclust}}
 }
 
 \value{
@@ -28,10 +25,8 @@
 }
 
 \details{
-  Right now the only clusterization method is supported: use of
-  w-correlation matrix as the dissimilarity matrix. Standard
-  \code{hclust} routine is used to perform the grouping of the
-  elementary components.
+  Standard \code{hclust} routine is used to perform the grouping
+  of the elementary components.
 }
 
 \seealso{
@@ -42,7 +37,8 @@
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)
 # Form 3 series from the initial 6 ones:
-lst <- clusterify(s, group = 1:6, nclust=3)
+lst <- grouping.auto(s, grouping.method = "wcor",
+                     groups = 1:6, nclust=3)
 # Automatic grouping:
 print(lst)
 # Check separability

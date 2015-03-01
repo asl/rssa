@@ -18,7 +18,6 @@ export(clone,
        cleanup,
        new.ssa,
        ssa,
-       clusterify,
        wcor,
        wcor.default,
        hmatr,
@@ -129,8 +128,6 @@ S3method("wnorm", "nd.ssa")
 S3method("wnorm", "toeplitz.ssa")
 S3method("wnorm", "mssa")
 S3method("plot", wcor.matrix)
-S3method("clusterify", wcor.matrix)
-S3method("clusterify", ssa)
 S3method("lrr", "default")
 S3method("lrr", "1d.ssa")
 S3method("lrr", "toeplitz.ssa")
@@ -180,6 +177,3 @@ S3method("igapfill", "mssa")
 S3method("summarize.gaps", "1d.ssa")
 S3method("summarize.gaps", "cssa")
 S3method("summarize.gaps", "toeplitz.ssa")
-S3method("grouping.auto", "ssa")
-S3method("grouping.auto", "1d.ssa")
-S3method("grouping.auto", "toeplitz.ssa")

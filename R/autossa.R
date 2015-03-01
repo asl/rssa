@@ -1,4 +1,5 @@
 #   R package for Singular Spectrum Analysis
+#   Copyright (c) 2008-2015 Anton Korobeynikov <anton@korobeynikov.info>
 #   Copyright (c) 2015 Alex Shlemov <shlemovalex@gmail.com>
 #   Copyright (c) 2015 Nina Golyandina <nina@gistatgroup.com>
 #
@@ -18,6 +19,35 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
+
+grouping.auto <- function(x, ...,
+                          grouping.method = c("pgram", "wcor")) {
+  switch(match.arg(grouping.method),
+         pgram = grouping.auto.pgram(x, ...),
+         wcor  = grouping.auto.wcor(x, ...))
+}
+
+grouping.auto.wcor <- function(x, ...)
+  UseMethod("grouping.auto.wcor")
+
+grouping.auto.wcor.ssa <- function(x,
+                                   groups, nclust = length(groups) / 2,
+                                   ...) {
+  if (missing(groups))
+    groups <- as.list(1:min(nsigma(x), nu(x)))
+
+  groups <- sort(unique(unlist(groups)))
+  
+  w <- wcor(x, groups = groups, ...)
+  h <- hclust(as.dist((1 - w) / 2), ...)
+  split(groups, cutree(h, k = nclust))
+}
+
+grouping.auto.pgram <- function(x, ...)
+  UseMethod("grouping.auto.pgram")
+
+grouping.auto.pgram.ssa. <- function(x, ...)
+  stop("grouping.auto.pgram is not implemented for this kind of SSA yet")
 
 pgram <- function(x) {
   if (!is.matrix(x)) x <- as.matrix(x)
@@ -46,51 +76,13 @@ pgram <- function(x) {
   list(spec = spec, freq = freq, cumspecfuns = cumspecfuns)
 }
 
-grouping.auto <- function(x, ...)
-  UseMethod("grouping.auto")
-
-grouping.auto.ssa <- function(x, ...)
-  stop("grouping.auto is not implemented for this kind of SSA yet")
-
-
-clusterify <- function(x, ...)
-  UseMethod("clusterify")
-
-clusterify.ssa <- function(x, group, nclust = length(group) / 2,
-                           ...,
-                           type = c("wcor"), cache = TRUE) {
-  type <- match.arg(type)
-
-  if (missing(group))
-    group <- as.list(1:nsigma(x))
-
-  if (identical(type, "wcor")) {
-    w <- wcor(x, groups = group, ..., cache = cache)
-    g <- clusterify(w, nclust = nclust, ...)
-    out <- lapply(g, function(idx) unlist(group[idx]))
-  } else {
-    stop("Unsupported clusterification method!")
-  }
-
-  out
-}
-
-clusterify.wcor.matrix <- function(x,
-                                   nclust = N,
-                                   ...,
-                                   dist = function(X) (1 - X) / 2) {
-  N <- nrow(x)
-  h <- cutree(hclust(as.dist(dist(x)), ...), k = nclust)
-  split(1:N, h)
-}
-
-grouping.auto.1d.ssa <- function(x, groups,
-                                 base = c("series", "eigen", "factor"),
-                                 freq.bins = 2,
-                                 threshold = 0,
-                                 method = c("constant", "linear"),
-                                 ...,
-                                 drop = TRUE) {
+grouping.auto.pgram.1d.ssa <- function(x, groups,
+                                       base = c("series", "eigen", "factor"),
+                                       freq.bins = 2,
+                                       threshold = 0,
+                                       method = c("constant", "linear"),
+                                       ...,
+                                       drop = TRUE) {
   if (is.shaped(x)) {
     stop("grouping.auto is not implemented for shaped SSA yet")
   }
@@ -170,4 +162,4 @@ grouping.auto.1d.ssa <- function(x, groups,
   result
 }
 
-grouping.auto.toeplitz.ssa <- grouping.auto.1d.ssa
+grouping.auto.pgram.toeplitz.ssa <- grouping.auto.pgram.1d.ssa

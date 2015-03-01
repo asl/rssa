@@ -1,8 +1,8 @@
-\name{grouping.auto}
-\alias{grouping.auto}
-\alias{grouping.auto.ssa}
-\alias{grouping.auto.toeplitz.ssa}
-\alias{grouping.auto.1d.ssa}
+\name{grouping.auto.pgram}
+\alias{grouping.auto.pgram}
+\alias{grouping.auto.pgram.ssa}
+\alias{grouping.auto.pgram.toeplitz.ssa}
+\alias{grouping.auto.pgram.1d.ssa}
 
 \title{
   Group elementary series using periodogram
@@ -13,7 +13,7 @@
 }
 
 \usage{
-  \method{grouping.auto}{1d.ssa}(x, groups,
+  \method{grouping.auto.pgram}{1d.ssa}(x, groups,
              base = c("series", "eigen", "factor"),
              freq.bins = 2,
              threshold = 0,
