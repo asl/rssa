@@ -7,7 +7,7 @@
 }
 
 \usage{
-  fossa(x, nested.groups, FILTER = diff, gamma = 1, \dots)
+  fossa(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, \dots)
 }
 
 \arguments{
@@ -18,6 +18,7 @@
   \item{FILTER}{function or numeric vector of impulse response
     coefficients for filter adjustment}
   \item{gamma}{weight of filter adjustment. See `Details' and `References'}
+  \item{normalize}{logical, wheather to normalize left decomposition vectors before filtering}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
 }
