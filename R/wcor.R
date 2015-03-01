@@ -50,17 +50,24 @@ wcor.default <- function(x, L = (N + 1) %/% 2, ..., weights = NULL) {
   cor
 }
 
-wcor.ssa <- function(x, groups, ..., cache = TRUE) {
+wcor.ssa <- function(x, groups, Fs, ..., cache = TRUE) {
   # Get conversion
   conversion <- .inner.fmt.conversion(x)
 
-  if (missing(groups))
-    groups <- as.list(1:nsigma(x))
+  if (!missing(Fs) && !missing(groups)) {
+    stop("Only one of `groups' and `Fs' shoud be passed")
+  }
 
-  # Compute reconstruction.
-  F <- reconstruct(x, groups = groups, ..., cache = cache)
-  F <- lapply(F, function(x) as.vector(unlist(conversion(x))))
-  mx <- do.call(cbind, F)
+  if (missing(Fs)) {
+    if (missing(groups))
+      groups <- as.list(1:nsigma(x))
+
+    # Compute reconstruction.
+    Fs <- reconstruct(x, groups = groups, ..., cache = cache)
+  }
+
+  Fs <- lapply(Fs, function(x) as.vector(unlist(conversion(x))))
+  mx <- do.call(cbind, Fs)
 
   # Get weights
   w <- .hweights(x)
@@ -225,11 +232,13 @@ frobenius.cor <- function(x, groups, ...) {
     max.fcor
 }
 
-wcor.ossa <- function(x, groups, ..., cache = TRUE) {
-  isfcor <- .is.frobenius.orthogonal(x, groups, ...)
-  if (!isTRUE(isfcor))
-    warning(sprintf("Component matrices are not F-orthogonal (max F-cor is %s). W-cor matrix can be irrelevant",
-                    format(isfcor, digits = 3)))
+wcor.ossa <- function(x, groups, Fs, ..., cache = TRUE) {
+  if (!missing(groups) && missing(Fs)) {
+    isfcor <- .is.frobenius.orthogonal(x, groups, ...)
+    if (!isTRUE(isfcor))
+      warning(sprintf("Component matrices are not F-orthogonal (max F-cor is %s). W-cor matrix can be irrelevant",
+                      format(isfcor, digits = 3)))
+  }
 
   NextMethod()
 }
