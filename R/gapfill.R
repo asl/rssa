@@ -136,7 +136,7 @@ summarize.gaps.1d.ssa <- summarize.gaps.toeplitz.ssa <- summarize.gaps.cssa <- f
 }
 
 summarize.gaps.ssa <- function(x, ...) {
-  error("this function is not available for this SSA type")
+  stop("this function is not available for this SSA type")
 }
 
 summarize.gaps <- function(x, ...)

@@ -46,6 +46,11 @@ igapfill.1d.ssa <- function(x,
 
   ## Obtain the initial approximation
   if (is.null(fill)) fill <- mean(F, na.rm = TRUE)
+  ## Check filler for sanity
+  if (length(fill) > 1 &&
+      (length(fill) != length(F) ||
+       any(is.na(fill[na.idx]))))
+      stop("filler should have the same shape as series and provide non-NA filled values")
   F[na.idx] <- if (length(fill) > 1) fill[na.idx] else fill
 
   # Do the actual iterations until the convergence (or stoppping due to number
@@ -125,6 +130,12 @@ igapfill.mssa <- function(x,
 
     ## Obtain the initial approximation
     if (is.null(fill)) fill <- mean(F[[idx]], na.rm = TRUE)
+    ## Check filler for sanity
+    if (is.list(fill) &&
+        (length(fill[[idx]]) != length(F[[idx]]) ||
+         any(is.na(fill[[idx]][cna.idx]))))
+      stop("filler should have the same shape as series and provide non-NA filled values")
+
     F[[idx]][cna.idx] <- if (is.list(fill)) fill[[idx]][cna.idx] else fill
   }
 
