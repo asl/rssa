@@ -1,8 +1,7 @@
 citHeader("To cite the 'Rssa' package in publications use:")
 
-desc <- packageDescription("Rssa")
-year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
-vers <- paste("R package version", desc$Version)
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
+vers <- paste("R package version", meta$Version)
 
 citEntry(entry    = "Article",
          title    = "Computation- and space-efficient implementation of SSA",
