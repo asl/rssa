@@ -1,6 +1,6 @@
 Package: Rssa
 Type: Package
-Title: A collection of methods for singular spectrum analysis
+Title: A Collection of Methods for Singular Spectrum Analysis
 Version: 0.13
 Date: 2015-03-01
 Depends: R (>= 3.1), svd (>= 0.3.3), forecast
@@ -9,6 +9,6 @@ Suggests: testthat (>= 0.7)
 SystemRequirements: fftw (>=3.2)
 Author: Anton Korobeynikov, Alex Shlemov, Konstantin Usevich, Nina Golyandina
 Maintainer: Anton Korobeynikov <anton@korobeynikov.info>
-Description: This package provides various Singular Spectrum Analysis routines.
+Description: Methods and tools for Singular Spectrum Analysis including decomposition, forecasting and gapfilling for unidimensional and multidimensional time series
 License: GPL (>= 2)
 URL: http://github.com/asl/rssa
