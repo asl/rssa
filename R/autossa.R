@@ -155,20 +155,95 @@ grouping.auto.pgram.1d.ssa <- function(x, groups,
       sapply(pgs$cumspecfuns, function(f) diff(f(c(freq.lower.bound[i], freq.upper.bound[i])))) / norms
   }
 
-  if (all(threshold <= 0)) {
+  type <- if (all(threshold <= 0)) "splitting" else "independent"
+
+  if (identical(type, "splitting")) {
     gi <- max.col(contributions, ties.method = "first")
     result <- lapply(seq_len(nresult), function(i) groups[gi == i])
-  } else {
+  } else if (identical(type, "independent")) {
     result <- lapply(seq_len(nresult), function(i) groups[contributions[, i] >= threshold[i]])
+  } else {
+    stop("Unknown type for pgrouping.auto.pgram")
   }
 
   names(result) <- if (!is.null(names(freq.bins))) .group.names(freq.bins) else .group.names(threshold)
+  colnames(contributions) <- names(result)
+  rownames(contributions) <- as.character(groups)
 
   if (drop) {
     result <- result[sapply(result, length) > 0]
   }
 
+  attr(result, "contributions") <- contributions
+  attr(result, "type") <- type
+  attr(result, "threshold") <- threshold
+
+  class(result) <- "grouping.auto.pgram"
+
   result
 }
 
 grouping.auto.pgram.toeplitz.ssa <- grouping.auto.pgram.1d.ssa
+
+plot.grouping.auto.pgram <- function(x, superpose, order, ...) {
+  type <- attr(x, "type")
+
+  if (missing(order))
+    order <- switch(type,
+                    splitting = FALSE,
+                    independent = TRUE)
+
+  if (missing(superpose))
+    superpose <- switch(type,
+                        splitting = FALSE,
+                        independent = TRUE)
+
+  if (order && identical(type, "splitting"))
+    warning("Ordering has no sense for splitting grouping")
+
+  contributions <- as.data.frame(attr(x, "contributions"))
+  components <- rownames(contributions)
+
+  indices <- lapply(contributions, seq_along)
+  labels <- lapply(indices, function(i) components[i])
+
+  if (order) {
+    for (i in seq_along(contributions)) {
+      idx <- base::order(contributions[[i]], decreasing = TRUE)
+      contributions[[i]] <- contributions[[i]][idx]
+      labels[[i]] <- labels[[i]][idx]
+    }
+  }
+
+  gind <- lapply(seq_len(ncol(contributions)), function(i) rep(i, nrow(contributions)))
+  groups <- lapply(names(contributions), function(name) rep(name, nrow(contributions)))
+
+  data <- data.frame(contribution = unlist(contributions),
+                     index = unlist(indices),
+                     gind = unlist(gind),
+                     group = unlist(groups))
+
+  if (!order) {
+    xscale <- list(limits = labels[[1]])
+  } else {
+    if (superpose) {
+      xscale <- list(draw = FALSE)
+    } else {
+      xscale <- list(limits = labels, relation = "free")
+    }
+  }
+
+  dots <- list(...)
+  dots <- .defaults(dots,
+                    auto.key = superpose,
+                    xlab = "Component",
+                    ylab = "Relative contribution",
+                    scales = list(x = xscale),
+                    as.table = !superpose)
+
+  if (superpose) {
+    do.call(xyplot, c(list(contribution ~ index, groups = data$group, data = data), dots))
+  } else {
+    do.call(xyplot, c(list(contribution ~ index | group, data = data), dots))
+  }
+}
