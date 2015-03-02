@@ -101,7 +101,8 @@
 
   g1 <- grouping.auto(ss, base = "series", freq.bins = list(0.005), threshold = 0.95)
   g2 <- grouping.auto(ss, base = "eigen", freq.bins = 2, threshold = 0)
-  g3 <- grouping.auto(ss, base = "factor", freq.bins = list(c(0.1), c(0.1, 0.2)), threshold = 0, method = "linear")
+  g3 <- grouping.auto(ss, base = "factor", freq.bins = list(c(0.1), c(0.1, 0.2)), 
+                      threshold = 0, method = "linear")
   g4 <- grouping.auto(ss, freq.bins = c(0.1, 0.2), threshold = 0)
 
   g <- grouping.auto(ss, freq.bins = 8, threshold = 0)
