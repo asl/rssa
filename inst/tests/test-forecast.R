@@ -21,6 +21,7 @@ test_that("toeplitz SSA forecast test", {
   names <- c("co2.td", "fr50.td", "fr1k.td", "fr50.nz.td", "fr1k.nz.td")
   for (name in names) {
     test.test.data(what = c("rforecast", "vforecast"),
-                   test.data = env[[name]])
+                   test.data = env[[name]],
+                   tolerance = 1e-4)
   }
 })
