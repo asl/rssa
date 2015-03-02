@@ -3,6 +3,7 @@
 \alias{grouping.auto.pgram.ssa}
 \alias{grouping.auto.pgram.toeplitz.ssa}
 \alias{grouping.auto.pgram.1d.ssa}
+\alias{plot.grouping.auto.pgram}
 
 \title{
   Group elementary series using periodogram
@@ -20,6 +21,7 @@
              method = c("constant", "linear"),
              \dots,
              drop = TRUE)
+  \method{plot}{grouping.auto.pgram}(x, superpose, order, ...)
 }
 
 \arguments{
@@ -32,13 +34,16 @@
     be used as the upper bound and the lower bound will be zero}
   \item{threshold}{contribution threshold. If zero then dependent grouping approach will be used}
   \item{method}{method of periodogram interpolation}
-  \item{\dots}{additional arguments passed to \code{\link{reconstruct}}
-    routines}
+  \item{superpose}{logical, whether to plot contributions for all intervals on one panel}
+  \item{order}{logical, whether to reorder components by contribution}
+  \item{\dots}{additional arguments passed to \code{\link{reconstruct}} and
+    \code{\link[lattice:xyplot]{xyplot}} routines}
   \item{drop}{logical, whether to exclude empty groups from resulted list}
 }
 
 \value{
-  list of groups (indices of elementary components)
+  object of class 'grouping.auto.pgram' (list of groups with some additional info) for grouping method;
+  'trellis' object for plot method.
 }
 
 \details{
@@ -59,7 +64,7 @@
       resulted groups can intersect.
       If 'threshold' is a vector, correspondent value of threshold will be using
       for each interval.}
-    \item{'dependent'}{Elementary components are separated to disjoint subsets;
+    \item{'dependent' or 'splitting'}{Elementary components are separated to disjoint subsets;
       for each component interval with the highest contribution is selected.}
   }
 
@@ -94,14 +99,16 @@
   plot(ss, type = "vectors", vectors = "factor", idx = 1:12)
   plot(ss, type = "series", groups = 1:12)
 
-  grouping.auto(ss, base = "series", freq.bins = list(0.005), threshold = 0.95)
-  grouping.auto(ss, base = "eigen", freq.bins = 2, threshold = 0)
-  grouping.auto(ss, base = "factor", freq.bins = list(c(0.1), c(0.1, 0.2)), threshold = 0, method = "linear")
-  grouping.auto(ss, freq.bins = c(0.1, 0.2), threshold = 0)
+  g1 <- grouping.auto(ss, base = "series", freq.bins = list(0.005), threshold = 0.95)
+  g2 <- grouping.auto(ss, base = "eigen", freq.bins = 2, threshold = 0)
+  g3 <- grouping.auto(ss, base = "factor", freq.bins = list(c(0.1), c(0.1, 0.2)), threshold = 0, method = "linear")
+  g4 <- grouping.auto(ss, freq.bins = c(0.1, 0.2), threshold = 0)
 
   g <- grouping.auto(ss, freq.bins = 8, threshold = 0)
   plot(reconstruct(ss, groups = g))
+  plot(g)
 
   g <- grouping.auto(ss, freq.bins = list(0.1, 0.2, 0.3, 0.4, 0.5), threshold = 0.95)
   plot(reconstruct(ss, groups = g))
+  plot(g)
 }
