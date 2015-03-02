@@ -114,11 +114,11 @@ classify.gaps <- function(na.idx, L, N) {
 }
 
 summarize.gaps.default <- function(x, L) {
-  na.idx <- which(is.na(F))
+  na.idx <- which(is.na(x))
   N <- length(x)
   res <- list()
 
-  L.range <- if (missing(L)) 1:((N + 1) %/% 2) else L
+  L.range <- if (missing(L) || is.null(L)) 1:((N + 1) %/% 2) else L
   for (L in L.range)
     res[[L]] <- classify.gaps(na.idx, L, N)
 
@@ -131,18 +131,18 @@ summarize.gaps.default <- function(x, L) {
   res
 }
 
-summarize.gaps.1d.ssa <- summarize.gaps.toeplitz.ssa <- summarize.gaps.cssa <- function(x, ...) {
-  summarize.gaps.default(x$F, ...)
+summarize.gaps.1d.ssa <- summarize.gaps.toeplitz.ssa <- summarize.gaps.cssa <- function(x, L = NULL) {
+  summarize.gaps.default(x$F, L = L)
 }
 
-summarize.gaps.ssa <- function(x, ...) {
+summarize.gaps.ssa <- function(x, L) {
   stop("this function is not available for this SSA type")
 }
 
-summarize.gaps <- function(x, ...)
+summarize.gaps <- function(x, L)
   UseMethod("summarize.gaps")
 
-print.ssa.gaps <- function(x) {
+print.ssa.gaps <- function(x, ...) {
   N <- x$N
   L.range <- x$L.range
   cat("\nCall:\n", deparse(x$call), "\n\n", sep="");
