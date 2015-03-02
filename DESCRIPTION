@@ -1,8 +1,8 @@
 Package: Rssa
 Type: Package
 Title: A collection of methods for singular spectrum analysis
-Version: 0.12.1
-Date: 2014-01-25
+Version: 0.13
+Date: 2015-03-01
 Depends: R (>= 3.1), svd (>= 0.3.3), forecast
 Imports: lattice
 Suggests: testthat (>= 0.7)
