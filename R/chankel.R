@@ -122,25 +122,21 @@ decompose.cssa.eigen <- function(x, ...,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
+  # Build complex hankel matrix
   F <- .F(x)
-
-  R <- hankel(Re(F), L = L)
-  I <- hankel(Im(F), L = L)
-  h <- cbind(rbind(R, I), rbind(-I, R))
+  h <- hankel(F, L)
 
   # Do decomposition
-  # FIXME: Build the L-covariance matrix properly
-  S <- eigen(tcrossprod(h, h), symmetric = TRUE)
+  # FIXME: Build the complex L-covariance matrix properly
+  S <- eigen(tcrossprod(h, Conj(h)), symmetric = TRUE)
 
   # Fix small negative values
   S$values[S$values < 0] <- 0
 
-  S <- cssa.to.complex(sqrt(S$values), S$vectors)
-
   # Save results
   .set.decomposition(x,
-                     sigma = S$d[1:neig], U = S$u[, 1:neig, drop = FALSE])
+                     sigma = S$values[seq_len(neig)],
+                     U = S$vectors[, seq_len(neig), drop = FALSE])
 
   x
 }
