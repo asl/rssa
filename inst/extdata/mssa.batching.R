@@ -20,8 +20,11 @@ ssa.wrap <- function(xs, L, dim, svd.method = "eigen") {
   res
 }
 
-cssa.wrap <- function(xs, L, dim, svd.method = "svd") {
-  svd.method <- "svd" # TODO fix SVD methods in package
+cssa.wrap <- function(xs, L, dim, svd.method = c("svd", "eigen", "propack", "nutrlan")) {
+  svd.method <-  match.arg(svd.method)
+  # TODO fix SVD methods in package
+  if (! svd.method %in% c("svd", "eigen"))
+    svd.method <- "eigen"
 
   stopifnot(length(xs) == 2)
   ss <- ssa(xs[[1]] + 1i * xs[[2]], L = L, kind = "cssa", svd.method = svd.method)
