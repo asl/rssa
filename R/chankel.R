@@ -86,7 +86,7 @@ decompose.cssa.svd <- function(x,
   c(x$window, x$length - x$window + 1)
 }
 
-cssa.to.complex <- function(values, vectors) {
+cssa.to.complex <- function(values, u = NULL, v = NULL) {
   # First, make sure values come into the pairs
   d1 <- values[c(TRUE, FALSE)]
   d2 <- values[c(FALSE, TRUE)]
@@ -94,23 +94,25 @@ cssa.to.complex <- function(values, vectors) {
     warning("Too big difference between consecutive eigenvalues. CSSA might not converge")
 
   # And vectors
-  Y1 <- vectors[1:(nrow(vectors)/2),    c(TRUE,  FALSE)]
-  Z1 <- vectors[-(1:(nrow(vectors)/2)), c(TRUE,  FALSE)]
-  Y2 <- vectors[1:(nrow(vectors)/2),    c(FALSE, TRUE)]
-  Z2 <- vectors[-(1:(nrow(vectors)/2)), c(FALSE, TRUE)]
+  real.bases <- list(u = u, v = v)
+  real.bases <- real.bases[!sapply(real.bases, is.null)]
+  bases <- lapply(real.bases,
+                  function(vectors) {
+                    Y1 <- vectors[1:(nrow(vectors)/2),    c(TRUE,  FALSE)]
+                    Z1 <- vectors[-(1:(nrow(vectors)/2)), c(TRUE,  FALSE)]
+                    Y2 <- vectors[1:(nrow(vectors)/2),    c(FALSE, TRUE)]
+                    Z2 <- vectors[-(1:(nrow(vectors)/2)), c(FALSE, TRUE)]
 
-  V1 <- Y1 + 1i*Z1
-  V2 <- Y2 + 1i*Z2
+                    V1 <- Y1 + 1i*Z1
+                    V2 <- Y2 + 1i*Z2
 
-  # Sanity check
-  if (any((Mod(V1 - 1i*V2) > 1e-6) & (Mod(V1 + 1i*V2) > 1e-6)))
-    warning("Too big difference between consecutive eigenvectors. CSSA might not converge")
+                    # Sanity check
+                    if (any((Mod(V1 - 1i*V2) > 1e-6) & (Mod(V1 + 1i*V2) > 1e-6)))
+                      warning("Too big difference between consecutive eigenvectors. CSSA might not converge")
 
-  list(d = d2, u = V2
-       # , vectors2 = V2,
-       # dd = (d1 - d2) / d2 > 1e-3 & d2 > 0,
-       # vv = (Mod(V1 - 1i*V2) > 1e-6) & (Mod(V1 + 1i*V2) > 1e-6)
-       )
+                    V2
+                  })
+  c(list(d = d2), bases)
 }
 
 decompose.cssa.eigen <- function(x, ...,
@@ -154,7 +156,7 @@ decompose.cssa.propack <- function(x,
   h <- .get.or.create.chmat(x)
   S <- propack.svd(h, neig = 2*neig, ...)
 
-  S <- cssa.to.complex(S$d, S$u)
+  S <- cssa.to.complex(S$d, u = S$u, v = S$v)
 
   # Save results
   .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
@@ -175,7 +177,7 @@ decompose.cssa.nutrlan <- function(x,
   S <- trlan.svd(h, neig = 2*neig, ...,
                  lambda = sigma, U = U)
 
-  S <- cssa.to.complex(S$d, S$u)
+  S <- cssa.to.complex(S$d, u = S$u)
 
   # Save results
   .set.decomposition(x, sigma = S$d, U = S$u)
