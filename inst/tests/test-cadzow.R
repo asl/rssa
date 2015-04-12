@@ -38,3 +38,16 @@ test_that("Cadzow correction is really works", {
   }
 })
 
+test_that("Cadzow for Complex SSA", {
+  set.seed(1)
+  N <- 100
+  v <- rnorm(N) + 1i * rnorm(N)
+  s <- ssa(v, kind = "cssa")
+  eps <- sqrt(.Machine$double.eps)
+
+  ranks <- 1:5
+  for (rank in ranks) {
+    cz <- cadzow(s, rank = rank)
+    expect_true(high.rank.rate(cz, rank = rank, ssaobj = s) < eps)
+  }
+})

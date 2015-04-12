@@ -69,7 +69,7 @@
 cadzow.ssa <- function(x, rank,
                        correct = TRUE,
                        tol = 1e-6, maxiter = 0,
-                       norm = function(x) sqrt(max(x^2)),
+                       norm = function(x) max(abs(x)),
                        trace = FALSE,
                        ..., cache = TRUE) {
   # Get conversion
