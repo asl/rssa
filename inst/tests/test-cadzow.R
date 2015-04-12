@@ -10,7 +10,7 @@ test_that("Cadzow limit is a series of finite rank", {
   ranks <- 1:5
   for (rank in ranks) {
     cz <- cadzow(s, rank = rank)
-    expect_true(high.rank.rate(cz, rank = rank) < eps)
+    expect_true(high.rank.rate(cz, rank = rank, ssaobj = s) < eps)
   }
 })
 
