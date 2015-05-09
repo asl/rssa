@@ -13,19 +13,3 @@ test_that("1dSSA reconstruct test", {
                    test.data = env[[name]])
   }
 })
-
-test_that("Fast Lcov matrix' computation works correctly", {
-  Ls <- c(3, 10, 17, 50, 371, 500, 1000)
-  Ns <- c(1005, 1500, 2000, 5000)
-
-  set.seed(1)
-  for (N in Ns) {
-    for (L in Ls) {
-      F <- rcauchy(N)
-      C.exact <- tcrossprod(hankel(F, L))
-      C.fast <- .Lcov.matrix(ssa(F, L = L, svd.method = "eigen"))
-      expect_equal(C.fast, C.exact,
-                   info = sprintf("L = %d, N = %d", L, N))
-    }
-  }
-})

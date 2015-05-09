@@ -274,48 +274,6 @@ static R_INLINE void hankelize_fft(double *F,
   fftw_free(cV);
 }
 
-static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
-                                                   double *R,
-                                                   const fft_plan *f) {
-  double *oF;
-  fftw_complex *iF, *iFc;
-  R_len_t i, K;
-
-  /* Length's check */
-  if ((L > N) || (L < 1))
-    error("must be 'N' >= 'L' >= 1");
-
-  K = N - L + 1;
-
-  /* Allocate needed memory */
-  oF = (double*) fftw_malloc(N * sizeof(double));
-  iF = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
-  iFc = (fftw_complex*) fftw_malloc((N/2 + 1) * sizeof(fftw_complex));
-
-  memcpy(oF, F, N*sizeof(double));
-
-  fftw_execute_dft_r2c(f->r2c_plan, oF, iF);
-
-  memcpy(oF, F, K*sizeof(double));
-  memset(oF + K, 0, (N - K)*sizeof(double));
-
-  fftw_execute_dft_r2c(f->r2c_plan, oF, iFc);
-
-  /* Dot-product */
-  for (i = 0; i < N/2 + 1; ++i)
-    iF[i] = iF[i] * conj(iFc[i]);
-
-  fftw_execute_dft_c2r(f->c2r_plan, iF, oF);
-
-  /* Return */
-  for (i = 0; i < L; ++i)
-    R[i] = oF[i] / N;
-
-  /* Cleanup */
-  fftw_free(oF);
-  fftw_free(iF);
-  fftw_free(iFc);
-}
 #else
 static void free_plan(fft_plan *f) {
   (void)f;
@@ -527,55 +485,6 @@ static R_INLINE void hankelize_fft(double *F,
   UNPROTECT(6);
 }
 
-static void compute_L_covariation_matrix_first_row(const double *F, R_len_t N, R_len_t L,
-                                                   double *R,
-                                                   const fft_plan *f) {
-  R_len_t K = N - L + 1;
-  R_len_t i;
-  SEXP rF, rFc, rF1, rFc1, rTrue, res;
-
-  if (!valid_plan(f, N))
-    error("invalid FFT plan for given FFT length");
-
-  /* Length check */
-  if ((L > N) || (L < 1))
-    error("must be 'N' > 'L' > 1");
-
-  /* Allocate needed memory */
-  PROTECT(rF = allocVector(CPLXSXP, N));
-  memset(COMPLEX(rF), 0, N * sizeof(Rcomplex));
-  PROTECT(rFc = allocVector(CPLXSXP, N));
-  memset(COMPLEX(rFc), 0, N * sizeof(Rcomplex));
-
-  /* Fill in buffers */
-  for (i = 0; i < N; ++i)
-    COMPLEX(rF)[i].r = F[i];
-
-  for (i = 0; i < K; ++i)
-    COMPLEX(rFc)[i].r = F[i];
-
-  /* Compute the FFTs */
-  PROTECT(rF1 = eval(lang2(install("fft"), rF), R_GlobalEnv));
-  PROTECT(rFc1 = eval(lang2(install("fft"), rFc), R_GlobalEnv));
-
-  /* Dot-product */
-  for (i = 0; i < N; ++i) {
-    Rcomplex x1 = COMPLEX(rF1)[i], x2 = COMPLEX(rFc1)[i];
-    COMPLEX(rF1)[i].r = x1.r * x2.r + x1.i * x2.i;
-    COMPLEX(rF1)[i].i = -x1.r * x2.i + x1.i * x2.r;
-  }
-
-  /* Compute the inverse FFT */
-  PROTECT(rTrue = allocVector(LGLSXP, 1));
-  LOGICAL(rTrue)[0] = 1;
-  PROTECT(res = eval(lang3(install("fft"), rF1, rTrue), R_GlobalEnv));
-
-  /* Form the result */
-  for (i = 0; i < L; ++i)
-    R[i] = COMPLEX(res)[i].r / N;
-
-  UNPROTECT(6);
-}
 #endif
 
 static area_indices *alloc_area1d(SEXP mask) {
@@ -917,32 +826,4 @@ SEXP hankelize_multi_fft(SEXP U, SEXP V, SEXP fftplan) {
 
   UNPROTECT(1);
   return F;
-}
-
-SEXP Lcov_matrix(SEXP F, SEXP L, SEXP fft_plan) {
-  /* Perform a type checking */
-  if (!LOGICAL(is_fft_plan(fft_plan))[0]) {
-    error("pointer provided is not a fft plan");
-    return NILSXP;
-  }
-
-  R_len_t intL = INTEGER(L)[0];
-  R_len_t i, j;
-  R_len_t K = length(F) - intL + 1;
-  SEXP ans;
-
-  PROTECT(ans = allocMatrix(REALSXP, intL, intL));
-  double *rans = REAL(ans);
-  double *pF = REAL(F);
-  compute_L_covariation_matrix_first_row(REAL(F), length(F), intL, rans, R_ExternalPtrAddr(fft_plan));
-
-  for (j = 1; j < intL; ++j)
-    rans[intL*j] = rans[j];
-
-  for (j = 1; j < intL; ++j)
-    for (i = j; i < intL; ++i)
-      rans[i + intL * j] = rans[j + intL * i] = rans[(i - 1) + (j - 1) * intL] - pF[i - 1] * pF[j - 1] + pF[i + K - 1] * pF[j + K - 1];
-
-  UNPROTECT(1);
-  return ans;
 }

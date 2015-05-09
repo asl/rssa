@@ -232,29 +232,6 @@ decompose.1d.ssa.svd <- function(x,
   x
 }
 
-# TODO: Kill it (from tests too)
-.Lcov.matrix <- function(x) {
-  # Returns L-covariance matrix explicitly
-  # This matrix used in decompose.eigen only
-
-  if (!is.shaped(x)) {
-    # Evaluate ordinary L-cov matrix via convolution
-
-    N <- length(F)
-    F <- .F(x)
-    storage.mode(F) <- "double"
-    L <- x$window
-    storage.mode(L) <- "integer"
-    .Call("Lcov_matrix", F, L, .get.or.create.fft.plan(x))
-  } else {
-    # Get quasi-hankel linear operator
-    h <- .get.or.create.hmat(x)
-
-    # Convert linear operator to the explicit matrix form
-    apply(diag(hrows(h)), 2, function(u) hmatmul(hmat = h, hmatmul(hmat = h, u, transposed = TRUE)))
-  }
-}
-
 decompose.1d.ssa.eigen <- function(x,
                                    neig = min(50, L, K),
                                    ...,
