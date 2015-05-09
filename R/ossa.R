@@ -111,36 +111,14 @@ orthogonalize <- function(Y, Z, sigma, side = c("bi", "left", "right"), normaliz
 .traj.matrix.ssa <- function(x, ...)
   stop("`.traj.matrix' is not implemented for this kind of SSA")
 
-hbhmatmul.wrap <- function(h, mx, transposed = TRUE) {
-  if (ncol(mx) == 0)
-    return(matrix(NA_real_, if (transposed) hbhcols(h) else hbhrows(h), 0))
-
-  apply(mx, 2, hbhmatmul, hmat = h, transposed = transposed)
-}
-
-.traj.matrix.multiplier <- function(x, ...)
-  UseMethod(".traj.matrix.multiplier")
-
-.traj.matrix.multiplier.1d.ssa <- .traj.matrix.multiplier.toeplitz.ssa <- function(x, ...)
-  hmatmul.wrap
-
-.traj.matrix.multiplier.nd.ssa <- .traj.matrix.multiplier.mssa <- function(x, ...)
-  hbhmatmul.wrap
-
-.traj.matrix.multiplier.ssa <- function(x, ...)
-  stop("`.traj.matrix.multiplier' is not implemented for this kind of SSA")
-
 .frob.dist.series.lowrank <- function(F, sigma, Y, Z, ssaobj) {
-  # Get trajectory matrix multiplication function (facepalm)
-  matmul.wrap <- .traj.matrix.multiplier(ssaobj)
-
   # This is efficient implementation of |T(F) - Y diag(sigma) Z^T|^2_F
   s <- .clone.with.new.series(ssaobj, F)
   TF <- .traj.matrix(s)
 
   sZ <- Z * rep(sigma, each = nrow(Z))
 
-  res <- sum((sZ %*% crossprod(Y)) * sZ) + wnorm(s)^2 - 2*sum(matmul.wrap(TF, Y, transposed = TRUE) * sZ)
+  res <- sum((sZ %*% crossprod(Y)) * sZ) + wnorm(s)^2 - 2*sum(crossprod(TF, Y) * sZ)
 
   # Fix possible numeric error, force dist be nonnegative
   if (res < 0)
@@ -150,14 +128,11 @@ hbhmatmul.wrap <- function(h, mx, transposed = TRUE) {
 }
 
 .owcor <- function(Fs, LM, RM, ssaobj) {
-  # Get trajectory matrix multiplication function
-  matmul.wrap <- .traj.matrix.multiplier(ssaobj)
-
   mx <- lapply(Fs,
                function(F) {
                  s <- .clone.with.new.series(ssaobj, F)
                  TF <- .traj.matrix(s)
-                 as.vector(LM %*% matmul.wrap(TF, t(RM), transposed = FALSE))
+                 as.vector(LM %*% tcrossprod(TF, RM))
               })
   mx <- do.call(cbind, mx)
 

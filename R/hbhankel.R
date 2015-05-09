@@ -145,39 +145,30 @@ new.hbhmat <- function(F, L = (N + 1) %/% 2,
   }
   storage.mode(weights) <- "integer"
 
-  h <- .Call("initialize_hbhmat", F, L, wmask, fmask, weights, circular)
+  h <- new("extmat",
+           .Call("initialize_hbhmat", F, L, wmask, fmask, weights, circular))
 }
 
 hbhcols <- function(h) {
-  .Call("hbhankel_cols", h)
+  ncol(h)
 }
 
 hbhrows <- function(h) {
-  .Call("hbhankel_rows", h)
+  nrow(h)
 }
 
 is.hbhmat <- function(h) {
-  .Call("is_hbhmat", h)
+  is.extmat(h) && .Call("is_hbhmat", h@.xData)
 }
 
 hbhmatmul <- function(hmat, v, transposed = FALSE) {
-  storage.mode(v) <- "double"
-  storage.mode(transposed) <- "logical"
-  .Call("hbhmatmul", hmat, v, transposed)
+  ematmul(hmat, v, transposed = transposed)
 }
 
 .get.or.create.hbhmat <- function(x) {
   .get.or.create(x, "hmat",
                  new.hbhmat(.F(x), L = x$window, wmask = x$wmask, fmask = x$fmask,
                             weights = x$weights, circular = x$circular))
-}
-
-as.matrix.hbhmat <- function(x) {
-  apply(diag(hbhcols(x)), 2, hbhmatmul, hmat = x)
-}
-
-tcrossprod.hbhmat <- function(x) {
-  apply(diag(hbhrows(x)), 2, function(u) hbhmatmul(hmat = x, hbhmatmul(hmat = x, u, transposed = TRUE)))
 }
 
 .traj.dim.nd.ssa <- function(x) {
@@ -210,7 +201,7 @@ decompose.nd.ssa.svd <- function(x,
     stop("Continuation of decomposition is not yet implemented for this method.")
 
   # Create circulant and convert it to ordinary matrix
-  h <- as.matrix.hbhmat(.get.or.create.hbhmat(x))
+  h <- as.matrix(.get.or.create.hbhmat(x))
 
   # Do decompostion
   S <- svd(h, nu = neig, nv = neig)
@@ -232,7 +223,7 @@ decompose.nd.ssa.eigen <- function(x,
     stop("Continuation of decomposition is not yet implemented for this method.")
 
   # Create circulant and compute XX^T in form of ordinary matrix
-  C <- tcrossprod.hbhmat(.get.or.create.hbhmat(x))
+  C <- tcrossprod(.get.or.create.hbhmat(x))
 
   # Do decompostion
   S <- eigen(C, symmetric = TRUE)
@@ -305,5 +296,5 @@ calc.v.nd.ssa <- function(x, idx, ...) {
 .hankelize.one.nd.ssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
-  .Call("hbhankelize_one_fft", U, V, h)
+  .Call("hbhankelize_one_fft", U, V, h@.xData)
 }
