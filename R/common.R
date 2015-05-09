@@ -58,7 +58,8 @@
 
   if (exists(name, envir = .storage(x), inherits = FALSE)) {
     val <- get(name, envir = .storage(x))
-    ret <- !is.null(val) && (typeof(val) != "externalptr" || !.is.extptrnull(val))
+    ret <- !is.null(val) && (typeof(val) != "externalptr" || !.is.extptrnull(val)) &&
+             (!isS4(val) || !inherits(val, "externalptr") || !.is.extptrnull(val@.xData))
   }
   ret
 }
