@@ -33,25 +33,25 @@ new.tmat <- function(F, L = (N + 1) %/% 2,
   R <- Lcor(F, L, circular = circular)
 
   storage.mode(R) <- "double"
-  t <- .Call("initialize_tmat", R, if (is.null(fft.plan)) fft.plan.1d(2*L - 1, L = L) else fft.plan)
+
+  new("extmat",
+      .Call("initialize_tmat", R, if (is.null(fft.plan)) fft.plan.1d(2*L - 1, L = L) else fft.plan))
 }
 
 tcols <- function(t) {
-  .Call("toeplitz_cols", t)
+  ncol(t)
 }
 
 trows <- function(t) {
-  .Call("toeplitz_rows", t)
+  nrow(t)
 }
 
 is.tmat <- function(t) {
-  .Call("is_tmat", t)
+  is.extmat(t) && .Call("is_tmat", t@.xData)
 }
 
 tmatmul <- function(tmat, v, transposed = FALSE) {
-  storage.mode(v) <- "double"
-  storage.mode(transposed) <- "logical"
-  .Call("tmatmul", tmat, v, transposed)
+  ematmul(tmat, v, transposed = transposed)
 }
 
 .hankelize.one.toeplitz.ssa <- .hankelize.one.1d.ssa

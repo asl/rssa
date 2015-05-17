@@ -69,7 +69,7 @@ decompose.mssa.svd <- function(x,
     stop("Continuation of decomposition is not supported for this method.")
 
   # Create circulant and convert it to ordinary matrix
-  h <- as.matrix.hbhmat(.get.or.create.mhmat(x))
+  h <- as.matrix(.get.or.create.mhmat(x))
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
@@ -90,7 +90,7 @@ decompose.mssa.eigen <- function(x, ...,
     stop("Continuation of decomposition is not supported for this method.")
 
   # Create circulant and compute XX^T in form of ordinary matrix
-  C <- tcrossprod.hbhmat(.get.or.create.mhmat(x))
+  C <- tcrossprod(.get.or.create.mhmat(x))
 
   # Do decomposition
   S <- eigen(C, symmetric = TRUE)
@@ -162,7 +162,7 @@ calc.v.mssa<- function(x, idx, ...) {
 .hankelize.one.mssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"
-  F <- .Call("hbhankelize_one_fft", U, V, h)
+  F <- .Call("hbhankelize_one_fft", U, V, h@.xData)
 
   ## FIXME: This is ugly
   N <- x$length; mN <- max(N)

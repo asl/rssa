@@ -65,13 +65,6 @@ orthopoly <- function(d, L) {
 .get.or.create.phmat <- function(x)
   .get.or.create(x, "phmat", .phmat(x))
 
-hmatmul.wrap <- function(h, mx, transposed = TRUE) {
-  if (ncol(mx) == 0)
-    return(matrix(NA_real_, if (transposed) hcols(h) else hrows(h), 0))
-
-  apply(mx, 2, hmatmul, hmat = h, transposed = transposed)
-}
-
 .calc.projections <- function(x, force.update = FALSE) {
   if (!is.null(.decomposition(x)) && !force.update)
     return(x)
@@ -80,8 +73,8 @@ hmatmul.wrap <- function(h, mx, transposed = TRUE) {
   LU <- .get(x, "column.projector")
   RV <- .get(x, "row.projector")
 
-  RU <- hmatmul.wrap(hmat, RV, transposed = FALSE)
-  LV <- hmatmul.wrap(hmat, LU, transposed = TRUE) - RV %*% crossprod(RU, LU)
+  RU <- hmat %*% RV
+  LV <- crossprod(hmat, LU) - RV %*% crossprod(RU, LU)
   Rsigma <- sqrt(colSums(RU^2))
   RU <- RU / rep(Rsigma, each = nrow(RU))
   Lsigma <- sqrt(colSums(LV^2))
@@ -122,8 +115,8 @@ decompose.pssa.svd <- function(x,
   if (!force.continue && nsigma(x) > nspecial)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Get trajectory matrix
-  h <- .trajectory.matrix(x)
+  # Create circulant and convert it to ordinary matrix
+  h <- as.matrix(.get.or.create.hmat(x))
 
   # Subtract special components
   sigma <- .sigma(x)[seq_len(nspecial)]
@@ -162,12 +155,12 @@ decompose.pssa.eigen <- function(x,
   V <- .V(x)[, seq_len(nspecial), drop = FALSE]
 
   # We will compute (X - P_X) %*% t(X - P_X) = X %*% t(X) - P_X %*% t(X) - X %*% t(P_X) + P_X %*% t(P_X)
-  # Get common Lcov matrix, i.e. X %*% t(X)
-  Lcov <- .Lcov.matrix(x)
   # Get hankel circulant
   h <- .get.or.create.hmat(x)
+  # Get common Lcov matrix, i.e. X %*% t(X)
+  Lcov <- tcrossprod(h)
   # Compute X %*% t(P_X)
-  XtPX <- hmatmul.wrap(h, V, transposed = FALSE) %*% (sigma * t(U))
+  XtPX <- (h %*% V) %*% (sigma * t(U))
   # Compute P_X %*% t(P_X)
   PXtPX <- U %*% crossprod(V * rep(sigma, each = nrow(V))) %*% t(U)
 

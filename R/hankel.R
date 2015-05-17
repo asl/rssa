@@ -165,44 +165,25 @@ new.hmat <- function(F, L = (N + 1) %/% 2, circular = FALSE,
   storage.mode(circular) <- "logical"
 
 
-  h <- .Call("initialize_hmat", F, L, circular,
-             if (is.null(fft.plan)) fft.plan.1d(N, L, circular, wmask, fmask, weights) else fft.plan)
-}
-
-.trajectory.matrix <- function(x) {
-  # Returns trajectory matrix explicitly
-  # This matrix is used used in decompose.svd only
-
-  if (!is.shaped(x)) {
-    # Return ordinary hankel matrix
-    h <- hankel(.F(x), L = x$window)
-  } else {
-    # Get quasi-hankel linear operator
-    hmat <- .get.or.create.hmat(x)
-
-    # Convert linear operator to the explicit matrix form
-    h <- apply(diag(hcols(hmat)), 2, hmatmul, hmat = hmat)
-  }
-
-  h
+  h <- new("extmat",
+           .Call("initialize_hmat", F, L, circular,
+                 if (is.null(fft.plan)) fft.plan.1d(N, L, circular, wmask, fmask, weights) else fft.plan))
 }
 
 hcols <- function(h) {
-  .Call("hankel_cols", h)
+  ncol(h)
 }
 
 hrows <- function(h) {
-  .Call("hankel_rows", h)
+  nrow(h)
 }
 
 is.hmat <- function(h) {
-  .Call("is_hmat", h)
+  is.extmat(h) && .Call("is_hmat", h@.xData)
 }
 
 hmatmul <- function(hmat, v, transposed = FALSE) {
-  storage.mode(v) <- "double";
-  storage.mode(transposed) <- "logical";
-  .Call("hmatmul", hmat, v, transposed);
+  ematmul(hmat, v, transposed = transposed)
 }
 
 .traj.dim.default <- function(x) {
@@ -239,8 +220,8 @@ decompose.1d.ssa.svd <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Get hankel matrix
-  h <- .trajectory.matrix(x)
+  # Create circulant and convert it to ordinary matrix
+  h <- as.matrix(.get.or.create.hmat(x))
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
@@ -249,28 +230,6 @@ decompose.1d.ssa.svd <- function(x,
   .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
 
   x
-}
-
-.Lcov.matrix <- function(x) {
-  # Returns L-covariance matrix explicitly
-  # This matrix used in decompose.eigen only
-
-  if (!is.shaped(x)) {
-    # Evaluate ordinary L-cov matrix via convolution
-
-    N <- length(F)
-    F <- .F(x)
-    storage.mode(F) <- "double"
-    L <- x$window
-    storage.mode(L) <- "integer"
-    .Call("Lcov_matrix", F, L, .get.or.create.fft.plan(x))
-  } else {
-    # Get quasi-hankel linear operator
-    h <- .get.or.create.hmat(x)
-
-    # Convert linear operator to the explicit matrix form
-    apply(diag(hrows(h)), 2, function(u) hmatmul(hmat = h, hmatmul(hmat = h, u, transposed = TRUE)))
-  }
 }
 
 decompose.1d.ssa.eigen <- function(x,
@@ -283,11 +242,11 @@ decompose.1d.ssa.eigen <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
-  fft.plan <- .get.or.create.fft.plan(x)
+  # Get hankel circulant
+  h <- .get.or.create.hmat(x)
 
   # Do decomposition
-  S <- eigen(.Lcov.matrix(x), symmetric = TRUE)
+  S <- eigen(tcrossprod(h), symmetric = TRUE)
 
   # Fix small negative values
   S$values[S$values < 0] <- 0
@@ -336,7 +295,6 @@ decompose.1d.ssa.nutrlan <- function(x,
 }
 
 calc.v.1d.ssa <- function(x, idx, ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
   nV <- nv(x)
 
   V <- matrix(NA_real_, .traj.dim(x)[2], length(idx))
@@ -356,9 +314,9 @@ calc.v.1d.ssa <- function(x, idx, ...) {
     }
 
     U <- .U(x)[, idx.new, drop = FALSE]
+
     h <- .get.or.create.hmat(x)
-    V[, idx > nV] <- sapply(seq_along(idx.new),
-                            function(i) hmatmul(h, U[, i], transposed = TRUE) / sigma[i])
+    V[, idx > nV] <- crossprod(h, U) / rep(sigma, each = nrow(V))
   }
 
   invisible(V)

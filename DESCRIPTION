@@ -3,7 +3,7 @@ Type: Package
 Title: A Collection of Methods for Singular Spectrum Analysis
 Version: 0.13
 Date: 2015-03-01
-Depends: R (>= 3.1), svd (>= 0.3.3), forecast
+Depends: R (>= 3.1), svd (>= 0.4), forecast
 Imports: lattice
 Suggests: testthat (>= 0.7)
 SystemRequirements: fftw (>=3.2)
