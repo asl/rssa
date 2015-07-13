@@ -21,11 +21,6 @@
 #   Routines for hankel-block hankel (aka 2d) SSA
 
 
-fft2 <- function(X, inverse = FALSE) {
-  # TODO Use FTTW here
-  t(mvfft(t(mvfft(X, inverse = inverse)), inverse = inverse))
-}
-
 .convolution.dims <- function(x.dim, y.dim, type = "circular") {
   type <- sapply(type, match.arg, choices = c("circular", "open", "filter"))
 
