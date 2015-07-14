@@ -343,7 +343,7 @@ static void calc_Lcor(double *R, const double *F,
   for (i = 0; i < No; ++i) {
     Rcomplex x = COMPLEX(rV1)[i];
     COMPLEX(rV1)[i].r = x.r * x.r + x.i * x.i;
-    COMPLEX(rV1)[i].i = -x.r * x.i + x.i * x.r;
+    COMPLEX(rV1)[i].i = 0;
   }
 
   /* Compute the reverse transform to obtain result */
