@@ -165,10 +165,12 @@ ssa <- function(x,
       x <- as.array(x)
     N <- dim(x)
 
+    rank <- length(dim(x))
+
     wmask <- .fiface.eval(substitute(wmask),
                           envir = parent.frame(),
-                          circle = circle.mask,
-                          triangle = triangle.mask)
+                          circle = function(...) .ball.mask(..., rank = rank),
+                          triangle = function(...) .simplex.mask(..., rank = rank))
     ecall$wmask <- wmask
     if (is.null(wmask)) {
       wmask <- array(TRUE, dim = L)
