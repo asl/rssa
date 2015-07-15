@@ -324,7 +324,7 @@ static void hankel_matmul(double* out,
   const hankel_matrix *h = matrix;
   const fft_plan *f = h->fft_plan;
   R_len_t N = h->length, L = h->window;
-  R_len_t K = N - L + 1, i;
+  R_len_t K = h->factor, i;
   SEXP rcirc, rV1, res, rTrue;
 
   /* Allocate needed memory */
@@ -375,7 +375,7 @@ static void hankel_tmatmul(double* out,
   const hankel_matrix *h = matrix;
   const fft_plan *f = h->fft_plan;
   R_len_t N = h->length, L = h->window;
-  R_len_t K = N - L + 1, i;
+  R_len_t K = h->factor, i;
   SEXP rcirc, rV1, res, rTrue;
 
   /* Allocate needed memory */

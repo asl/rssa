@@ -95,7 +95,7 @@ test_that("PSSA reconstruct and predict finite rank series exactly", {
   svd.methods <- c("propack", "nutrlan", "svd", "eigen")
   N <- 500
   len <- 50
-  tt <- seq_len(N + len)
+  tt <- seq_len(N + len) / sqrt(N + len)
   vvs <- list(tt^4 + 2 * tt - 13,
               sin(2 * pi * tt/13),
               cos(tt) * exp(tt/N),
