@@ -17,7 +17,13 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
-.determine.svd.method <- function(L, K, neig = NULL, ..., svd.method = "nutrlan") {
+.determine.svd.method <- function(x, ...)
+  UseMethod(".determine.svd.method")
+
+.determine.svd.method.ssa <- function(x, neig = NULL, ..., svd.method = "nutrlan") {
+  tjdim <- .traj.dim(x)
+  L <- tjdim[1]; K <- tjdim[2]
+
   truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
 
   if (is.null(neig)) neig <- min(50, L, K)
@@ -39,6 +45,9 @@
 
   svd.method
 }
+
+.determine.svd.method.cssa <- function(x, neig = NULL, ..., svd.method = "eigen")
+  .determine.svd.method.ssa(x, neig = neig, ..., svd.method = svd.method)
 
 new.ssa <- function(...) {
   warning("`new.ssa' method is deprecated, use `ssa' instead")
@@ -104,13 +113,6 @@ ssa <- function(x,
 
     K <- if (circular) N else N - L + 1
 
-    if (is.null(neig))
-      neig <- min(50, L, K)
-
-    # Fix svd method, if needed
-    if (identical(svd.method, "auto"))
-      svd.method <- .determine.svd.method(L, K, neig, ...)
-
     fmask <- .factor.mask.1d(mask, wmask, circular = circular)
 
     if (!all(wmask) || !all(fmask) || any(circular)) {
@@ -150,10 +152,6 @@ ssa <- function(x,
         row.projector <- qr.Q(qr(row.projector))
       }
 
-      # Fix neig maximum value
-      # TODO  Use `.traj.dim` in such places (instead of L and K)
-      neig <- min(neig, min(L, K) - max(ncol(column.projector), ncol(row.projector)))
-
       # ProjectionSSA is just a special case of 1d-ssa
       kind <- c("pssa", "1d-ssa")
     } else {
@@ -192,13 +190,6 @@ ssa <- function(x,
       circular <- circular[(seq_len(rank) - 1) %% length(circular) + 1]
 
     K <- ifelse(circular, N, N - L + 1)
-
-    if (is.null(neig))
-      neig <- min(50, prod(L), prod(K))
-
-    # Fix SVD method.
-    if (identical(svd.method, "auto"))
-      svd.method <- .determine.svd.method(prod(L), prod(K), neig, ..., svd.method = "nutrlan")
 
     fmask <- .factor.mask.2d(mask, wmask, circular = circular)
 
@@ -251,13 +242,6 @@ ssa <- function(x,
       L <- L[1]
     }
 
-    if (is.null(neig))
-      neig <- min(50, L, sum(N - L + 1))
-
-    # Fix SVD method.
-    if (identical(svd.method, "auto"))
-      svd.method <- .determine.svd.method(L, sum(N - L + 1), neig, ...)
-
     wmask <- NULL
     if (!all(N == max(N)) || any(sapply(x, anyNA))) {
       K <- N - L + 1
@@ -284,18 +268,10 @@ ssa <- function(x,
       stop("complex SSA should be performed on complex time series")
     N <- length(x)
 
-    if (is.null(neig))
-      neig <- min(50, L, N - L + 1)
-
-    # Fix SVD method.
-    if (identical(svd.method, "auto"))
-      svd.method <- .determine.svd.method(L, N - L + 1, neig, ..., svd.method = "eigen")
-
     wmask <- fmask <- weights <- NULL
 
     column.projector <- row.projector <- NULL
   }
-  stopifnot(!is.null(neig))
 
   # Normalize the kind to be used
   kind <- sub("-", ".", kind, fixed = TRUE)
@@ -340,6 +316,18 @@ ssa <- function(x,
   .set(this, "row.projector", row.projector)
 
   # Make this S3 object
+  class(this) <- c(kind, "ssa")
+
+  if (is.null(neig)) {
+    neig <- min(50, min(.traj.dim(this)) - max(0, ncol(row.projector), ncol(column.projector)))
+    neig <- max(neig, 0)
+  }
+
+  # Fix SVD method
+  if (identical(svd.method, "auto"))
+    svd.method <- .determine.svd.method(this, neig = neig, ...)
+
+  # Fix class using determined svd.method
   class(this) <- c(do.call("c", lapply(kind,
                                        function(kind)
                                          list(paste(kind, svd.method, sep = "."),
