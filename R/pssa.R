@@ -38,8 +38,20 @@ orthopoly <- function(d, L) {
   }
 }
 
+.get.or.create.trajmat <- function(x, ...)
+  UseMethod(".get.or.create.trajmat")
+
+.get.or.create.trajmat.ssa <- function(x, ...)
+  stop("`.get.or.create.trajmat' is not implemented for this kind of SSA")
+
+.get.or.create.trajmat.1d.ssa <- .get.or.create.hmat
+.get.or.create.trajmat.toeplitz.ssa <- .get.or.create.hmat
+.get.or.create.trajmat.nd.ssa <- .get.or.create.hbhmat
+.get.or.create.trajmat.cssa <- .get.or.create.chmat
+.get.or.create.trajmat.mssa <- .get.or.create.mhmat
+
 .phmat <- function(x) {
-  hmat <- .get.or.create.hmat(x)
+  hmat <- .get.or.create.trajmat(x)
   column.projector <- .get(x, "column.projector")
   row.projector <- .get(x, "row.projector")
 
@@ -69,7 +81,7 @@ orthopoly <- function(d, L) {
   if (!is.null(.decomposition(x)) && !force.update)
     return(x)
 
-  hmat <- .get.or.create.hmat(x)
+  hmat <- .get.or.create.trajmat(x)
   LU <- .get(x, "column.projector")
   RV <- .get(x, "row.projector")
 
@@ -115,7 +127,7 @@ decompose.pssa.svd <- function(x,
     stop("Continuation of decomposition is not supported for this method.")
 
   # Create circulant and convert it to ordinary matrix
-  h <- as.matrix(.get.or.create.hmat(x))
+  h <- as.matrix(.get.or.create.trajmat(x))
 
   # Subtract special components
   sigma <- .sigma(x)[seq_len(nspecial)]
@@ -155,7 +167,7 @@ decompose.pssa.eigen <- function(x,
 
   # We will compute (X - P_X) %*% t(X - P_X) = X %*% t(X) - P_X %*% t(X) - X %*% t(P_X) + P_X %*% t(P_X)
   # Get hankel circulant
-  h <- .get.or.create.hmat(x)
+  h <- .get.or.create.trajmat(x)
   # Get common Lcov matrix, i.e. X %*% t(X)
   Lcov <- tcrossprod(h)
   # Compute X %*% t(P_X)
