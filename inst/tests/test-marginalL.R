@@ -42,12 +42,12 @@ test_that("Toeplitz SSA works correctly for marginal L values", {
 })
 
 test_that("Marginal case for shaped 2dSSA", {
-  s <- ssa(rbind(rep(1, 20), c(rep(1, 10), rep(NA, 10))), L = c(2, 10),  kind = "2d-ssa")
+  s <- ssa(rbind(rep(1, 20), c(rep(1, 10), rep(NA, 10))), L = c(2, 10),  kind = "2d-ssa", neig = 5)
   expect_equal(dim(s$fmask), c(1, 11))
   expect_equal(s$lambda[1:5]^2, c(20, 0, 0, 0, 0))
 
 
-  s <- ssa(cbind(rep(1, 20), c(rep(1, 10), rep(NA, 10))), L = c(10, 2),  kind = "2d-ssa")
+  s <- ssa(cbind(rep(1, 20), c(rep(1, 10), rep(NA, 10))), L = c(10, 2),  kind = "2d-ssa", neig = 5)
   expect_equal(dim(s$fmask), c(11, 1))
   expect_equal(s$lambda[1:5]^2, c(20, 0, 0, 0, 0))
 })
