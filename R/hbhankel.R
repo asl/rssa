@@ -94,19 +94,42 @@
   res
 }
 
-# TODO generalize to ndim case
-circle.mask <- function(R) {
-  I <- matrix(seq_len(2*R - 1), 2*R - 1, 2*R - 1)
-  J <- t(I)
+.ball.mask <- function(R, rank) {
+  I <- array(seq_len(2*R - 1), dim = rep(2*R - 1, rank))
 
-  (I - R)^2 + (J - R)^2 < R^2
+  Is <- lapply(seq_len(rank),
+               function(i) {
+                 perm <- seq_len(rank)
+                 perm[1] <- i
+                 perm[i] <- 1
+                 aperm(I, perm)
+               })
+
+  dist2 <- array(0, dim = rep(2*R - 1, rank))
+  for (I in Is) {
+    dist2 <- dist2 + (I - R)^2
+  }
+
+  dist2 <= (R - 1)^2
 }
 
-triangle.mask <- function(side) {
-  I <- matrix(seq_len(side), side, side)
-  J <- t(I)
+.simplex.mask <- function(side, rank) {
+  I <- array(seq_len(side), dim = rep(side, rank))
 
-  I + J <= side + 1
+  Is <- lapply(seq_len(rank),
+               function(i) {
+                 perm <- seq_len(rank)
+                 perm[1] <- i
+                 perm[i] <- 1
+                 aperm(I, perm)
+               })
+
+  dist <- array(0, dim = rep(side, rank))
+  for (I in Is) {
+    dist <- dist + I
+  }
+
+  dist <= side + rank - 1
 }
 
 new.hbhmat <- function(F, L = (N + 1) %/% 2,
