@@ -207,18 +207,15 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
 }
 
 decompose.nd.ssa <- function(x,
-                             neig = min(50, prod(L), prod(K)),
+                             neig = .default.neig(x, ...),
                              ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for 2D.SSA!")
 }
 
 decompose.nd.ssa.svd <- function(x,
-                                 neig = min(50, prod(L), prod(K)),
+                                 neig = .default.neig(x, ...),
                                  ...,
                                  force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
@@ -236,11 +233,9 @@ decompose.nd.ssa.svd <- function(x,
 }
 
 decompose.nd.ssa.eigen <- function(x,
-                                   neig = min(50, prod(L), prod(K)),
+                                   neig = .default.neig(x, ...),
                                    ...,
                                    force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
@@ -263,10 +258,8 @@ decompose.nd.ssa.eigen <- function(x,
 }
 
 decompose.nd.ssa.nutrlan <- function(x,
-                                     neig = min(50, prod(L), prod(K)),
+                                     neig = .default.neig(x, ...),
                                      ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   h <- .get.or.create.hbhmat(x)
 
   sigma <- .sigma(x)
@@ -282,11 +275,9 @@ decompose.nd.ssa.nutrlan <- function(x,
 }
 
 decompose.nd.ssa.propack <- function(x,
-                                     neig = min(50, prod(L), prod(K)),
+                                     neig = .default.neig(x, ...),
                                      ...,
                                      force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
