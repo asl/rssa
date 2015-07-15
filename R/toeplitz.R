@@ -64,9 +64,10 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 .traj.dim.toeplitz.ssa <- .traj.dim.1d.ssa
 
 decompose.toeplitz.ssa.nutrlan <- function(x,
-                                           neig = min(50, L, K),
+                                           neig = NULL,
                                            ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   F <- .F(x)
   h <- .get.or.create.hmat(x)
@@ -103,10 +104,13 @@ decompose.toeplitz.ssa.nutrlan <- function(x,
 }
 
 decompose.toeplitz.ssa.eigen <- function(x,
-                                         neig = min(50, L, K),
+                                         neig = NULL,
                                          ...,
                                          force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
+
+  L <- x$window
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -142,10 +146,13 @@ decompose.toeplitz.ssa.eigen <- function(x,
 }
 
 decompose.toeplitz.ssa.svd <- function(x,
-                                       neig = min(50, L, K),
+                                       neig = NULL,
                                        ...,
                                        force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
+
+  L <- x$window
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -181,10 +188,11 @@ decompose.toeplitz.ssa.svd <- function(x,
 }
 
 decompose.toeplitz.ssa.propack <- function(x,
-                                           neig = min(50, L, K),
+                                           neig = NULL,
                                            ...,
                                            force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -216,10 +224,9 @@ decompose.toeplitz.ssa.propack <- function(x,
 }
 
 decompose.toeplitz.ssa <- function(x,
-                                   neig = min(50, L, K),
+                                   neig = NULL,
                                    ...,
                                    force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for Toeplitz SSA!")
 }
 

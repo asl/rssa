@@ -202,17 +202,18 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
 }
 
 decompose.nd.ssa <- function(x,
-                             neig = min(50, prod(L), prod(K)),
-                             ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+                             neig = NULL,
+                             ...,
+                             force.continue = FALSE) {
   stop("Unsupported SVD method for 2D.SSA!")
 }
 
 decompose.nd.ssa.svd <- function(x,
-                                 neig = min(50, prod(L), prod(K)),
+                                 neig = NULL,
                                  ...,
                                  force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -231,10 +232,11 @@ decompose.nd.ssa.svd <- function(x,
 }
 
 decompose.nd.ssa.eigen <- function(x,
-                                   neig = min(50, prod(L), prod(K)),
+                                   neig = NULL,
                                    ...,
                                    force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -258,9 +260,10 @@ decompose.nd.ssa.eigen <- function(x,
 }
 
 decompose.nd.ssa.nutrlan <- function(x,
-                                     neig = min(50, prod(L), prod(K)),
+                                     neig = NULL,
                                      ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   h <- .get.or.create.hbhmat(x)
 
@@ -277,10 +280,11 @@ decompose.nd.ssa.nutrlan <- function(x,
 }
 
 decompose.nd.ssa.propack <- function(x,
-                                     neig = min(50, prod(L), prod(K)),
+                                     neig = NULL,
                                      ...,
                                      force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)

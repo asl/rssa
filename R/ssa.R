@@ -17,6 +17,24 @@
 #   Free Software Foundation, Inc., 675 Mass Ave, Cambridge,
 #   MA 02139, USA.
 
+.default.neig <- function(x, ...)
+  UseMethod(".default.neig")
+
+.default.neig.ssa <- function(x, ...) {
+  tjdim <- .traj.dim(x)
+
+  min(50, tjdim)
+}
+
+.default.neig.pssa <- function(x, ...) {
+  nPR <- max(0, ncol(.get(x, "column.projector")))
+  nPL <- max(0, ncol(.get(x, "row.projector")))
+
+  tjdim <- .traj.dim(x)
+
+  min(50, tjdim - max(nPR, nPL))
+}
+
 .determine.svd.method <- function(x, ...)
   UseMethod(".determine.svd.method")
 
@@ -26,7 +44,7 @@
 
   truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
 
-  if (is.null(neig)) neig <- min(50, L, K)
+  if (is.null(neig)) neig <- .default.neig(x, ...)
   if (truncated) {
     # It's not wise to call truncated methods for small matrices at all
     if (L < 500) {
@@ -318,10 +336,8 @@ ssa <- function(x,
   # Make this S3 object
   class(this) <- c(kind, "ssa")
 
-  if (is.null(neig)) {
-    neig <- min(50, min(.traj.dim(this)) - max(0, ncol(row.projector), ncol(column.projector)))
-    neig <- max(neig, 0)
-  }
+  if (is.null(neig))
+    neig <- .default.neig(this, ...)
 
   # Fix SVD method
   if (identical(svd.method, "auto"))
