@@ -208,7 +208,8 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
 
 decompose.nd.ssa <- function(x,
                              neig = .default.neig(x, ...),
-                             ...) {
+                             ...,
+                             force.continue = FALSE) {
   stop("Unsupported SVD method for 2D.SSA!")
 }
 

@@ -14,11 +14,11 @@
 }
 
 \usage{
-\method{decompose}{1d.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
-\method{decompose}{toeplitz.ssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
-\method{decompose}{mssa}(x, neig = min(50, L, sum(K)), \dots, force.continue = FALSE) 
-\method{decompose}{cssa}(x, neig = min(50, L, K), \dots, force.continue = FALSE)
-\method{decompose}{nd.ssa}(x, neig = min(50, prod(L), prod(K)), \dots)
+\method{decompose}{1d.ssa}(x, neig = .default.neig(x, ...), \dots, force.continue = FALSE)
+\method{decompose}{toeplitz.ssa}(x, neig = .default.neig(x, ...), \dots, force.continue = FALSE)
+\method{decompose}{mssa}(x, neig = .default.neig(x, ...), \dots, force.continue = FALSE)
+\method{decompose}{cssa}(x, neig = .default.neig(x, ...), \dots, force.continue = FALSE)
+\method{decompose}{nd.ssa}(x, neig = .default.neig(x, ...), \dots, force.continue = FALSE)
 }
 
 \arguments{
