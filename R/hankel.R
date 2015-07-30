@@ -203,22 +203,22 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
 }
 
 decompose.1d.ssa <- function(x,
-                             neig = min(50, L, K),
+                             neig = NULL,
                              ...,
                              force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for 1D SSA!")
 }
 
 decompose.1d.ssa.svd <- function(x,
-                                 neig = min(L, K),
+                                 neig = NULL,
                                  ...,
                                  force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
+
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Create circulant and convert it to ordinary matrix
   h <- as.matrix(.get.or.create.hmat(x))
@@ -233,14 +233,15 @@ decompose.1d.ssa.svd <- function(x,
 }
 
 decompose.1d.ssa.eigen <- function(x,
-                                   neig = min(50, L, K),
+                                   neig = NULL,
                                    ...,
                                    force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
+
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Get hankel circulant
   h <- .get.or.create.hmat(x)
@@ -260,14 +261,15 @@ decompose.1d.ssa.eigen <- function(x,
 }
 
 decompose.1d.ssa.propack <- function(x,
-                                     neig = min(50, L, K),
+                                     neig = NULL,
                                      ...,
                                      force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
+
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   h <- .get.or.create.hmat(x)
   S <- propack.svd(h, neig = neig, ...)
@@ -279,9 +281,10 @@ decompose.1d.ssa.propack <- function(x,
 }
 
 decompose.1d.ssa.nutrlan <- function(x,
-                                     neig = min(50, L, K),
+                                     neig = NULL,
                                      ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   h <- .get.or.create.hmat(x)
 

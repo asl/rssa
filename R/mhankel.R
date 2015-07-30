@@ -51,18 +51,18 @@
 }
 
 decompose.mssa <- function(x,
-                           neig = min(50, L, sum(K)),
+                           neig = NULL,
                            ...,
                            force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for MSSA!")
 }
 
 decompose.mssa.svd <- function(x,
-                               neig = min(L, sum(K)),
+                               neig = NULL,
                                ...,
                                force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -81,9 +81,10 @@ decompose.mssa.svd <- function(x,
 }
 
 decompose.mssa.eigen <- function(x, ...,
-                                 neig = min(L, sum(K)),
+                                 neig = NULL,
                                  force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -107,10 +108,11 @@ decompose.mssa.eigen <- function(x, ...,
 }
 
 decompose.mssa.propack <- function(x,
-                                   neig = min(50, L, sum(K)),
+                                   neig = NULL,
                                    ...,
                                    force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -126,9 +128,10 @@ decompose.mssa.propack <- function(x,
 }
 
 decompose.mssa.nutrlan <- function(x,
-                                   neig = min(50, L, sum(K)),
+                                   neig = NULL,
                                    ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   h <- .get.or.create.mhmat(x)
 

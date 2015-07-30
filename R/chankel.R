@@ -49,18 +49,20 @@
 }
 
 decompose.cssa <- function(x,
-                           neig = min(50, L, K),
+                           neig = NULL,
                            ...,
                            force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
   stop("Unsupported SVD method for Complex SSA!")
 }
 
 decompose.cssa.svd <- function(x,
-                               neig = min(L, K),
+                               neig = NULL,
                                ...,
                                force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
+
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -80,10 +82,6 @@ decompose.cssa.svd <- function(x,
                      V = if (!is.null(S$v)) S$v[, seq_len(neig), drop = FALSE] else NULL)
 
   x
-}
-
-.traj.dim.cssa.svd <- function(x) {
-  c(x$window, x$length - x$window + 1)
 }
 
 cssa.to.complex <- function(values, u = NULL, v = NULL) {
@@ -116,9 +114,12 @@ cssa.to.complex <- function(values, u = NULL, v = NULL) {
 }
 
 decompose.cssa.eigen <- function(x, ...,
-                                 neig = min(L, K),
+                                 neig = NULL,
                                  force.continue = FALSE) {
   N <- x$length; L <- x$window; K <- N - L + 1
+
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
@@ -144,14 +145,15 @@ decompose.cssa.eigen <- function(x, ...,
 }
 
 decompose.cssa.propack <- function(x,
-                                   neig = min(50, L, K),
+                                   neig = NULL,
                                    ...,
                                    force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decompostion is not yet implemented for this method.")
+
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   h <- .get.or.create.chmat(x)
   S <- propack.svd(h, neig = 2*neig, ...)
@@ -165,9 +167,10 @@ decompose.cssa.propack <- function(x,
 }
 
 decompose.cssa.nutrlan <- function(x,
-                                   neig = min(50, L, K),
+                                   neig = NULL,
                                    ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
 
   h <- .get.or.create.chmat(x)
 
@@ -186,7 +189,7 @@ decompose.cssa.nutrlan <- function(x,
 }
 
 .traj.dim.cssa <- function(x) {
-  c(2*x$window, 2*(x$length - x$window + 1))
+  c(x$window, x$length - x$window + 1)
 }
 
 calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
