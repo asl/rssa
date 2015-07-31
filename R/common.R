@@ -357,4 +357,3 @@ nspecial <- function(x)
 # There is decompose() call in stats package, we need to take control over it
 decompose <- function(x, ...) UseMethod("decompose");
 decompose.default <- function(x, ...) stats::decompose(x, ...);
-# formals(decompose.default) <- c(formals(decompose.default), alist(... = ));

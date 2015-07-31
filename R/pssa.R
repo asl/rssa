@@ -483,3 +483,40 @@ vforecast.pssa <- function(x, groups, len = 1,
   # Forecasted series can be pretty huge...
   invisible(out)
 }
+
+.default.neig.pssa <- function(x, ...) {
+  # nPR <- max(0, ncol(.get(x, "column.projector")))
+  # nPL <- max(0, ncol(.get(x, "row.projector")))
+
+  nPR = 1
+  nPL = 1
+  
+  tjdim <- .traj.dim(x)
+
+  min(50, tjdim - max(nPR, nPL))
+}
+
+.init.pssa <- function(this) {
+  function() {
+    ## First, initialize the main object
+    eval(body(.init.1d.ssa(this)), envir = sys.frame(1))
+
+    ## Next, calculate the projectors
+    column.projector <- if (length(column.projector) == 1) orthopoly(column.projector, L) else qr.Q(qr(column.projector))
+    row.projector <- if (length(row.projector) == 1) orthopoly(row.projector, K) else qr.Q(qr(row.projector))
+
+    ## Check projector dimensions
+    stopifnot(nrow(column.projector) == L)
+    stopifnot(nrow(row.projector) == K)
+
+    ## Shape projectors if needed
+    if (!is.null(wmask)) {
+      column.projector <- column.projector[wmask,, drop = FALSE]
+      column.projector <- qr.Q(qr(column.projector))
+    }
+    if (!is.null(fmask)) {
+      row.projector <- row.projector[fmask,, drop = FALSE]
+      row.projector <- qr.Q(qr(row.projector))
+    }
+  }
+}

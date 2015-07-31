@@ -480,3 +480,46 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
                                         dots))
   }
 }
+
+.init.mssa <- function(this) {
+  function() {
+    if (any(circular))
+      stop("Circular variant of multichannel SSA isn't implemented yet")
+
+    # We assume that we have mts-like object. With series in the columns.
+    # Coerce input to series.list object
+    # Note that this will correctly remove leading and trailing NA's
+    x <- .to.series.list(x, na.rm = TRUE)
+    # Grab the inner attributes, if any
+    iattr <- lapply(x, attributes)
+
+    N <- sapply(x, length)
+
+    # If L is provided it should be length 1
+    if (missing(L)) {
+      L <- (min(N) + 1) %/% 2
+    } else {
+      if (length(L) > 1)
+        warning("length of L is > 1, only the first element will be used")
+      L <- L[1]
+    }
+
+    wmask <- NULL
+    if (!all(N == max(N)) || any(sapply(x, anyNA))) {
+      K <- N - L + 1
+
+      weights <- matrix(0, max(N), length(N))
+      fmask <- matrix(FALSE, max(K), length(N))
+      wmask <- rep(TRUE, L)
+      for (idx in seq_along(N)) {
+        mask <- !is.na(x[[idx]])
+        fmask[seq_len(K[idx]), idx] <- .factor.mask.1d(mask, wmask)
+        weights[seq_len(N[idx]), idx] <- .field.weights.1d(wmask, fmask[seq_len(K[idx]), idx])
+      }
+    } else {
+      fmask <- weights <- NULL
+    }
+
+    column.projector <- row.projector <- NULL
+  }
+}

@@ -324,3 +324,47 @@ calc.v.1d.ssa <- function(x, idx, ...) {
 
   invisible(V)
 }
+
+.init.1d.ssa <- function(this)
+  function() {
+  if (length(circular) > 1)
+    warning("Incorrect argument length: length(circular) > 1, the first value will be used")
+  if (length(circular) != 1)
+    circular <- circular[1]
+
+  ## Coerce input to vector (we have already saved attrs)
+  x <- as.vector(x)
+  N <- length(x)
+
+  ## Calculate masks
+  mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
+
+  ecall$wmask <- wmask
+  if (is.null(wmask)) {
+    wmask <- rep(TRUE, L)
+  } else {
+    L <- length(wmask)
+  }
+
+  K <- if (circular) N else N - L + 1
+
+  fmask <- .factor.mask.1d(mask, wmask, circular = circular)
+
+  if (!all(wmask) || !all(fmask) || any(circular)) {
+    weights <- .field.weights.1d(wmask, fmask, circular = circular)
+
+    ommited <- sum(mask & (weights == 0))
+    if (ommited > 0)
+      warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
+
+    if (all(weights == 0))
+      warning("Nothing to decompose: the given field shape is empty")
+  } else {
+    weights <- NULL
+  }
+
+  if (all(wmask))
+    wmask <- NULL
+  if (all(fmask))
+    fmask <- NULL
+}

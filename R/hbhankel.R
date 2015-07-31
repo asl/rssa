@@ -320,3 +320,64 @@ calc.v.nd.ssa <- function(x, idx, ...) {
   storage.mode(U) <- storage.mode(V) <- "double"
   .Call("hbhankelize_one_fft", U, V, h@.xData)
 }
+
+.init.nd.ssa <- function(this) {
+  function() {
+    ## Coerce input to array if necessary
+    if (!is.array(x))
+      x <- as.array(x)
+    N <- dim(x)
+
+    rank <- length(dim(x))
+
+    wmask <- .fiface.eval(substitute(wmask),
+                          envir = parent.frame(),
+                          circle = function(...) .ball.mask(..., rank = rank),
+                          triangle = function(...) .simplex.mask(..., rank = rank))
+    ecall$wmask <- wmask
+    if (is.null(wmask)) {
+      wmask <- array(TRUE, dim = L)
+    } else {
+      L <- dim(wmask)
+    }
+
+    # Fix rank (ndims) of x
+    rank <- length(L)
+    if (length(dim(x)) < rank)
+      dim(x) <- c(dim(x), rep(1, rank - length(dim(x))))
+
+    mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
+
+    # Check `circular' argument
+    if (length(circular) > rank)
+      warning("Incorrect argument length: length(circular) > rank, the leading values will be used")
+    if (length(circular) != rank)
+      circular <- circular[(seq_len(rank) - 1) %% length(circular) + 1]
+
+    K <- ifelse(circular, N, N - L + 1)
+
+    fmask <- .factor.mask.2d(mask, wmask, circular = circular)
+
+    if (!all(wmask) || !all(fmask) || any(circular)) {
+      weights <- .field.weights.2d(wmask, fmask, circular = circular)
+
+      ommited <- sum(mask & (weights == 0))
+      if (ommited > 0) {
+        warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
+      }
+
+      if (all(weights == 0)) {
+        warning("Nothing to decompose: the given field shape is empty")
+      }
+    } else {
+      weights <- NULL
+    }
+
+    if (all(wmask))
+      wmask <- NULL
+    if (all(fmask))
+      fmask <- NULL
+
+    column.projector <- row.projector <- NULL
+  }
+}

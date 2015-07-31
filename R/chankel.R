@@ -255,3 +255,19 @@ plot.cssa.reconstruction <- function(x,
   mplot[[2L]] <- x
   eval(mplot, parent.frame())
 }
+
+.init.cssa <- function(this) {
+  function() {
+    if (any(circular))
+      stop("Circular variant of complex SSA isn't implemented yet")
+
+    # Sanity check - the input series should be complex
+    if (!is.complex(x))
+      stop("complex SSA should be performed on complex time series")
+    N <- length(x)
+
+    wmask <- fmask <- weights <- NULL
+
+    column.projector <- row.projector <- NULL
+  }
+}

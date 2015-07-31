@@ -26,15 +26,6 @@
   min(50, tjdim)
 }
 
-.default.neig.pssa <- function(x, ...) {
-  nPR <- max(0, ncol(.get(x, "column.projector")))
-  nPL <- max(0, ncol(.get(x, "row.projector")))
-
-  tjdim <- .traj.dim(x)
-
-  min(50, tjdim - max(nPR, nPL))
-}
-
 .determine.svd.method <- function(x, ...)
   UseMethod(".determine.svd.method")
 
@@ -83,6 +74,8 @@ ssa <- function(x,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method)
+
+  # Squeeze the attributes
   xattr <- attributes(x)
   iattr <- NULL
   # Grab class separately. This way we will capture the inherit class as well
@@ -110,197 +103,26 @@ ssa <- function(x,
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
-    if (length(circular) > 1)
-      warning("Incorrect argument length: length(circular) > 1, the first value will be used")
-    if (length(circular) != 1)
-      circular <- circular[1]
-
-    # Coerce input to vector (we have already saved attrs)
-    x <- as.vector(x)
-
-    N <- length(x)
-
-    mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
-
-    ecall$wmask <- wmask
-    if (is.null(wmask)) {
-      wmask <- rep(TRUE, L)
-    } else {
-      L <- length(wmask)
-    }
-
-    K <- if (circular) N else N - L + 1
-
-    fmask <- .factor.mask.1d(mask, wmask, circular = circular)
-
-    if (!all(wmask) || !all(fmask) || any(circular)) {
-      weights <- .field.weights.1d(wmask, fmask, circular = circular)
-
-      ommited <- sum(mask & (weights == 0))
-      if (ommited > 0)
-        warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
-
-      if (all(weights == 0))
-        warning("Nothing to decompose: the given field shape is empty")
-    } else {
-      weights <- NULL
-    }
-
-    if (all(wmask))
-      wmask <- NULL
-    if (all(fmask))
-      fmask <- NULL
-
     if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
-      # Compute projectors
-      column.projector <- if (length(column.projector) == 1) orthopoly(column.projector, L) else qr.Q(qr(column.projector))
-      row.projector <- if (length(row.projector) == 1) orthopoly(row.projector, K) else qr.Q(qr(row.projector))
-
-      # Check projector dimensions
-      stopifnot(nrow(column.projector) == L)
-      stopifnot(nrow(row.projector) == K)
-
-      # Shape projectors if needed
-      if (!is.null(wmask)) {
-        column.projector <- column.projector[wmask,, drop = FALSE]
-        column.projector <- qr.Q(qr(column.projector))
-      }
-      if (!is.null(fmask)) {
-        row.projector <- row.projector[fmask,, drop = FALSE]
-        row.projector <- qr.Q(qr(row.projector))
-      }
-
       # ProjectionSSA is just a special case of 1d-ssa
       kind <- c("pssa", "1d-ssa")
-    } else {
-      column.projector <- row.projector <- NULL
     }
   } else if (identical(kind, "2d-ssa") || identical(kind, "nd-ssa")) {
-    # Coerce input to array if necessary
-    if (!is.array(x))
-      x <- as.array(x)
-    N <- dim(x)
-
-    rank <- length(dim(x))
-
-    wmask <- .fiface.eval(substitute(wmask),
-                          envir = parent.frame(),
-                          circle = function(...) .ball.mask(..., rank = rank),
-                          triangle = function(...) .simplex.mask(..., rank = rank))
-    ecall$wmask <- wmask
-    if (is.null(wmask)) {
-      wmask <- array(TRUE, dim = L)
-    } else {
-      L <- dim(wmask)
-    }
-
-    # Fix rank (ndims) of x
-    rank <- length(L)
-    if (length(dim(x)) < rank)
-      dim(x) <- c(dim(x), rep(1, rank - length(dim(x))))
-
-    mask <- if (is.null(mask)) !is.na(x) else mask & !is.na(x)
-
-    # Check `circular' argument
-    if (length(circular) > rank)
-      warning("Incorrect argument length: length(circular) > rank, the leading values will be used")
-    if (length(circular) != rank)
-      circular <- circular[(seq_len(rank) - 1) %% length(circular) + 1]
-
-    K <- ifelse(circular, N, N - L + 1)
-
-    fmask <- .factor.mask.2d(mask, wmask, circular = circular)
-
-    if (!all(wmask) || !all(fmask) || any(circular)) {
-      weights <- .field.weights.2d(wmask, fmask, circular = circular)
-
-      ommited <- sum(mask & (weights == 0))
-      if (ommited > 0) {
-        warning(sprintf("Some field elements were not covered by shaped window. %d elements will be ommited", ommited))
-      }
-
-      if (all(weights == 0)) {
-        warning("Nothing to decompose: the given field shape is empty")
-      }
-    } else {
-      weights <- NULL
-    }
-
-    if (all(wmask))
-      wmask <- NULL
-    if (all(fmask))
-      fmask <- NULL
-
-    column.projector <- row.projector <- NULL
-
     # 2d-SSA is just a special case of nd-ssa
     if (length(N) == 2)
       kind <- c("2d-ssa", "nd-ssa")
     else
       kind <- "nd-ssa"
   } else if (identical(kind, "mssa")) {
-    if (any(circular))
-      stop("Circular variant of multichannel SSA isn't implemented yet")
-
-    # We assume that we have mts-like object. With series in the columns.
-    # Coerce input to series.list object
-    # Note that this will correctly remove leading and trailing NA's
-    x <- .to.series.list(x, na.rm = TRUE)
-    # Grab the inner attributes, if any
-    iattr <- lapply(x, attributes)
-
-    N <- sapply(x, length)
-
-    # If L is provided it should be length 1
-    if (missing(L)) {
-      L <- (min(N) + 1) %/% 2
-    } else {
-      if (length(L) > 1)
-        warning("length of L is > 1, only the first element will be used")
-      L <- L[1]
-    }
-
-    wmask <- NULL
-    if (!all(N == max(N)) || any(sapply(x, anyNA))) {
-      K <- N - L + 1
-
-      weights <- matrix(0, max(N), length(N))
-      fmask <- matrix(FALSE, max(K), length(N))
-      wmask <- rep(TRUE, L)
-      for (idx in seq_along(N)) {
-        mask <- !is.na(x[[idx]])
-        fmask[seq_len(K[idx]), idx] <- .factor.mask.1d(mask, wmask)
-        weights[seq_len(N[idx]), idx] <- .field.weights.1d(wmask, fmask[seq_len(K[idx]), idx])
-      }
-    } else {
-      fmask <- weights <- NULL
-    }
-
-    column.projector <- row.projector <- NULL
   } else if (identical(kind, "cssa")) {
-    if (any(circular))
-      stop("Circular variant of complex SSA isn't implemented yet")
-
-    # Sanity check - the input series should be complex
-    if (!is.complex(x))
-      stop("complex SSA should be performed on complex time series")
-    N <- length(x)
-
-    wmask <- fmask <- weights <- NULL
-
-    column.projector <- row.projector <- NULL
   }
 
   # Normalize the kind to be used
   kind <- sub("-", ".", kind, fixed = TRUE)
 
   # Create information body
-  this <- list(length = N,
-               window = L,
-               call = call,
-               ecall = ecall,
+  this <- list(call = call, ecall = ecall,
                kind = kind,
-               series = deparse(substitute(x)),
                svd.method = svd.method)
 
   # Create data storage
@@ -312,15 +134,6 @@ ssa <- function(x,
                    "Fattr", "Fclass", "Iattr",
                    "column.projector", "row.projector")
 
-  # Save series
-  .set(this, "F", x);
-
-  # Save masks, weights and topology
-  .set(this, "wmask", wmask)
-  .set(this, "fmask", fmask)
-  .set(this, "weights", weights)
-  .set(this, "circular", circular)
-
   # Save attributes
   .set(this, "Fattr", xattr)
   .set(this, "Fclass", xclass)
@@ -328,10 +141,6 @@ ssa <- function(x,
 
   # Deprecated stuff
   .deprecate(this, "lambda", "sigma")
-
-  # Store projectors
-  .set(this, "column.projector", column.projector)
-  .set(this, "row.projector", row.projector)
 
   # Make this S3 object
   class(this) <- c(kind, "ssa")
@@ -350,10 +159,30 @@ ssa <- function(x,
                                               kind)
                                        )),
                    "ssa")
+  this$svd.method <- svd.method
 
-  # Perform additional init steps, if necessary
-  .init(this)
+  ## Perform additional init steps, if necessary. We cannot simply eval .init in
+  ## the current environment because we're using S3 dispatch at the same
+  ## time... UseMethod uses NSE.
+  ## NOTE: This will modify the *current* environment (local vars of the function)
+  eval(body(.init(this)), envir = sys.frame(1))
 
+  ## Save series
+  .set(this, "F", x)
+
+  ## Save masks, weights and topology
+  .set(this, "wmask", wmask)
+  .set(this, "fmask", fmask)
+  .set(this, "weights", weights)
+  .set(this, "circular", circular)
+
+  ## Store projectors
+  .set(this, "column.projector", column.projector)
+  .set(this, "row.projector", row.projector)
+
+  this$length <- N
+  this$window <- L
+  
   # Decompose, if necessary
   if (force.decompose) {
     if (!is.null(weights) && all(weights == 0))
