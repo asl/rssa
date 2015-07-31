@@ -496,10 +496,10 @@ vforecast.pssa <- function(x, groups, len = 1,
   min(50, tjdim - max(nPR, nPL))
 }
 
-.init.pssa <- function(this) {
+.init.fragment.pssa <- function(this) {
   function() {
     ## First, initialize the main object
-    eval(body(.init.1d.ssa(this)), envir = sys.frame(1))
+    eval(body(.init.fragment.1d.ssa(this)), envir = sys.frame(1))
 
     ## Next, calculate the projectors
     column.projector <- if (length(column.projector) == 1) orthopoly(column.projector, L) else qr.Q(qr(column.projector))

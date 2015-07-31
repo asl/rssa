@@ -325,7 +325,7 @@ calc.v.1d.ssa <- function(x, idx, ...) {
   invisible(V)
 }
 
-.init.1d.ssa <- function(this)
+.init.fragment.1d.ssa <- function(this)
   function() {
   if (length(circular) > 1)
     warning("Incorrect argument length: length(circular) > 1, the first value will be used")

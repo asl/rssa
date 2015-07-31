@@ -256,7 +256,7 @@ plot.cssa.reconstruction <- function(x,
   eval(mplot, parent.frame())
 }
 
-.init.cssa <- function(this) {
+.init.fragment.cssa <- function(this) {
   function() {
     if (any(circular))
       stop("Circular variant of complex SSA isn't implemented yet")

@@ -165,7 +165,7 @@ ssa <- function(x,
   ## the current environment because we're using S3 dispatch at the same
   ## time... UseMethod uses NSE.
   ## NOTE: This will modify the *current* environment (local vars of the function)
-  eval(body(.init(this)), envir = sys.frame(1))
+  eval(body(.init.fragment(this)), envir = sys.frame(1))
 
   ## Save series
   .set(this, "F", x)
@@ -194,7 +194,7 @@ ssa <- function(x,
   this;
 }
 
-.init.default <- function(x, ...) {
+.init.fragment.default <- function(x, ...) {
   # Do nothing
   x
 }

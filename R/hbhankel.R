@@ -321,7 +321,7 @@ calc.v.nd.ssa <- function(x, idx, ...) {
   .Call("hbhankelize_one_fft", U, V, h@.xData)
 }
 
-.init.nd.ssa <- function(this) {
+.init.fragment.nd.ssa <- function(this) {
   function() {
     ## Coerce input to array if necessary
     if (!is.array(x))
