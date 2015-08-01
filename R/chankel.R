@@ -256,8 +256,8 @@ plot.cssa.reconstruction <- function(x,
   eval(mplot, parent.frame())
 }
 
-.init.fragment.cssa <- function(this) {
-  function() {
+.init.fragment.cssa <- function(this)
+  expression({
     if (any(circular))
       stop("Circular variant of complex SSA isn't implemented yet")
 
@@ -269,5 +269,4 @@ plot.cssa.reconstruction <- function(x,
     wmask <- fmask <- weights <- NULL
 
     column.projector <- row.projector <- NULL
-  }
-}
+  })

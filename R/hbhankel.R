@@ -321,8 +321,8 @@ calc.v.nd.ssa <- function(x, idx, ...) {
   .Call("hbhankelize_one_fft", U, V, h@.xData)
 }
 
-.init.fragment.nd.ssa <- function(this) {
-  function() {
+.init.fragment.nd.ssa <- function(this)
+  expression({
     ## Coerce input to array if necessary
     if (!is.array(x))
       x <- as.array(x)
@@ -379,5 +379,4 @@ calc.v.nd.ssa <- function(x, idx, ...) {
       fmask <- NULL
 
     column.projector <- row.projector <- NULL
-  }
-}
+  })

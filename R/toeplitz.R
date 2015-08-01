@@ -235,3 +235,6 @@ calc.v.toeplitz.ssa <- calc.v.1d.ssa
 .rowspan.toeplitz.ssa <- function(x, idx) {
   qr.Q(qr(.V(x)[, idx, drop = FALSE]))
 }
+
+.init.fragment.toeplitz.ssa <- .init.fragment.1d.ssa
+

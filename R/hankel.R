@@ -186,7 +186,7 @@ hmatmul <- function(hmat, v, transposed = FALSE) {
   ematmul(hmat, v, transposed = transposed)
 }
 
-.traj.dim.default <- function(x) {
+.traj.dim.ssa <- function(x) {
   c(x$window, x$length - x$window + 1)
 }
 
@@ -326,7 +326,7 @@ calc.v.1d.ssa <- function(x, idx, ...) {
 }
 
 .init.fragment.1d.ssa <- function(this)
-  function() {
+  expression({
   if (length(circular) > 1)
     warning("Incorrect argument length: length(circular) > 1, the first value will be used")
   if (length(circular) != 1)
@@ -367,4 +367,4 @@ calc.v.1d.ssa <- function(x, idx, ...) {
     wmask <- NULL
   if (all(fmask))
     fmask <- NULL
-}
+})

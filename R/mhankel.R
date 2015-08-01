@@ -481,8 +481,8 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
   }
 }
 
-.init.fragment.mssa <- function(this) {
-  function() {
+.init.fragment.mssa <- function(this)
+  expression({
     if (any(circular))
       stop("Circular variant of multichannel SSA isn't implemented yet")
 
@@ -521,5 +521,4 @@ xyplot.matrix <- function(x, ..., outer = TRUE) {
     }
 
     column.projector <- row.projector <- NULL
-  }
-}
+  })

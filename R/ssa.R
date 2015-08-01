@@ -1,5 +1,5 @@
 #   R package for Singular Spectrum Analysis
-#   Copyright (c) 2008, 2009 Anton Korobeynikov <asl@math.spbu.ru>
+#   Copyright (c) 2008-2015 Anton Korobeynikov <asl@math.spbu.ru>
 #
 #   This program is free software; you can redistribute it
 #   and/or modify it under the terms of the GNU General Public
@@ -26,16 +26,17 @@
   min(50, tjdim)
 }
 
-.determine.svd.method <- function(x, ...)
-  UseMethod(".determine.svd.method")
-
-.determine.svd.method.ssa <- function(x, neig = NULL, ..., svd.method = "nutrlan") {
+.determine.svd.method <- function(x, kind, neig = NULL,
+                                  ...,
+                                  svd.method = (if (identical(kind, "cssa")) "eigen" else "nutrlan")) {
   tjdim <- .traj.dim(x)
   L <- tjdim[1]; K <- tjdim[2]
 
   truncated <- (identical(svd.method, "nutrlan") || identical(svd.method, "propack"))
 
-  if (is.null(neig)) neig <- .default.neig(x, ...)
+  if (is.null(neig))
+    neig <- .default.neig(x, ...)
+
   if (truncated) {
     # It's not wise to call truncated methods for small matrices at all
     if (L < 500) {
@@ -54,9 +55,6 @@
 
   svd.method
 }
-
-.determine.svd.method.cssa <- function(x, neig = NULL, ..., svd.method = "eigen")
-  .determine.svd.method.ssa(x, neig = neig, ..., svd.method = svd.method)
 
 new.ssa <- function(...) {
   warning("`new.ssa' method is deprecated, use `ssa' instead")
@@ -109,13 +107,16 @@ ssa <- function(x,
     }
   } else if (identical(kind, "2d-ssa") || identical(kind, "nd-ssa")) {
     # 2d-SSA is just a special case of nd-ssa
-    if (length(N) == 2)
+    if (length(dim(x)) == 2)
       kind <- c("2d-ssa", "nd-ssa")
     else
       kind <- "nd-ssa"
   } else if (identical(kind, "mssa")) {
+    ## Nothing special here (yet!)
   } else if (identical(kind, "cssa")) {
-  }
+    ## Nothing special here (yet!)
+  } else
+    stop("invalid SSA kind")
 
   # Normalize the kind to be used
   kind <- sub("-", ".", kind, fixed = TRUE)
@@ -145,27 +146,15 @@ ssa <- function(x,
   # Make this S3 object
   class(this) <- c(kind, "ssa")
 
-  if (is.null(neig))
-    neig <- .default.neig(this, ...)
-
-  # Fix SVD method
-  if (identical(svd.method, "auto"))
-    svd.method <- .determine.svd.method(this, neig = neig, ...)
-
-  # Fix class using determined svd.method
-  class(this) <- c(do.call("c", lapply(kind,
-                                       function(kind)
-                                         list(paste(kind, svd.method, sep = "."),
-                                              kind)
-                                       )),
-                   "ssa")
-  this$svd.method <- svd.method
-
   ## Perform additional init steps, if necessary. We cannot simply eval .init in
   ## the current environment because we're using S3 dispatch at the same
   ## time... UseMethod uses NSE.
   ## NOTE: This will modify the *current* environment (local vars of the function)
-  eval(body(.init.fragment(this)), envir = sys.frame(1))
+  eval(.init.fragment(this), envir = sys.frame(sys.nframe()))
+
+  ## Window and series length should be ready by this moment
+  this$length <- N
+  this$window <- L
 
   ## Save series
   .set(this, "F", x)
@@ -180,8 +169,22 @@ ssa <- function(x,
   .set(this, "column.projector", column.projector)
   .set(this, "row.projector", row.projector)
 
-  this$length <- N
-  this$window <- L
+  # Determine the desired number of eigentriples, if necessary
+  if (is.null(neig))
+    neig <- .default.neig(this, ...)
+
+  # Fix SVD method
+  if (identical(svd.method, "auto"))
+    svd.method <- .determine.svd.method(this, kind = kind, neig = neig, ...)
+
+  # Fix class using determined svd.method
+  class(this) <- c(do.call("c", lapply(kind,
+                                       function(kind)
+                                         list(paste(kind, svd.method, sep = "."),
+                                              kind)
+                                       )),
+                   "ssa")
+  this$svd.method <- svd.method
   
   # Decompose, if necessary
   if (force.decompose) {
