@@ -126,14 +126,13 @@ decompose.pssa.svd <- function(x,
   if (!force.continue && nsigma(x) > nspecial)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Create circulant and convert it to ordinary matrix
-  h <- as.matrix(.get.or.create.trajmat(x))
-
-  # Subtract special components
+  # Extract special components
   sigma <- .sigma(x)[seq_len(nspecial)]
   U <- .U(x)[, seq_len(nspecial), drop = FALSE]
   V <- .V(x)[, seq_len(nspecial), drop = FALSE]
-  h <- h - U %*% (sigma * t(V))
+
+  # Coerce extmat to ordinary matrix
+  h <- as.matrix(.get.or.create.phmat(x))
 
   # Do decomposition
   S <- svd(h, nu = neig, nv = neig)
