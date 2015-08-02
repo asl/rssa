@@ -160,21 +160,13 @@ decompose.pssa.eigen <- function(x,
   if (!force.continue && nsigma(x) > nspecial)
     stop("Continuation of decomposition is not supported for this method.")
 
+  # Extract special components
   sigma <- .sigma(x)[seq_len(nspecial)]
   U <- .U(x)[, seq_len(nspecial), drop = FALSE]
   V <- .V(x)[, seq_len(nspecial), drop = FALSE]
 
-  # We will compute (X - P_X) %*% t(X - P_X) = X %*% t(X) - P_X %*% t(X) - X %*% t(P_X) + P_X %*% t(P_X)
-  # Get hankel circulant
-  h <- .get.or.create.trajmat(x)
-  # Get common Lcov matrix, i.e. X %*% t(X)
-  Lcov <- tcrossprod(h)
-  # Compute X %*% t(P_X)
-  XtPX <- (h %*% V) %*% (sigma * t(U))
-  # Compute P_X %*% t(P_X)
-  PXtPX <- U %*% crossprod(V * rep(sigma, each = nrow(V))) %*% t(U)
-
-  C <- Lcov - XtPX - t(XtPX) + PXtPX
+  # Obtain extmat and compute tcrossprod
+  C <- tcrossprod(.get.or.create.phmat(x))
 
   # Do decomposition
   S <- eigen(C, symmetric = TRUE)
