@@ -219,11 +219,8 @@ decompose.nd.ssa.svd <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
 
-  # Create circulant and convert it to ordinary matrix
-  h <- as.matrix(.get.or.create.hbhmat(x))
-
   # Do decompostion
-  S <- svd(h, nu = neig, nv = neig)
+  S <- svd(as.matrix(.get.or.create.hbhmat(x)), nu = neig, nv = neig)
 
   # Save results
   .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
@@ -242,11 +239,8 @@ decompose.nd.ssa.eigen <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
 
-  # Create circulant and compute XX^T in form of ordinary matrix
-  C <- tcrossprod(.get.or.create.hbhmat(x))
-
   # Do decompostion
-  S <- eigen(C, symmetric = TRUE)
+  S <- eigen(tcrossprod(.get.or.create.hbhmat(x)), symmetric = TRUE)
 
   # Fix small negative values
   S$values[S$values < 0] <- 0
@@ -265,13 +259,8 @@ decompose.nd.ssa.nutrlan <- function(x,
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  h <- .get.or.create.hbhmat(x)
-
-  sigma <- .sigma(x)
-  U <- .U(x)
-
-  S <- trlan.svd(h, neig = neig, ...,
-                 lambda = sigma, U = U)
+  S <- trlan.svd( .get.or.create.hbhmat(x), neig = neig, ...,
+                 lambda = .sigma(x), U = .U(x))
 
   # Save results
   .set.decomposition(x, sigma = S$d, U = S$u)
@@ -290,9 +279,7 @@ decompose.nd.ssa.propack <- function(x,
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not yet implemented for this method.")
 
-  h <- .get.or.create.hbhmat(x)
-
-  S <- propack.svd(h, neig = neig, ...)
+  S <- propack.svd(.get.or.create.hbhmat(x), neig = neig, ...)
 
   # Save results
   .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)

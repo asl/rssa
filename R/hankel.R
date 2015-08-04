@@ -220,11 +220,8 @@ decompose.1d.ssa.svd <- function(x,
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  # Create circulant and convert it to ordinary matrix
-  h <- as.matrix(.get.or.create.hmat(x))
-
   # Do decomposition
-  S <- svd(h, nu = neig, nv = neig)
+  S <- svd(as.matrix(.get.or.create.hmat(x)), nu = neig, nv = neig)
 
   # Save results
   .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
@@ -243,11 +240,8 @@ decompose.1d.ssa.eigen <- function(x,
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  # Get hankel circulant
-  h <- .get.or.create.hmat(x)
-
   # Do decomposition
-  S <- eigen(tcrossprod(h), symmetric = TRUE)
+  S <- eigen(tcrossprod(.get.or.create.hmat(x)), symmetric = TRUE)
 
   # Fix small negative values
   S$values[S$values < 0] <- 0
@@ -271,8 +265,7 @@ decompose.1d.ssa.propack <- function(x,
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  h <- .get.or.create.hmat(x)
-  S <- propack.svd(h, neig = neig, ...)
+  S <- propack.svd(.get.or.create.hmat(x), neig = neig, ...)
 
   # Save results
   .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
@@ -286,9 +279,7 @@ decompose.1d.ssa.nutrlan <- function(x,
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  h <- .get.or.create.hmat(x)
-
-  S <- trlan.svd(h, neig = neig, ...,
+  S <- trlan.svd(.get.or.create.hmat(x), neig = neig, ...,
                  lambda = .sigma(x), U = .U(x))
 
   # Save results
