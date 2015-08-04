@@ -1,4 +1,4 @@
 library(testthat)
 library(Rssa)
 
-test_package("Rssa")
+test_check("Rssa")
