@@ -38,18 +38,6 @@ orthopoly <- function(d, L) {
   }
 }
 
-.get.or.create.trajmat <- function(x, ...)
-  UseMethod(".get.or.create.trajmat")
-
-.get.or.create.trajmat.ssa <- function(x, ...)
-  stop("`.get.or.create.trajmat' is not implemented for this kind of SSA")
-
-.get.or.create.trajmat.1d.ssa <- .get.or.create.hmat
-.get.or.create.trajmat.toeplitz.ssa <- .get.or.create.hmat
-.get.or.create.trajmat.nd.ssa <- .get.or.create.hbhmat
-.get.or.create.trajmat.cssa <- .get.or.create.chmat
-.get.or.create.trajmat.mssa <- .get.or.create.mhmat
-
 .phmat <- function(x) {
   hmat <- .get.or.create.trajmat(x)
   column.projector <- .get(x, "column.projector")

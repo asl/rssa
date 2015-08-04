@@ -98,6 +98,9 @@ hankel <- function(X, L) {
                           fft.plan = .get.or.create.fft.plan(x)))
 }
 
+.get.or.create.trajmat.1d.ssa <- .get.or.create.hmat
+.get.or.create.trajmat.toeplitz.ssa <- .get.or.create.hmat
+
 .hankelize.one.default <- function(U, V, fft.plan = NULL) {
   L <- length(U); K <- length(V); N = K + L - 1
   fft.plan <- (if (is.null(fft.plan)) fft.plan.1d(N) else fft.plan)

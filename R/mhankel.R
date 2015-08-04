@@ -50,6 +50,8 @@
                  .hmat.striped(x))
 }
 
+.get.or.create.trajmat.mssa <- .get.or.create.mhmat
+
 decompose.mssa <- function(x,
                            neig = NULL,
                            ...,

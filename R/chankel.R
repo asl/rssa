@@ -48,6 +48,8 @@
                  .chmat(x, fft.plan = .get.or.create.cfft.plan(x)))
 }
 
+.get.or.create.trajmat.cssa <- .get.or.create.chmat
+
 decompose.cssa <- function(x,
                            neig = NULL,
                            ...,

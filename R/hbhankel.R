@@ -189,6 +189,8 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
                             weights = x$weights, circular = x$circular))
 }
 
+.get.or.create.trajmat.nd.ssa <- .get.or.create.hbhmat
+
 .traj.dim.nd.ssa <- function(x) {
   Ldim <- sum(x$wmask)
   if (Ldim == 0)
