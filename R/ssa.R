@@ -135,14 +135,6 @@ ssa <- function(x,
                    "Fattr", "Fclass", "Iattr",
                    "column.projector", "row.projector")
 
-  # Save attributes
-  .set(this, "Fattr", xattr)
-  .set(this, "Fclass", xclass)
-  .set(this, "Iattr", iattr)
-
-  # Deprecated stuff
-  .deprecate(this, "lambda", "sigma")
-
   # Make this S3 object
   class(this) <- c(kind, "ssa")
 
@@ -150,7 +142,16 @@ ssa <- function(x,
   ## the current environment because we're using S3 dispatch at the same
   ## time... UseMethod uses NSE.
   ## NOTE: This will modify the *current* environment (local vars of the function)
-  eval(.init.fragment(this), envir = sys.frame(sys.nframe()))
+  parent.env <- parent.frame()
+  eval(.init.fragment(this))
+
+  # Save attributes
+  .set(this, "Fattr", xattr)
+  .set(this, "Fclass", xclass)
+  .set(this, "Iattr", iattr)
+
+  # Deprecated stuff
+  .deprecate(this, "lambda", "sigma")
 
   ## Window and series length should be ready by this moment
   this$length <- N

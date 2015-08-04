@@ -331,7 +331,7 @@ calc.v.nd.ssa <- function(x, idx, ...) {
     rank <- length(dim(x))
 
     wmask <- .fiface.eval(substitute(wmask),
-                          envir = parent.frame(),
+                          envir = parent.env,
                           circle = function(...) .ball.mask(..., rank = rank),
                           triangle = function(...) .simplex.mask(..., rank = rank))
     ecall$wmask <- wmask
