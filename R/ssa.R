@@ -115,9 +115,11 @@ ssa <- function(x,
     ## Nothing special here (yet!)
   } else if (identical(kind, "cssa")) {
     ## Nothing special here (yet!)
-  } else
+  } else {
+    N <- -1;
+    fmask <- NULL
     stop("invalid SSA kind")
-
+  }
   # Normalize the kind to be used
   kind <- sub("-", ".", kind, fixed = TRUE)
 
