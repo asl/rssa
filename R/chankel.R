@@ -54,138 +54,32 @@ decompose.cssa <- function(x,
                            neig = NULL,
                            ...,
                            force.continue = FALSE) {
-  stop("Unsupported SVD method for Complex SSA!")
-}
-
-decompose.cssa.svd <- function(x,
-                               neig = NULL,
-                               ...,
-                               force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
   # Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > 0)
     stop("Continuation of decomposition is not supported for this method.")
 
-  # Build hankel matrix
-  F <- .F(x)
-  h <- hankel(F, L = L)
-
-  # Do decomposition
-  S <- svd(h)
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = S$d[seq_len(neig)],
-                     U = if (!is.null(S$u)) S$u[, seq_len(neig), drop = FALSE] else NULL,
-                     V = if (!is.null(S$v)) S$v[, seq_len(neig), drop = FALSE] else NULL)
-
-  x
-}
-
-cssa.to.complex <- function(values, u = NULL, v = NULL) {
-  # First, make sure values come into the pairs
-  d1 <- values[c(TRUE, FALSE)]
-  d2 <- values[c(FALSE, TRUE)]
-  if (any((d1 - d2) / d2 > 1e-3 & d2 > 0))
-    warning("Too big difference between consecutive eigenvalues. CSSA might not converge")
-
-  # And vectors
-  real.bases <- list(u = u, v = v)
-  real.bases <- real.bases[!sapply(real.bases, is.null)]
-  bases <- lapply(real.bases,
-                  function(vectors) {
-                    Y1 <- vectors[1:(nrow(vectors)/2),    c(TRUE,  FALSE)]
-                    Z1 <- vectors[-(1:(nrow(vectors)/2)), c(TRUE,  FALSE)]
-                    Y2 <- vectors[1:(nrow(vectors)/2),    c(FALSE, TRUE)]
-                    Z2 <- vectors[-(1:(nrow(vectors)/2)), c(FALSE, TRUE)]
-
-                    V1 <- Y1 + 1i*Z1
-                    V2 <- Y2 + 1i*Z2
-
-                    # Sanity check
-                    if (any((Mod(V1 - 1i*V2) > 1e-6) & (Mod(V1 + 1i*V2) > 1e-6)))
-                      warning("Too big difference between consecutive eigenvectors. CSSA might not converge")
-
-                    V2
-                  })
-  c(list(d = d2), bases)
-}
-
-decompose.cssa.eigen <- function(x, ...,
-                                 neig = NULL,
-                                 force.continue = FALSE) {
-  N <- x$length; L <- x$window; K <- N - L + 1
-
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decomposition is not supported for this method.")
 
-  # Build complex hankel matrix
-  F <- .F(x)
-  h <- hankel(F, L)
+  if (identical(x$svd.method, "svd")) {
+    S <- svd(hankel(.F(x), L = x$window), nu = neig, nv = neig)
+    .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
+  } else if (identical(x$svd.method, "eigen")) {
+    h <- hankel(.F(x), L = x$window)
 
-  # Do decomposition
-  # FIXME: Build the complex L-covariance matrix properly
-  S <- eigen(tcrossprod(h, Conj(h)), symmetric = TRUE)
+    ## FIXME: Build the complex L-covariance matrix properly
+    S <- eigen(tcrossprod(h, Conj(h)), symmetric = TRUE)
 
-  # Fix small negative values
-  S$values[S$values < 0] <- 0
+    ## Fix small negative values
+    S$values[S$values < 0] <- 0
 
-  # Save results
-  .set.decomposition(x,
-                     sigma = S$values[seq_len(neig)],
-                     U = S$vectors[, seq_len(neig), drop = FALSE])
-
-  x
-}
-
-decompose.cssa.propack <- function(x,
-                                   neig = NULL,
-                                   ...,
-                                   force.continue = FALSE) {
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decompostion is not yet implemented for this method.")
-
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  h <- .get.or.create.chmat(x)
-  S <- propack.svd(h, neig = 2*neig, ...)
-
-  S <- cssa.to.complex(S$d, u = S$u, v = S$v)
-
-  # Save results
-  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
-
-  x
-}
-
-decompose.cssa.nutrlan <- function(x,
-                                   neig = NULL,
-                                   ...) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  h <- .get.or.create.chmat(x)
-
-  sigma <- .sigma(x)
-  U <- .U(x)
-
-  S <- trlan.svd(h, neig = 2*neig, ...,
-                 lambda = sigma, U = U)
-
-  S <- cssa.to.complex(S$d, u = S$u)
-
-  # Save results
-  .set.decomposition(x, sigma = S$d, U = S$u)
+    ## Save results
+    .set.decomposition(x,
+                       sigma = S$values[seq_len(neig)],
+                       U = S$vectors[, seq_len(neig), drop = FALSE])
+  } else
+    stop("unsupported SVD method")
 
   x
 }
