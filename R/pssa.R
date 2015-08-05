@@ -98,10 +98,16 @@ nspecial.pssa <- function(x) {
   sum(unlist(.decomposition(x, c("nPL", "nPR"))))
 }
 
-decompose.pssa.svd <- function(x,
-                               neig = NULL,
-                               ...,
-                               force.continue = FALSE) {
+decompose.pssa <- function(x,
+                           neig = NULL,
+                           ...,
+                           force.continue = FALSE) {
+  ## Check, whether continuation of decomposition is requested
+  ## FIXME: Check the caps
+  if (!force.continue && nsigma(x) > nspecial(x) &&
+       !identical(x$svd.method, "nutrlan"))
+    stop("Continuation of decomposition is not yet implemented for this method.")
+
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
@@ -109,132 +115,38 @@ decompose.pssa.svd <- function(x,
   .calc.projections(x)
 
   nspecial <- nspecial(x)
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > nspecial)
-    stop("Continuation of decomposition is not supported for this method.")
 
   # Extract special components
-  sigma <- .sigma(x)[seq_len(nspecial)]
-  U <- .U(x)[, seq_len(nspecial), drop = FALSE]
-  V <- .V(x)[, seq_len(nspecial), drop = FALSE]
+  ssigma <- .sigma(x)[seq_len(nspecial)]
+  sU <- .U(x)[, seq_len(nspecial), drop = FALSE]
+  sV <- .V(x)[, seq_len(nspecial), drop = FALSE]
 
-  # Coerce extmat to ordinary matrix
-  h <- as.matrix(.get.or.create.phmat(x))
+  if (identical(x$svd.method, "svd")) {
+    S <- svd(as.matrix(.get.or.create.phmat(x)), nu = neig, nv = neig)
+    .set.decomposition(x,
+                       sigma = c(ssigma, S$d), U = cbind(sU, S$u), V = cbind(sV, S$v))
+  } else if (identical(x$svd.method, "eigen")) {
+    S <- eigen(tcrossprod(.get.or.create.phmat(x)), symmetric = TRUE)
 
-  # Do decomposition
-  S <- svd(h, nu = neig, nv = neig)
+    ## Fix small negative values
+    S$values[S$values < 0] <- 0
 
-  # Save results
-  .set.decomposition(x,
-                     sigma = c(sigma, S$d), U = cbind(U, S$u), V = cbind(V, S$v))
-
-  x
-}
-
-decompose.pssa.eigen <- function(x,
-                                 neig = NULL,
-                                 ...,
-                                 force.continue = FALSE) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  # Compute special eigentriples if needed
-  .calc.projections(x)
-
-  nspecial <- nspecial(x)
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > nspecial)
-    stop("Continuation of decomposition is not supported for this method.")
-
-  # Extract special components
-  sigma <- .sigma(x)[seq_len(nspecial)]
-  U <- .U(x)[, seq_len(nspecial), drop = FALSE]
-  V <- .V(x)[, seq_len(nspecial), drop = FALSE]
-
-  # Obtain extmat and compute tcrossprod
-  C <- tcrossprod(.get.or.create.phmat(x))
-
-  # Do decomposition
-  S <- eigen(C, symmetric = TRUE)
-
-  # Fix small negative values
-  S$values[S$values < 0] <- 0
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = c(sigma, sqrt(S$values[seq_len(neig)])),
-                     U = cbind(U, S$vectors[, seq_len(neig), drop = FALSE]),
-                     V = V)
-
-  x
-}
-
-decompose.pssa.propack <- function(x,
-                                   neig = NULL,
-                                   ...,
-                                   force.continue = FALSE) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  # Compute special eigentriples if needed
-  .calc.projections(x)
-
-  nspecial <- nspecial(x)
-
-  # We will use special (first nspecial) entries below
-  sigma <- .sigma(x)
-  U <- .U(x)
-  V <- .V(x)
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > nspecial)
-    stop("Continuation of decompostion is not yet implemented for this method.")
-
-  ph <- .get.or.create.phmat(x)
-  S <- propack.svd(ph, neig = neig, ...)
-
-  # Form results
-  sigma <- c(sigma[seq_len(nspecial)], S$d)
-  U <- cbind(U[, seq_len(nspecial)], S$u)
-  V <- cbind(V[, seq_len(nspecial)], S$v)
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = sigma, U = U, V = V)
-
-  x
-}
-
-decompose.pssa.nutrlan <- function(x,
-                                   neig = NULL,
-                                   ...) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  # Compute special eigentriples if needed
-  .calc.projections(x)
-
-  nspecial <- nspecial(x)
-
-  # We will use special (first nspecial) entries below
-  sigma <- .sigma(x)
-  U <- .U(x)
-  V <- .V(x)
-
-  ph <- .get.or.create.phmat(x)
-  S <- trlan.svd(ph, neig = neig, ...,
-                 lambda = sigma[-seq_len(nspecial)], U = U[, -seq_len(nspecial), drop = FALSE])
-
-  # Form results
-  sigma <- c(sigma[seq_len(nspecial)], S$d)
-  U <- cbind(U[, seq_len(nspecial)], S$u)
-  V <- cbind(V[, seq_len(nspecial)], S$v)
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = sigma, U = U, V = V)
+    .set.decomposition(x,
+                       sigma = c(ssigma, sqrt(S$values[seq_len(neig)])),
+                       U = cbind(sU, S$vectors[, seq_len(neig), drop = FALSE]),
+                       V = sV)
+  } else if (identical(x$svd.method, "propack")) {
+    S <- propack.svd(.get.or.create.phmat(x), neig = neig, ...)
+    ## Save results
+    .set.decomposition(x,
+                       sigma = c(ssigma, S$d), U = cbind(sU, S$u), V = cbind(sV, S$v))
+  } else if (identical(x$svd.method, "nutrlan")) {
+    S <- trlan.svd(.get.or.create.phmat(x), neig = neig, ...,
+                   lambda = .sigma(x)[-seq_len(nspecial)], U = .U(x)[, -seq_len(nspecial), drop = FALSE])
+    .set.decomposition(x,
+                       sigma = c(ssigma, S$d), U = cbind(sU, S$u), V = cbind(sV, S$v))
+  } else
+    stop("unsupported SVD method")
 
   x
 }

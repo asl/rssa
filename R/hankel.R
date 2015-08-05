@@ -209,87 +209,40 @@ decompose.1d.ssa <- function(x,
                              neig = NULL,
                              ...,
                              force.continue = FALSE) {
-  stop("Unsupported SVD method for 1D SSA!")
-}
-
-decompose.1d.ssa.svd <- function(x,
-                                 neig = NULL,
-                                 ...,
-                                 force.continue = FALSE) {
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decomposition is not supported for this method.")
+  ## Check, whether continuation of decomposition is requested
+  ## FIXME: Check the caps
+  if (!force.continue && nsigma(x) > 0 &&
+       !identical(x$svd.method, "nutrlan"))
+    stop("Continuation of decomposition is not yet implemented for this method.")
 
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  # Do decomposition
-  S <- svd(as.matrix(.get.or.create.hmat(x)), nu = neig, nv = neig)
+  if (identical(x$svd.method, "svd")) {
+    S <- svd(as.matrix(.get.or.create.hmat(x)), nu = neig, nv = neig)
+    .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
+  } else if (identical(x$svd.method, "eigen")) {
+    S <- eigen(tcrossprod(.get.or.create.hmat(x)), symmetric = TRUE)
 
-  # Save results
-  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
+    ## Fix small negative values
+    S$values[S$values < 0] <- 0
 
-  x
-}
-
-decompose.1d.ssa.eigen <- function(x,
-                                   neig = NULL,
-                                   ...,
-                                   force.continue = FALSE) {
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decomposition is not supported for this method.")
-
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  # Do decomposition
-  S <- eigen(tcrossprod(.get.or.create.hmat(x)), symmetric = TRUE)
-
-  # Fix small negative values
-  S$values[S$values < 0] <- 0
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = sqrt(S$values[1:neig]),
-                     U = S$vectors[, 1:neig, drop = FALSE])
+    .set.decomposition(x,
+                       sigma = sqrt(S$values[1:neig]),
+                       U = S$vectors[, 1:neig, drop = FALSE])
+  } else if (identical(x$svd.method, "nutrlan")) {
+    S <- trlan.svd( .get.or.create.hmat(x), neig = neig, ...,
+                   lambda = .sigma(x), U = .U(x))
+    .set.decomposition(x, sigma = S$d, U = S$u)
+  } else if (identical(x$svd.method, "propack")) {
+    S <- propack.svd(.get.or.create.hmat(x), neig = neig, ...)
+    .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
+  } else
+    stop("unsupported SVD method")
 
   x
 }
 
-decompose.1d.ssa.propack <- function(x,
-                                     neig = NULL,
-                                     ...,
-                                     force.continue = FALSE) {
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decompostion is not yet implemented for this method.")
-
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  S <- propack.svd(.get.or.create.hmat(x), neig = neig, ...)
-
-  # Save results
-  .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
-
-  x
-}
-
-decompose.1d.ssa.nutrlan <- function(x,
-                                     neig = NULL,
-                                     ...) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  S <- trlan.svd(.get.or.create.hmat(x), neig = neig, ...,
-                 lambda = .sigma(x), U = .U(x))
-
-  # Save results
-  .set.decomposition(x, sigma = S$d, U = S$u);
-
-  x
-}
 
 calc.v.1d.ssa <- function(x, idx, ...) {
   nV <- nv(x)
