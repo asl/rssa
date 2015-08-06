@@ -63,171 +63,55 @@ tmatmul <- function(tmat, v, transposed = FALSE) {
 
 .traj.dim.toeplitz.ssa <- .traj.dim.1d.ssa
 
-decompose.toeplitz.ssa.nutrlan <- function(x,
-                                           neig = NULL,
-                                           ...) {
+decompose.toeplitz.ssa <- function(x,
+                                   neig = NULL,
+                                   ...,
+                                   force.continue = FALSE) {
+  ## Check, whether continuation of decomposition is requested
+  ## FIXME: Check the caps
+  if (!force.continue && nsigma(x) > 0 &&
+       !identical(x$svd.method, "nutrlan"))
+    stop(paste0("Continuation of decomposition is not yet implemented for this method: ", x$svd.method))
+
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-  F <- .F(x)
-  h <- .get.or.create.hmat(x)
+  if (identical(x$svd.method, "svd")) {
+    S <- svd(toeplitz(Lcor(.F(x), x$window, circular = x$circular)), nu = neig, nv = neig)
+    U <- S$u
+    lambda <- NULL
+  } else if (identical(x$svd.method, "eigen")) {
+    S <- eigen(toeplitz(Lcor(.F(x), x$window, circular = x$circular)), symmetric = TRUE)
+    U <- S$vectors
+    lambda <- NULL
+  } else if (identical(x$svd.method, "nutrlan")) {
+    S <- trlan.eigen(.get.or.create.tmat(x), neig = neig, ...,
+                     lambda = .decomposition(x)$lambda, U = .U(x))
+    U <- S$u
+    lambda <- S$d
+  } else if (identical(x$svd.method, "propack")) {
+    S <- propack.svd(.get.or.create.tmat(x), neig = neig, ...)
+    U <- S$u
+    lambda <- NULL
+  } else
+    stop("unsupported SVD method")
 
-  lambda <- .decomposition(x)$lambda
-  U <- .U(x)
+  Z <- crossprod(.get.or.create.hmat(x), U)
+  sigma <- apply(Z, 2, function(x) sqrt(sum(x^2)))
+  V <- sweep(Z, 2, sigma, FUN = "/")
 
-  T <- .get.or.create.tmat(x)
-
-  S <- trlan.eigen(T, neig = neig, ...,
-                   lambda = lambda, U = U)
-
-  # Save results
-  num <- length(S$d)
-  sigma <- numeric(num)
-  V <- matrix(nrow = .traj.dim(x)[2], ncol = num)
-  for (i in 1:num) {
-    Z <- hmatmul(h, S$u[, i], transposed = TRUE)
-    sigma[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / sigma[i]
-  }
-  o <- order(sigma, decreasing = TRUE)
+  o <- order(sigma[seq_len(neig)], decreasing = TRUE)
   sigma <- sigma[o]
-  U <- S$u[, o, drop = FALSE]
+  U <- U[, o, drop = FALSE]
   V <- V[, o, drop = FALSE]
-  lambda <- S$d[o]
+  if (!is.null(lambda))
+    lambda <- lambda[o]
 
-  # Save results
   .set.decomposition(x,
                      sigma = sigma, U = U, V = V, lambda = lambda,
                      kind = "toeplitz.decomposition")
 
   x
-}
-
-decompose.toeplitz.ssa.eigen <- function(x,
-                                         neig = NULL,
-                                         ...,
-                                         force.continue = FALSE) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  L <- x$window
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decompostion is not supported for this method.")
-
-  # Build hankel matrix
-  F <- .F(x)
-  h <- .get.or.create.hmat(x)
-
-  # Do decomposition
-  C <- toeplitz(Lcor(F, L, circular = x$circular))
-  S <- eigen(C, symmetric = TRUE)
-
-  sigma <- numeric(L)
-  V <- matrix(nrow = .traj.dim(x)[2], ncol = L)
-  for (i in 1:L) {
-    Z <- hmatmul(h, S$vectors[,i], transposed = TRUE)
-    sigma[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / sigma[i]
-  }
-
-  o <- order(sigma[seq_len(neig)], decreasing = TRUE)
-  sigma <- sigma[o]
-  U <- S$vectors[, o, drop = FALSE]
-  V <- V[, o, drop = FALSE]
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = sigma, U = U, V = V,
-                     kind = "toeplitz.decomposition")
-
-  x
-}
-
-decompose.toeplitz.ssa.svd <- function(x,
-                                       neig = NULL,
-                                       ...,
-                                       force.continue = FALSE) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  L <- x$window
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decompostion is not supported for this method.")
-
-  # Build hankel matrix
-  F <- .F(x)
-  h <- .get.or.create.hmat(x)
-
-  # Do decomposition
-  C <- toeplitz(Lcor(F, L, circular = x$circular))
-  S <- svd(C, nu = neig, nv = neig)
-
-  sigma <- numeric(neig)
-  V <- matrix(nrow = .traj.dim(x)[2], ncol = neig)
-  for (i in 1:neig) {
-    Z <- hmatmul(h, S$u[,i], transposed = TRUE)
-    sigma[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / sigma[i]
-  }
-
-  o <- order(sigma, decreasing = TRUE)
-  sigma <- sigma[o]
-  U <- S$u[, o, drop = FALSE]
-  V <- V[, o, drop = FALSE]
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = sigma, U = U, V = V,
-                     kind = "toeplitz.decomposition")
-
-  x
-}
-
-decompose.toeplitz.ssa.propack <- function(x,
-                                           neig = NULL,
-                                           ...,
-                                           force.continue = FALSE) {
-  if (is.null(neig))
-    neig <- .default.neig(x, ...)
-
-  # Check, whether continuation of decomposition is requested
-  if (!force.continue && nsigma(x) > 0)
-    stop("Continuation of decompostion is not yet implemented for this method.");
-
-  S <- propack.svd(.get.or.create.tmat(x), neig = neig, ...)
-
-  h <- .get.or.create.hmat(x)
-  num <- length(S$d)
-  sigma <- numeric(num)
-  V <- matrix(nrow = .traj.dim(x)[2], ncol = num)
-  for (i in 1:num) {
-    Z <- hmatmul(h, S$u[, i], transposed = TRUE)
-    sigma[i] <- sqrt(sum(Z^2))
-    V[, i] <- Z / sigma[i]
-  }
-
-  o <- order(sigma, decreasing = TRUE)
-  sigma <- sigma[o]
-  U <- S$u[, o, drop = FALSE]
-  V <- V[, o, drop = FALSE]
-
-  # Save results
-  .set.decomposition(x,
-                     sigma = sigma, U = U, V = V,
-                     kind = "toeplitz.decomposition")
-
-  x
-}
-
-decompose.toeplitz.ssa <- function(x,
-                                   neig = NULL,
-                                   ...,
-                                   force.continue = FALSE) {
-  stop("Unsupported SVD method for Toeplitz SSA!")
 }
 
 calc.v.toeplitz.ssa <- calc.v.1d.ssa
@@ -237,4 +121,3 @@ calc.v.toeplitz.ssa <- calc.v.1d.ssa
 }
 
 .init.fragment.toeplitz.ssa <- .init.fragment.1d.ssa
-
