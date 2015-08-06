@@ -2,9 +2,6 @@
 \alias{decompose}
 \alias{decompose.default}
 \alias{decompose.ssa}
-\alias{decompose.1d.ssa}
-\alias{decompose.nd.ssa}
-\alias{decompose.mssa}
 \alias{decompose.cssa}
 \alias{decompose.toeplitz.ssa}
 \title{Perform SSA Decomposition}

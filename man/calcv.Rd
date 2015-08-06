@@ -1,8 +1,6 @@
 \name{calc.v}
 \alias{calc.v}
 \alias{calc.v.ssa}
-\alias{calc.v.1d.ssa}
-\alias{calc.v.toeplitz.ssa}
 \alias{calc.v.nd.ssa}
 \alias{calc.v.mssa}
 
