@@ -83,7 +83,7 @@
 
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
-  \code{\link[Rssa:igapfill]{gapfill}},
+  \code{\link[Rssa:gapfill]{gapfill}},
 }
 
 \examples{
