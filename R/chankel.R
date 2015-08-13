@@ -22,10 +22,6 @@
                                             wmask = x$wmask, fmask = x$fmask, weights = x$weights))
 }
 
-.traj.dim.cssa <- function(x) {
-  c(x$window, sum(x$length - x$window + 1))
-}
-
 .chmat <- function(x, fft.plan) {
   N <- x$length; L <- x$window; K <- N - L + 1
   F <- .F(x)
