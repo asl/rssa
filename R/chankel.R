@@ -88,7 +88,7 @@ decompose.cssa <- function(x,
   c(x$window, x$length - x$window + 1)
 }
 
-calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
+calc.v.cssa <- function(x, idx, ...) {
   sigma <- .sigma(x)[idx]
 
   if (any(sigma <= .Machine$double.eps)) {
