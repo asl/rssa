@@ -11,11 +11,9 @@
 }
 
 \usage{
-\method{decompose}{1d.ssa}(x, neig = NULL, \dots, force.continue = FALSE)
+\method{decompose}{ssa}(x, neig = NULL, \dots, force.continue = FALSE)
 \method{decompose}{toeplitz.ssa}(x, neig = NULL, \dots, force.continue = FALSE)
-\method{decompose}{mssa}(x, neig = NULL, \dots, force.continue = FALSE)
 \method{decompose}{cssa}(x, neig = NULL, \dots, force.continue = FALSE)
-\method{decompose}{nd.ssa}(x, neig = NULL, \dots, force.continue = FALSE)
 }
 
 \arguments{
