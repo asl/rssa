@@ -152,7 +152,6 @@ decompose.pssa <- function(x,
 }
 
 calc.v.pssa <- function(x, idx, ...) {
-  N <- x$length; L <- x$window; K <- N - L + 1
   nV <- nv(x)
 
   V <- matrix(NA_real_, .traj.dim(x)[2], length(idx))
@@ -172,10 +171,9 @@ calc.v.pssa <- function(x, idx, ...) {
     }
 
     U <- .U(x)[, idx.new, drop = FALSE]
-    ph <- .get.or.create.phmat(x)
 
-    V[, idx > nV] <- sapply(seq_along(idx.new),
-                            function(i) ematmul(ph, U[, i], transposed = TRUE) / sigma[i])
+    h <- .get.or.create.phmat(x)
+    V[, idx > nV] <- crossprod(h, U) / rep(sigma, each = nrow(V))
   }
 
   invisible(V)
