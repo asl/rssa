@@ -100,6 +100,8 @@ decompose.toeplitz.ssa <- function(x,
   sigma <- apply(Z, 2, function(x) sqrt(sum(x^2)))
   V <- sweep(Z, 2, sigma, FUN = "/")
 
+  neig <- min(neig, length(sigma))
+
   o <- order(sigma[seq_len(neig)], decreasing = TRUE)
   sigma <- sigma[o]
   U <- U[, o, drop = FALSE]

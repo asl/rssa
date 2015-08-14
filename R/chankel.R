@@ -22,10 +22,6 @@
                                             wmask = x$wmask, fmask = x$fmask, weights = x$weights))
 }
 
-.traj.dim.cssa <- function(x) {
-  c(x$window, sum(x$length - x$window + 1))
-}
-
 .chmat <- function(x, fft.plan) {
   N <- x$length; L <- x$window; K <- N - L + 1
   F <- .F(x)
@@ -88,22 +84,33 @@ decompose.cssa <- function(x,
   c(x$window, x$length - x$window + 1)
 }
 
-calc.v.cssa<- function(x, idx, env = .GlobalEnv, ...) {
-  sigma <- .sigma(x)[idx]
+calc.v.cssa <- function(x, idx, ...) {
+  nV <- nv(x)
 
-  if (any(sigma <= .Machine$double.eps)) {
-    sigma[sigma <= .Machine$double.eps] <- Inf
-    warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
+  V <- matrix(NA_complex_, .traj.dim(x)[2], length(idx))
+  idx.old <- idx[idx <= nV]
+  idx.new <- idx[idx > nV]
+
+  if (length(idx.old) > 0) {
+    V[, idx <= nV] <- .V(x)[, idx.old]
   }
 
-  U <- .U(x)[, idx, drop = FALSE]
-  h <- .get.or.create.chmat(x)
+  if (length(idx.new) > 0) {
+    sigma <- .sigma(x)[idx.new]
 
-  invisible(sapply(1:length(idx),
-                   function(i) {
-                     v <- ematmul(h, c(Re(U[, i]), Im(U[, i])), transposed = TRUE) / sigma[i]
-                     v[1:(length(v) / 2)] + 1i*v[-(1:(length(v) / 2))]
-                   }))
+    if (any(sigma <= .Machine$double.eps)) {
+      sigma[sigma <= .Machine$double.eps] <- Inf
+      warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
+    }
+
+    U <- .U(x)[, idx.new, drop = FALSE]
+
+    h <- .get.or.create.chmat(x)
+    rV <- crossprod(h, rbind(Re(U), Im(U))) / rep(sigma, each = 2*nrow(V))
+    V[, idx > nV] <- rV[seq_len(nrow(V)),, drop = FALSE] + 1i*rV[-seq_len(nrow(V)),, drop = FALSE]
+  }
+
+  invisible(V)
 }
 
 .hankelize.one.cssa <- function(x, U, V, fft.plan = .get.or.create.cfft.plan(x)) {

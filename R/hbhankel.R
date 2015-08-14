@@ -203,21 +203,6 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   c(Ldim, Kdim)
 }
 
-calc.v.nd.ssa <- function(x, idx, ...) {
-  sigma <- .sigma(x)[idx]
-
-  if (any(sigma <= .Machine$double.eps)) {
-    sigma[sigma <= .Machine$double.eps] <- Inf
-    warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
-  }
-
-  U <- .U(x)[, idx, drop = FALSE]
-  h <- .get.or.create.hbhmat(x)
-
-  invisible(sapply(1:length(idx),
-                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / sigma[i]))
-}
-
 .hankelize.one.nd.ssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
   storage.mode(U) <- storage.mode(V) <- "double"

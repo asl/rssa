@@ -1,8 +1,7 @@
 \name{calc.v}
 \alias{calc.v}
 \alias{calc.v.ssa}
-\alias{calc.v.nd.ssa}
-\alias{calc.v.mssa}
+\alias{calc.v.cssa}
 
 \title{Calculate Factor Vector(s)}
 
@@ -12,10 +11,8 @@
 }
 
 \usage{
-\method{calc.v}{1d.ssa}(x, idx, \dots)
-\method{calc.v}{toeplitz.ssa}(x, idx, \dots)
-\method{calc.v}{mssa}(x, idx, \dots)
-\method{calc.v}{nd.ssa}(x, idx, \dots)
+\method{calc.v}{ssa}(x, idx, \dots)
+\method{calc.v}{cssa}(x, idx, \dots)
 }
 
 \arguments{

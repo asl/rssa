@@ -19,7 +19,15 @@
 
 
 .traj.dim.mssa <- function(x) {
-  c(x$window, sum(x$length - x$window + 1))
+  Ldim <- sum(x$wmask)
+  if (Ldim == 0)
+    Ldim <- x$window
+
+  Kdim <- sum(x$fmask)
+  if (Kdim == 0)
+    Kdim <- sum(x$length - x$window + 1)
+
+  c(Ldim, Kdim)
 }
 
 .hmat.striped <- function(x, fft.plan) {
@@ -51,21 +59,6 @@
 }
 
 .get.or.create.trajmat.mssa <- .get.or.create.mhmat
-
-calc.v.mssa<- function(x, idx, ...) {
-  sigma <-.sigma(x)[idx]
-
-  if (any(sigma <= .Machine$double.eps)) {
-    sigma[sigma <= .Machine$double.eps] <- Inf
-    warning("some sigmas are equal to zero. The corresponding vectors will be zeroed")
-  }
-
-  U <- .U(x)[, idx, drop = FALSE]
-  h <- .get.or.create.mhmat(x)
-
-  invisible(sapply(1:length(idx),
-                   function(i) hbhmatmul(h, U[, i], transposed = TRUE) / sigma[i]))
-}
 
 .hankelize.one.mssa <- function(x, U, V) {
   h <- .get.or.create.hbhmat(x)
