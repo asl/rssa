@@ -180,13 +180,6 @@ ssa <- function(x,
   if (identical(svd.method, "auto"))
     svd.method <- .determine.svd.method(this, kind = kind, neig = neig, ...)
 
-  # Fix class using determined svd.method
-  class(this) <- c(do.call("c", lapply(kind,
-                                       function(kind)
-                                         list(paste(kind, svd.method, sep = "."),
-                                              kind)
-                                       )),
-                   "ssa")
   this$svd.method <- svd.method
   
   # Decompose, if necessary

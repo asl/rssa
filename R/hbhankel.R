@@ -209,7 +209,7 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
   .Call("hbhankelize_one_fft", U, V, h@.xData)
 }
 
-.init.fragment.nd.ssa <- function(this)
+.init.fragment.2d.ssa <- .init.fragment.nd.ssa <- function(this)
   expression({
     ## Coerce input to array if necessary
     if (!is.array(x))
