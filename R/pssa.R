@@ -394,7 +394,7 @@ vforecast.pssa <- function(x, groups, len = 1,
 .init.fragment.pssa <- function(this)
   expression({
     ## First, initialize the main object
-    ## We cannot use NextMethod here due to non-standard evaluation  
+    ## We cannot use NextMethod here due to non-standard evaluation
     eval(getS3method(".init.fragment", class(this)[2])(this))
     ## eval(.init.fragment.1d.ssa(this))
 
