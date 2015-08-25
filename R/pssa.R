@@ -28,6 +28,13 @@ orthopoly <- function(d, L) {
 
   stopifnot(is.numeric(d) && length(d) == 1)
 
+  # Check dimension
+  if (length(L) > 1 && d > 1) {
+    stop("Polynomial projection is not implemented for multidimensional SSA yet")
+  }
+
+  L <- prod(L)  # TODO Think about MSSA case
+
   if (d == 0) {
     # Return matrix with zero columns
     matrix(NA_real_, L, 0)
@@ -398,21 +405,42 @@ vforecast.pssa <- function(x, groups, len = 1,
     eval(getS3method(".init.fragment", class(this)[2])(this))
     ## eval(.init.fragment.1d.ssa(this))
 
+    # unwind all dimentions except last
+    .unwind.dim.except.last <- function(x) {
+      d <- dim(x)
+      if (is.null(d) || length(d) <= 2) {
+        return(x)
+      }
+
+      dim(x) <- c(prod(d[-length(d)]), d[length(d)])
+
+      x
+    }
+
+    if (length(column.projector) > 1) {
+      column.projector <- .unwind.dim.except.last(column.projector)
+    }
+
+    if (length(row.projector) > 1) {
+      row.projector <- .unwind.dim.except.last(row.projector)
+    }
+
     ## Next, calculate the projectors
     column.projector <- if (length(column.projector) == 1) orthopoly(column.projector, L) else qr.Q(qr(column.projector))
     row.projector <- if (length(row.projector) == 1) orthopoly(row.projector, K) else qr.Q(qr(row.projector))
 
     ## Check projector dimensions
-    stopifnot(nrow(column.projector) == L)
-    stopifnot(nrow(row.projector) == K)
+    ## TODO Think about MSSA case
+    stopifnot(nrow(column.projector) == prod(L))
+    stopifnot(nrow(row.projector) == prod(K))
 
     ## Shape projectors if needed
     if (!is.null(wmask)) {
-      column.projector <- column.projector[wmask,, drop = FALSE]
+      column.projector <- column.projector[as.vector(wmask),, drop = FALSE]
       column.projector <- qr.Q(qr(column.projector))
     }
     if (!is.null(fmask)) {
-      row.projector <- row.projector[fmask,, drop = FALSE]
+      row.projector <- row.projector[as.vector(fmask),, drop = FALSE]
       row.projector <- qr.Q(qr(row.projector))
     }
   })

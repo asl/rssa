@@ -265,6 +265,4 @@ hbhmatmul <- function(hmat, v, transposed = FALSE) {
       wmask <- NULL
     if (all(fmask))
       fmask <- NULL
-
-    column.projector <- row.projector <- NULL
   })
