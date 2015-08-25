@@ -119,11 +119,11 @@ ssa <- function(x,
   }
 
   if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
-    kind <- c("pssa", kind)
+    kind <- c("pssa", paste("pssa", kind, sep = "-"), kind)
   }
 
   # Normalize the kind to be used
-  kind <- sub("-", ".", kind, fixed = TRUE)
+  kind <- gsub("-", ".", kind, fixed = TRUE)
 
   # Create information body
   this <- list(call = call, ecall = ecall,
