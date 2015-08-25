@@ -231,12 +231,12 @@ enlarge.basis <- function(B, len, ...) {
   B
 }
 
-rforecast.pssa <- function(x, groups, len = 1,
-                           base = c("reconstructed", "original"),
-                           only.new = TRUE,
-                           reverse = FALSE,
-                           ...,
-                           drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+rforecast.pssa.1d.ssa <- function(x, groups, len = 1,
+                                  base = c("reconstructed", "original"),
+                                  only.new = TRUE,
+                                  reverse = FALSE,
+                                  ...,
+                                  drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   if (is.shaped(x))
     stop("`forecasting is not implemented for shaped SSA case yet")
 
@@ -312,10 +312,10 @@ rforecast.pssa <- function(x, groups, len = 1,
   invisible(out)
 }
 
-vforecast.pssa <- function(x, groups, len = 1,
-                           only.new = TRUE,
-                           ...,
-                           drop = TRUE, drop.attributes = FALSE) {
+vforecast.pssa.1d.ssa <- function(x, groups, len = 1,
+                                  only.new = TRUE,
+                                  ...,
+                                  drop = TRUE, drop.attributes = FALSE) {
   if (is.shaped(x))
     stop("`forecasting is not implemented for shaped SSA case yet")
 
@@ -402,7 +402,8 @@ vforecast.pssa <- function(x, groups, len = 1,
   expression({
     ## First, initialize the main object
     ## We cannot use NextMethod here due to non-standard evaluation
-    eval(getS3method(".init.fragment", class(this)[2])(this))
+    class.wo.pssa <- class(this)[!grepl("^pssa", class(this))]
+    eval(getS3method(".init.fragment", class.wo.pssa)(this))
     ## eval(.init.fragment.1d.ssa(this))
 
     # unwind all dimentions except last
