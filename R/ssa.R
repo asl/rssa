@@ -101,10 +101,7 @@ ssa <- function(x,
 
   # Do the fixups depending on the kind of SSA.
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
-    if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
-      # ProjectionSSA is just a special case of 1d-ssa
-      kind <- c("pssa", "1d-ssa")
-    }
+    ## Nothing special here (yet!)
   } else if (identical(kind, "2d-ssa") || identical(kind, "nd-ssa")) {
     # 2d-SSA is just a special case of nd-ssa
     if (length(dim(x)) == 2)
@@ -120,8 +117,13 @@ ssa <- function(x,
     fmask <- NULL
     stop("invalid SSA kind")
   }
+
+  if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
+    kind <- c("pssa", paste("pssa", kind, sep = "-"), kind)
+  }
+
   # Normalize the kind to be used
-  kind <- sub("-", ".", kind, fixed = TRUE)
+  kind <- gsub("-", ".", kind, fixed = TRUE)
 
   # Create information body
   this <- list(call = call, ecall = ecall,
