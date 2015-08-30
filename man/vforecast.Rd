@@ -6,7 +6,7 @@
 \alias{vforecast.toeplitz.ssa}
 \alias{vforecast.mssa}
 \alias{vforecast.cssa}
-\alias{vforecast.pssa}
+\alias{vforecast.pssa.1d.ssa}
 \title{Perform vector SSA forecasting of the series}
 
 \description{
@@ -26,7 +26,7 @@
           drop = TRUE, drop.attributes = FALSE)
 \method{vforecast}{cssa}(x, groups, len = 1, only.new = TRUE, \dots,
           drop = TRUE, drop.attributes = FALSE)
-\method{vforecast}{pssa}(x, groups, len = 1, only.new = TRUE, \dots,
+\method{vforecast}{pssa.1d.ssa}(x, groups, len = 1, only.new = TRUE, \dots,
           drop = TRUE, drop.attributes = FALSE)
 }
 
