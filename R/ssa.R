@@ -119,6 +119,12 @@ ssa <- function(x,
   }
 
   if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
+    # Add `pssa` class if appropriate implementation exists
+
+    if (!any(match(kind, c("1d-ssa", "2d-ssa", "nd-ssa")))) {
+      stop("SSA with projection is not implemented for such SSA kind yet")
+    }
+
     kind <- c("pssa", paste("pssa", kind, sep = "-"), kind)
   }
 
