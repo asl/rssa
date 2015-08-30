@@ -119,7 +119,11 @@ ssa <- function(x,
   }
 
   if (!identical(column.projector, "none") || !identical(row.projector, "none")) {
-    kind <- c("pssa", paste("pssa", kind, sep = "-"), kind)
+    if ("1d-ssa" %in% kind || "2d-ssa" %in% kind || "nd-ssa" %in% kind) {
+      kind <- c("pssa", paste("pssa", kind, sep = "-"), kind)
+    } else {
+      stop("SSA with projection is not implemented for such SSA kind yet")
+    }
   }
 
   # Normalize the kind to be used
