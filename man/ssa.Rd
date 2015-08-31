@@ -280,6 +280,13 @@ s <- ssa(co2, column.projector = "centering", row.projector = "centering")
 plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
 }
 
+# Artificial 2d example with double projection
+ii <- matrix(1:100, 100, 100); jj <- t(ii)
+x <- ii + 2 * jj
+s <- ssa(x, column.projector = "centering", row.projector = "centering")
+plot(s)
+plot(reconstruct(s, groups = list(trend = seq_len(nspecial(s)))))
+
 # 3D-SSA example (2D-MSSA)
 data(Barbara)
 Barbara.noised <- Barbara
