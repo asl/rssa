@@ -121,5 +121,8 @@ plot(ss, type = "vectors", idx = 1:12, slice = list(k = 1),
 plot(ss, type = "vectors", idx = 1:12, slice = list(k = 1, i = 1))
 plot(ss, type = "vectors", vectors = "factor", idx = 1:12, slice = list(k = 3),
      cuts = 50, plot.contrib = FALSE)
+plot(ss, type = "series", groups = 1:12, slice = list(k = 1))
+plot(ss, type = "series", groups = 1:12, slice = list(k = 1, i = 1))
+plot(ss, plot.method = "xyplot", type = "series", groups = 1:12, slice = list(k = 1, i = 1))
 }
 }

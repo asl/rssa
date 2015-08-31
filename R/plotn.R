@@ -151,8 +151,9 @@ plot.nd.ssa.reconstruction <- function(x, slice, ...) {
                     ref = TRUE)
 
   do.call(plot.nd.ssa.reconstruction, c(list(res,
-                                            slice = slice,
-                                            add.original = FALSE,
-                                            add.residuals = FALSE),
-                                       dots))
+                                             slice = slice,
+                                             add.original = FALSE,
+                                             add.residuals = FALSE,
+                                             plot.method = "xyplot"),
+                                        dots))
 }
