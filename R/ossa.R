@@ -541,7 +541,6 @@ decompose.ossa <- function(x, ...) {
   qr.Q(qr(calc.v(x, idx)))
 }
 
-
 owcor <- function(x, groups, ..., cache = TRUE) {
   # Check class
   stopifnot(inherits(x, "ossa"))
