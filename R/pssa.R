@@ -94,13 +94,6 @@ orthopoly <- function(d, L) {
   x
 }
 
-decompose.pssa <- function(x,
-                           neig = NULL,
-                           ...,
-                           force.continue = FALSE) {
-  stop("Unsupported SVD method for SSA with projection!")
-}
-
 nspecial.pssa <- function(x) {
   sum(unlist(.decomposition(x, c("nPL", "nPR"))))
 }
