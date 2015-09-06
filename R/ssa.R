@@ -66,6 +66,7 @@ ssa <- function(x,
                 neig = NULL,
                 mask = NULL, wmask = NULL,
                 column.projector = "none", row.projector = "none",
+                column.oblique = "identical", row.oblique = "identical",
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 circular = FALSE,
@@ -128,6 +129,16 @@ ssa <- function(x,
     kind <- c("pssa", paste("pssa", kind, sep = "-"), kind)
   }
 
+  if (!identical(column.oblique, "identical") || !identical(row.oblique, "identical")) {
+    # Add `wossa` class if appropriate implementation exists
+
+    if (!any(match(kind, c("1d-ssa", "2d-ssa", "nd-ssa"))) || "pssa" %in% kind) {
+      stop("SSA with weights is not implemented for such SSA kind yet")
+    }
+
+    kind <- c("wossa", paste("wossa", kind, sep = "-"), kind)
+  }
+
   # Normalize the kind to be used
   kind <- gsub("-", ".", kind, fixed = TRUE)
 
@@ -143,7 +154,8 @@ ssa <- function(x,
   this$fields <- c("F",
                    "wmask", "fmask", "weights", "circular",
                    "Fattr", "Fclass", "Iattr",
-                   "column.projector", "row.projector")
+                   "column.projector", "row.projector",
+                   "column.oblique", "row.oblique")
 
   # Make this S3 object
   class(this) <- c(kind, "ssa")
@@ -179,6 +191,10 @@ ssa <- function(x,
   ## Store projectors
   .set(this, "column.projector", column.projector)
   .set(this, "row.projector", row.projector)
+
+  ## Store oblique matrices
+  .set(this, "column.oblique", column.oblique)
+  .set(this, "row.oblique", row.oblique)
 
   # Determine the desired number of eigentriples, if necessary
   if (is.null(neig))
