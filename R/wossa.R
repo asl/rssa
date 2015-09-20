@@ -160,9 +160,15 @@ decompose.wossa <- function(x,
   V <- sweep(V, 2, sV, FUN = "/")
   sigma <- osigma * sU * sV
 
+  # Precompute weights
+  column.oblique <- .get(x, "column.oblique")[[3]]
+  row.oblique <- .get(x, "row.oblique")[[3]]
+  weights <- .hankelize.one(x, column.oblique, row.oblique)
+
   .set.decomposition(x,
                      sigma = sigma, U = U, V = V,
                      oU = oU, osigma = osigma,
+                     weights = weights, # TODO Mb use it as genereal `weights`
                      kind = "weighted.oblique.decomposition")
 
   x
@@ -243,8 +249,7 @@ decompose.wossa <- function(x,
 
   column.oblique <- .get(x, "column.oblique")[[3]]
   row.oblique <- .get(x, "row.oblique")[[3]]
-
-  weights <- .hankelize.one(x, column.oblique, row.oblique)
+  weights <- .decomposition(x, "weights")
 
   res <- numeric(prod(x$length));
   for (i in idx) {
