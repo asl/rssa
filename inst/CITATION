@@ -3,7 +3,7 @@ citHeader("To cite the 'Rssa' package in publications use:")
 year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
 vers <- paste("R package version", meta$Version)
 
-citEntry(entry    = "Article",
+bibentry(bibtype    = "Article",
          title    = "Computation- and space-efficient implementation of SSA",
          author   = as.person("Anton Korobeynikov"),
          journal  = "Statistics and Its Interface",
@@ -14,12 +14,12 @@ citEntry(entry    = "Article",
          note     = vers,
 
          textVersion =
-         paste("Anton Korobeynikov (2010)",
-               "Computation- and space-efficient implementation of SSA.",
-               "Statistics and Its Interface, Vol. 3, No. 3, Pp. 257-368")
+             paste("Anton Korobeynikov (2010)",
+                   "Computation- and space-efficient implementation of SSA.",
+                   "Statistics and Its Interface, Vol. 3, No. 3, 257-368")
 )
 
-citEntry(entry    = "Article",
+bibentry(bibtype    = "Article",
          title    = "Basic Singular Spectrum Analysis and Forecasting with R",
          author   = c(as.person("Nina Golyandina"), as.person("Anton Korobeynikov")),
          journal  = "Computational Statistics and Data Analysis",
@@ -29,7 +29,31 @@ citEntry(entry    = "Article",
          note     = vers,
 
          textVersion =
-         paste("Nina Golyandina and Anton Korobeynikov (2014)",
-               "Basic Singular Spectrum Analysis and Forecasting with R.",
-               "Computational Statistics and Data Analysis, Vol. 71, Pp. 934-954")
+             paste("Nina Golyandina and Anton Korobeynikov (2014)",
+                   "Basic Singular Spectrum Analysis and Forecasting with R.",
+                   "Computational Statistics and Data Analysis, Vol. 71, 934-954")
+)
+
+bibentry(bibtype = "Article",
+         title        = "Multivariate and 2D Extensions of Singular Spectrum Analysis with the {Rssa} Package",
+         author       = c(person(given = "Nina",
+                                 family = "Golyandina"),
+                          person(given = "Anton",
+                                 family = "Korobeynikov"),
+                          person(given = "Alex",
+                                 family = "Shlemov"),
+                          person(given = "Konstantin",
+                                 family = "Usevich")),
+         journal      = "Journal of Statistical Software",
+         year         = "2015",
+         volume       = "67",
+         number       = "2",
+         pages        = "1--78",
+         doi          = "10.18637/jss.v067.i02",
+
+         textVersion  =
+             paste("Nina Golyandina, Anton Korobeynikov, Alex Shlemov, Konstantin Usevich (2015).",
+                   "Multivariate and 2D Extensions of Singular Spectrum Analysis with the Rssa Package.",
+                   "Journal of Statistical Software, 67(2), 1-78.",
+                   "doi:10.18637/jss.v067.i02.")
 )
