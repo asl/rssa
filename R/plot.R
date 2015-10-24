@@ -100,9 +100,9 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
   # Provide convenient defaults
   dots <- .defaults(dots,
                     type = plot.type,
-                    xlab =  "Index",
-                    ylab = "log of singular value",
-                    main = "Singular Values",
+                    xlab = "Index",
+                    ylab = "norms",
+                    main = "Component norms",
                     grid = TRUE,
                     scales = list(y = list(log = TRUE)),
                     par.settings = list(plot.symbol = list(pch = 20)))
