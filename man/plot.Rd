@@ -39,7 +39,7 @@
   This function is the single entry to various plots of SSA objects. Right
   now this includes:
   \describe{
-    \item{values}{plot the graph of the singular values.}
+    \item{values}{plot the graph of the component norms.}
     \item{vectors}{plot the eigenvectors.}
     \item{paired}{plot the pairs of eigenvectors (useful for the
       detection of periodic components).}
