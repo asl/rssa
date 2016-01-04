@@ -151,3 +151,12 @@ S3method("igapfill", "mssa")
 S3method("summarize.gaps", "1d.ssa")
 S3method("summarize.gaps", "cssa")
 S3method("summarize.gaps", "toeplitz.ssa")
+
+## Default imports
+importFrom("grDevices", "colorRampPalette", "grey", "heat.colors")
+importFrom("graphics", "image", "matplot", "plot")
+importFrom("stats", "approxfun", "as.dist", "as.formula", "cov2cor",
+           "cutree", "fft", "filter", "frequency", "hclust", "is.ts",
+           "mad", "median", "mvfft", "poly", "predict", "quantile",
+           "residuals", "time", "toeplitz", "ts", "ts.union", "tsp<-")
+importFrom("utils", "head", "modifyList", "object.size")
