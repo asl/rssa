@@ -55,7 +55,7 @@ plot.grouping.auto.wcor <- function(x, ...)
 grouping.auto.pgram <- function(x, ...)
   UseMethod("grouping.auto.pgram")
 
-grouping.auto.pgram.ssa <- function(x, ...)
+grouping.auto.pgram.default <- function(x, ...)
   stop("grouping.auto.pgram is not implemented for this kind of SSA yet")
 
 pgram <- function(x) {
