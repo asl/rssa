@@ -31,7 +31,7 @@
   }
 
   tmatmul <- function(v) {
-    res <- numeric(lenght(mask))
+    res <- numeric(length(mask))
     res[mask] <- v
   }
 
