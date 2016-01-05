@@ -1,13 +1,14 @@
 \name{fossa}
 \alias{fossa}
+\alias{fossa.ssa}
 \title{Nested Filter-adjusted O-SSA decomposition}
 
-\description{
+\describption{
   Perform nested decomposition by Filter-adjusted O-SSA (FOSSA).
 }
 
 \usage{
-  fossa(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, \dots)
+  \method{fossa}{ssa}(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, \dots)
 }
 
 \arguments{

@@ -293,11 +293,15 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
   list(sigma = sigma, U = U, V = V)
 }
 
-iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
-                  maxiter = 100,
-                  norm = function(x) sqrt(mean(x^2)),
-                  trace = FALSE,
-                  kappa.balance = 0.5) {
+iossa <- function(x, ...)
+  UseMethod("iossa")
+
+iossa.ssa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
+                      maxiter = 100,
+                      norm = function(x) sqrt(mean(x^2)),
+                      trace = FALSE,
+                      kappa.balance = 0.5) {
+  ## FIXME: Check caps
   if (inherits(x, "cssa"))
     stop("I-OSSA is not implemented for Complex SSA yet")
 
@@ -454,7 +458,10 @@ iossa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   invisible(x)
 }
 
-fossa <- function(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, ...) {
+fossa <- function(x, ...)
+  UseMethod("fossa")
+
+fossa.ssa <- function(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, ...) {
   if (!is.function(FILTER)) {
     FILTER.coeffs <- FILTER
     FILTER <- function(x) {

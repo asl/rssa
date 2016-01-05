@@ -151,6 +151,8 @@ S3method("igapfill", "mssa")
 S3method("summarize.gaps", "1d.ssa")
 S3method("summarize.gaps", "cssa")
 S3method("summarize.gaps", "toeplitz.ssa")
+S3method("fossa", "ssa")
+S3method("iossa", "ssa")
 
 ## Default imports
 importFrom("grDevices", "colorRampPalette", "grey", "heat.colors")

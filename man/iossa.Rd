@@ -1,5 +1,6 @@
 \name{iossa}
 \alias{iossa}
+\alias{iossa.ssa}
 \title{Iterative O-SSA nested decomposition}
 
 \description{
@@ -7,7 +8,7 @@
 }
 
 \usage{
-iossa(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
+\method{iossa}{ssa}(x, nested.groups, \dots, tol = 1e-5, kappa = 2,
       maxiter = 100,
       norm = function(x) sqrt(mean(x^2)),
       trace = FALSE,
