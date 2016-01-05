@@ -3,7 +3,7 @@
 \alias{fossa.ssa}
 \title{Nested Filter-adjusted O-SSA decomposition}
 
-\describption{
+\description{
   Perform nested decomposition by Filter-adjusted O-SSA (FOSSA).
 }
 
