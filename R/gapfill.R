@@ -177,7 +177,6 @@ plot.ssa.gaps <- function(x, ...) {
 
 .fill.in <- function(F, L, gap, flrr, blrr, alpha) {
   leftpos <- gap$left; rightpos <- gap$right; len <- rightpos - leftpos + 1
-  to.fill <- seq.int(leftpos, rightpos)
   if (identical(gap$pos, "left")) {
      apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
                len = len, only.new = TRUE, reverse = TRUE)
@@ -186,6 +185,9 @@ plot.ssa.gaps <- function(x, ...) {
                len = len, only.new = TRUE, reverse = FALSE)
    } else {
      stopifnot(identical(gap$pos, "internal"))
+     ## Evaluate alpha
+     if (is.function(alpha))
+       alpha <- alpha(len)
 
      (alpha *
       apply.lrr(F[seq.int(from = rightpos + 1, length.out = L)], blrr,
@@ -200,7 +202,7 @@ plot.ssa.gaps <- function(x, ...) {
 gapfill.1d.ssa <- function(x, groups,
                            base = c("original", "reconstructed"),
                            method = c("sequential", "simultaneous"),
-                           alpha = 0.5,
+                           alpha = function(len) seq.int(0, 1, length.out = len),
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
@@ -209,7 +211,7 @@ gapfill.1d.ssa <- function(x, groups,
   if (!is.shaped(x))
     stop("gapfilling should start from shaped SSA object")
 
-  if (alpha < 0 || alpha > 1)
+  if (is.numeric(alpha) && (alpha < 0 || alpha > 1))
     stop("`alpha' should be between 0 and 1")
 
   L <- x$window; N <- x$length; K <- N - L + 1
@@ -274,7 +276,7 @@ gapfill.1d.ssa <- function(x, groups,
 
 gapfill.mssa <- function(x, groups,
                          base = c("original", "reconstructed"),
-                         alpha = 0.5,
+                         alpha = function(len) seq.int(0, 1, length.out = len),
                          ...,
                          drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   base <- match.arg(base)
@@ -282,7 +284,7 @@ gapfill.mssa <- function(x, groups,
   if (!is.shaped(x))
     stop("gapfilling should start from shaped SSA object")
 
-  if (alpha < 0 || alpha > 1)
+  if (is.numeric(alpha) && (alpha < 0 || alpha > 1))
     stop("`alpha' should be between 0 and 1")
 
   L <- x$window; N <- x$length; K <- N - L + 1
