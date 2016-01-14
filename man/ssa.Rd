@@ -15,6 +15,8 @@ ssa(x,
     wmask = NULL,
     column.projector = "none",
     row.projector = "none",
+    column.oblique = "identical",
+    row.oblique = "identical",
     \dots,
     kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
     circular = FALSE,
@@ -47,6 +49,8 @@ ssa(x,
   \item{column.projector, row.projector}{column and row signal subspaces projectors for
     SSA with projection. See `Details' for information about methods of
     projectors specification}
+  \item{column.oblique, row.oblique}{column and row matrix weights for 
+  Weighted Oblique SSA. See `Details' for information about how to use this feature}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
     performed before return.}
 }
@@ -122,6 +126,19 @@ ssa(x,
 
     SSA with centering and double centering may improve the separation
     of linear trend (see (Golyandina, 2001) for more information).
+  }
+
+  \subsection{Weighted Oblique SSA}{
+    Corresponding matrix norm weights may be specified for ordinary 1D SSA case 
+    by means of \code{column.oblique} and \code{row.oblique} arguments. These 
+    arguments should be either 'identical' or positive numeric vectors of length 
+    \code{L} and \code{N - L + 1} for \code{column.oblique} and 
+    \code{row.oblique} respectively.
+
+
+    Weighted Oblique SSA inside \code{\link[Rssa:cadzow]{Cadzow}} iterations 
+    may improve finite-rank estimation of signal (see (Zvonarev, 2016) for more 
+    information).
   }
 
   \subsection{SVD methods}{
@@ -206,6 +223,10 @@ ssa(x,
 
   Shlemov, A. and Golyandina, N. \emph{Shaped extensions of singular
   spectrum analysis}. \url{http://arxiv.org/abs/1401.4980}
+
+  Zvonarev, N. and Golyandina, N. \emph{Iterative algorithms for weighted and 
+  unweighted finite-rank time-series approximations}. 
+  \url{http://arxiv.org/abs/1507.02751}
 }
 \seealso{
   \code{\link[svd:svd]{svd}},

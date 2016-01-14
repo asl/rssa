@@ -24,7 +24,7 @@ test_that("Cadzow limit is a series of finite rank", {
   sum(weights * (F1-F2)^2)
 }
 
-test_that("Cadzow correction is really works", {
+test_that("Cadzow correction really works", {
   s <- ssa(co2)
   eps <- sqrt(.Machine$double.eps)
   delta <- 0.0001

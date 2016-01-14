@@ -136,6 +136,11 @@ ssa <- function(x,
       stop("SSA with weights is not implemented for such SSA kind yet")
     }
 
+    # TODO: Accept only row.oblique or column.oblique
+    if (identical(column.oblique, "identical") || identical(row.oblique, "identical")) {
+      stop("Both column.oblique and row.oblique must be numeric")
+    }
+
     kind <- c("wossa", paste("wossa", kind, sep = "-"), kind)
   }
 
