@@ -66,7 +66,7 @@ ssa <- function(x,
                 neig = NULL,
                 mask = NULL, wmask = NULL,
                 column.projector = "none", row.projector = "none",
-                column.oblique = "identical", row.oblique = "identical",
+                column.oblique = "identity", row.oblique = "identity",
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 circular = FALSE,
@@ -129,7 +129,7 @@ ssa <- function(x,
     kind <- c("pssa", paste("pssa", kind, sep = "-"), kind)
   }
 
-  if (!identical(column.oblique, "identical") || !identical(row.oblique, "identical")) {
+  if (!identical(column.oblique, "identity") || !identical(row.oblique, "identity")) {
     # Add `wossa` class if appropriate implementation exists
 
     if (!any(match(kind, c("1d-ssa", "2d-ssa", "nd-ssa"))) || "pssa" %in% kind) {
