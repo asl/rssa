@@ -197,6 +197,12 @@ rforecast.mssa <- function(x, groups, len = 1,
                            only.new = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
+  if (is.shaped(x))
+    stop("`forecasting is not implemented for shaped SSA case yet")
+
+  if (x$circular)
+    stop("forecasting is not properly defined for circular SSA")
+
   L <- x$window; N <- x$length; K <- N - L + 1
 
   cK <- cumsum(K)
