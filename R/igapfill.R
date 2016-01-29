@@ -145,7 +145,7 @@ igapfill.mssa <- function(x,
   scall <- x$ecall
 
   repeat {
-    scall$x <- .apply.attributes(s, F, fixup = FALSE, drop = FALSE)
+    scall$x <- .apply.attributes(x, F, fixup = FALSE, drop = FALSE)
     s <- eval(scall)
 
     r <- reconstruct(s, groups = list(ugroups), ..., cache = cache)
@@ -163,7 +163,7 @@ igapfill.mssa <- function(x,
     F <- rF
   }
 
-  scall$x <- .apply.attributes(s, F, fixup = FALSE, drop = FALSE)
+  scall$x <- .apply.attributes(x, F, fixup = FALSE, drop = FALSE)
   s <- eval(scall)
   r <- reconstruct(s, groups = groups, ..., drop.attributes = drop.attributes, cache = cache)
 
