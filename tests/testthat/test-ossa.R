@@ -32,7 +32,7 @@ test_that("I-OSSA and F-OSSA", {
   F1.real <- 2*sin(2*pi*omega1*(1:N))
   F2.real <- 2*sin(2*pi*omega2*(1:N))
   ss <- ssa(F1.real + F2.real, L, svd.method = "eigen", neig = 28)
-  fss <- fossa(ss, nested.groups = list(c(1,2), c(3,4)), kappa = 100)
+  fss <- fossa(ss, nested.groups = list(c(1,2), c(3,4)), kappa = Inf, normalize = FALSE)
   ioss <- iossa(fss, nested.groups = list(c(1,2), c(3,4)), maxiter = 1000, kappa = 2, tol = 1e-8, trace = TRUE)
 
   rec <- reconstruct(ioss, groups = ioss$iossa.groups)
@@ -55,7 +55,7 @@ test_that("FOSSA", {
   F2.real <- 2*sin(2*pi*omega2*(1:N))
   v <- F1.real + F2.real
   ss <- ssa(v, L, svd.method = "eigen")
-  fss <- fossa(ss,  nested.groups = list(1:2, 3:4), gamma = 100.5)
+  fss <- fossa(ss,  nested.groups = list(1:2, 3:4), gamma = Inf, normalize = FALSE)
   wc <- wcor(fss, groups = list(1:2, 3:4))
 
   expect_equivalent(wc[,], diag(2))
