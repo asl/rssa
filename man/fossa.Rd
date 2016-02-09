@@ -8,16 +8,16 @@
 }
 
 \usage{
-  \method{fossa}{ssa}(x, nested.groups, FILTER = diff, gamma = 1, normalize = FALSE, \dots)
+  \method{fossa}{ssa}(x, nested.groups, filter = c(-1, 1), gamma = 1, normalize = TRUE, \dots)
 }
 
 \arguments{
-  \item{x}{SSA object holding the full one-dimensional SSA (Basic 1D-SSA, Toeplitz SSA) decomposition}
+  \item{x}{SSA object holding SSA decomposition}
   \item{nested.groups}{vector of numbers of eigentriples from full decomposition
     for nested decomposition. The argument is coerced to a vector, if
-    necessary }
-  \item{FILTER}{function or numeric vector of impulse response
-    coefficients for filter adjustment}
+    necessary}
+  \item{filter}{numeric vector or array of reversed impulse response (IR)
+    coefficients for filter adjustment or list of such vectors or arrays}
   \item{gamma}{weight of filter adjustment. See `Details' and `References'}
   \item{normalize}{logical, whether to normalize left decomposition vectors before filtering}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
@@ -26,7 +26,7 @@
 
 \value{
   Object of class `ossa'. The field `ossa.set' contains the vector of indices
-  of elementary components used in Filter-adjusted O-SSA (that is, used in nested.groups).
+  of elementary components used in Filter-adjusted O-SSA (that is, used in \code{nested.groups}).
 }
 
 \details{
@@ -36,7 +36,7 @@
   periodics. FOSSA performs a new decomposition of a part of the
   ssa-object, which is given by a set of eigentriples. Note that
   eigentriples that do not belong to the chosen set are not changed.
-  
+
   In particular, Filter-adjusted O-SSA performs a nested decomposition
   specified by a number of eigentriples via Oblique SSA with a specific
   inner product in the row space:
@@ -44,13 +44,45 @@
     \langle x, y \rangle = (x, y) + \gamma^2(\Phi(x), \Phi(y)),
   }{<x, y> = (x, y) + gamma^2(Phi(x), Phi(y))}
   where \eqn{(\cdot, \cdot)}{(., .)} denotes conventional inner product and
-  `\eqn{\Phi}{Phi}' is function (supposed to be linear operator, but
-  right now no additional checks are performed)
-  or linear filtration which is specified by \code{FILTER} argument.
+  `\eqn{\Phi}{Phi}' is linear filtration which is specified by \code{filter} argument.
 
   The default value of \eqn{\Phi}{Phi} corresponds to sequential
   differences, that is, to derivation. Such version of Filter-adjusted
   O-SSA is called `DerivSSA'. See `References' for more details.
+
+  \subsection{\code{filter} argument}{
+    For 1D-SSA, Toeplitz-SSA and MSSA:
+    Filter can be given by a vector or a list of vectors. Each vector corresponds to reversed IR
+    for a filter, these filters are applied independently and their results are stacked such that the matrix
+    \eqn{[X:\Phi_1(X):\Phi_2(X)]}{[X:Phi_1(X):Phi_2(X)]} is decomposed.
+
+    For 2D-SSA: the following variants are possible: (1) a list of vectors.
+    Each vector corresponds to reversed IR for a filter. Each filter is
+    applied to different dimensions, the first to columns, the second to rows, and the results are stacked.
+    (2) single vector. Given vector corresponds to one-dimensional filter applied to both dimensions, the same as list of two equal vectors.
+    (3) a list of matrices, where each matrix provides 2d filter coefficients and the results are stacked.
+    (4) single matrix. Given matrix corresponds to two-dimensional filter applied once, the same as list of one matrix.
+
+    For nD-SSA: the same as for 2D-SSA, a list of vectors for filters by directions, single vector,
+    a list of arrays (matroids) for nD filters or single array.
+  }
+
+
+  \subsection{Normalization}{
+  Let us explain for the 1D case.
+  Let \eqn{X}{X} be the reconstructed matrix, corresponding to the selected eigentriples
+  \eqn{\{(\sigma_i,U_i,V_i)\}}{\{sigma_i,U_i,V_i\}}, \eqn{\Psi(X)}{Psi(X)} is the matrix, where the filter is applied to
+  each row of \eqn{X}{X}.
+
+  Then \code{normalize = FALSE} corresponds to finding the basis in the column space of
+  \eqn{X}{X} by means of the SVD of \eqn{[X, \Psi(X)]}{[X, Phi(X)]}, while
+  \code{normalize = TRUE} (by default)
+  corresponds to finding the basis by the SVD of \eqn{[V, \Phi(V)]}{[V, Phi(V)]},
+  where the rows of
+  matrix \eqn{V}{V} are \eqn{V_i}{V_i}.
+  The value by default \code{TRUE} guaranties that the contributions
+  of sine waves will be ordered by decreasing of frequencies, although can
+  slightly worsen the weak separability}
 }
 
 \references{
@@ -138,4 +170,25 @@ opar <- par(mfrow = c(2, 1))
 plot(reconstruct(fs, groups = list(1:2, 3:4)))
 plot(reconstruct(fs.norm, groups = list(1:2, 3:4)))
 par(opar)
+
+# 2D example
+data(Mars)
+s <- ssa(Mars)
+plot(s, "vectors", idx = 1:50)
+plot(s, "series", idx = 1:50)
+fs <- fossa(s, nested.groups = 1:50, gamma = Inf)
+plot(fs, "vectors", idx = 1:14)
+plot(fs, "series", groups = 1:13)
+
+# Filters example, extracting horizontal and vertical stripes
+data(Mars)
+s <- ssa(Mars)
+fs.hor <- fossa(s, nested.groups = 1:50, gamma = Inf,
+                filter = list(c(-1, 1), c(1)))
+plot(fs.hor, "vectors", idx = 1:14)
+plot(fs.hor, "series", groups = 1:13)
+fs.ver <- fossa(s, nested.groups = 1:50, gamma = Inf,
+                filter = list(c(1), c(-1, 1)))
+plot(fs.ver, "vectors", idx = 1:14)
+plot(fs.ver, "series", groups = 1:13)
 }

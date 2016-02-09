@@ -16,7 +16,7 @@
 }
 
 \arguments{
-  \item{x}{SSA object holding the full one-dimensional SSA (classic 1D-SSA, Toeplitz SSA) decomposition}
+  \item{x}{SSA object holding SSA decomposition}
   \item{nested.groups}{list or named list of numbers of eigentriples
     from full decomposition, describes initial grouping for IOSSA iterations}
   \item{tol}{tolerance for IOSSA iterations}
