@@ -613,9 +613,16 @@ fossa.ssa <- function(x, nested.groups,
   newV <- if (is.infinite(gamma)) fY else rbind(Y, gamma * fY)
 
   dec <- eigen(crossprod(newV), symmetric = TRUE)
-  U <- U %*% dec$vectors
-  Z <- Z %*% dec$vectors
-  sigma <- rep(1, ncol(U))
+
+  if (normalize) {
+    U <- (U * rep(osigma, each = nrow(U))) %*% dec$vectors
+    Z <- V %*% dec$vectors
+    sigma <- rep(1, ncol(U))
+  } else {
+    U <- U %*% dec$vectors
+    Z <- Z %*% dec$vectors
+    sigma <- rep(1, ncol(U))
+  }
 
   x <- clone(x, copy.cache = FALSE) # TODO Maybe preserve relevant part of cache?
   .save.oblique.decomposition(x, sigma, U, Z, idx)
