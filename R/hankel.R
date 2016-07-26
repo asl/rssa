@@ -210,9 +210,8 @@ decompose.ssa <- function(x,
                           ...,
                           force.continue = FALSE) {
   ## Check, whether continuation of decomposition is requested
-  ## FIXME: Check the caps
   if (!force.continue && nsigma(x) > 0 &&
-       !identical(x$svd.method, "nutrlan"))
+      !capable(x, "decompose.continue"))
     stop("Continuation of decomposition is not yet implemented for this method.")
 
   if (is.null(neig))

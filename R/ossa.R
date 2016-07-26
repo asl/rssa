@@ -301,8 +301,7 @@ iossa.ssa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
                       norm = function(x) sqrt(mean(x^2)),
                       trace = FALSE,
                       kappa.balance = 0.5) {
-  ## FIXME: Check caps
-  if (inherits(x, "cssa"))
+  if (!capable(x, "iossa"))
     stop("I-OSSA is not implemented for Complex SSA yet")
 
   # Get mask
