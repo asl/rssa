@@ -92,9 +92,8 @@ grouping.auto.pgram.1d.ssa <- function(x, groups,
                                        method = c("constant", "linear"),
                                        ...,
                                        drop = TRUE) {
-  if (is.shaped(x)) {
-    stop("grouping.auto is not implemented for shaped SSA yet")
-  }
+  if (!capable(x, "grouping.auto.pgram"))
+    stop("grouping.auto is not implemented for this kind of SSA yet")
 
   base <- match.arg(base)
   method <- match.arg(method)

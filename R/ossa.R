@@ -283,7 +283,7 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
   U <- .U(x)[, idx, drop = FALSE]
   V <- if (nv(x) < desired) calc.v(x, idx) else .V(x)[, idx, drop = FALSE]
 
-  # TODO Perform orthogonolize if it's only needed
+  # TODO Perform orthogonalize if it's only needed
   dec <- orthogonalize(U, V, sigma, side = "bi")
   sigma <- dec$d; U <- dec$u; V <- dec$v
 

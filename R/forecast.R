@@ -46,8 +46,8 @@ lrr.default <- function(x, eps = sqrt(.Machine$double.eps),
 lrr.1d.ssa <- function(x, groups,
                        reverse = FALSE,
                        ..., drop = TRUE) {
-  if (is.shaped(x))
-    stop("`LRR is not implemented for shaped SSA case yet")
+  if (!capable(x, "lrr"))
+    stop("LRR is not implemented for this kind of SSA case yet")
 
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
@@ -129,11 +129,8 @@ rforecast.1d.ssa <- function(x, groups, len = 1,
                              reverse = FALSE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
-  if (is.shaped(x))
-    stop("`forecasting is not implemented for shaped SSA case yet")
-
-  if (x$circular)
-    stop("forecasting is not properly defined for circular SSA")
+  if (!capable(x, "rforecast"))
+    stop("recurrent forecasting is not implemented for this SSA kind yet")
 
   L <- x$window
 
@@ -197,11 +194,8 @@ rforecast.mssa <- function(x, groups, len = 1,
                            only.new = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
-  if (is.shaped(x))
-    stop("`forecasting is not implemented for shaped SSA case yet")
-
-  if (x$circular)
-    stop("forecasting is not properly defined for circular SSA")
+  if (!capable(x, "rforecast"))
+    stop("recurrent forecasting is not implemented for this SSA kind yet")
 
   L <- x$window; N <- x$length; K <- N - L + 1
 
@@ -281,11 +275,8 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE) {
-  if (is.shaped(x))
-    stop("`forecasting is not implemented for shaped SSA case yet")
-
-  if (x$circular)
-    stop("forecasting is not properly defined for circular SSA")
+  if (!capable(x, "vforecast"))
+    stop("vector forecasting is not implemented for this SSA kind yet")
 
   L <- x$window
   K <- x$length - L + 1

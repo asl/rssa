@@ -229,8 +229,8 @@ rforecast.pssa.1d.ssa <- function(x, groups, len = 1,
                                   reverse = FALSE,
                                   ...,
                                   drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
-  if (is.shaped(x))
-    stop("`forecasting is not implemented for shaped SSA case yet")
+  if (!capable(x, "rforecast"))
+    stop("recurrent forecasting is not implemented for this SSA kind yet")
 
   L <- x$window
   K <- x$length - L + 1
@@ -308,8 +308,8 @@ vforecast.pssa.1d.ssa <- function(x, groups, len = 1,
                                   only.new = TRUE,
                                   ...,
                                   drop = TRUE, drop.attributes = FALSE) {
-  if (is.shaped(x))
-    stop("`forecasting is not implemented for shaped SSA case yet")
+  if (!capable(x, "vforecast"))
+    stop("vector forecasting is not implemented for this SSA kind yet")
 
   L <- x$window
   K <- x$length - L + 1

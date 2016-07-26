@@ -117,7 +117,7 @@ decompose.wossa <- function(x,
                             force.continue = FALSE) {
   ## Check, whether continuation of decomposition is requested
   if (!force.continue && nsigma(x) > nspecial(x) &&
-       !capable(x, "decompose.continue"))
+      !capable(x, "decompose.continue"))
     stop("Continuation of decomposition is not yet implemented for this method.")
 
   if (is.null(neig))

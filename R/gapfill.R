@@ -208,7 +208,7 @@ gapfill.1d.ssa <- function(x, groups,
   method <- match.arg(method)
   base <- match.arg(base)
 
-  if (!is.shaped(x))
+  if (!capable(x, "gapfill"))
     stop("gapfilling should start from shaped SSA object")
 
   if (is.numeric(alpha) && (alpha < 0 || alpha > 1))
@@ -279,14 +279,13 @@ gapfill.mssa <- function(x, groups,
                          alpha = function(len) seq.int(0, 1, length.out = len),
                          ...,
                          drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
-  base <- match.arg(base)
-
-  if (!is.shaped(x))
+  if (!capable(x, "gapfill"))
     stop("gapfilling should start from shaped SSA object")
 
   if (is.numeric(alpha) && (alpha < 0 || alpha > 1))
     stop("`alpha' should be between 0 and 1")
 
+  base <- match.arg(base)
   L <- x$window; N <- x$length; K <- N - L + 1
 
   # Grab the reconstructed series if we're basing on them
