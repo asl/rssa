@@ -8,7 +8,7 @@
 }
 
 \usage{
-  \method{fossa}{ssa}(x, nested.groups, filter = c(-1, 1), gamma = 1, normalize = TRUE, \dots)
+  \method{fossa}{ssa}(x, nested.groups, filter = c(-1, 1), gamma = Inf, normalize = TRUE, \dots)
 }
 
 \arguments{

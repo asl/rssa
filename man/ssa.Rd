@@ -15,8 +15,8 @@ ssa(x,
     wmask = NULL,
     column.projector = "none",
     row.projector = "none",
-    column.oblique = "identical",
-    row.oblique = "identical",
+    column.oblique = "identity",
+    row.oblique = "identity",
     \dots,
     kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
     circular = FALSE,
@@ -134,7 +134,6 @@ ssa(x,
     arguments should be either 'identical' or positive numeric vectors of length 
     \code{L} and \code{N - L + 1} for \code{column.oblique} and 
     \code{row.oblique} respectively.
-
 
     Weighted Oblique SSA inside \code{\link[Rssa:cadzow]{Cadzow}} iterations 
     may improve finite-rank estimation of signal (see (Zvonarev, 2016) for more 
