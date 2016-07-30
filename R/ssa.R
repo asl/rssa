@@ -101,6 +101,7 @@ ssa <- function(x,
   kind <- match.arg(kind)
 
   # Do the fixups depending on the kind of SSA.
+  weights <- NULL
   if (identical(kind, "1d-ssa") || identical(kind, "toeplitz-ssa")) {
     ## Nothing special here (yet!)
   } else if (identical(kind, "2d-ssa") || identical(kind, "nd-ssa")) {
@@ -210,7 +211,7 @@ ssa <- function(x,
     svd.method <- .determine.svd.method(this, kind = kind, neig = neig, ...)
 
   this$svd.method <- svd.method
-  
+
   # Decompose, if necessary
   if (force.decompose) {
     if (!is.null(weights) && all(weights == 0))
