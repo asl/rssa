@@ -159,15 +159,9 @@ decompose.wossa <- function(x,
   V <- sweep(V, 2, sV, FUN = "/")
   sigma <- osigma * sU * sV
 
-  # Precompute weights
-  column.oblique <- .get(x, "column.oblique")[[3]]
-  row.oblique <- .get(x, "row.oblique")[[3]]
-  weights <- .hankelize.one(x, column.oblique^2, row.oblique^2)
-
   .set.decomposition(x,
                      sigma = sigma, U = U, V = V,
                      oU = oU, osigma = osigma,
-                     weights = weights, # TODO Mb use it as genereal `weights`
                      kind = "weighted.oblique.decomposition")
 
   x
@@ -239,6 +233,12 @@ decompose.wossa <- function(x,
   qr.Q(qr(calc.v(x, idx)))
 }
 
+.get.or.create.weights <- function(x)
+  .get.or.create(x, "weights.oblique", {
+    column.oblique <- .get(x, "column.oblique")[[3]]
+    row.oblique <- .get(x, "row.oblique")[[3]]
+    .hankelize.one(x, column.oblique^2, row.oblique^2) })
+
 .elseries.wossa <- function(x, idx, ...) {
   if (max(idx) > nsigma(x))
     stop("Too few eigentriples computed for this decomposition")
@@ -249,7 +249,7 @@ decompose.wossa <- function(x,
 
   column.oblique <- .get(x, "column.oblique")[[3]]
   row.oblique <- .get(x, "row.oblique")[[3]]
-  weights <- .decomposition(x, "weights")
+  weights <- .get.or.create.weights(x)
 
   res <- numeric(prod(x$length));
   for (i in idx) {
@@ -272,5 +272,5 @@ decompose.wossa <- function(x,
 #TODO: think about MSSA
 
 .hweights.wossa <- function(x, ...) {
-  .hweights.1d.ssa(x, ...) * .decomposition(x, "weights")
+  .hweights.1d.ssa(x, ...) * .get.or.create.weights(x)
 }
