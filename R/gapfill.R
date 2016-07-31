@@ -216,6 +216,12 @@ gapfill.1d.ssa <- function(x, groups,
 
   L <- x$window; N <- x$length; K <- N - L + 1
 
+  if (missing(groups))
+    groups <- as.list(1:min(nsigma(x), nu(x)));
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
     r <- reconstruct(x, groups = groups, ..., cache = cache)
@@ -287,6 +293,12 @@ gapfill.mssa <- function(x, groups,
 
   base <- match.arg(base)
   L <- x$window; N <- x$length; K <- N - L + 1
+
+  if (missing(groups))
+    groups <- as.list(1:min(nsigma(x), nu(x)));
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
 
   # Grab the reconstructed series if we're basing on them
   if (identical(base, "reconstructed"))
