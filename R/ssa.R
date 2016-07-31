@@ -213,7 +213,7 @@ ssa <- function(x,
   this$svd.method <- svd.method
 
   # Decompose, if necessary
-  if (force.decompose) {
+  if (force.decompose || !is.null(neig)) {
     if (!is.null(weights) && all(weights == 0))
       stop("Nothing to decompose: the given field shape is empty")
 
