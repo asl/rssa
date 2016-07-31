@@ -16,7 +16,7 @@ test_that("Serialization works correctly", {
       next;
 
     for (L in Ls) {
-      suppressWarnings(ss <- ssa(co2, L = L, kind = kind, svd.method = svd.method, neig = neig));
+      suppressWarnings(ss <- ssa(co2, L = L, kind = kind, svd.method = svd.method, neig = neig, force.decompose = TRUE));
 
       # Serialize ssa-object to raw vector
       rw <- serialize(ss, connection = NULL);
@@ -55,7 +55,7 @@ test_that("Serialization works correctly for 2d SSA", {
   for (svd.method in svd.methods) {
     for (L in Ls) {
       set.seed(1);
-      ss <- ssa(field, L = L, kind = "2d-ssa", svd.method = svd.method, neig = neig);
+      ss <- ssa(field, L = L, kind = "2d-ssa", svd.method = svd.method, neig = neig, force.decompose = TRUE);
 
       # Serialize ssa-object to raw vector
       rw <- serialize(ss, connection = NULL);
