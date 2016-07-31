@@ -241,7 +241,9 @@ ssa <- function(x,
 
   # Continue decomposition, if necessary
   if (desired > min(nsigma(x), nu(x)))
-    decompose(x, ..., neig = min(desired + 1 - nspecial(x), min(.traj.dim(x)))) #TODO: Fix it for PSSA
+    decompose(x, ...,
+              neig = min(desired + 1 - nspecial(x), min(.traj.dim(x))), #TODO: Fix it for PSSA
+              force.continue = TRUE)
 
   desired
 }
