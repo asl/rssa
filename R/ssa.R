@@ -212,8 +212,14 @@ ssa <- function(x,
 
   this$svd.method <- svd.method
 
+  # If 'neig' is specified, then we need to decompose
+  if (!is.null(neig) && !force.decompose) {
+    warning("`force.decompose = FALSE` is ignored because number of eigentriples is specified")
+    force.decompose <- TRUE
+  }
+
   # Decompose, if necessary
-  if (force.decompose || !is.null(neig)) {
+  if (force.decompose) {
     if (!is.null(weights) && all(weights == 0))
       stop("Nothing to decompose: the given field shape is empty")
 
