@@ -23,7 +23,6 @@ export(clone,
        wnorm,
 # Capabilities
        ssa.capabilities,
-       capable,
 # Hankel matrix' routines
        new.hmat,
        hmatmul,
