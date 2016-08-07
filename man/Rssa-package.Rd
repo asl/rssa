@@ -39,28 +39,31 @@
   26-July 2, 2005, St. Petersburg State University, St. Petersburg,
   293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
 
-  Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
+  Golyandina, N. and Usevich, K. (2009): \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
   Methods: Theory, Algorithms, Applications. World Scientific
   Publishing, 450-474.
 
-  Korobeynikov, A. (2010) \emph{Computation- and space-efficient
+  Korobeynikov, A. (2010): \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
   Pp. 257-268
 
-  Golyandina, N., Korobeynikov, A. (2012, 2014) \emph{Basic Singular Spectrum
+  Golyandina, N., Korobeynikov, A. (2012, 2014): \emph{Basic Singular Spectrum
     Analysis and Forecasting with R.} Computational Statistics and Data
     Analysis, Vol. 71, Pp. 934-954. \url{http://arxiv.org/abs/1206.6910}
 
   Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
     Analysis for time series}. Springer Briefs in Statistics. Springer.
 
-  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K.
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
-    with the Rssa Package}. \url{http://arxiv.org/abs/1309.5050}
+    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
+    \url{https://www.jstatsoft.org/article/view/v067i02}
 
-  Shlemov, A. and Golyandina, N. \emph{Shaped extensions of singular
-  spectrum analysis}. \url{http://arxiv.org/abs/1401.4980}
+  Shlemov, A. and Golyandina, N. (2014): \emph{Shaped extensions of singular
+  spectrum analysis}. 21st International Symposium on Mathematical 
+  Theory of Networks and Systems, July 7-11, 2014. Groningen, 
+  The Netherlands. p.1813-1820. \url{http://arxiv.org/abs/1507.05286}
 }
 \keyword{package}
 \seealso{

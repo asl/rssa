@@ -105,6 +105,13 @@
   }
 }
 
+\seealso{
+  \code{\link[Rssa:ssa-object]{ssa-object}},
+  \code{\link{ssa}}
+  \code{\link[Rssa:reconstruct]{reconstruct}},
+  \code{\link[Rssa:plot]{plot}},
+}
+
 \examples{
 \donttest{
 # Decompose 'co2' series with default parameters

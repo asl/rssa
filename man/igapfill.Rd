@@ -84,6 +84,8 @@
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:gapfill]{gapfill}},
+  \code{\link[Rssa:clplot]{clplot}},
+  \code{\link[Rssa:summarize.gaps]{summarize.gaps}},
 }
 
 \examples{

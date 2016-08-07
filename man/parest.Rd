@@ -116,6 +116,12 @@
     IEEE Transactions on Signal Processing 53(8), 3348--3349.
 }
 
+\seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:ssa]{ssa}},
+  \code{\link[Rssa:lrr]{lrr}},
+}
+
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2, neig = 20)

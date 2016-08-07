@@ -45,11 +45,6 @@
   far away from the optimum.
 }
 
-\seealso{
-  \code{\link{Rssa}} for an overview of the package, as well as,
-  \code{\link[Rssa:reconstruct]{reconstruct}}
-}
-
 \references{
   Cadzow J. A. (1988) Signal enhancement a composite property mapping algorithm,
   IEEE Transactions on Acoustics, Speech, and Signal Processing, 36,
@@ -60,6 +55,11 @@
   Manuscript. Cardiff School of Mathematics. Cardiff.
 }
   
+\seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:reconstruct]{reconstruct}}
+}
+
 \examples{
 # Decompose co2 series with default parameters
 s <- ssa(co2)

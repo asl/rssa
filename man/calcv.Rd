@@ -38,6 +38,13 @@
   and window length).
 }
 
+\seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:ssa-object]{ssa-object}},
+  \code{\link[Rssa:ssa]{ssa}},
+  \code{\link[Rssa:decompose.ssa]{decompose}},
+}
+
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2)

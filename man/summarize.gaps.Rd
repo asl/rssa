@@ -31,6 +31,13 @@
   with their descriptions.
 }
 
+\seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:gapfill]{gapfill}},
+  \code{\link[Rssa:igapfill]{igapfill}},
+  \code{\link[Rssa:clplot]{clplot}},
+}
+
 \examples{
 # Produce series with gaps
 F <- co2; F[c(12, 100:200, 250)] <- NA

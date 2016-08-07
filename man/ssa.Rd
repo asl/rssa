@@ -82,7 +82,7 @@ ssa(x,
         (Golyandina and Stepanov, 2005).}
       \item{cssa}{Complex variant of 1d SSA.}
       \item{2d-ssa}{2d SSA for decomposition of images and arrays. See
-        (Golyandina and Usevich, 2009) for more information.}
+        (Golyandina and Usevich, 2009, and Golyandina et.al, 2015) for more information.}
       \item{nd-ssa}{Multidimensional SSA decomposition for arrays (tensors).}
     }
   }
@@ -105,7 +105,8 @@ ssa(x,
 
   \subsection{Projectors specification for SSA with projection}{
     Projectors are specified by means of \code{column.projector} and
-    \code{row.projector} arguments. Each may be a matrix of orthonormal
+    \code{row.projector} arguments (see Golyandina and Shlemov, 2017). 
+    Each may be a matrix of orthonormal
     (otherwise QR orthonormalization process will be perfomed) basis of
     projection subspace, or single integer, which will be interpreted as
     dimension of orthogonal polynomial basis (note that the dimension
@@ -125,7 +126,7 @@ ssa(x,
     }
 
     SSA with centering and double centering may improve the separation
-    of linear trend (see (Golyandina, 2001) for more information).
+    of linear trend (see (Golyandina et.al, 2001) for more information).
   }
 
   \subsection{Weighted Oblique SSA}{
@@ -136,8 +137,9 @@ ssa(x,
     \code{row.oblique} respectively.
 
     Weighted Oblique SSA inside \code{\link[Rssa:cadzow]{Cadzow}} iterations 
-    may improve finite-rank estimation of signal (see (Zvonarev, 2016) for more 
-    information).
+    may improve finite-rank estimation of signal 
+    (see e.g. Cadzow(alpha) iterations in (Zvonarev and Golyandina, 2017) 
+    for more information).
   }
 
   \subsection{SVD methods}{
@@ -200,31 +202,38 @@ ssa(x,
     26-July 2, 2005, St. Petersburg State University, St. Petersburg,
     293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
   
-  Golyandina, N. and Usevich, K. (2009). \emph{2D-extensions of singular
+  Golyandina, N. and Usevich, K. (2009): \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
   Methods: Theory, Algorithms, Applications. World Scientific
   Publishing, 450-474.
 
-  Korobeynikov, A. (2010) \emph{Computation- and space-efficient
+  Korobeynikov, A. (2010): \emph{Computation- and space-efficient
     implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
   Pp. 257-268
 
-  Golyandina, N., Korobeynikov, A. (2012, 2014) \emph{Basic Singular Spectrum
+  Golyandina, N., Korobeynikov, A. (2012, 2014): \emph{Basic Singular Spectrum
     Analysis and Forecasting with R.} Computational Statistics and Data
   Analysis, Vol. 71, Pp. 934-954. \url{http://arxiv.org/abs/1206.6910}
 
   Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
     Analysis for time series}. Springer Briefs in Statistics. Springer.
 
-  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K.
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
-    with the Rssa Package}. \url{http://arxiv.org/abs/1309.5050}
+    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
+    \url{https://www.jstatsoft.org/article/view/v067i02}
 
-  Shlemov, A. and Golyandina, N. \emph{Shaped extensions of singular
-  spectrum analysis}. \url{http://arxiv.org/abs/1401.4980}
+  Golyandina, N. and Shlemov, A. (2017): \emph{Semi-nonparametric singular 
+  spectrum analysis with projection}. Statistics and its Interface. 
+  \url{http://arxiv.org/abs/1401.4980}
 
-  Zvonarev, N. and Golyandina, N. \emph{Iterative algorithms for weighted and 
-  unweighted finite-rank time-series approximations}. 
+  Shlemov, A. and Golyandina, N. (2014): \emph{Shaped extensions of singular
+  spectrum analysis}. 21st International Symposium on Mathematical 
+  Theory of Networks and Systems, July 7-11, 2014. Groningen, 
+  The Netherlands. p.1813-1820. \url{http://arxiv.org/abs/1507.05286}
+  
+  Zvonarev, N. and Golyandina, N. (2017): \emph{Iterative algorithms for weighted and 
+  unweighted finite-rank time-series approximations}. Statistics and its Interface.
   \url{http://arxiv.org/abs/1507.02751}
 }
 \seealso{

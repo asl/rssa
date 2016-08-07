@@ -43,6 +43,11 @@ tmatmul(tmat, v, transposed = FALSE)
     SSA.} Statistics and Its Interface, Vol. 3, No. 3, Pp. 257-268
 }
 
+\seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:ssa]{ssa}},
+}
+
 \examples{
 # Construct the Toeplitz trajectory matrix for 'co2' series
 h <- new.tmat(co2, L = 10)

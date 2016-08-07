@@ -26,4 +26,5 @@ clplot(x, \dots)
   \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:igapfill]{igapfill}},
   \code{\link[Rssa:gapfill]{gapfill}}
+  \code{\link[Rssa:summarize.gaps]{summarize.gaps}},
 }

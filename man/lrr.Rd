@@ -76,6 +76,12 @@
   ordered by moduli decreasing.
 }
 
+\seealso{
+  \code{\link{Rssa}} for an overview of the package, as well as,
+  \code{\link[Rssa:ssa]{ssa}},
+  \code{\link[Rssa:parestimate]{parestimate}},
+}
+
 \examples{
 # Decompose 'co2' series with default parameters
 s <- ssa(co2, L = 24)

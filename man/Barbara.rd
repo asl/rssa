@@ -10,7 +10,7 @@
 }
 \usage{data(Barbara)}
 
-\format{An integer array of rank 3.}
+\format{An integer array of dimension 3.}
 
 \source{
   \url{http://www.hlevkin.com/TestImages/classic.htm}
