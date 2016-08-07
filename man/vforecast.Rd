@@ -57,7 +57,7 @@
   of this extended set of vectors.
   
   For multichannel SSA, forecast uses the formulae from
-  Golyandina et.al, 2015.
+  (Golyandina et al, 2015).
 }
 
 \value{
