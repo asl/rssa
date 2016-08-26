@@ -292,7 +292,7 @@ plot.wcor.matrix <- function(x,
                     aspect = "iso",
                     xlim = rownames(x),
                     ylim = colnames(x),
-                    useRaster = TRUE)
+                    useRaster = FALSE)
   dots <- modifyList(dots,
                      list(par.settings = list(regions = list(col = colorRampPalette(col)))))
 

@@ -55,21 +55,20 @@
 \details{
   W-correlation matrix is a standard way of checking for weak
   separability between the elementary components. In particular, the
-  strongly correlated elementary components should be placed into the same
-  group.The function calculates such a matrix either directly from 'ssa'
-  object or from the matrix of elementary series.
+  strongly correlated elementary components should be placed into the
+  same group. The function calculates such a matrix either directly from
+  'ssa' object or from the matrix of elementary series.
 
-  Additional (non-standard) graphical parameters which can be transfered via \dots:
+  For plotting additional (non-standard) graphical parameters which can be passed via \dots:
   \describe{
-    \item{useRaster}{logical. For wcor-plot, indicating whether raster representations
-      should be used. 'TRUE' by default.}
+    \item{useRaster}{logical, indicates whether raster plot should be used. 'FALSE' by default}
   }
 
   For class `ossa', checking of Frobenius orthogonality is performed.
-  If there are reconstructed matrices, which are not F-orthogonal
-  (it is a usual case for Oblique SSA), the warning about possible irrelevancy will be shown,
-  since then weighted correlations do not indicate weak separability properly.
-  In such a case, the use of
+  If there are reconstructed matrices, which are not F-orthogonal (it is
+  a usual case for Oblique SSA), the warning about possible irrelevancy
+  will be shown, since then weighted correlations do not indicate weak
+  separability properly.  In such a case, the use of
   \code{\link[Rssa:owcor]{owcor}} is preferred.
 }
 
