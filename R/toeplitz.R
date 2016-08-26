@@ -119,4 +119,10 @@ decompose.toeplitz.ssa <- function(x,
   qr.Q(qr(.V(x)[, idx, drop = FALSE]))
 }
 
-.init.fragment.toeplitz.ssa <- .init.fragment.1d.ssa
+.init.fragment.toeplitz.ssa <- function(this)
+  expression({
+    eval(.init.fragment.1d.ssa(this))
+    ## Disallow shaped
+    if (!all(wmask) || !all(fmask))
+      stop("gaps are not allowed in Toeplitz SSA")
+  })
