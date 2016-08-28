@@ -120,6 +120,7 @@ plot(reconstruct(fs, groups = list(1:2, 3:4)))
 par(opar)
 
 # Real-life example: Australian Wine Sales
+\donttest{
 data(AustralianWine)
 s <- ssa(AustralianWine[1:120, "Fortified"], L = 60)
 fs <- fossa(s, nested.groups = list(6:7, 8:9, 10:11), gamma = 10)
@@ -192,4 +193,5 @@ fs.ver <- fossa(s, nested.groups = 1:50, gamma = Inf,
                 filter = list(c(1), c(-1, 1)))
 plot(fs.ver, "vectors", idx = 1:14)
 plot(fs.ver, "series", groups = 1:13)
+}
 }
