@@ -21,7 +21,7 @@ tmatmul(tmat, v, transposed = FALSE)
 }
 
 \arguments{
-  \item{F}{series to construct the trajectory matrix for.}
+  \item{F}{series to construct the Toeplitz version of L x L autocovariance matrix.}
   \item{fft.plan}{internal hint argument, should be NULL in most cases}
   \item{L}{the window length.}
   \item{circular}{logical vector of one element, describes series topology.
@@ -49,7 +49,7 @@ tmatmul(tmat, v, transposed = FALSE)
 }
 
 \examples{
-# Construct the Toeplitz trajectory matrix for 'co2' series
+# Construct the Toeplitz version of the autocovariance matrix for 'co2' series
 h <- new.tmat(co2, L = 10)
 # Print the number of columns and rows
 print(trows(h)); print(tcols(h))

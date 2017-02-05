@@ -74,7 +74,7 @@ ssa(x,
         2001). This is also known as Broomhead-King variant of SSA or
         BK-SSA, see (Broomhead and King, 1986).}
       \item{toeplitz-ssa}{Toeplitz variant of 1d SSA. See Section 1.7.2
-        in (Golyandina et al, 2001). This is also knows as Vatuard-Gill
+        in (Golyandina et al, 2001). This is also known as Vautard-Ghil
         variant of SSA or VG-SSA for analysis of stationary time series,
         see (Vautard and Ghil, 1989).}
       \item{mssa}{Multichannel SSA for simultaneous decomposition of
