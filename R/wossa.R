@@ -137,11 +137,11 @@ decompose.wossa <- function(x,
     oU <- S$vectors; oV <- NULL; osigma <- sqrt(S$values)
   } else if (identical(x$svd.method, "propack")) {
     S <- propack.svd(.get.or.create.whmat(x), neig = neig, ...)
-    U <- S$u; V <- S$v; sigma <- S$d
+    oU <- S$u; oV <- S$v; osigma <- S$d
   } else if (identical(x$svd.method, "nutrlan")) {
-    S <- trlan.svd(.get.or.create.phmat(x), neig = neig, ...,
+    S <- trlan.svd(.get.or.create.whmat(x), neig = neig, ...,
                    lambda = .decomposition(x)$osigma, U = .decomposition(x)$oU)
-    oU <- S$u; oV <- NULL; osigma <- S$d
+    oU <- S$u; oV <- S$v; osigma <- S$d
   } else
     stop("unsupported SVD method")
 
