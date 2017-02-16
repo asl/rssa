@@ -202,6 +202,12 @@ ssa <- function(x,
   .set(this, "column.oblique", column.oblique)
   .set(this, "row.oblique", row.oblique)
 
+  # If 'neig' is specified, then we need to decompose
+  if (!is.null(neig) && !force.decompose) {
+    warning("`force.decompose = FALSE` is ignored because number of eigentriples is specified")
+    force.decompose <- TRUE
+  }
+
   # Determine the desired number of eigentriples, if necessary
   if (is.null(neig))
     neig <- .default.neig(this, ...)
@@ -211,12 +217,6 @@ ssa <- function(x,
     svd.method <- .determine.svd.method(this, kind = kind, neig = neig, ...)
 
   this$svd.method <- svd.method
-
-  # If 'neig' is specified, then we need to decompose
-  if (!is.null(neig) && !force.decompose) {
-    warning("`force.decompose = FALSE` is ignored because number of eigentriples is specified")
-    force.decompose <- TRUE
-  }
 
   # Decompose, if necessary
   if (force.decompose) {
