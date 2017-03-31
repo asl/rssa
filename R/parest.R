@@ -120,7 +120,7 @@ parestimate.esprit <- function(U,
   roots2pars(r)
 }
 
-parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+parestimate.1d.ssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "pairs"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
                                ...,
@@ -172,7 +172,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("pairs", "esprit-ls", "espr
 }
 
 parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
-parestimate.mssa <- function(x, groups, method = c("pairs", "esprit-ls", "esprit-tls"),
+parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "pairs"),
                              subspace = c("column", "row"),
                              normalize.roots = NULL,
                              ...,
