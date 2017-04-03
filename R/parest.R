@@ -177,6 +177,7 @@ parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "p
                              normalize.roots = NULL,
                              ...,
                              drop = TRUE) {
+  method <- match.arg(method)
   subspace <- match.arg(subspace)
 
   if (identical(subspace, "row"))
