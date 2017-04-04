@@ -277,13 +277,13 @@ parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "p
          function(i) Zse[[i]]$values[Ps[[i]]])
 }
 
-parestimate.esprit2d <- function(U, L,
-                                 wmask = NULL,
-                                 circular = c(FALSE, FALSE),
-                                 normalize = c(FALSE, FALSE),
-                                 solve.method = c("ls", "tls"),
-                                 pairing.method = c("diag", "memp"),
-                                 beta = 8) {
+parestimate.esprit.nd <- function(U, L,
+                                  wmask = NULL,
+                                  circular = c(FALSE, FALSE),
+                                  normalize = c(FALSE, FALSE),
+                                  solve.method = c("ls", "tls"),
+                                  pairing.method = c("diag", "memp"),
+                                  beta = 8) {
   if (is.null(wmask))
     wmask <- array(TRUE, dim = L)
 
@@ -310,11 +310,18 @@ parestimate.esprit2d <- function(U, L,
     if (normalize[k]) r[[k]] <- r[[k]] / abs(r[[k]])
 
   out <- lapply(r, roots2pars)
-  class(out) <- "fdimpars.2d"
+
+  if (length(out) == 1) {
+    out <- out[[1]]
+  } else {
+    class(out) <- "fdimpars.nd"
+    names(out) <- c("x", "y", "z", "t", "u", "s")[seq_along(out)]
+  }
+
   out
 }
 
-parestimate.2d.ssa <- function(x, groups,
+parestimate.nd.ssa <- function(x, groups,
                                method = c("esprit-diag-ls", "esprit-diag-tls",
                                           "esprit-memp-ls", "esprit-memp-tls"),
                                subspace = c("column", "row"),
@@ -331,7 +338,7 @@ parestimate.2d.ssa <- function(x, groups,
                     `esprit-memp-ls` =, `esprit-memp-tls` = "memp")
 
   if (missing(groups))
-    groups <- 1:min(nsigma(x), nu(x))
+    groups <- seq_len(min(nsigma(x), nu(x)))
 
   # Continue decomposition, if necessary
   .maybe.continue(x, groups = groups, ...)
@@ -349,22 +356,22 @@ parestimate.2d.ssa <- function(x, groups,
 
   if (is.null(normalize.roots))
     normalize.roots <- x$circular | inherits(x, "toeplitz.ssa")
-  if (length(normalize.roots) > 2)
-    warning("Incorrect argument length: length(normalize.roots) > 2, two leading values will be used")
-  normalize.roots <- rep(normalize.roots, 2)[1:2]
+  if (length(normalize.roots) > .dim(x))
+    warning("Incorrect argument length: length(normalize.roots) > .dim(x), only leading values will be used")
+  normalize.roots <- rep(normalize.roots, .dim(x))[seq_len(.dim(x))]
 
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
 
-    out[[i]] <- parestimate.esprit2d(span(x, group),
-                                     L = window,
-                                     wmask = wmask,
-                                     circular = x$circular,
-                                     normalize = normalize.roots,
-                                     solve.method = solve.method,
-                                     pairing.method = pairing.method,
-                                     beta = beta)
+    out[[i]] <- parestimate.esprit.nd(span(x, group),
+                                      L = window,
+                                      wmask = wmask,
+                                      circular = x$circular,
+                                      normalize = normalize.roots,
+                                      solve.method = solve.method,
+                                      pairing.method = pairing.method,
+                                      beta = beta)
   }
 
   names(out) <- .group.names(groups)
@@ -374,14 +381,25 @@ parestimate.2d.ssa <- function(x, groups,
   out
 }
 
-print.fdimpars.2d <- function(x, ...) {
-  cat("x: period     rate   | y: period     rate\n")
+print.fdimpars.nd <- function(x, ...) {
+  if (is.null(names(x))) {
+    names(x) <- paste("x", seq_along(x), sep = "_")
+  }
+
+  header <- paste(sapply(names(x),
+                         function(name) sprintf("%8s: period       rate", name)),
+                  sep = "", collapse = " | ")
+  cat(header)
+  cat("\n")
+
   for (i in seq_along(x[[1]]$roots)) {
-    cat(sprintf("% 9.3f  % 8.6f | % 9.3f  % 8.6f \n",
-                x[[1]]$periods[i],
-                x[[1]]$rate[i],
-                x[[2]]$periods[i],
-                x[[2]]$rate[i]))
+    row <- paste(sapply(seq_along(x),
+                        function(k) sprintf("% 16.3f  % 8.6f",
+                                            x[[k]]$periods[i],
+                                            x[[k]]$rate[i])),
+                 sep = "", collapse = " | ")
+    cat(row)
+    cat("\n")
   }
 }
 

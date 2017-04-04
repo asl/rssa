@@ -443,7 +443,7 @@ plot.fdimpars.1d <- function(x, ...) {
             dots))
 }
 
-plot.fdimpars.2d <- function(x, ...) {
+plot.fdimpars.nd <- function(x, ...) {
   dots <- list(...)
 
   # Provide convenient defaults
@@ -455,8 +455,9 @@ plot.fdimpars.2d <- function(x, ...) {
                     pch = 19)
 
   data <- list()
-  data$root <- c(x[[1]]$roots, x[[2]]$roots)
-  data$ind <- rep(c("lambda", "mu"), each = length(x[[1]]$roots))
+  data$root <- do.call(c, lapply(x, function(e) e$roots))
+  names(x) <- paste("x", seq_along(x), sep = "_")
+  data$ind <- rep(names(x), each = length(x[[1]]$roots))
 
   do.call("xyplot",
           c(list(Im(root) ~ Re(root) | ind,
