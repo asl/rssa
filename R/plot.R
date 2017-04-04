@@ -454,9 +454,12 @@ plot.fdimpars.nd <- function(x, ...) {
                     aspect = 1,
                     pch = 19)
 
+  if (length(names(x)) == 0) {
+    names(x) <- paste("x", seq_along(x), sep = "_")
+  }
+
   data <- list()
   data$root <- do.call(c, lapply(x, function(e) e$roots))
-  names(x) <- paste("x", seq_along(x), sep = "_")
   data$ind <- rep(names(x), each = length(x[[1]]$roots))
 
   do.call("xyplot",

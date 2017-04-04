@@ -167,48 +167,41 @@ parestimate.esprit <- function(U,
   roots2pars(r)
 }
 
-parestimate.1d.ssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "pairs"),
-                               subspace = c("column", "row"),
-                               normalize.roots = NULL,
-                               ...,
-                               drop = TRUE) {
-  method <- match.arg(method)
-
+.parestimate.pairs.ssa <- function(x, groups,
+                                   subspace = c("column", "row"),
+                                   normalize.roots = NULL,
+                                   ...,
+                                   drop) {
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
 
-  # Continue decomposition, if necessary
-  .maybe.continue(x, groups = groups, ...)
-
   subspace <- match.arg(subspace)
-  if (identical(subspace, "column")) {
-    span <- .colspan
-    wmask <- x$wmask
-  } else if (identical(subspace, "row")) {
-    span <- .rowspan
-    wmask <- x$fmask
-  }
 
   if (is.null(normalize.roots))
     normalize.roots <- x$circular || inherits(x, "toeplitz.ssa")
 
+  if (is.shaped(x)) {
+    stop("`pairs' parameter estimation method is not implemented for shaped SSA case yet")
+  }
+
+  if (identical(subspace, "column")) {
+    span <- .colspan
+  } else if (identical(subspace, "row")) {
+    if (inherits(x, "mssa")) {
+      stop("Row space `pairs' parameter estimation method is not implemented for MSSA yet")
+    }
+    span <- .rowspan
+  }
+
+  # Continue decomposition, if necessary
+  .maybe.continue(x, groups = groups, ...)
+
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
-    if (identical(method, "pairs")) {
-      if (is.shaped(x))
-        stop("`pairs' parameter estimation method is not implemented for shaped SSA case yet")
-      if (length(group) != 2)
-        stop("can estimate for pair of eigenvectors only using `pairs' method")
-      res <- parestimate.pairs(span(x, group), normalize = normalize.roots)
-    } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
-      res <- parestimate.esprit(span(x, group),
-                                wmask = wmask,
-                                circular = x$circular,
-                                normalize = normalize.roots,
-                                method = method)
-    }
-    out[[i]] <- res
+    if (length(group) != 2)
+      stop("can estimate for pair of eigenvectors only using `pairs' method")
+    out[[i]] <- parestimate.pairs(span(x, group), normalize = normalize.roots)
   }
 
   names(out) <- .group.names(groups)
@@ -218,23 +211,42 @@ parestimate.1d.ssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", 
   out
 }
 
-parestimate.toeplitz.ssa <- `parestimate.1d.ssa`
-parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "pairs"),
-                             subspace = c("column", "row"),
-                             normalize.roots = NULL,
-                             ...,
-                             drop = TRUE) {
+parestimate.1d.ssa <- function(x, groups, method = c("esprit", "pairs"),
+                               subspace = c("column", "row"),
+                               normalize.roots = NULL,
+                               ...,
+                               solve.method = c("ls", "tls"),
+                               drop = TRUE) {
   method <- match.arg(method)
+  solve.method <- match.arg(solve.method)
+
+  if (missing(groups))
+    groups <- 1:min(nsigma(x), nu(x))
+
   subspace <- match.arg(subspace)
 
-  if (identical(subspace, "row"))
-    stop("Row space parameter estimation is not implemented for MSSA yet")
-  parestimate.1d.ssa(x = x, groups = groups, method = method,
-                     subspace = subspace,
-                     normalize.roots = normalize.roots,
-                     ...,
-                     drop = drop)
+  if (is.null(normalize.roots))
+    normalize.roots <- x$circular || inherits(x, "toeplitz.ssa")
+
+  if (identical(method, "pairs")) {
+    .parestimate.pairs.ssa(x, groups = groups,
+                           subspace = subspace,
+                           normalize.roots = normalize.roots,
+                           ...,
+                           drop = drop)
+  } else if (identical(method, "esprit")) {
+    parestimate.nd.ssa(x, groups = groups,
+                       subspace = subspace,
+                       normalize.roots = normalize.roots,
+                       dimensions = c(x = 1),
+                       ...,
+                       solve.method = solve.method,
+                       drop = drop)
+  }
 }
+
+parestimate.toeplitz.ssa <- parestimate.1d.ssa
+parestimate.mssa <- parestimate.1d.ssa
 
 .matrix.linear.combination <- function(Zs, beta = 8) {
   if (length(beta) == 1) {
@@ -277,23 +289,25 @@ parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "p
          function(i) Zse[[i]]$values[Ps[[i]]])
 }
 
-parestimate.esprit.nd <- function(U, L,
-                                  wmask = NULL,
-                                  circular = c(FALSE, FALSE),
-                                  normalize = c(FALSE, FALSE),
-                                  solve.method = c("ls", "tls"),
-                                  pairing.method = c("diag", "memp"),
-                                  beta = 8) {
-  if (is.null(wmask))
-    wmask <- array(TRUE, dim = L)
-
+.parestimate.esprit.nd <- function(U,
+                                   wmask,
+                                   circular = c(FALSE, FALSE),
+                                   normalize = c(FALSE, FALSE),
+                                   dimensions = NULL,
+                                   solve.method = c("ls", "tls"),
+                                   pairing.method = c("diag", "memp"),
+                                   beta = 8) {
   wmask <- as.array(wmask)
   d <- dim(wmask)
 
   solve.method <- match.arg(solve.method)
   pairing.method <- match.arg(pairing.method)
 
-  Zs <- lapply(seq_along(d),
+  if (is.null(dimensions)) {
+    dimensions <- seq_along(d)
+  }
+
+  Zs <- lapply(dimensions,
                function(ndim) {
                  .shift.matrix(U,
                                wmask = wmask,
@@ -301,7 +315,6 @@ parestimate.esprit.nd <- function(U, L,
                                circular = circular[ndim],
                                solve.method = solve.method)
                })
-
 
   pairer <- switch(pairing.method, diag = .est.exp.2desprit, memp = .est.exp.memp.new)
   r <- pairer(Zs, beta = beta)
@@ -311,31 +324,35 @@ parestimate.esprit.nd <- function(U, L,
 
   out <- lapply(r, roots2pars)
 
+  names(out) <- names(dimensions)
+  if (length(names(out)) == 0) {
+    default.names <- c("x", "y", "z", "t", "u", "s",
+                       paste("x",
+                             seq_len(max(dimensions)),
+                             sep = "_"))
+    names(out) <- default.names[dimensions]
+  }
+
   if (length(out) == 1) {
     out <- out[[1]]
   } else {
     class(out) <- "fdimpars.nd"
-    names(out) <- c("x", "y", "z", "t", "u", "s")[seq_along(out)]
   }
 
   out
 }
 
 parestimate.nd.ssa <- function(x, groups,
-                               method = c("esprit-diag-ls", "esprit-diag-tls",
-                                          "esprit-memp-ls", "esprit-memp-tls"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
+                               dimensions = NULL,
                                ...,
+                               solve.method = c("ls", "tls"),
+                               pairing.method = c("diag", "memp"),
                                beta = 8,
                                drop = TRUE) {
-  method <- match.arg(method)
-  solve.method <- switch(method,
-                         `esprit-diag-ls`  =, `esprit-memp-ls`  = "ls",
-                         `esprit-diag-tls` =, `esprit-memp-tls` = "tls")
-  pairing.method <- switch(method,
-                    `esprit-diag-ls` =, `esprit-diag-tls` = "diag",
-                    `esprit-memp-ls` =, `esprit-memp-tls` = "memp")
+  solve.method <- match.arg(solve.method)
+  pairing.method <- match.arg(pairing.method)
 
   if (missing(groups))
     groups <- seq_len(min(nsigma(x), nu(x)))
@@ -346,12 +363,14 @@ parestimate.nd.ssa <- function(x, groups,
   subspace <- match.arg(subspace)
   if (identical(subspace, "column")) {
     span <- .colspan
-    wmask <- x$wmask
-    window <- x$window
+    wmask <- .wmask(x)
   } else if (identical(subspace, "row")) {
     span <- .rowspan
-    wmask <- x$fmask
-    window <- ifelse(x$circular, x$length - x$window + 1, x$window)
+    wmask <- .fmask(x)
+  }
+
+  if (is.null(dimensions)) {
+    dimensions <- seq_len(.dim(x))
   }
 
   if (is.null(normalize.roots))
@@ -363,15 +382,14 @@ parestimate.nd.ssa <- function(x, groups,
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
-
-    out[[i]] <- parestimate.esprit.nd(span(x, group),
-                                      L = window,
-                                      wmask = wmask,
-                                      circular = x$circular,
-                                      normalize = normalize.roots,
-                                      solve.method = solve.method,
-                                      pairing.method = pairing.method,
-                                      beta = beta)
+    out[[i]] <- .parestimate.esprit.nd(span(x, group),
+                                       wmask = wmask,
+                                       circular = x$circular,
+                                       normalize = normalize.roots,
+                                       solve.method = solve.method,
+                                       pairing.method = pairing.method,
+                                       beta = beta,
+                                       dimensions = dimensions)
   }
 
   names(out) <- .group.names(groups)
@@ -382,7 +400,7 @@ parestimate.nd.ssa <- function(x, groups,
 }
 
 print.fdimpars.nd <- function(x, ...) {
-  if (is.null(names(x))) {
+  if (length(names(x)) == 0) {
     names(x) <- paste("x", seq_along(x), sep = "_")
   }
 
