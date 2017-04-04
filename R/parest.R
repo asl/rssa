@@ -71,7 +71,7 @@ tls.solve <- function(A, B) {
   stopifnot(ncol(A) == ncol(B))
   r <- ncol(A)
   V <- svd(cbind(A, B))$v[, 1:r, drop = FALSE]
-  qr.solve(t(V[1:r,, drop = FALSE]), t(V[-(1:r),, drop = FALSE]))
+  Conj(qr.solve(t(V[1:r,, drop = FALSE]), t(V[-(1:r),, drop = FALSE])))
 }
 
 .cycle.permutation <- function(v, k = 0) {
@@ -184,6 +184,10 @@ parestimate.esprit <- function(U,
     stop("`pairs' parameter estimation method is not implemented for shaped SSA case yet")
   }
 
+  if (inherits(x, "cssa")) {
+    stop("`pairs' parameter estimation method is not implemented for Complex SSA case yet")
+  }
+
   if (identical(subspace, "column")) {
     span <- .colspan
   } else if (identical(subspace, "row")) {
@@ -247,6 +251,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("esprit", "pairs"),
 
 parestimate.toeplitz.ssa <- parestimate.1d.ssa
 parestimate.mssa <- parestimate.1d.ssa
+parestimate.cssa <- parestimate.1d.ssa
 
 .matrix.linear.combination <- function(Zs, beta = 8) {
   if (length(beta) == 1) {

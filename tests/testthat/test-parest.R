@@ -174,3 +174,38 @@ test_that("parestimate works correctly for two sines in cylindrical 2d case", {
     }
   }
 })
+
+test_that("parestimate works correctly for complex exp", {
+  lm <- 1 + 1i
+  N <- 19
+  t <- seq_len(N)
+  v <- lm ^ t
+  L <- 10
+  for (solve.method in c("ls", "tls")) {
+    ss <- ssa(v, L = L)
+    par <- parestimate(ss, groups = list(exp = 1),
+                       solve.method = solve.method)
+    roots <- par$roots
+    expect_true(is_multisets_approx_equal(roots, lm),
+                label = sprintf("Est. ch. root for complex exp (%f+i%f) is correct (method = %s)",
+                                Re(lm), Im(lm), solve.method))
+  }
+})
+
+test_that("parestimate works correctly for two complex exps", {
+  lm1 <- 1 + 1i
+  lm2 <- (1 + 2i) / sqrt(5)
+  N <- 19
+  t <- seq_len(N)
+  v <- lm1 ^ t + lm2 ^ t
+  L <- 10
+  for (solve.method in c("ls", "tls")) {
+    ss <- ssa(v, L = L)
+    par <- parestimate(ss, groups = list(exps = 1:2),
+                       solve.method = solve.method)
+    roots <- par$roots
+    expect_true(is_multisets_approx_equal(roots, c(lm1, lm2)),
+                label = sprintf("Est. ch. roots for two complex exp (%f+i%f, %f+i%f) is correct (method = %s)",
+                                Re(lm1), Im(lm1), Re(lm2), Im(lm2), solve.method))
+  }
+})
