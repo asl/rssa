@@ -235,24 +235,45 @@ parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "p
                      ...,
                      drop = drop)
 }
+.matrix.linear.combination <- function(Zs, beta = 8) {
+  if (length(beta) == 1) {
+    beta <- beta ^ seq_len(length(Zs) - 1)
+  }
 
-est_exp_2desprit <- function(Zs, beta = 8) {
-  Z <- (1-beta) * Zs[[1]] + beta * Zs[[2]]
+  if (length(beta) == length(Zs) - 1) {
+    beta <- c(1 - sum(beta), beta)
+  }
+
+  Z <- matrix(0., ncol = ncol(Zs[[1]]), nrow = nrow(Zs[[1]]))
+  for (i in seq_along(Zs)) {
+    Z <- Z + beta[i] * Zs[[i]]
+  }
+
+  Z
+}
+
+.est.exp.2desprit <- function(Zs, beta = 8) {
+  Z <- .matrix.linear.combination(Zs, beta)
   Ze <- eigen(Z, symmetric = FALSE)
   Tinv <- Ze$vectors
 
-  list(diag(qr.solve(Tinv, Zs[[1]] %*% Tinv)), diag(qr.solve(Tinv, Zs[[2]] %*% Tinv)))
+  lapply(seq_along(Zs),
+         function(i) diag(qr.solve(Tinv, Zs[[i]] %*% Tinv)))
 }
 
-est_exp_memp_new <- function(Zs, beta = 8) {
-  Z <- (1-beta) * Zs[[1]] + beta * Zs[[2]]
+.est.exp.memp.new <- function(Zs, beta = 8) {
+  Z <- .matrix.linear.combination(Zs, beta)
   Ze <- eigen(Z)
-  Zxe <- eigen(Zs[[1]])
-  Zye <- eigen(Zs[[2]])
-  Px <- max.col(t(abs(qr.solve(Ze$vectors, Zxe$vectors))))
-  Py <- max.col(t(abs(qr.solve(Ze$vectors, Zye$vectors))))  # TODO Use assignment problem here
+  Zse <- lapply(Zs, eigen, symmetric = FALSE)
+  Ps <- lapply(seq_along(Zs),
+               function(i) max.col(t(abs(qr.solve(Ze$vectors, Zse[[i]]$vectors)))))  # TODO Use assignment problem here
 
-  list(Zxe$values[Px], Zye$values[Py])
+  # for (P in Ps) {
+  #   stopifnot(length(P) == length(unique(P)))
+  # }
+
+  lapply(seq_along(Zs),
+         function(i) Zse[[i]]$values[Ps[[i]]])
 }
 
 parestimate.esprit2d <- function(U, L,
@@ -282,9 +303,12 @@ parestimate.esprit2d <- function(U, L,
                                solve.method = solve.method)
                })
 
-  r <- switch(method,
-              `esprit-diag-ls` =, `esprit-diag-tls` = est_exp_2desprit(Zs, beta = beta),
-              `esprit-memp-ls` =, `esprit-memp-tls` = est_exp_memp_new(Zs, beta = beta))
+
+  pairing <- switch(method,
+                    `esprit-diag-ls` =, `esprit-diag-tls` = .est.exp.2desprit,
+                    `esprit-memp-ls` =, `esprit-memp-tls` = .est.exp.memp.new)
+
+  r <- pairing(Zs, beta = beta)
 
   for (k in seq_along(d))
     if (normalize[k]) r[[k]] <- r[[k]] / abs(r[[k]])
