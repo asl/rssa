@@ -235,6 +235,7 @@ parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "p
                      ...,
                      drop = drop)
 }
+
 .matrix.linear.combination <- function(Zs, beta = 8) {
   if (length(beta) == 1) {
     beta <- beta ^ seq_len(length(Zs) - 1)
@@ -280,19 +281,17 @@ parestimate.esprit2d <- function(U, L,
                                  wmask = NULL,
                                  circular = c(FALSE, FALSE),
                                  normalize = c(FALSE, FALSE),
-                                 method = c("esprit-diag-ls", "esprit-diag-tls",
-                                            "esprit-memp-ls", "esprit-memp-tls"),
+                                 solve.method = c("ls", "tls"),
+                                 pairing.method = c("diag", "memp"),
                                  beta = 8) {
-  method <- match.arg(method)
-  solve.method <- switch(method,
-                         `esprit-diag-ls`  =, `esprit-memp-ls`  = "ls",
-                         `esprit-diag-tls` =, `esprit-memp-tls` = "tls")
-
   if (is.null(wmask))
     wmask <- array(TRUE, dim = L)
 
   wmask <- as.array(wmask)
   d <- dim(wmask)
+
+  solve.method <- match.arg(solve.method)
+  pairing.method <- match.arg(pairing.method)
 
   Zs <- lapply(seq_along(d),
                function(ndim) {
@@ -304,11 +303,8 @@ parestimate.esprit2d <- function(U, L,
                })
 
 
-  pairing <- switch(method,
-                    `esprit-diag-ls` =, `esprit-diag-tls` = .est.exp.2desprit,
-                    `esprit-memp-ls` =, `esprit-memp-tls` = .est.exp.memp.new)
-
-  r <- pairing(Zs, beta = beta)
+  pairer <- switch(pairing.method, diag = .est.exp.2desprit, memp = .est.exp.memp.new)
+  r <- pairer(Zs, beta = beta)
 
   for (k in seq_along(d))
     if (normalize[k]) r[[k]] <- r[[k]] / abs(r[[k]])
@@ -327,6 +323,13 @@ parestimate.2d.ssa <- function(x, groups,
                                beta = 8,
                                drop = TRUE) {
   method <- match.arg(method)
+  solve.method <- switch(method,
+                         `esprit-diag-ls`  =, `esprit-memp-ls`  = "ls",
+                         `esprit-diag-tls` =, `esprit-memp-tls` = "tls")
+  pairing.method <- switch(method,
+                    `esprit-diag-ls` =, `esprit-diag-tls` = "diag",
+                    `esprit-memp-ls` =, `esprit-memp-tls` = "memp")
+
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
 
@@ -359,7 +362,8 @@ parestimate.2d.ssa <- function(x, groups,
                                      wmask = wmask,
                                      circular = x$circular,
                                      normalize = normalize.roots,
-                                     method = method,
+                                     solve.method = solve.method,
+                                     pairing.method = pairing.method,
                                      beta = beta)
   }
 
