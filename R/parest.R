@@ -74,44 +74,91 @@ tls.solve <- function(A, B) {
   qr.solve(t(V[1:r,, drop = FALSE]), t(V[-(1:r),, drop = FALSE]))
 }
 
-shift.matrix <- function(U,
-                         wmask = NULL,
-                         topology = Inf,
-                         solve.method = c("ls", "tls")) {
+.cycle.permutation <- function(v, k = 0) {
+  n <- length(v)
+  k <- k %% n
+  if (k) {
+    v <- c(v[(k + 1) : n], v[1 : k])
+
+  }
+
+  v
+}
+
+.mdim.cycle.permutation <- function(v, ndim, k = 0) {
+  v <- as.array(v)
+  d <- dim(v)
+  idx <- lapply(d, seq_len)
+  idx[[ndim]] <- .cycle.permutation(idx[[ndim]], k = k)
+  do.call("[", c(list(v), idx, list(drop = FALSE)))
+}
+
+.annulate.row <- function(v, ndim, i = 1, value = 0) {
+  v <- as.array(v)
+  d <- dim(v)
+  idx <- lapply(d, seq_len)
+  idx[[ndim]] <- i
+  do.call("[<-", c(list(v), idx, list(value = value)))
+}
+
+.shifted.matrix.masks <- function(wmask,
+                                  ndim,
+                                  circular = FALSE) {
+  wmask <- as.array(wmask)
+  d <- dim(wmask)
+  mask <- wmask & .mdim.cycle.permutation(wmask, ndim, 1)
+
+  if (!circular) {
+    mask <- .annulate.row(mask, ndim, i = d[ndim], FALSE)
+  }
+
+  lind <- array(NA_integer_, dim = d)
+  lind[wmask] <- seq_len(sum(wmask))
+  rind <- .mdim.cycle.permutation(lind, ndim, 1)
+
+  list(left.mask = lind[mask], right.mask = rind[mask])
+}
+
+shift.matrix <- function(U, ...) {
+  wmask <- rep(TRUE, nrow(U))
+  Conj(.shift.matrix(U, wmask, ndim = 1, ...))
+}
+
+.shift.matrix <- function(U, wmask,
+                          ndim,
+                          circular = FALSE,
+                          solve.method = c("ls", "tls")) {
   solve.method <- match.arg(solve.method)
   solver <- switch(solve.method,
                    ls = qr.solve,
                    tls = tls.solve)
 
-  if (is.null(wmask))
-    wmask <- rep(TRUE, nrow(U))
+  smxs <- .shifted.matrix.masks(wmask, ndim, circular = circular)
 
-  lm.mask <- wmask[-1] & wmask[-length(wmask)]
-  lm1.mask <- c(lm.mask, FALSE)[wmask]
-  lm2.mask <- c(FALSE, lm.mask)[wmask]
-
-  lmA <- U[lm1.mask,, drop = FALSE]
-  lmB <- U[lm2.mask,, drop = FALSE]
-  if (topology == length(wmask) && wmask[1] && wmask[length(wmask)]) {
-    lmA <- rbind(lmA, U[length(wmask),, drop = FALSE])
-    lmB <- rbind(lmB, U[1,, drop = FALSE])
-  }
-
-  Conj(solver(lmA, lmB))
+  lm.left <- U[smxs$left.mask,, drop = FALSE]
+  lm.right <- U[smxs$right.mask,, drop = FALSE]
+  solver(lm.left, lm.right)
 }
 
 parestimate.esprit <- function(U,
                                wmask = NULL,
-                               topology = Inf,
+                               circular = FALSE,
                                normalize = FALSE,
                                method = c("esprit-ls", "esprit-tls")) {
   method <- match.arg(method)
-  Z <- shift.matrix(U,
-                    wmask = wmask,
-                    topology = topology,
-                    solve.method = switch(method,
-                                          `esprit-ls` = "ls",
-                                          `esprit-tls` = "tls"))
+
+  if (is.null(wmask))
+    wmask <- rep(TRUE, nrow(U))
+
+  solve.method <- switch(method,
+                         `esprit-ls` = "ls",
+                         `esprit-tls` = "tls")
+
+  Z <- .shift.matrix(U,
+                     wmask = wmask,
+                     ndim = 1,
+                     circular = circular,
+                     solve.method = solve.method)
 
   r <- eigen(Z, only.values = TRUE)$values
 
@@ -157,7 +204,7 @@ parestimate.1d.ssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", 
     } else if (identical(method, "esprit-ls") || identical(method, "esprit-tls")) {
       res <- parestimate.esprit(span(x, group),
                                 wmask = wmask,
-                                topology = ifelse(x$circular, x$length, Inf),
+                                circular = x$circular,
                                 normalize = normalize.roots,
                                 method = method)
     }
@@ -189,75 +236,28 @@ parestimate.mssa <- function(x, groups, method = c("esprit-ls", "esprit-tls", "p
                      drop = drop)
 }
 
-shift.matrices.2d <- function(U, L,
-                              wmask = NULL,
-                              topology = c(Inf, Inf),
-                              solve.method = c("ls", "tls")) {
-  solve.method <- match.arg(solve.method)
-  solver <- switch(solve.method,
-                   ls = qr.solve,
-                   tls = tls.solve)
-
-  if (is.null(wmask)) {
-    wmask <- matrix(TRUE, L[1], L[2])
-  }
-
-  lm.mask <- wmask[-1, , drop = FALSE] & wmask[-nrow(wmask),, drop = FALSE]
-  lm1.mask <- as.vector(rbind(lm.mask, FALSE)[wmask])
-  lm2.mask <- as.vector(rbind(FALSE, lm.mask)[wmask])
-
-  mu.mask <- wmask[, -1, drop = FALSE] & wmask[, -ncol(wmask), drop = FALSE]
-  mu1.mask <- as.vector(cbind(mu.mask, FALSE)[wmask])
-  mu2.mask <- as.vector(cbind(FALSE, mu.mask)[wmask])
-
-  lmA <- U[lm1.mask,, drop = FALSE]
-  lmB <- U[lm2.mask,, drop = FALSE]
-  if (topology[1] == L[1]) {
-    lmc.mask <- wmask[1,, drop = FALSE] & wmask[L[1],, drop = FALSE]
-    lmc1.mask <- as.vector(rbind(matrix(FALSE, L[1] - 1, L[2]), lmc.mask)[wmask])
-    lmc2.mask <- as.vector(rbind(lmc.mask, matrix(FALSE, L[1] - 1, L[2]))[wmask])
-    lmA <- rbind(lmA, U[lmc1.mask,, drop = FALSE])
-    lmB <- rbind(lmB, U[lmc2.mask,, drop = FALSE])
-  }
-
-  muA <- U[mu1.mask,, drop = FALSE]
-  muB <- U[mu2.mask,, drop = FALSE]
-  if (topology[2] == L[2]) {
-    muc.mask <- wmask[, 1, drop = FALSE] & wmask[, L[2], drop = FALSE]
-    muc1.mask <- as.vector(cbind(matrix(FALSE, L[1], L[2] - 1), muc.mask)[wmask])
-    muc2.mask <- as.vector(cbind(muc.mask, matrix(FALSE, L[1], L[2] - 1))[wmask])
-    muA <- rbind(muA, U[muc1.mask,, drop = FALSE])
-    muB <- rbind(muB, U[muc2.mask,, drop = FALSE])
-  }
-
-  Zx = solver(lmA, lmB)
-  Zy = solver(muA, muB)
-
-  list(Zx = Zx, Zy = Zy)
-}
-
 est_exp_2desprit <- function(Zs, beta = 8) {
-  Z <- (1-beta) * Zs$Zx + beta * Zs$Zy
+  Z <- (1-beta) * Zs[[1]] + beta * Zs[[2]]
   Ze <- eigen(Z, symmetric = FALSE)
   Tinv <- Ze$vectors
 
-  list(diag(qr.solve(Tinv, Zs$Zx %*% Tinv)), diag(qr.solve(Tinv, Zs$Zy %*% Tinv)))
+  list(diag(qr.solve(Tinv, Zs[[1]] %*% Tinv)), diag(qr.solve(Tinv, Zs[[2]] %*% Tinv)))
 }
 
 est_exp_memp_new <- function(Zs, beta = 8) {
-  Z <- (1-beta) * Zs$Zx + beta * Zs$Zy
+  Z <- (1-beta) * Zs[[1]] + beta * Zs[[2]]
   Ze <- eigen(Z)
-  Zxe <- eigen(Zs$Zx)
-  Zye <- eigen(Zs$Zy)
+  Zxe <- eigen(Zs[[1]])
+  Zye <- eigen(Zs[[2]])
   Px <- max.col(t(abs(qr.solve(Ze$vectors, Zxe$vectors))))
-  Py <- max.col(t(abs(qr.solve(Ze$vectors, Zxe$vectors))))
+  Py <- max.col(t(abs(qr.solve(Ze$vectors, Zye$vectors))))  # TODO Use assignment problem here
 
   list(Zxe$values[Px], Zye$values[Py])
 }
 
 parestimate.esprit2d <- function(U, L,
                                  wmask = NULL,
-                                 topology = c(Inf, Inf),
+                                 circular = c(FALSE, FALSE),
                                  normalize = c(FALSE, FALSE),
                                  method = c("esprit-diag-ls", "esprit-diag-tls",
                                             "esprit-memp-ls", "esprit-memp-tls"),
@@ -267,17 +267,26 @@ parestimate.esprit2d <- function(U, L,
                          `esprit-diag-ls`  =, `esprit-memp-ls`  = "ls",
                          `esprit-diag-tls` =, `esprit-memp-tls` = "tls")
 
-  Zs <- shift.matrices.2d(U,
-                          L = L,
-                          wmask = wmask,
-                          topology = topology,
-                          solve.method = solve.method)
+  if (is.null(wmask))
+    wmask <- array(TRUE, dim = L)
+
+  wmask <- as.array(wmask)
+  d <- dim(wmask)
+
+  Zs <- lapply(seq_along(d),
+               function(ndim) {
+                 .shift.matrix(U,
+                               wmask = wmask,
+                               ndim = ndim,
+                               circular = circular[ndim],
+                               solve.method = solve.method)
+               })
 
   r <- switch(method,
               `esprit-diag-ls` =, `esprit-diag-tls` = est_exp_2desprit(Zs, beta = beta),
               `esprit-memp-ls` =, `esprit-memp-tls` = est_exp_memp_new(Zs, beta = beta))
 
-  for (k in 1:2)
+  for (k in seq_along(d))
     if (normalize[k]) r[[k]] <- r[[k]] / abs(r[[k]])
 
   out <- lapply(r, roots2pars)
@@ -324,7 +333,7 @@ parestimate.2d.ssa <- function(x, groups,
     out[[i]] <- parestimate.esprit2d(span(x, group),
                                      L = window,
                                      wmask = wmask,
-                                     topology = ifelse(x$circular, x$length, Inf),
+                                     circular = x$circular,
                                      normalize = normalize.roots,
                                      method = method,
                                      beta = beta)
