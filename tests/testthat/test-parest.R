@@ -137,7 +137,6 @@ test_that("parestimate works correctly for two sines in circular 2d case", {
       par <- parestimate(ss, groups = list(sines = 1:4),
                          solve.method = solve.method,
                          pairing.method = pairing.method)
-      par <- parestimate(ss, groups = list(sines = 1:4), method = method)
       lm <- par[[1]]$roots
       mu <- par[[2]]$roots
 
@@ -163,13 +162,15 @@ test_that("parestimate works correctly for two sines in cylindrical 2d case", {
   ss <- ssa(mx, kind = "2d-ssa", L = c(N1, 20), circular = c(TRUE, FALSE))
   for (solve.method in c("ls", "tls")) {
     for (pairing.method in c("memp", "diag")) {
-    par <- parestimate(ss, groups = list(sines = 1:4), method = method)
-    lm <- par[[1]]$roots
-    mu <- par[[2]]$roots
+      par <- parestimate(ss, groups = list(sines = 1:4),
+                         solve.method = solve.method,
+                         pairing.method = pairing.method)
+      lm <- par[[1]]$roots
+      mu <- par[[2]]$roots
 
-    expect_true(is_multisets_approx_equal(mu, expectred.mu) && is_multisets_approx_equal(lm , expectred.lm),
-                label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct (method = %s-%s)",
-                                T1, T2, solve.method, pairing.method))
+      expect_true(is_multisets_approx_equal(mu, expectred.mu) && is_multisets_approx_equal(lm , expectred.lm),
+                  label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct (method = %s-%s)",
+                                  T1, T2, solve.method, pairing.method))
     }
   }
 })
