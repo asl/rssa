@@ -37,7 +37,7 @@
             \dots,
             drop = TRUE)
 \method{parestimate}{nd.ssa}(x, groups,
-            method = c("esprit-diag-ls", "esprit-diag-tls", "esprit-memp-ls", "esprit-memp-tls"),
+            method = c("esprit", "esprit-diag-ls", "esprit-diag-tls", "esprit-memp-ls", "esprit-memp-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
             dimensions = NULL,
@@ -62,7 +62,9 @@
       'pairs' for rough estimation based on pair of eigenvectors,
       'esprit-ls' for 1D-ESPRIT with LS solving method, 'esprit-tls' for 1D-ESPRIT with TLS solving method.
       'esprit-ls' and 'esprit-tls' values are deprecated and saved for backward compatibility.
-      For nD-SSA argument `method' is overall deprecated and saved for backward compatibility.}
+      For nD-SSA: parameter estimation method. For now only 'esprit' is supported.
+      Other values could be used to set solving and pairing method, but they are deprecated and saved for
+      compatibility. Usage of arguments `solve.method' and `pairing.method' is recommended.}
   \item{solve.method}{approximate matrix equation solving method, 'ls' for least-squares, 'tls' for total-least-squares.}
   \item{pairing.method}{method for esprit roots pairing, 'diag' for `2D-ESPRIT diagonalization', 'memp' for ``MEMP with an
     improved pairing step'}

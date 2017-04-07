@@ -361,7 +361,8 @@ parestimate.cssa <- parestimate.1d.ssa
 }
 
 parestimate.nd.ssa <- function(x, groups,
-                               method = c("esprit-diag-ls", "esprit-diag-tls",
+                               method = c("esprit",
+                                          "esprit-diag-ls", "esprit-diag-tls",
                                           "esprit-memp-ls", "esprit-memp-tls"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
@@ -371,9 +372,11 @@ parestimate.nd.ssa <- function(x, groups,
                                beta = 8,
                                ...,
                                drop = TRUE) {
-  if (!missing(method)) {
-    warning("Argument `method' is depricated. Use arguments `solve.method' and `pairing.method' instead")
-    method <- match.arg(method)
+  method <- match.arg(method)
+
+  if (!identical(method, "esprit")) {
+    warning(sprintf("%s value for `method' argument is depricated. Use arguments `solve.method' and `pairing.method' instead",
+                    method))
 
     if (!missing(solve.method)) {
       warning("Passed `solve.method' value will be ignored")
