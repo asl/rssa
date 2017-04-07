@@ -215,14 +215,27 @@ parestimate.esprit <- function(U,
   out
 }
 
-parestimate.1d.ssa <- function(x, groups, method = c("esprit", "pairs"),
+parestimate.1d.ssa <- function(x, groups,
+                               method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
-                               ...,
                                solve.method = c("ls", "tls"),
+                               ...,
                                drop = TRUE) {
   method <- match.arg(method)
-  solve.method <- match.arg(solve.method)
+
+  if (method %in% c("esprit-ls", "esprit-tls")) {
+    warning(sprintf("%s value for `method' argument is depricated. Use argument `solve.method' instead",
+                    method))
+
+    if (!missing(solve.method)) {
+      warning("Passed `solve.method' value will be ignored")
+    }
+
+    solve.method <- strsplit(method, split = "-")[[1]][2]
+  } else {
+    solve.method <- match.arg(solve.method)
+  }
 
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
@@ -348,16 +361,35 @@ parestimate.cssa <- parestimate.1d.ssa
 }
 
 parestimate.nd.ssa <- function(x, groups,
+                               method = c("esprit-diag-ls", "esprit-diag-tls",
+                                          "esprit-memp-ls", "esprit-memp-tls"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
                                dimensions = NULL,
-                               ...,
                                solve.method = c("ls", "tls"),
                                pairing.method = c("diag", "memp"),
                                beta = 8,
+                               ...,
                                drop = TRUE) {
-  solve.method <- match.arg(solve.method)
-  pairing.method <- match.arg(pairing.method)
+  if (!missing(method)) {
+    warning("Argument `method' is depricated. Use arguments `solve.method' and `pairing.method' instead")
+    method <- match.arg(method)
+
+    if (!missing(solve.method)) {
+      warning("Passed `solve.method' value will be ignored")
+    }
+
+    if (!missing(pairing.method)) {
+      warning("Passed `pairing.method' value will be ignored")
+    }
+
+    splitted.method <- strsplit(method, split="-")[[1]]
+    pairing.method <- splitted.method[2]
+    solve.method <- splitted.method[3]
+  } else {
+    solve.method <- match.arg(solve.method)
+    pairing.method <- match.arg(pairing.method)
+  }
 
   if (missing(groups))
     groups <- seq_len(min(nsigma(x), nu(x)))

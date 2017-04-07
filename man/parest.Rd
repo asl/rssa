@@ -11,32 +11,33 @@
 }
 
 \usage{
-\method{parestimate}{1d.ssa}(x, groups, method = c("esprit", "pairs"),
+\method{parestimate}{1d.ssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
-            \dots,
             solve.method = c("ls", "tls"),
+            \dots,
             drop = TRUE)
-\method{parestimate}{toeplitz.ssa}(x, groups, method = c("esprit", "pairs"),
+\method{parestimate}{toeplitz.ssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
-            \dots,
             solve.method = c("ls", "tls"),
+            \dots,
             drop = TRUE)
-\method{parestimate}{mssa}(x, groups, method = c("esprit", "pairs"),
+\method{parestimate}{mssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
-            \dots,
             solve.method = c("ls", "tls"),
+            \dots,
             drop = TRUE)
 \method{parestimate}{nd.ssa}(x, groups,
+            method = c("esprit-diag-ls", "esprit-diag-tls", "esprit-memp-ls", "esprit-memp-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
             dimensions = NULL,
-            \dots,
             solve.method = c("ls", "tls"),
             pairing.method = c("diag", "memp"),
             beta = 8,
+            \dots,
             drop = TRUE)
 }
 
@@ -48,10 +49,13 @@
   \item{drop}{logical, if 'TRUE' then the result is coerced to lowest
     dimension, when possible (length of \code{groups} is one)}
   \item{dimensions}{a vector of dimension indices for nD-ESPRIT performing. 'NULL' means all dimensions.}
-  \item{method}{estimation method for unidimensional SSA.
-      'esprit' for 1D-ESPRIT and
-      'pairs' for rough estimation based on pair of eigenvectors.
-    For nD-SSA `pairs' method is not supported, `Two-Dimensional ESPRIT method' generalization (nD-ESPRIT) is used.}
+  \item{method}{For 1D-SSA, Toeplitz SSA, and MSSA:
+      parameter estimation method,
+      'esprit' for 1D-ESPRIT,
+      'pairs' for rough estimation based on pair of eigenvectors,
+      'esprit-ls' for 1D-ESPRIT with LS solving method, 'esprit-tls' for 1D-ESPRIT with TLS solving method.
+      'esprit-ls' and 'esprit-tls' values are deprecated and saved for backward compatibility.
+      For nD-SSA argument `method' is overall deprecated and saved for backward compatibility.}
   \item{solve.method}{approximate matrix equation solving method, 'ls' for least-squares, 'tls' for total-least-squares.}
   \item{pairing.method}{method for esprit roots pairing, 'diag' for `2D-ESPRIT diagonalization', 'memp' for ``MEMP with an
     improved pairing step'}
