@@ -3,6 +3,7 @@
 \alias{parestimate.1d.ssa}
 \alias{parestimate.toeplitz.ssa}
 \alias{parestimate.mssa}
+\alias{parestimate.cssa}
 \alias{parestimate.nd.ssa}
 \title{Estimate periods from (set of) eigenvectors}
 
@@ -24,6 +25,12 @@
             \dots,
             drop = TRUE)
 \method{parestimate}{mssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
+            solve.method = c("ls", "tls"),
+            \dots,
+            drop = TRUE)
+\method{parestimate}{cssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
             solve.method = c("ls", "tls"),
