@@ -219,6 +219,7 @@ parestimate.1d.ssa <- function(x, groups,
                                method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
+                               dimensions = NULL,
                                solve.method = c("ls", "tls"),
                                ...,
                                drop = TRUE) {
@@ -309,8 +310,8 @@ parestimate.cssa <- parestimate.1d.ssa
 
 .parestimate.esprit.nd <- function(U,
                                    wmask,
-                                   circular = c(FALSE, FALSE),
-                                   normalize = c(FALSE, FALSE),
+                                   circular,
+                                   normalize,
                                    dimensions = NULL,
                                    solve.method = c("ls", "tls"),
                                    pairing.method = c("diag", "memp"),
@@ -323,6 +324,11 @@ parestimate.cssa <- parestimate.1d.ssa
 
   if (is.null(dimensions)) {
     dimensions <- seq_along(d)
+  }
+
+  if (max(dimensions) > length(d)) {
+    stop(sprintf("Some of dimension indices passed exceed the actual number of object dimensions (%d)",
+                 length(d)))
   }
 
   Zs <- lapply(dimensions,
@@ -343,7 +349,7 @@ parestimate.cssa <- parestimate.1d.ssa
   out <- lapply(r, roots2pars)
 
   names(out) <- names(dimensions)
-  if (length(names(out)) == 0) {
+  if (length(names(out)) == 0 || any(names(out) == "")) {
     default.names <- c("x", "y", "z", "t", "u", "s",
                        paste("x",
                              seq_len(max(dimensions)),
@@ -440,7 +446,7 @@ parestimate.nd.ssa <- function(x, groups,
 }
 
 print.fdimpars.nd <- function(x, ...) {
-  if (length(names(x)) == 0) {
+  if (length(names(x)) == 0 || any(names(x) == "")) {
     names(x) <- paste("x", seq_along(x), sep = "_")
   }
 

@@ -454,9 +454,10 @@ plot.fdimpars.nd <- function(x, ...) {
                     aspect = 1,
                     pch = 19)
 
-  if (length(names(x)) == 0) {
+  if (length(names(x)) == 0 || any(names(x) == "")) {
     names(x) <- paste("x", seq_along(x), sep = "_")
   }
+
 
   data <- list()
   data$root <- do.call(c, lapply(x, function(e) e$roots))

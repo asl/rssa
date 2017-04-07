@@ -15,24 +15,28 @@
 \method{parestimate}{1d.ssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
+            dimensions = NULL,
             solve.method = c("ls", "tls"),
             \dots,
             drop = TRUE)
 \method{parestimate}{toeplitz.ssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
+            dimensions = NULL,
             solve.method = c("ls", "tls"),
             \dots,
             drop = TRUE)
 \method{parestimate}{mssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
+            dimensions = NULL,
             solve.method = c("ls", "tls"),
             \dots,
             drop = TRUE)
 \method{parestimate}{cssa}(x, groups, method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
+            dimensions = NULL,
             solve.method = c("ls", "tls"),
             \dots,
             drop = TRUE)
@@ -55,7 +59,7 @@
     necessary}
   \item{drop}{logical, if 'TRUE' then the result is coerced to lowest
     dimension, when possible (length of \code{groups} is one)}
-  \item{dimensions}{a vector of dimension indices for nD-ESPRIT performing. 'NULL' means all dimensions.}
+  \item{dimensions}{a vector of dimension indices to perform ESPRIT along. 'NULL' means all dimensions.}
   \item{method}{For 1D-SSA, Toeplitz SSA, and MSSA:
       parameter estimation method,
       'esprit' for 1D-ESPRIT,
