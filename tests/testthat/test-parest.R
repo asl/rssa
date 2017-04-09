@@ -43,6 +43,8 @@ test_that("parestimate works correctly for two sines", {
   for (solve.method in c("ls", "tls")) {
     par <- parestimate(ss, groups = list(sines = 1:4),
                        solve.method = solve.method)
+		print(par)
+		plot(par)
     mu <- par$moduli * exp(pi * 2i / par$periods)
     expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
 
@@ -65,6 +67,8 @@ test_that("parestimate works correctly for two sines in shaped case", {
   for (solve.method in c("ls", "tls")) {
     par <- parestimate(ss, groups = list(sines = 1:4),
                        solve.method = solve.method)
+		print(par)
+		plot(par)
     mu <- par$moduli * exp(pi * 2i / par$periods)
     expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
 
@@ -84,6 +88,8 @@ test_that("parestimate works correctly for two sines in circular case", {
     par <- parestimate(ss,
                        groups = list(sines = 1:4),
                        solve.method = solve.method)
+		print(par)
+		plot(par)
     mu <- par$roots
     expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
 
@@ -107,6 +113,8 @@ test_that("parestimate works correctly for two sines in 2d case", {
       par <- parestimate(ss, groups = list(sines = 1:4),
                          solve.method = solve.method,
                          pairing.method = pairing.method)
+			print(par)
+			plot(par)
       lm <- par[[1]]$roots
       mu <- par[[2]]$roots
       expectred.lm <- exp(pi * 2i / c(T1, -T1, T1, -T1))
@@ -134,6 +142,8 @@ test_that("parestimate works correctly for two sines in shaped 2d case", {
       par <- parestimate(ss, groups = list(sines = 1:4),
                          solve.method = solve.method,
                          pairing.method = pairing.method)
+			print(par)
+			plot(par)
       lm <- par[[1]]$roots
       mu <- par[[2]]$roots
       expectred.lm <- exp(pi * 2i / c(T1, -T1, T1, -T1))
@@ -164,6 +174,8 @@ test_that("parestimate works correctly for two sines in circular 2d case", {
       par <- parestimate(ss, groups = list(sines = 1:4),
                          solve.method = solve.method,
                          pairing.method = pairing.method)
+			print(par)
+			plot(par)
       lm <- par[[1]]$roots
       mu <- par[[2]]$roots
 
@@ -192,6 +204,8 @@ test_that("parestimate works correctly for two sines in cylindrical 2d case", {
       par <- parestimate(ss, groups = list(sines = 1:4),
                          solve.method = solve.method,
                          pairing.method = pairing.method)
+			print(par)
+			plot(par)
       lm <- par[[1]]$roots
       mu <- par[[2]]$roots
 
@@ -212,6 +226,8 @@ test_that("parestimate works correctly for complex exp", {
     ss <- ssa(v, L = L)
     par <- parestimate(ss, groups = list(exp = 1),
                        solve.method = solve.method)
+		print(par)
+		plot(par)
     roots <- par$roots
     expect_true(is_multisets_approx_equal(roots, lm),
                 label = sprintf("Est. ch. root for complex exp (%f+i%f) is correct (method = %s)",
@@ -230,6 +246,8 @@ test_that("parestimate works correctly for two complex exps", {
     ss <- ssa(v, L = L)
     par <- parestimate(ss, groups = list(exps = 1:2),
                        solve.method = solve.method)
+		print(par)
+		plot(par)
     roots <- par$roots
     expect_true(is_multisets_approx_equal(roots, c(lm1, lm2)),
                 label = sprintf("Est. ch. roots for two complex exp (%f+i%f, %f+i%f) is correct (method = %s)",
