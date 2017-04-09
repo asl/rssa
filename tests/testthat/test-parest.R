@@ -83,6 +83,68 @@ test_that("parestimate works correctly for two sines in shaped case", {
   }
 })
 
+test_that("parestimate works correctly for two sines in MSSA", {
+  r <- 4
+  N1 <- 80
+  N2 <- 85
+  N3 <- 78
+  L <- 15
+  T1 <- 6
+  T2 <- 11
+  v1 <- sin(2 * pi * (1:N1) / T1) + sin(2 * pi * (1:N1) / T2)
+  v2 <- sin(2 * pi * (1:N2) / T1) + sin(2 * pi * (1:N2) / T2)
+  v3 <- sin(2 * pi * (1:N3) / T1) + sin(2 * pi * (1:N3) / T2)
+
+  ss <- ssa(list(v1, v2, v3), L = L)
+  for (solve.method in c("ls", "tls")) {
+		for (subspace in c("column", "row")) {
+			par <- parestimate(ss, groups = list(sines = 1:4),
+												 subspace = subspace,
+												 solve.method = solve.method)
+			print(par)
+			plot(par)
+			mu <- par$moduli * exp(pi * 2i / par$periods)
+			expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
+
+			expect_true(is_multisets_approx_equal(mu, expectred.mu),
+									label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct", T1, T2))
+		}
+  }
+})
+
+test_that("parestimate works correctly for two sines in shaped MSSA", {
+  r <- 4
+  N1 <- 80
+  N2 <- 85
+  N3 <- 78
+  L <- 15
+  T1 <- 6
+  T2 <- 11
+  v1 <- sin(2 * pi * (1:N1) / T1) + sin(2 * pi * (1:N1) / T2)
+  v2 <- sin(2 * pi * (1:N2) / T1) + sin(2 * pi * (1:N2) / T2)
+  v3 <- sin(2 * pi * (1:N3) / T1) + sin(2 * pi * (1:N3) / T2)
+
+	v1[30:32] <- NA
+	v2[40] <- NA
+	v3[22] <- NA
+
+  ss <- ssa(list(v1, v2, v3), L = L)
+  for (solve.method in c("ls", "tls")) {
+		for (subspace in c("column", "row")) {
+			par <- parestimate(ss, groups = list(sines = 1:4),
+												 subspace = subspace,
+												 solve.method = solve.method)
+			print(par)
+			plot(par)
+			mu <- par$moduli * exp(pi * 2i / par$periods)
+			expectred.mu <- exp(pi * 2i / c(T1, -T1, T2, -T2))
+
+			expect_true(is_multisets_approx_equal(mu, expectred.mu),
+									label = sprintf("Est. ch. roots for sum of sines with periods %3.1f and %3.1f are correct", T1, T2))
+		}
+  }
+})
+
 test_that("parestimate works correctly for two sines in circular case", {
   r <- 4
   N <- 40
