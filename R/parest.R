@@ -293,16 +293,33 @@ parestimate.cssa <- parestimate.1d.ssa
          function(i) diag(qr.solve(Tinv, Zs[[i]] %*% Tinv)))
 }
 
+# TODO Use a solution of assignment problem
+.simple.assignment <- function(mx) {
+  mx <- as.matrix(mx)
+  stopifnot(ncol(mx) == nrow(mx))
+  d <- nrow(mx)
+  stopifnot(all(mx > -Inf))
+  res <- rep(0, d)
+  for (k in seq_len(d)) {
+    maxij <- which(mx  == max(mx), arr.ind = TRUE)[1, ]
+    res[maxij[1]] <- maxij[2]
+    mx[maxij[1], ] <- -Inf
+    mx[, maxij[2]] <- -Inf
+  }
+
+  res
+}
+
 .est.exp.memp.new <- function(Zs, beta = 8) {
   Z <- .matrix.linear.combination(Zs, beta)
   Ze <- eigen(Z)
   Zse <- lapply(Zs, eigen, symmetric = FALSE)
   Ps <- lapply(seq_along(Zs),
-               function(i) max.col(t(abs(qr.solve(Ze$vectors, Zse[[i]]$vectors)))))  # TODO Use assignment problem here
+               function(i) .simple.assignment(t(abs(qr.solve(Ze$vectors, Zse[[i]]$vectors)))))
 
-  # for (P in Ps) {
-  #   stopifnot(length(P) == length(unique(P)))
-  # }
+  for (P in Ps) {
+    stopifnot(length(P) == length(unique(P)))
+  }
 
   lapply(seq_along(Zs),
          function(i) Zse[[i]]$values[Ps[[i]]])
