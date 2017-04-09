@@ -428,7 +428,7 @@ parestimate.nd.ssa <- function(x, groups,
     span <- .colspan
     wmask <- .wmask(x)
   } else if (identical(subspace, "row")) {
-    span <- .rowspan
+    span <- function(...) Conj(.rowspan(...))  # TODO Mb include it into the .rowspan method?
     wmask <- .fmask(x)
   }
 
