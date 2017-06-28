@@ -78,7 +78,7 @@ tls.solve <- function(A, B) {
   n <- length(v)
   k <- k %% n
   if (k) {
-    v <- c(v[(k + 1) : n], v[1 : k])
+    v <- c(v[(k + 1):n], v[1:k])
 
   }
 
