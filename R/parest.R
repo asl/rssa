@@ -144,15 +144,11 @@ parestimate.esprit <- function(U,
                                wmask = NULL,
                                circular = FALSE,
                                normalize = FALSE,
-                               method = c("esprit-ls", "esprit-tls")) {
-  method <- match.arg(method)
+                               solve.method = c("ls", "tls")) {
+  solve.method <- match.arg(solve.method)
 
   if (is.null(wmask))
     wmask <- rep(TRUE, nrow(U))
-
-  solve.method <- switch(method,
-                         `esprit-ls` = "ls",
-                         `esprit-tls` = "tls")
 
   Z <- .shift.matrix(U,
                      wmask = wmask,
@@ -216,7 +212,7 @@ parestimate.esprit <- function(U,
 }
 
 parestimate.1d.ssa <- function(x, groups,
-                               method = c("esprit", "pairs", "esprit-ls", "esprit-tls"),
+                               method = c("esprit", "pairs"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
                                dimensions = NULL,
@@ -224,19 +220,7 @@ parestimate.1d.ssa <- function(x, groups,
                                ...,
                                drop = TRUE) {
   method <- match.arg(method)
-
-  if (method %in% c("esprit-ls", "esprit-tls")) {
-    warning(sprintf("%s value for `method' argument is depricated. Use argument `solve.method' instead",
-                    method))
-
-    if (!missing(solve.method)) {
-      warning("passed `solve.method' value will be ignored")
-    }
-
-    solve.method <- strsplit(method, split = "-")[[1]][2]
-  } else {
-    solve.method <- match.arg(solve.method)
-  }
+  solve.method <- match.arg(solve.method)
 
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
@@ -384,9 +368,7 @@ parestimate.cssa <- parestimate.1d.ssa
 }
 
 parestimate.nd.ssa <- function(x, groups,
-                               method = c("esprit",
-                                          "esprit-diag-ls", "esprit-diag-tls",
-                                          "esprit-memp-ls", "esprit-memp-tls"),
+                               method = c("esprit"),
                                subspace = c("column", "row"),
                                normalize.roots = NULL,
                                dimensions = NULL,
@@ -396,26 +378,9 @@ parestimate.nd.ssa <- function(x, groups,
                                ...,
                                drop = TRUE) {
   method <- match.arg(method)
-
-  if (!identical(method, "esprit")) {
-    warning(sprintf("%s value for `method' argument is depricated. Use arguments `solve.method' and `pairing.method' instead",
-                    method))
-
-    if (!missing(solve.method)) {
-      warning("passed `solve.method' value will be ignored")
-    }
-
-    if (!missing(pairing.method)) {
-      warning("passed `pairing.method' value will be ignored")
-    }
-
-    splitted.method <- strsplit(method, split="-")[[1]]
-    pairing.method <- splitted.method[2]
-    solve.method <- splitted.method[3]
-  } else {
-    solve.method <- match.arg(solve.method)
-    pairing.method <- match.arg(pairing.method)
-  }
+  stopifnot(identical(method, "esprit"))
+  solve.method <- match.arg(solve.method)
+  pairing.method <- match.arg(pairing.method)
 
   if (missing(groups))
     groups <- seq_len(min(nsigma(x), nu(x)))
