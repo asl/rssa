@@ -23,7 +23,7 @@ Lcor <- function(F, L, circular = FALSE) {
   storage.mode(F) <- "double"
   storage.mode(L) <- "integer"
   storage.mode(circular) <- "logical"
-  .Call("Lcor", F, L, circular)
+  .Call("Lcor_", F, L, circular)
 }
 
 new.tmat <- function(F, L = (N + 1) %/% 2,
