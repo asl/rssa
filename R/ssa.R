@@ -56,11 +56,6 @@
   svd.method
 }
 
-new.ssa <- function(...) {
-  warning("`new.ssa' method is deprecated, use `ssa' instead")
-  ssa(...)
-}
-
 ssa <- function(x,
                 L = (N + 1) %/% 2,
                 neig = NULL,

@@ -476,46 +476,55 @@ bforecast.1d.ssa <- function(x, groups,
 
 predict.1d.ssa <- function(object,
                            groups, len = 1,
-                           method = c("recurrent", "vector", "bootstrap-recurrent", "bootstrap-vector"),
+                           method = c("recurrent", "vector"),
+                           bootstrap = FALSE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
   dots <- list(...)
 
   # Calculate a forecast
-  switch (method,
-          recurrent = do.call(rforecast, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
-          vector = do.call(vforecast, c(list(object, groups = groups, len = len, cache = cache), dots)),
-          'bootstrap-recurrent' =  do.call(bforecast, c(list(object, type = "recurrent", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
-          'bootstrap-vector' =  do.call(bforecast, c(list(object, type = "vector", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)))
+  if (identical(method, "recurrent")) {
+      if (bootstrap)
+          do.call(bforecast, c(list(object, type = "recurrent", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+      else
+          do.call(rforecast, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+  } else if (identical(method, "vector")) {
+      if (bootstrap)
+          do.call(bforecast, c(list(object, type = "vector", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+      else
+          do.call(vforecast, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+
+  }
 }
 
 predict.mssa <- function(object,
                          groups, len = 1,
-                         method = c("recurrent-column", "recurrent-row", "vector-column", "vector-row"),
+                         method = c("recurrent", "vector"),
+                         direction = c("column", "row"),
                          ...,
                          drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
+  direction <- match.arg(direction)
   dots <- list(...)
 
   # Calculate a forecast
   switch (method,
-          'recurrent-row' = do.call(rforecast, c(list(object, direction = "row", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
-          'recurrent-column' = do.call(rforecast, c(list(object, direction = "column", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
-          'vector-row' = do.call(vforecast, c(list(object, direction = "row", groups = groups, len = len, cache = cache), dots)),
-          'vector-column' = do.call(vforecast, c(list(object, direction = "column", groups = groups, len = len, cache = cache), dots)))
+          'recurrent' = do.call(rforecast, c(list(object, direction = direction, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots)),
+          'vector' = do.call(vforecast, c(list(object, direction = direction, groups = groups, len = len, cache = cache), dots)))
 }
 
 forecast.1d.ssa <- function(object,
                             groups, len = 1,
-                            method = c("recurrent", "vector", "bootstrap-recurrent", "bootstrap-vector"),
+                            method = c("recurrent", "vector"),
+                            bootstrap = FALSE,
                             ...,
                             drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
   dots <- list(...)
 
   # Perform the forecast
-  f <- do.call(predict, c(list(object, groups = groups, len = len, method = method, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+  f <- do.call(predict, c(list(object, groups = groups, len = len, method = method, bootstrap = bootstrap, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
 
   # Now perform a "cast" to forecast object
   F <- .get(object, "F")
@@ -530,14 +539,12 @@ forecast.1d.ssa <- function(object,
     res <- list(model = object,
                 method = switch(method,
                                 recurrent = "SSA (recurrent)",
-                                vector = "SSA (vector)",
-                                `bootstrap-recurrent` = "SSA (bootstrap recurrent)",
-                                `bootstrap-vector` = "SSA (bootstrap vector)"),
+                                vector = "SSA (vector)"),
                 fitted = r[[1]],
                 residuals = residuals(r),
                 x = F)
     # Handle bootstrap forecast separately
-    if (method %in% c( "bootstrap-recurrent", "bootstrap-vector")) {
+    if (bootstrap) {
       nbnd <- (ncol(f) - 1) / 2
       res$mean  <- f[, "Value"]
       res$lower <- f[, seq(from = 2, by = 1, length.out = nbnd)]
