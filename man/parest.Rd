@@ -3,7 +3,8 @@
 \alias{parestimate.1d.ssa}
 \alias{parestimate.toeplitz.ssa}
 \alias{parestimate.mssa}
-\alias{parestimate.2d.ssa}
+\alias{parestimate.cssa}
+\alias{parestimate.nd.ssa}
 \title{Estimate periods from (set of) eigenvectors}
 
 \description{
@@ -11,25 +12,43 @@
 }
 
 \usage{
-\method{parestimate}{1d.ssa}(x, groups, method = c("esprit-ls", "esprit-tls", "pairs"),
+\method{parestimate}{1d.ssa}(x, groups, method = c("esprit", "pairs"),
             subspace = c("column", "row"),
             normalize.roots = NULL,
-            \dots, drop = TRUE)
-\method{parestimate}{toeplitz.ssa}(x, groups, method = c("esprit-ls", "esprit-tls", "pairs"),
-            subspace = c("column", "row"),
-            normalize.roots = NULL,
-            \dots, drop = TRUE)
-\method{parestimate}{mssa}(x, groups, method = c("esprit-ls", "esprit-tls", "pairs"),
-            subspace = c("column", "row"),
-            normalize.roots = NULL,
-            \dots, drop = TRUE)
-\method{parestimate}{2d.ssa}(x, groups,
-            method = c("esprit-diag-ls", "esprit-diag-tls",
-                       "esprit-memp-ls", "esprit-memp-tls"),
-            subspace = c("column", "row"),
-            normalize.roots = NULL,
+            dimensions = NULL,
+            solve.method = c("ls", "tls"),
             \dots,
+            drop = TRUE)
+\method{parestimate}{toeplitz.ssa}(x, groups, method = c("esprit", "pairs"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
+            dimensions = NULL,
+            solve.method = c("ls", "tls"),
+            \dots,
+            drop = TRUE)
+\method{parestimate}{mssa}(x, groups, method = c("esprit", "pairs"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
+            dimensions = NULL,
+            solve.method = c("ls", "tls"),
+            \dots,
+            drop = TRUE)
+\method{parestimate}{cssa}(x, groups, method = c("esprit", "pairs"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
+            dimensions = NULL,
+            solve.method = c("ls", "tls"),
+            \dots,
+            drop = TRUE)
+\method{parestimate}{nd.ssa}(x, groups,
+            method = c("esprit"),
+            subspace = c("column", "row"),
+            normalize.roots = NULL,
+            dimensions = NULL,
+            solve.method = c("ls", "tls"),
+            pairing.method = c("diag", "memp"),
             beta = 8,
+            \dots,
             drop = TRUE)
 }
 
@@ -39,20 +58,22 @@
   \item{\dots}{further arguments passed to 'decompose' routine, if
     necessary}
   \item{drop}{logical, if 'TRUE' then the result is coerced to lowest
-    dimension, when possible (length of 'groups' is one)}
-  \item{method}{estimation method. For 1dSSA, Toeplitz SSA, and MSSA:
-      'esprit-ls' for least-squares 1D-ESPRIT,
-      'esprit-tls' for total-least-squares 1D-ESPRIT, and
+    dimension, when possible (length of \code{groups} is one)}
+  \item{dimensions}{a vector of dimension indices to perform ESPRIT along. 'NULL' means all dimensions.}
+  \item{method}{For 1D-SSA, Toeplitz SSA, and MSSA:
+      parameter estimation method,
+      'esprit' for 1D-ESPRIT,
       'pairs' for rough estimation based on pair of eigenvectors.
-    For 2dSSA: 'esprit-diag-ls' or 'esprit-diag-tls' for `Two-Dimensional ESPRIT Method'
-    (2D-ESPRIT diagonalization) and
-    'esprit-memp-ls' or `esprit-memp-tls' for `MEMP with an improved pairing step'.
-    Suffix '-ls' or '-tls' means approximate matrix equation solve method, as in 1D-ESPRIT case.}
+      For nD-SSA: parameter estimation method. For now only 'esprit' is supported.}
+  \item{solve.method}{approximate matrix equation solving method, 'ls' for least-squares, 'tls' for total-least-squares.}
+  \item{pairing.method}{method for esprit roots pairing, 'diag' for `2D-ESPRIT diagonalization', 'memp' for ``MEMP with an
+    improved pairing step'}
   \item{subspace}{which subspace will be used for parameter estimation}
   \item{normalize.roots}{logical vector or 'NULL', force signal roots to lie on unit circle.
     'NULL' means automatic selection: normalize iff circular topology OR Toeplitz SSA used}
-  \item{beta}{In 2D-ESPRIT, coefficient in convex linear combination of
-    shifted matrices.}
+  \item{beta}{In nD-ESPRIT, coefficient(s) in convex linear combination of
+    shifted matrices. The length of \code{beta} should be \code{ndim - 1}, where \code{ndim} is the number of independent dimensions.
+    If only one value is passed, it is expanded to a geometric progression.}
 }
 
 \value{
@@ -67,8 +88,8 @@
 
   For 'method' = 'pairs' all moduli are set equal to 1 and all rates equal to 0.
 
-  For 2D-SSA, a list of objects of S3-class `fdimpars.2d'. Each object
-  is unnamed list of two `fdimpars.1d' objects, each for corresponding
+  For nD-SSA, a list of objects of S3-class `fdimpars.nd'. Each object
+  is named list of \code{n} `fdimpars.1d' objects, each for corresponding
   spatial coordinate.
 
   In all cases elements of the list have the same names as elements of
@@ -99,7 +120,7 @@
   is considered.
 
   Also `print' and `plot' methods are implemented for classes
-  `fdimpars.1d' and `fdimpars.2d'.
+  `fdimpars.1d' and `fdimpars.nd'.
 }
 
 \references{
@@ -129,7 +150,7 @@ s <- ssa(co2, neig = 20)
 # Estimate the periods from 2nd and 3rd eigenvectors using 'pairs' method
 print(parestimate(s, groups = list(c(2, 3)), method = "pairs"))
 # Estimate the peroids from 2nd, 3rd, 5th and 6th eigenvectors using ESPRIT
-pe <- parestimate(s, groups = list(c(2, 3, 5, 6)), method = "esprit-ls")
+pe <- parestimate(s, groups = list(c(2, 3, 5, 6)), method = "esprit")
 print(pe)
 plot(pe)
 

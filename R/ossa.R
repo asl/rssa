@@ -458,6 +458,22 @@ iossa.ssa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
 }
 
 
+.wmask <- function(x) {
+  wmask <- .get(x, "wmask", NULL)
+  if (!is.null(wmask)) {
+    return(wmask)
+  }
+
+  L <- x$window
+
+  if (inherits(x, "mssa")) {
+    L <- c(L, 1)
+  }
+
+  array(TRUE, dim = L)
+}
+
+
 .fmask <- function(x) {
   fmask <- .get(x, "fmask", NULL)
   if (!is.null(fmask)) {
@@ -470,7 +486,6 @@ iossa.ssa <- function(x, nested.groups, ..., tol = 1e-5, kappa = 2,
   if (inherits(x, "mssa")) {
     n <- length(N)
     N <- N[1]
-    L <- L[1]
     K <- ifelse(x$circular, N, N - L + 1)
     K <- c(K, n)
   } else {
