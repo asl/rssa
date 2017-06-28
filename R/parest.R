@@ -192,7 +192,7 @@ parestimate.esprit <- function(U,
     span <- .colspan
   } else if (identical(subspace, "row")) {
     if (inherits(x, "mssa")) {
-      stop("Row space `pairs' parameter estimation method is not implemented for MSSA yet")
+      stop("row space `pairs' parameter estimation method is not implemented for MSSA yet")
     }
     span <- .rowspan
   }
@@ -230,7 +230,7 @@ parestimate.1d.ssa <- function(x, groups,
                     method))
 
     if (!missing(solve.method)) {
-      warning("Passed `solve.method' value will be ignored")
+      warning("passed `solve.method' value will be ignored")
     }
 
     solve.method <- strsplit(method, split = "-")[[1]][2]
@@ -344,7 +344,7 @@ parestimate.cssa <- parestimate.1d.ssa
   }
 
   if (max(dimensions) > length(d)) {
-    stop(sprintf("Some of dimension indices passed exceed the actual number of object dimensions (%d)",
+    stop(sprintf("some of input dimension indices exceed the actual number of object dimensions (%d)",
                  length(d)))
   }
 
@@ -402,11 +402,11 @@ parestimate.nd.ssa <- function(x, groups,
                     method))
 
     if (!missing(solve.method)) {
-      warning("Passed `solve.method' value will be ignored")
+      warning("passed `solve.method' value will be ignored")
     }
 
     if (!missing(pairing.method)) {
-      warning("Passed `pairing.method' value will be ignored")
+      warning("passed `pairing.method' value will be ignored")
     }
 
     splitted.method <- strsplit(method, split="-")[[1]]
@@ -439,7 +439,7 @@ parestimate.nd.ssa <- function(x, groups,
   if (is.null(normalize.roots))
     normalize.roots <- x$circular | inherits(x, "toeplitz.ssa")
   if (length(normalize.roots) > .dim(x))
-    warning("Incorrect argument length: length(normalize.roots) > .dim(x), only leading values will be used")
+    warning("incorrect argument length: length(normalize.roots) > .dim(x), only leading values will be used")
   normalize.roots <- rep(normalize.roots, .dim(x))[seq_len(.dim(x))]
 
   out <- list()
