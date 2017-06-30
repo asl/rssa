@@ -140,11 +140,11 @@ shift.matrix <- function(U, ...) {
   solver(lm.left, lm.right)
 }
 
-.parestimate.pairs.ssa <- function(x, groups,
-                                   subspace = c("column", "row"),
-                                   normalize.roots = NULL,
-                                   ...,
-                                   drop) {
+.pairs <- function(x, groups,
+                   subspace = c("column", "row"),
+                   normalize.roots = NULL,
+                   ...,
+                   drop) {
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
 
@@ -208,11 +208,11 @@ parestimate.1d.ssa <- function(x, groups,
     normalize.roots <- x$circular || inherits(x, "toeplitz.ssa")
 
   if (identical(method, "pairs")) {
-    .parestimate.pairs.ssa(x, groups = groups,
-                           subspace = subspace,
-                           normalize.roots = normalize.roots,
-                           ...,
-                           drop = drop)
+    .pairs(x, groups = groups,
+           subspace = subspace,
+           normalize.roots = normalize.roots,
+           ...,
+           drop = drop)
   } else if (identical(method, "esprit")) {
     parestimate.nd.ssa(x, groups = groups,
                        subspace = subspace,
@@ -288,14 +288,14 @@ parestimate.cssa <- parestimate.1d.ssa
          function(i) Zse[[i]]$values[Ps[[i]]])
 }
 
-.parestimate.esprit.nd <- function(U,
-                                   wmask,
-                                   circular,
-                                   normalize,
-                                   dimensions = NULL,
-                                   solve.method = c("ls", "tls"),
-                                   pairing.method = c("diag", "memp"),
-                                   beta = 8) {
+.esprit <- function(U,
+                    wmask,
+                    circular,
+                    normalize,
+                    dimensions = NULL,
+                    solve.method = c("ls", "tls"),
+                    pairing.method = c("diag", "memp"),
+                    beta = 8) {
   wmask <- as.array(wmask)
   d <- dim(wmask)
 
@@ -389,14 +389,14 @@ parestimate.nd.ssa <- function(x, groups,
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
-    out[[i]] <- .parestimate.esprit.nd(span(x, group),
-                                       wmask = wmask,
-                                       circular = x$circular,
-                                       normalize = normalize.roots,
-                                       solve.method = solve.method,
-                                       pairing.method = pairing.method,
-                                       beta = beta,
-                                       dimensions = dimensions)
+    out[[i]] <- .esprit(span(x, group),
+                        wmask = wmask,
+                        circular = x$circular,
+                        normalize = normalize.roots,
+                        solve.method = solve.method,
+                        pairing.method = pairing.method,
+                        beta = beta,
+                        dimensions = dimensions)
   }
 
   names(out) <- .group.names(groups)
