@@ -275,7 +275,7 @@ parestimate.cssa <- parestimate.1d.ssa
 
 .est.exp.memp.new <- function(Zs, beta = 8) {
   Z <- .matrix.linear.combination(Zs, beta)
-  Ze <- eigen(Z)
+  Ze <- eigen(Z, symmetric = FALSE)
   Zse <- lapply(Zs, eigen, symmetric = FALSE)
   Ps <- lapply(seq_along(Zs),
                function(i) .simple.assignment(t(abs(qr.solve(Ze$vectors, Zse[[i]]$vectors)))))
