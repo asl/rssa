@@ -268,6 +268,8 @@ parestimate.cssa <- parestimate.1d.ssa
     mx[, maxij[2]] <- -Inf
   }
 
+  stopifnot(isTRUE(all.equal(sort(res), seq_len(ncol(mx)))))  # Ensure res is permutation
+
   res
 }
 
