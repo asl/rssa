@@ -271,6 +271,11 @@ rforecast.mssa <- function(x, groups, len = 1,
   invisible(out)
 }
 
+.shift.matrix.1d <- function(U, ...) {
+  wmask <- rep(TRUE, nrow(U))
+  .shift.matrix(U, wmask, ndim = 1, ...)
+}
+
 vforecast.1d.ssa <- function(x, groups, len = 1,
                              only.new = TRUE,
                              ...,
@@ -304,7 +309,7 @@ vforecast.1d.ssa <- function(x, groups, len = 1,
     Vet <- if (is.null(V)) calc.v(x, idx = group) else V[, group, drop = FALSE]
     Z <- rbind(t(sigma[group] * t(Vet)), matrix(NA, len + L - 1, length(group)))
 
-    P <- shift.matrix(Uet)
+    P <- Conj(.shift.matrix.1d(Uet))
 
     for (j in (K + 1):(K + len + L - 1)) {
       Z[j, ] <- P %*% Z[j - 1, ]

@@ -119,11 +119,6 @@ tls.solve <- function(A, B) {
   list(left.mask = lind[mask], right.mask = rind[mask])
 }
 
-shift.matrix <- function(U, ...) {
-  wmask <- rep(TRUE, nrow(U))
-  Conj(.shift.matrix(U, wmask, ndim = 1, ...))
-}
-
 .shift.matrix <- function(U, wmask,
                           ndim,
                           circular = FALSE,
