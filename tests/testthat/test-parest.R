@@ -3,6 +3,29 @@ library(Rssa);
 source(system.file("extdata", "common.test.methods.R", package = "Rssa"));
 context("Signal parameters' estimation");
 
+parestimate.esprit <- function(U,
+                               wmask = NULL,
+                               circular = FALSE,
+                               normalize = FALSE,
+                               solve.method = c("ls", "tls")) {
+  solve.method <- match.arg(solve.method)
+
+  if (is.null(wmask))
+    wmask <- rep(TRUE, nrow(U))
+
+  Z <- .shift.matrix(U,
+                     wmask = wmask,
+                     ndim = 1,
+                     circular = circular,
+                     solve.method = solve.method)
+
+  r <- eigen(Z, only.values = TRUE)$values
+
+  if (normalize) r <- r / abs(r)
+
+  roots2pars(r)
+}
+
 # test_that("parestimate.esprit works correctly for polynomial trends", {
 # for (d in 0:3) {
 #   N <- 40;
