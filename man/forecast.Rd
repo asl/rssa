@@ -17,24 +17,28 @@
          groups, len = 1,
          method = c("recurrent", "vector"),
          bootstrap = FALSE,
+         only.intervals = FALSE,
          \dots,
          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{forecast}{toeplitz.ssa}(object,
          groups, len = 1,
          method = c("recurrent", "vector"),
          bootstrap = FALSE,
+         only.intervals = FALSE,
          \dots,
          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{predict}{1d.ssa}(object,
         groups, len = 1,
         method = c("recurrent", "vector"),
         bootstrap = FALSE,
+        only.intervals = FALSE,
         \dots,
         drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{predict}{toeplitz.ssa}(object,
         groups, len = 1,
-         method = c("recurrent", "vector"),
-         bootstrap = FALSE,
+        method = c("recurrent", "vector"),
+        bootstrap = FALSE,
+        only.intervals = FALSE,
         \dots,
         drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{predict}{mssa}(object,
@@ -52,6 +56,9 @@
   \item{method}{method of forecasting to be used}
   \item{bootstrap}{logical, if 'TRUE' then bootstrap confidence bounds
     are calculated}
+  \item{only.intervals}{logical, if 'TRUE' then bootstrap method is used
+    for confidence bounds only, otherwise --- mean bootstrap forecast is
+    returned as well}
   \item{direction}{direction of forecast in multichannel SSA case, "column"
     stands for so-called L-forecast and "row" stands for K-forecast}
   \item{\dots}{further arguments passed for forecast routines

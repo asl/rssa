@@ -431,6 +431,7 @@ vforecast.mssa <- function(x, groups, len = 1,
 bforecast.1d.ssa <- function(x, groups,
                              len = 1, R = 100, level = 0.95,
                              type = c("recurrent", "vector"),
+                             only.intervals = FALSE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   type <- match.arg(type)
@@ -463,7 +464,16 @@ bforecast.1d.ssa <- function(x, groups,
 
     # Finally, calculate the statistics of interest
     cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
-    out[[i]] <- .apply.attributes(x, cbind(Value = rowMeans(bF), t(cf)),
+    val <-
+      if (only.intervals)
+        do.call(forecast.fun,
+                c(list(x,
+                       groups = list(group), len = len, drop = TRUE, only.new = TRUE),
+                  dots))
+      else
+          rowMeans(bF)
+
+    out[[i]] <- .apply.attributes(x, cbind(Value = val, t(cf)),
                                   fixup = TRUE, drop = drop.attributes)
   }
 
@@ -478,23 +488,18 @@ predict.1d.ssa <- function(object,
                            groups, len = 1,
                            method = c("recurrent", "vector"),
                            bootstrap = FALSE,
+                           only.intervals = FALSE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
   dots <- list(...)
 
   # Calculate a forecast
-  if (identical(method, "recurrent")) {
-      if (bootstrap)
-          do.call(bforecast, c(list(object, type = "recurrent", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
-      else
-          do.call(rforecast, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
-  } else if (identical(method, "vector")) {
-      if (bootstrap)
-          do.call(bforecast, c(list(object, type = "vector", groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
-      else
-          do.call(vforecast, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
-
+  if (bootstrap) {
+      do.call(bforecast, c(list(object, type = method, groups = groups, len = len, only.intervals = only.intervals, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+  } else {
+      forecast.fun <- if (identical(method, "recurrent")) rforecast else vforecast
+      do.call(forecast.fun, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
   }
 }
 
@@ -518,13 +523,18 @@ forecast.1d.ssa <- function(object,
                             groups, len = 1,
                             method = c("recurrent", "vector"),
                             bootstrap = FALSE,
+                            only.intervals = FALSE,
                             ...,
                             drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
   dots <- list(...)
 
   # Perform the forecast
-  f <- do.call(predict, c(list(object, groups = groups, len = len, method = method, bootstrap = bootstrap, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+  f <- do.call(predict, c(list(object,
+                               groups = groups,
+                               len = len, method = method,
+                               bootstrap = bootstrap, only.intervals = only.intervals,
+                               drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
 
   # Now perform a "cast" to forecast object
   F <- .get(object, "F")
