@@ -14,14 +14,14 @@
 
 \usage{
 \method{forecast}{1d.ssa}(object,
-         groups, len = 1,
+         groups, h = 1,
          method = c("recurrent", "vector"),
          bootstrap = FALSE,
          only.intervals = FALSE,
          \dots,
          drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{forecast}{toeplitz.ssa}(object,
-         groups, len = 1,
+         groups, h = 1,
          method = c("recurrent", "vector"),
          bootstrap = FALSE,
          only.intervals = FALSE,
@@ -52,7 +52,7 @@
 \arguments{
   \item{object}{SSA object holding the decomposition}
   \item{groups}{list, the grouping of eigentriples to be used in the forecast}
-  \item{len}{the desired length of the forecasted series}
+  \item{h,len}{the desired length of the forecasted series}
   \item{method}{method of forecasting to be used}
   \item{bootstrap}{logical, if 'TRUE' then bootstrap confidence bounds
     are calculated}

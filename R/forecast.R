@@ -520,7 +520,7 @@ predict.mssa <- function(object,
 }
 
 forecast.1d.ssa <- function(object,
-                            groups, len = 1,
+                            groups, h = 1,
                             method = c("recurrent", "vector"),
                             bootstrap = FALSE,
                             only.intervals = FALSE,
@@ -528,6 +528,11 @@ forecast.1d.ssa <- function(object,
                             drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
   dots <- list(...)
+  if (is.element("len", names(dots))) {
+    len <- dots$len
+    dots$len <- NULL
+  } else
+    len <- h
 
   # Perform the forecast
   f <- do.call(predict, c(list(object,
