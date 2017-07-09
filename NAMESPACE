@@ -62,7 +62,9 @@ export(clone,
        gapfill,
        summarize.gaps,
 # Auto-grouping routines
-       grouping.auto
+       grouping.auto,
+       grouping.auto.wcor,
+       grouping.auto.pgram
        )
 
 S3method("clone", ssa)
