@@ -12,10 +12,14 @@
 
 \usage{
 \method{bforecast}{1d.ssa}(x, groups, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), only.intervals = FALSE, \dots,
+          type = c("recurrent", "vector"),
+          interval = c("confidence", "prediction"),
+          only.intervals = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 \method{bforecast}{toeplitz.ssa}(x, groups, len = 1, R = 100, level = 0.95,
-          type = c("recurrent", "vector"), only.intervals = FALSE, \dots,
+          type = c("recurrent", "vector"),
+          interval = c("confidence", "prediction"),
+          only.intervals = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
 
@@ -27,6 +31,7 @@
   \item{level}{vector of confidence levels for bounds}
   \item{type}{the type of forecast method to be used during
     bootstrapping}
+  \item{interval}{type of interval calculation}
   \item{only.intervals}{logical, if 'TRUE' then bootstrap method is used
     for confidence bounds only, otherwise --- mean bootstrap forecast is
     returned as well}

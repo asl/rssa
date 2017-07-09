@@ -431,10 +431,12 @@ vforecast.mssa <- function(x, groups, len = 1,
 bforecast.1d.ssa <- function(x, groups,
                              len = 1, R = 100, level = 0.95,
                              type = c("recurrent", "vector"),
+                             interval = c("confidence", "prediction"),
                              only.intervals = FALSE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   type <- match.arg(type)
+  interval <- match.arg(interval)
   dots <- list(...)
   if (missing(groups))
     groups <- list(1:min(nsigma(x), nu(x)))
@@ -464,6 +466,12 @@ bforecast.1d.ssa <- function(x, groups,
 
     # Finally, calculate the statistics of interest
     cf <- apply(bF, 1, quantile, probs = c((1-level) / 2, (1 + level) / 2))
+    if (identical(interval, "prediction")) {
+      res <- residuals(r)
+      lower <- quantile(res, probs = c((1-level) / 2))
+      upper <- quantile(res, probs = c((1+level) / 2))
+      cf <- sweep(cf, 1, c(-lower, +upper), FUN = "+")
+    }
     val <-
       if (only.intervals)
         do.call(forecast.fun,
@@ -487,19 +495,24 @@ bforecast.1d.ssa <- function(x, groups,
 predict.1d.ssa <- function(object,
                            groups, len = 1,
                            method = c("recurrent", "vector"),
-                           bootstrap = FALSE,
-                           only.intervals = FALSE,
+                           interval = c("none", "confidence", "prediction"),
+                           only.intervals = TRUE,
                            ...,
                            drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
+  interval <- match.arg(interval)
   dots <- list(...)
 
   # Calculate a forecast
-  if (bootstrap) {
-      do.call(bforecast, c(list(object, type = method, groups = groups, len = len, only.intervals = only.intervals, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+  if (identical(interval, "none")) {
+    forecast.fun <- if (identical(method, "recurrent")) rforecast else vforecast
+    do.call(forecast.fun, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
   } else {
-      forecast.fun <- if (identical(method, "recurrent")) rforecast else vforecast
-      do.call(forecast.fun, c(list(object, groups = groups, len = len, drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
+    do.call(bforecast, c(list(object,
+                              type = method, interval = interval,
+                              groups = groups, len = len,
+                              only.intervals = only.intervals,
+                              drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
   }
 }
 
@@ -522,11 +535,12 @@ predict.mssa <- function(object,
 forecast.1d.ssa <- function(object,
                             groups, h = 1,
                             method = c("recurrent", "vector"),
-                            bootstrap = FALSE,
-                            only.intervals = FALSE,
+                            interval = c("none", "confidence", "prediction"),
+                            only.intervals = TRUE,
                             ...,
                             drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
+  interval <- match.arg(interval)
   dots <- list(...)
   if (is.element("len", names(dots))) {
     len <- dots$len
@@ -538,7 +552,7 @@ forecast.1d.ssa <- function(object,
   f <- do.call(predict, c(list(object,
                                groups = groups,
                                len = len, method = method,
-                               bootstrap = bootstrap, only.intervals = only.intervals,
+                               interval = interval, only.intervals = only.intervals,
                                drop = drop, drop.attributes = drop.attributes, cache = cache), dots))
 
   # Now perform a "cast" to forecast object
@@ -559,7 +573,7 @@ forecast.1d.ssa <- function(object,
                 residuals = residuals(r),
                 x = F)
     # Handle bootstrap forecast separately
-    if (bootstrap) {
+    if (!identical(interval, "none")) {
       nbnd <- (ncol(f) - 1) / 2
       res$mean  <- f[, "Value"]
       res$lower <- f[, seq(from = 2, by = 1, length.out = nbnd)]
