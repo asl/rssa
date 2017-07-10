@@ -432,6 +432,7 @@ bforecast.1d.ssa <- function(x, groups,
                              len = 1, R = 100, level = 0.95,
                              type = c("recurrent", "vector"),
                              interval = c("confidence", "prediction"),
+                             only.new = TRUE,
                              only.intervals = FALSE,
                              ...,
                              drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
@@ -455,12 +456,12 @@ bforecast.1d.ssa <- function(x, groups,
       .set(s, "F", F)
       do.call(forecast.fun,
               c(list(s,
-                     groups = list(group), len = len, drop = TRUE, only.new = TRUE),
+                     groups = list(group), len = len, drop = TRUE, only.new = only.new),
                 dots))
     }
 
     # Do the actual bootstrap forecast
-    bF <- matrix(nrow = len, ncol = R)
+    bF <- matrix(nrow = if (only.new) len else len + x$length, ncol = R)
     bF[] <- replicate(R,
                       boot.forecast(r[[1]] + sample(res, replace = TRUE), x))
 
@@ -476,13 +477,14 @@ bforecast.1d.ssa <- function(x, groups,
       if (only.intervals)
         do.call(forecast.fun,
                 c(list(x,
-                       groups = list(group), len = len, drop = TRUE, only.new = TRUE),
+                       groups = list(group), len = len, drop = TRUE, only.new = only.new),
                   dots))
       else
           rowMeans(bF)
 
     out[[i]] <- .apply.attributes(x, cbind(Value = val, t(cf)),
-                                  fixup = TRUE, drop = drop.attributes)
+                                  fixup = TRUE, only.new = only.new,
+                                  drop = drop.attributes)
   }
 
   names(out) <- .group.names(groups)
@@ -541,12 +543,15 @@ forecast.1d.ssa <- function(object,
                             drop = TRUE, drop.attributes = FALSE, cache = TRUE) {
   method <- match.arg(method)
   interval <- match.arg(interval)
+
+  # Provide fixups
   dots <- list(...)
   if (is.element("len", names(dots))) {
     len <- dots$len
     dots$len <- NULL
   } else
     len <- h
+  dots$only.new <- TRUE
 
   # Perform the forecast
   f <- do.call(predict, c(list(object,
