@@ -157,6 +157,9 @@ S3method("summarize.gaps", "cssa")
 S3method("summarize.gaps", "toeplitz.ssa")
 S3method("fossa", "ssa")
 S3method("iossa", "ssa")
+S3method("grouping.auto.wcor", "ssa")
+S3method("grouping.auto.pgram", "1d.ssa")
+S3method("grouping.auto.pgram", "toeplitz.ssa")
 
 ## Default imports
 importFrom("grDevices", "colorRampPalette", "grey", "heat.colors")

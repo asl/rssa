@@ -470,7 +470,7 @@ bforecast.1d.ssa <- function(x, groups,
       res <- residuals(r)
       lower <- quantile(res, probs = c((1-level) / 2))
       upper <- quantile(res, probs = c((1+level) / 2))
-      cf <- sweep(cf, 1, c(-lower, +upper), FUN = "+")
+      cf <- sweep(cf, 1, c(lower, +upper), FUN = "+")
     }
     val <-
       if (only.intervals)
