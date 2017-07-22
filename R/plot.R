@@ -118,8 +118,7 @@ panel.factorvectors <- function(x, y, ssaobj, ..., ref = FALSE) {
     warning(sprintf("Elementary matrices are not F-orthogonal (max F-cor is %s). Contributions can be irrelevant",
                     format(isfcor, digits = 3)))
 
-  total <- wnorm(x)^2
-  round(100*x$sigma[idx]^2 / total, digits = 2)
+  round(100 * contributions(x, idx), digits = 2)
 }
 
 .plot.ssa.vectors <- function(x, ...)

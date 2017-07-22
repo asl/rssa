@@ -430,6 +430,10 @@ nsigma <- function(x) {
   length(.sigma(x))
 }
 
+contributions <- function(x, idx = 1:nsigma(x)) {
+  .sigma(x)[idx]^2 / wnorm(x)^2
+}
+
 is.shaped <- function(x) {
   ## Easy case: non-null masks in case of non-mssa
   if ((!is.null(x$wmask) || !is.null(x$fmask) || !is.null(x$weights)) && !inherits(x, "mssa"))

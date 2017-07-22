@@ -8,6 +8,7 @@
 \alias{nspecial.ssa}
 \alias{summary.ssa}
 \alias{$.ssa}
+\alias{contributions}
 
 \title{Properties of SSA object}
 
@@ -32,7 +33,7 @@ nv(x)
   \item{digits}{integer, used for number formatting}
   \item{\dots}{additional arguments affecting the summary produced}
   \item{name}{field of SSA object to extract. See 'Details' for list of
-  the fields}
+    the fields}
 }
 
 \details{
