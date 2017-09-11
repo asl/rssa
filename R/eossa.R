@@ -22,9 +22,6 @@
 
 # TODO use QR instead of SVD and make basis real before clustering and joining
 .clust.basis <- function(U, roots, k = NULL, h = NULL, order = FALSE) {
-  # # Conjugate roots with negative imaginary path
-  # roots[Im(roots) < 0] <- Conj(roots[Im(roots) < 0])
-
   # Reorder roots by their freqs
   ord <- order(abs(Arg(roots)))
   roots <- roots[ord]
