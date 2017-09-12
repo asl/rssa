@@ -37,22 +37,44 @@
 }
 
 \details{
-  TBD
+  EOSSA is an experimental signal separation method working in Nested Oblique SSA setting.
+  As opposed to \code{\link[Rssa:iossa]{iossa}},
+  this method does not require initial approximate decomposition.
+  Moreover, it can be used for initial decomposition construction for IOSSA.
+
+  EOSSA is motivated by parametric model of finite-dimensional signal,
+  however it does not exploit this model directly and does not estimate the parameters.
+  Therefore, it works for wider class of time series.
+  According to the experiments, it works for series that could be locally
+  approximated by a series of finite dimension, but at this moment there is no any theoretical results for this.
+
+  EOSSA constructs shift matrix estimation by the same way is in ESPRIT
+  (see \code{\link[Rssa:parestimate]{parestimate}}) method and
+  uses its eigenspace to build separating scalar products
+  (see \code{\link[Rssa:iossa]{iossa}} for more information about Oblique SSA decompositions).
+  Consequently, the method ideally separates signals of finite dimension with absence of noise.
+  With presence of noise it provides approximate results due to continuity.
+  The method performs eigenvectors clustering inside (for now \code{\link[stats:hclust]{hclust}} is used),
+  the number of components (argument \code{k}) should be passed.
 }
 
 \references{
-  TBD
+  Shlemov A. (2017): \emph{The method of signal separation using the eigenspaces of the shift matrices (in Russian)},
+  In Proceedings of the SPISOK-2017 conference, April 26--28, Saint Petersburg, Russia.
 }
 
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
   \code{\link[Rssa:ssa-object]{ssa-object}},
+  \code{\link[Rssa:parestimate]{ESPRIT}},
+  \code{\link[Rssa:iossa]{iossa}},
   \code{\link[Rssa:fossa]{fossa}},
   \code{\link[Rssa:owcor]{owcor}},
   \code{\link[Rssa:iossa.result]{iossa.result}}.
 }
 
 \examples{
+# Separability of three finite-dimensional series, EOSSA vs Basic SSA
 N <- 150
 L <- 70
 omega1 <- 0.065
@@ -64,7 +86,6 @@ F1.real <- 2*sin(2*pi*omega1*(1:N))
 F2.real <- 4*sin(2*pi*omega2*(1:N))
 F3.real <- sin(2*pi*omega3*(1:N))
 
-set.seed(42)
 noise <- rnorm(N, sd = sigma)
 F <- F1.real + F2.real + F3.real + noise
 
@@ -76,21 +97,19 @@ print(eoss)
 plot(ss, type = "series", groups = list(1:2, 3:4, 5:6))
 plot(eoss, type = "series", groups = eoss$iossa.groups)
 
-plot(reconstruct(ss, groups = list(1:2, 3:4, 5:6)), add.residuals=TRUE, plot.method="xyplot", main="",
-     xlab="")
+plot(reconstruct(ss, groups = list(1:2, 3:4, 5:6)), add.residuals = TRUE, plot.method = "xyplot", main = "",
+     xlab = "")
 
-plot(reconstruct(eoss, groups = list(1:2, 3:4, 5:6)), add.residuals=TRUE, plot.method="xyplot", main="",
-     xlab="")
-
+plot(reconstruct(eoss, groups = list(1:2, 3:4, 5:6)), add.residuals = TRUE, plot.method = "xyplot", main = "",
+     xlab = "")
 
 plot(reconstruct(ss, groups = list(Reconstructed = 1:6, F1 = 1:2, F2 = 3:4, F3 = 5:6)),
-     add.residuals=TRUE, plot.method="xyplot", main="",
-     xlab="")
+     add.residuals = TRUE, plot.method = "xyplot", main = "",
+     xlab = "")
 
 plot(reconstruct(eoss, groups = list(Reconstructed = 1:6, F1 = 1:2, F2 = 3:4, F3 = 5:6)),
-     add.residuals=TRUE, plot.method="xyplot", main="",
-     xlab="")
-
+     add.residuals = TRUE, plot.method = "xyplot", main = "",
+     xlab = "")
 
 rec.ideal <- reconstruct(ss, groups = list(Signal = 1:6, F1 = 1:2, F2 = 3:4, F3 = 5:6))
 rec.ideal$Signal <- F1.real + F2.real + F3.real
@@ -98,12 +117,12 @@ rec.ideal$F1 <- F2.real
 rec.ideal$F2 <- F1.real
 rec.ideal$F3 <- F3.real
 
-
 plot(rec.ideal,
      add.residuals = TRUE, plot.method = "xyplot", main = "",
-     xlab="")
+     xlab = "")
 
 
+# Real-life example (co2), EOSSA vs Basic SSA
 sigma <- 0.05 
 ss <- ssa(co2)
 plot(ss, type = "vector")
@@ -121,6 +140,8 @@ plot(reconstruct(ss, groups = list(ET1 = 1,ET2 = 2,ET3 = 3,ET4 = 4,ET5 = 5,ET6 =
 plot(reconstruct(eoss, groups = eoss$iossa.groups), add.residuals = TRUE, plot.method = "xyplot", main = "",
      xlab = "")
 
+
+# Sine wave with phase shift, EOSSA vs Basic SSA
 omega1 <- 0.06
 omega2 <- 0.07
 sigma <- 0.25
@@ -140,10 +161,10 @@ plot(reconstruct(eoss, groups = eoss$iossa.groups))
 
 
 plot(reconstruct(eoss, groups = eoss$iossa.groups), plot.method = "xyplot", main = "",
-     xlab="")
+     xlab = "")
 
-plot(reconstruct(ss, groups = list(1:2, 3:4)), plot.method = "xyplot", main="",
-     xlab="")
-plot(reconstruct(ss, groups = list(1,2, 3,4)), plot.method = "xyplot", main="",
-     xlab="")
+plot(reconstruct(ss, groups = list(1:2, 3:4)), plot.method = "xyplot", main = "",
+     xlab = "")
+plot(reconstruct(ss, groups = list(1,2, 3,4)), plot.method = "xyplot", main = "",
+     xlab = "")
 }
