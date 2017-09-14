@@ -271,7 +271,8 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
   list(sigma = dec$d, Y = basis.L %*% dec$u, Z = basis.R %*% dec$v)
 }
 
-.get.orth.triples <- function(x, idx, eps = sqrt(.Machine$double.eps)) {
+.get.orth.triples <- function(x, idx, eps = sqrt(.Machine$double.eps),
+                              do.orthogonalize = TRUE) {
   # Determine the upper bound of desired eigentriples
   desired <- max(idx)
 
@@ -283,12 +284,13 @@ svd2LRsvd <- function(d, u, v, basis.L, basis.R, need.project = TRUE, fast = TRU
   U <- .U(x)[, idx, drop = FALSE]
   V <- if (nv(x) < desired) calc.v(x, idx) else .V(x)[, idx, drop = FALSE]
 
-  # TODO Perform orthogonalize if it's only needed
-  dec <- orthogonalize(U, V, sigma, side = "bi")
-  sigma <- dec$d; U <- dec$u; V <- dec$v
+  if (do.orthogonalize) {
+    dec <- orthogonalize(U, V, sigma, side = "bi")
+    sigma <- dec$d; U <- dec$u; V <- dec$v
 
-  if (min(sigma) < eps)
-    warning("Decomposition isn't minimal. Some singular values equal to zero")
+    if (min(sigma) < eps)
+      warning("Decomposition isn't minimal. Some singular values equal to zero")
+  }
 
   list(sigma = sigma, U = U, V = V)
 }

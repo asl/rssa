@@ -213,7 +213,7 @@ enlarge.basis <- function(B, len, ...) {
     return(matrix(NA_real_, N + len, 0))
   }
 
-  P <- shift.matrix(B, ...)
+  P <- Conj(.shift.matrix.1d(B, ...))
 
   B <- rbind(B, matrix(NA, len, ncol(B)))
   for (i in seq_len(len)) {
@@ -349,8 +349,8 @@ vforecast.pssa.1d.ssa <- function(x, groups, len = 1,
     Z.right <- Vet.right * rep(sigma[right.group], each = nrow(Vet.right))
     Z.nonright <- Vet.nonright * rep(sigma[nonright.group], each = nrow(Vet.nonright))
 
-    Pright <- t(shift.matrix(Z.right))
-    Pnonright <- shift.matrix(Uet.nonright)
+    Pright <- t(Conj(.shift.matrix.1d(Z.right)))
+    Pnonright <- Conj(.shift.matrix.1d(Uet.nonright))
 
     PP <- qr.solve(Uet.nonright[-L,, drop = FALSE],
                    Uet.right[-1,, drop = FALSE] - Uet.right[-L,, drop = FALSE] %*% Pright)

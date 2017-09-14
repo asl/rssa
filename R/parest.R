@@ -119,11 +119,6 @@ tls.solve <- function(A, B) {
   list(left.mask = lind[mask], right.mask = rind[mask])
 }
 
-shift.matrix <- function(U, ...) {
-  wmask <- rep(TRUE, nrow(U))
-  Conj(.shift.matrix(U, wmask, ndim = 1, ...))
-}
-
 .shift.matrix <- function(U, wmask,
                           ndim,
                           circular = FALSE,
@@ -140,34 +135,11 @@ shift.matrix <- function(U, ...) {
   solver(lm.left, lm.right)
 }
 
-parestimate.esprit <- function(U,
-                               wmask = NULL,
-                               circular = FALSE,
-                               normalize = FALSE,
-                               solve.method = c("ls", "tls")) {
-  solve.method <- match.arg(solve.method)
-
-  if (is.null(wmask))
-    wmask <- rep(TRUE, nrow(U))
-
-  Z <- .shift.matrix(U,
-                     wmask = wmask,
-                     ndim = 1,
-                     circular = circular,
-                     solve.method = solve.method)
-
-  r <- eigen(Z, only.values = TRUE)$values
-
-  if (normalize) r <- r / abs(r)
-
-  roots2pars(r)
-}
-
-.parestimate.pairs.ssa <- function(x, groups,
-                                   subspace = c("column", "row"),
-                                   normalize.roots = NULL,
-                                   ...,
-                                   drop) {
+.pairs <- function(x, groups,
+                   subspace = c("column", "row"),
+                   normalize.roots = NULL,
+                   ...,
+                   drop) {
   if (missing(groups))
     groups <- 1:min(nsigma(x), nu(x))
 
@@ -231,11 +203,11 @@ parestimate.1d.ssa <- function(x, groups,
     normalize.roots <- x$circular || inherits(x, "toeplitz.ssa")
 
   if (identical(method, "pairs")) {
-    .parestimate.pairs.ssa(x, groups = groups,
-                           subspace = subspace,
-                           normalize.roots = normalize.roots,
-                           ...,
-                           drop = drop)
+    .pairs(x, groups = groups,
+           subspace = subspace,
+           normalize.roots = normalize.roots,
+           ...,
+           drop = drop)
   } else if (identical(method, "esprit")) {
     parestimate.nd.ssa(x, groups = groups,
                        subspace = subspace,
@@ -291,12 +263,14 @@ parestimate.cssa <- parestimate.1d.ssa
     mx[, maxij[2]] <- -Inf
   }
 
+  stopifnot(isTRUE(all.equal(sort(res), seq_len(ncol(mx)))))  # Ensure res is permutation
+
   res
 }
 
 .est.exp.memp.new <- function(Zs, beta = 8) {
   Z <- .matrix.linear.combination(Zs, beta)
-  Ze <- eigen(Z)
+  Ze <- eigen(Z, symmetric = FALSE)
   Zse <- lapply(Zs, eigen, symmetric = FALSE)
   Ps <- lapply(seq_along(Zs),
                function(i) .simple.assignment(t(abs(qr.solve(Ze$vectors, Zse[[i]]$vectors)))))
@@ -309,14 +283,14 @@ parestimate.cssa <- parestimate.1d.ssa
          function(i) Zse[[i]]$values[Ps[[i]]])
 }
 
-.parestimate.esprit.nd <- function(U,
-                                   wmask,
-                                   circular,
-                                   normalize,
-                                   dimensions = NULL,
-                                   solve.method = c("ls", "tls"),
-                                   pairing.method = c("diag", "memp"),
-                                   beta = 8) {
+.esprit <- function(U,
+                    wmask,
+                    circular,
+                    normalize,
+                    dimensions = NULL,
+                    solve.method = c("ls", "tls"),
+                    pairing.method = c("diag", "memp"),
+                    beta = 8) {
   wmask <- as.array(wmask)
   d <- dim(wmask)
 
@@ -410,14 +384,14 @@ parestimate.nd.ssa <- function(x, groups,
   out <- list()
   for (i in seq_along(groups)) {
     group <- groups[[i]]
-    out[[i]] <- .parestimate.esprit.nd(span(x, group),
-                                       wmask = wmask,
-                                       circular = x$circular,
-                                       normalize = normalize.roots,
-                                       solve.method = solve.method,
-                                       pairing.method = pairing.method,
-                                       beta = beta,
-                                       dimensions = dimensions)
+    out[[i]] <- .esprit(span(x, group),
+                        wmask = wmask,
+                        circular = x$circular,
+                        normalize = normalize.roots,
+                        solve.method = solve.method,
+                        pairing.method = pairing.method,
+                        beta = beta,
+                        dimensions = dimensions)
   }
 
   names(out) <- .group.names(groups)

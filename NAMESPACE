@@ -54,6 +54,7 @@ export(clone,
        cadzow,
 # Non-orthogonal decompositions
        iossa,
+       eossa,
        owcor,
        fossa,
        frobenius.cor,
@@ -161,6 +162,7 @@ S3method("iossa", "ssa")
 S3method("grouping.auto.wcor", "ssa")
 S3method("grouping.auto.pgram", "1d.ssa")
 S3method("grouping.auto.pgram", "toeplitz.ssa")
+S3method("eossa", "ssa")
 
 ## Default imports
 importFrom("grDevices", "colorRampPalette", "grey", "heat.colors")
