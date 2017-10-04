@@ -337,8 +337,7 @@ static R_INLINE void hbhankelize_fft(double *F,
 SEXP convolveN(SEXP x, SEXP y,
                SEXP input_dim, SEXP output_dim,
                SEXP Conj) {
-  SEXP x_dim = getAttrib(x, R_DimSymbol);
-  SEXP y_dim = getAttrib(y, R_DimSymbol);
+  SEXP x_dim = NILSXP, y_dim = NILSXP;
   R_len_t rank = length(input_dim);
   R_len_t *N = INTEGER(input_dim);
   R_len_t pN = prod(rank, N), phN = hprod(rank, N);
@@ -362,6 +361,9 @@ SEXP convolveN(SEXP x, SEXP y,
   r2c_plan = fftw_plan_dft_r2c(rank, revN, circ, ox, FFTW_ESTIMATE);
   c2r_plan = fftw_plan_dft_c2r(rank, revN, ox, circ, FFTW_ESTIMATE);
   Free(revN);
+
+  PROTECT(x_dim = getAttrib(x, R_DimSymbol));
+  PROTECT(y_dim = getAttrib(y, R_DimSymbol));
 
   /* Fill input buffer by X values*/
   memset(circ, 0, pN * sizeof(double));
@@ -402,7 +404,7 @@ SEXP convolveN(SEXP x, SEXP y,
   fftw_free(circ);
 
   /* Return */
-  UNPROTECT(1);
+  UNPROTECT(3);
   return res;
 }
 #else
@@ -805,9 +807,9 @@ SEXP initialize_hbhmat(SEXP F, SEXP window,
                        SEXP circular) {
   hbhankel_matrix *h;
   ext_matrix *e;
-  SEXP hbhmat;
+  SEXP hbhmat, N = NILSXP;
 
-  SEXP N = getAttrib(F, R_DimSymbol);
+  PROTECT(N = getAttrib(F, R_DimSymbol));
 
   /* Allocate memory */
   e = Calloc(1, ext_matrix);
@@ -826,6 +828,9 @@ SEXP initialize_hbhmat(SEXP F, SEXP window,
   h->weights = alloc_weights(weights);
   e->matrix = h;
 
+  /* We do not need to protect N anymore */
+  UNPROTECT(1);
+  
   /* Make an external pointer envelope */
   hbhmat = R_MakeExternalPtr(e, install("external matrix"), R_NilValue);
   R_RegisterCFinalizer(hbhmat, hbhmat_finalizer);
