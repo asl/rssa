@@ -18,16 +18,16 @@
 
 \arguments{
   \item{x}{SSA object holding SSA decomposition}
-  \item{nested.groups}{list or named list of numbers of eigentriples
+  \item{nested.groups}{list or named list of eigentriples numbers
     from full decomposition, describes elementary components for EOSSA nested redecomposition}
-  \item{k}{the number of components in desired resultant decomposition}
-  \item{subspace}{which subspace will be used for oblique matrix construction}
+  \item{k}{the desired number of components in the resultant decomposition}
+  \item{subspace}{which subspace should be used for oblique matrix construction}
   \item{dimensions}{a vector of dimension indices to construct shift matrices along. 'NULL' means all dimensions}
   \item{solve.method}{approximate matrix equation solving method, 'ls' for least-squares, 'tls' for total-least-squares.}
   \item{beta}{In multidimensional (nD) case, coefficient(s) in convex linear combination of
     shifted matrices. The length of \code{beta} should be \code{ndim - 1},
     where \code{ndim} is the number of independent dimensions.
-    If only one value is passed, it is expanded to a geometric progression.}
+    If only one value is passed, it will be expanded into a geometric progression.}
   \item{\dots}{additional arguments passed to \code{\link{decompose}}
     routines}
 }
@@ -46,7 +46,7 @@
   however it does not exploit this model directly and does not estimate the parameters.
   Therefore, it works for wider class of time series.
   According to the experiments, it works for series that could be locally
-  approximated by a series of finite dimension, but at this moment there is no any theoretical results for this.
+  approximated by a series of finite dimension, but at this moment there is no any theoretical justification for this.
 
   EOSSA constructs shift matrix estimation by the same way is in ESPRIT
   (see \code{\link[Rssa:parestimate]{parestimate}}) method and
@@ -54,8 +54,9 @@
   (see \code{\link[Rssa:iossa]{iossa}} for more information about Oblique SSA decompositions).
   Consequently, the method ideally separates signals of finite dimension with absence of noise.
   With presence of noise it provides approximate results due to continuity.
-  The method performs eigenvectors clustering inside (for now \code{\link[stats:hclust]{hclust}} is used),
-  the number of components (argument \code{k}) should be passed.
+
+  The method performs eigenvector clustering inside (for now \code{\link[stats:hclust]{hclust}} is used),
+  concerning this the number of components (argument \code{k}) should be passed.
 }
 
 \references{
