@@ -1,5 +1,5 @@
 #   R package for Singular Spectrum Analysis
-#   Copyright (c) 2017 Alex Shlemov <shlemovalex@gmail.com>
+#   Copyright (c) 2017-2018 Alex Shlemov <shlemovalex@gmail.com>
 #
 #   This program is free software; you can redistribute it
 #   and/or modify it under the terms of the GNU General Public
@@ -21,21 +21,23 @@
 
 
 # TODO use QR instead of SVD and make basis real before clustering and joining
-.clust.basis <- function(U, roots, k = NULL, h = NULL, order = FALSE) {
+.clust.basis <- function(U, roots, k = 2, h = NULL, order = FALSE) {
   # Reorder roots by their freqs
   ord <- order(abs(Arg(roots)))
   roots <- roots[ord]
   U <- U[, ord, drop = FALSE]
 
+  stopifnot(length(k) == 1)
+
   # Check for argument k, k <= the number of roots with nonegative imagine part
   maxk <- sum(Im(roots) >= -.Machine$double.eps) # Maybe just Im >= 0?
-  stopifnot(k <= maxk)
+  if (k > maxk) {
+    stop(sprintf("k exceeds the number of different ESPRIT roots with non-negative imaginary parts (%d%)", maxk))
+  }
 
   d <- stats::dist(cbind(Re(roots), abs(Im(roots))), method = "euclidian") # TODO Use the proper distance from KDU
 
   hc <- hclust(d, method = "complete")
-
-  stopifnot(length(k) == 1)
 
   idx <- cutree(hc, k = k, h = h)
 
