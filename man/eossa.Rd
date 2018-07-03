@@ -127,6 +127,8 @@ plot(rec.ideal,
 sigma <- 0.05 
 ss <- ssa(co2)
 plot(ss, type = "vector")
+parestimate(ss, list(1:6))
+# Two real roots and two conjugate pairs, use k = 4
 eoss <- eossa(ss, 1:6, k = 4)
 eoss$iossa.groups
 
