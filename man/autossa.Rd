@@ -10,7 +10,7 @@
 }
 
 \description{
-  Group elementary components automatically using their frequency contributions
+  Group elementary components automatically using their frequency contributions 
 }
 
 \usage{
@@ -63,19 +63,24 @@
       with frequency contribution in correspondent interval is greater than specified threshold;
       resulted groups can intersect.
       If 'threshold' is a vector, correspondent value of threshold will be using
-      for each interval.}
+      for each interval. See Algorithm 2.16 in Golyandina et al (2018).}
     \item{'dependent' or 'splitting'}{Elementary components are separated to disjoint subsets;
-      for each component interval with the highest contribution is selected.}
+      for each component interval with the highest contribution is selected. 
+      See Algorithm 2.17 in Golyandina et al (2018)}
   }
 
   If 'freq.bins' is named, result groups will take the same names.
 
   If drop = 'TRUE' (by default), empty groups will be excluded from result.
 
-  See the paper in 'References' for the details of the algorithm.
+  See  Section 2.7 in Golyandina et al (2018) and the paper Alexandrov, Golyandina (2005) for the details of the algorithm.
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Alexandrov, Th., Golyandina, N. (2005):
   \emph{Automatic extraction and forecast of time series cyclic components
     within the framework of SSA.}
@@ -83,7 +88,6 @@
     June 26 -- July 2, 2005, St.Petersburg State University, St.Petersburg, Pp. 45--50
     \url{http://www.gistatgroup.com/gus/autossa2.pdf}
 }
-
 
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,

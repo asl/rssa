@@ -55,7 +55,7 @@
 
 \details{
   The function fills in the missed entries in the series. Both methods
-  described in (Golyandina, Osipov, 2007) are implemented:
+  described in Golyandina and Osipov (2007) are implemented:
   \itemize{
     \item method = "sequential" performs forecast from complete chunks
     onto incomplete. For internal gaps forecast is performed from both
@@ -66,6 +66,8 @@
     onto signal subspace. The method may fail if insufficient complete
     observations are provided.
   }
+  Details of the used algorithms see in Golyandina et al (2018), 
+  Algorithms 3.8 and 3.9 respectively.
 }
 
 \value{
@@ -78,6 +80,10 @@
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   N. Golyandina, E. Osipov (2007): \emph{The "Caterpillar"-SSA method
   for analysis of time series with missing values}. Journal of
   Statistical Planning and Inference, Vol. 137, No. 8, Pp 2642--2653

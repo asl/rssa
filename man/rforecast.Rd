@@ -57,14 +57,18 @@
 \details{
   The routines applies the recurrent SSA forecasting algorithm to
   produce the new series which is expected to 'continue' the current
-  series on the basis of the decomposition given. The algorithm
-  sequentialy projects the incomplete embedding vectors (either original
-  or from reconstructed series) onto the subspace spanned by the
+  series on the basis of a given decomposition. The algorithm
+  sequentialy projects the incomplete embedding vectors (from either the original
+  or the reconstructed series) onto the subspace spanned by the
   selected eigentriples of the decomposition to derive the missed
-  (ending) values of the such vectors.
-
-  In such a way the forecasted elements of the series are produced on
+  (last) values of the such vectors. Then the filled value 
+  In such a way the forecasting elements are produced on
   one-by-one basis.
+
+  It is shown in Golyandina et al (2001) that this approach corresponds
+  to application of a linear recurrence formula (the same formula as 
+  described in \code{\link{lrr}}) to initial data taken from either the original
+  or the reconstructed series.
 
   In particular, the \eqn{m}-th step of the forecast is calculated by
   means of linear recurrence relation (see \code{\link[Rssa:lrr]{lrr}}) as
@@ -74,8 +78,14 @@
   (\code{base="initial"}) time series.
 
   For multichannel SSA the column forecast is obtained via applying the
-  LRR to each series separately. Forecast uses the formulae from
-  (Golyandina and Stepanov, 2005, and Golyandina et.al, 2015).
+  LRR to each series separately. The row forecast is more complicated
+  and is based on a multivariate LRR. Forecast uses the formulae from
+  Golyandina and Stepanov (2005) and Golyandina et.al (2015).
+
+  For details of 1D-SSA recurrent forecasting, see Section 3.2.1.2 and 
+  Algorithm 3.5 in Golyandina et al (2018).
+  For details of MSSA recurrent forecasting, see Section 4.3.1.2  and 
+  Algorithm 4.4 (column forecasting).
 }
 
 \value{

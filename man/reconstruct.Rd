@@ -25,6 +25,17 @@
     cached in the SSA object.}
 }
 
+\details{
+  Reconstruction is performed in a common form for different types of input objects.
+  See Section 1.1.2.6 in Golyandina et al (2018) for the explanation.
+  Formal algorithms are described in this book in Algorithm 2.2 for 1D-SSA, Algorithm 4.3 for MSSA,
+  Algorithm 5.2 for 2D-SSA and Algorithm 5.6 for Shaped 2D-SSA.
+
+  Fast implementation of reconstruction with the help of FFT is described in Korobeynikov (2010)
+  for the 1D case and in Section 6.2 (Rank-one quasi-hankelization) of Golyandina et al (2015) 
+  for the general case.
+}
+
 \value{
   List of reconstructed objects. Elements of the list have the same
   names as elements of \code{groups}. If the group is unnamed, then
@@ -37,6 +48,21 @@
   preserve all the attributes of the input object. This way, for
   example, the reconstruction result of 'ts' object is the 'ts' object
   with the same time scale.
+}
+
+\references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
+  Korobeynikov, A. (2010): \emph{Computation- and space-efficient
+    implementation of SSA.} Statistics and Its Interface, Vol. 3, No. 3,
+  Pp. 257-268
+
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
+  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
+    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
+    \url{https://www.jstatsoft.org/article/view/v067i02}
 }
 
 \seealso{

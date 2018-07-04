@@ -56,6 +56,8 @@
   extended via selected forecast method. Finally, the distribution of
   forecasted values is used to calculate bootstrap estimate of series
   forecast and confidence bounds.
+
+  See Section 3.2.1.5 from Golyandina et al (2018) for details.
 }
 
 \value{
@@ -65,6 +67,12 @@
   forecasted values.
 
   The matrix itself, if length of groups is one and 'drop = TRUE'.
+}
+
+\references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
 }
 
 \seealso{

@@ -54,7 +54,11 @@
 }
 
 \details{
-  Iterative Oblique SSA (IOSSA) is an iterative (EM-like) method for
+  See Golyandina N. and Shlemov A. (2015) and Section 2.4 in Golyanina et al (2018) 
+  for full details in the 1D case and 
+  p.250-252 from the same book for an example in the 2D case.
+
+  Briefly, Iterative Oblique SSA (IOSSA) is an iterative (EM-like) method for
   improving separability in SSA. In particular, it serves for separation
   of mixed components, which are not  orthogonal, e.g., of sinusoids
   with close frequencies or for trend separation for short series. IOSSA
@@ -70,10 +74,17 @@
   Sigma-correction procedure does the renormalization of new inner
   products. This prevents the mixing of the components during the next
   iteration. Such approach makes the whole procedure more stable and can
-  solve the problem of lack of strong separability (see References).
+  solve the problem of lack of strong separability.
+
+  Details of the used algorithms can be found in Golyandina et al (2018), 
+  Algorithms 2.7 and 2.8.
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Golyandina N. and Shlemov A. (2015): \emph{Variations of Singular Spectrum Analysis
   for separability improvement: non-orthogonal decompositions of time series}, 
   Statistics and Its Interface. Vol.8, No 3, P.277-294.

@@ -16,6 +16,7 @@
   Functions to access various fields of SSA object, query
   for number of singular values, eigenvectors, factor vectors and `special' decomposition
   triples (now, ProjectionSSA triples) in the SSA object and other miscellaneous info.
+  See Chapter 1 in Golyandina et al (2018) for explanation.
 }
 
 \usage{
@@ -147,6 +148,12 @@ nv(x)
   values returned solely depend on used singular value decomposition
   method and parameters of this method (e.g. 'neig' argument for
   'propack' and 'nutrlan' SVD methods).
+}
+
+\references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
 }
 
 \seealso{

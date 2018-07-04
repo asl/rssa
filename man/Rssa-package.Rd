@@ -8,6 +8,9 @@
   method for the analysis of time series and digital images. This
   package provides a set of fast and reliable implementations of various
   routines to perform decomposition, reconstruction and forecasting.
+  A comprehensive description of the methods and functions from Rssa 
+  can be found in Golyandina et al (2018). The companion web-site is
+  https://ssa-with-r-book.github.io/.
 }
 
 \details{
@@ -17,18 +20,28 @@
   done heuristically, for example, via looking at the plots of the
   decomposition (\code{\link[Rssa:plot.ssa]{plot}}). Alternatively, one
   can examine the so-called w-correlation matrix
-  (\code{\link{wcor}}). Next step includes the \emph{reconstruction} of
-  the time-series using the selected grouping
-  (\code{\link[Rssa:reconstruct.ssa]{reconstruct}}). One ends with
-  frequency estimation (\code{\link[Rssa:parestimate]{parestimate}}) and
-  series forecasting (\code{\link[Rssa:forecast.ssa]{forecast}},
-  \code{\link[Rssa:rforecast.ssa]{rforecast}},
-  \code{\link[Rssa:vforecast.ssa]{vforecast}}). In addition, Oblique SSA
+  (\code{\link{wcor}}). Automatic grouping can be performed by means of
+  \code{\link{grouping.auto}}. 
+  In addition, Oblique SSA
   methods can be used to improve the series separability
   (\code{\link[Rssa:iossa]{iossa}}, \code{\link[Rssa:fossa]{fossa}}).
+
+  Next step includes the \emph{reconstruction} of
+  the time-series using the selected grouping
+  (\code{\link[Rssa:reconstruct.ssa]{reconstruct}}). One ends with
+  frequency estimation (\code{\link[Rssa:parestimate]{parestimate}}),
+  series forecasting (\code{\link[Rssa:forecast.ssa]{forecast}},
+  \code{\link[Rssa:rforecast.ssa]{rforecast}},
+  \code{\link[Rssa:vforecast.ssa]{vforecast}})
+  and (if any) gap filling (\code{\link[Rssa:gapfill]{gapfill}}, 
+  \code{\link[Rssa:igapfill]{igapfill}}). 
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001):
   \emph{Analysis of Time Series Structure: SSA and related techniques.}
   Chapman and Hall/CRC. ISBN 1584881941f
@@ -55,15 +68,15 @@
   Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
     Analysis for time series}. Springer Briefs in Statistics. Springer.
 
-  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
-  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
-    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
-    \url{https://www.jstatsoft.org/article/view/v067i02}
-
   Shlemov, A. and Golyandina, N. (2014): \emph{Shaped extensions of singular
   spectrum analysis}. 21st International Symposium on Mathematical 
   Theory of Networks and Systems, July 7-11, 2014. Groningen, 
   The Netherlands. p.1813-1820. \url{http://arxiv.org/abs/1507.05286}
+
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
+  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
+    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
+    \url{https://www.jstatsoft.org/article/view/v067i02}
 }
 \keyword{package}
 \seealso{

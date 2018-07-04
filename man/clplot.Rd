@@ -2,11 +2,11 @@
 \alias{clplot}
 
 \title{
-  Ratio of complete lag vectors given window length
+  Ratio of complete lag vectors in dependence on window length
 }
 
 \description{
-  Function to plot a ratio of complete lag vectors given window length
+  Function to plot the dependence of ratios of complete lagged vectors on window lengths.
 }
 
 \usage{
@@ -19,7 +19,15 @@ clplot(x, \dots)
 }
 
 \details{
-  Function plots a ratio of complete lag vectors given window length.
+  The function plots the dependence of ratios of complete lagged vectors on window lengths.
+  This information can be used for the choice of window length, since only complete lagged vectors
+  are used for construction of the SVD expansion in SSA. See page 89 (Chapter 2) in Golyandina et al (2018).
+}
+
+\references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
 }
 
 \seealso{

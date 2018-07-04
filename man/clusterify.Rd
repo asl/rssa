@@ -26,7 +26,13 @@
 
 \details{
   Standard \code{hclust} routine is used to perform the grouping
-  of the elementary components.
+  of the elementary components. See Algorithm 2.15 in Golyandina et al (2018) for details.
+}
+
+\references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
 }
 
 \seealso{

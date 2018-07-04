@@ -47,17 +47,22 @@
 }
 
 \details{
-  The routines applies the vectors SSA forecasting algorithm to
+  The routines applies the vector SSA forecasting algorithm to
   produce the new series which is expected to 'continue' the current
-  series on the basis of the decomposition given. Vector forecast
-  differs from recurrent forecast in such way that it continues the set
+  series on the basis of a given decomposition. Vector forecast
+  differs from recurrent forecast in such a way that it continues the set
   of vectors in the subspace spanning the chosen eigenvectors (the same
   formula as described in \code{\link{lrr}} is used for constructing of
-  the last components of the new vectors) and then derive the series out
+  the last components of the new vectors) and then derives the series out
   of this extended set of vectors.
   
-  For multichannel SSA, forecast uses the formulae from
-  (Golyandina et al, 2015).
+  For multichannel SSA, forecast can be constructed in two versions, 
+  row and column ones; it uses the formulae from Golyandina et al (2015).
+
+  For details of 1D-SSA recurrent forecasting, see Section 3.2.1.3 and 
+  Algorithm 3.6 in Golyandina et al (2018).
+  For details of MSSA recurrent forecasting, see Section 4.3.1.3  and 
+  Algorithm 4.5 (column forecasting).
 }
 
 \value{
@@ -70,20 +75,24 @@
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
     Time Series Structure: SSA and related techniques.} Chapman and
   Hall/CRC. ISBN 1584881941
-
-  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
-    \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
-    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
-    \url{https://www.jstatsoft.org/article/view/v067i02}
 
   Golyandina, N. and Stepanov, D. (2005): \emph{SSA-based approaches to
     analysis and forecast of multidimensional time series}. In
     Proceedings of the 5th St.Petersburg Workshop on Simulation, June
     26-July 2, 2005, St. Petersburg State University, St. Petersburg,
     293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
+
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
+    \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
+    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
+    \url{https://www.jstatsoft.org/article/view/v067i02}
 }
 
 \seealso{

@@ -30,7 +30,11 @@
 }
 
 \details{
-  FOSSA serves for decomposition of series components that are
+  See Golyandina N. and Shlemov A. (2015) and Section 2.5 in Golyanina et al (2018) 
+  for full details in the 1D case and 
+  p.250-252 from the same book for an example in the 2D case.
+
+  Briefly, FOSSA serves for decomposition of series components that are
   mixed due to equal contributions of their elementary components, e.g. of
   sinusoids with equal amplitudes or of complex-form trend and
   periodics. FOSSA performs a new decomposition of a part of the
@@ -74,18 +78,24 @@
   \eqn{\{(\sigma_i,U_i,V_i)\}}{\{sigma_i,U_i,V_i\}}, \eqn{\Psi(X)}{Psi(X)} is the matrix, where the filter is applied to
   each row of \eqn{X}{X}.
 
-  Then \code{normalize = FALSE} corresponds to finding the basis in the column space of
+  Then \code{normalize = FALSE} (Algorithm 2.9 or 2.10 in Golyandina et al (2018)) corresponds 
+  to finding the basis in the column space of
   \eqn{X}{X} by means of the SVD of \eqn{[X, \Psi(X)]}{[X, Phi(X)]}, while
-  \code{normalize = TRUE} (by default)
+  \code{normalize = TRUE} (by default, see Algorithm 2.11 in Golyandina et al (2018))
   corresponds to finding the basis by the SVD of \eqn{[V, \Phi(V)]}{[V, Phi(V)]},
   where the rows of
   matrix \eqn{V}{V} are \eqn{V_i}{V_i}.
   The value by default \code{TRUE} guaranties that the contributions
   of sine waves will be ordered by decreasing of frequencies, although can
   slightly worsen the weak separability}
+
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Golyandina N. and Shlemov A. (2015): \emph{Variations of Singular Spectrum Analysis
   for separability improvement: non-orthogonal decompositions of time series}, 
   Statistics and Its Interface. Vol.8, No 3, P.277-294.

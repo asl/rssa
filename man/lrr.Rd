@@ -8,10 +8,10 @@
 \alias{roots.lrr}
 \alias{plot.lrr}
 
-\title{Calculate the Linear Recurrence Relation}
+\title{Calculate the min-norm Linear Recurrence Relation}
 
 \description{
-  Calculates the Linear Recurrence Relation given the one-dimensional 'ssa' object.
+  Calculates the min-norm Linear Recurrence Relation given the one-dimensional 'ssa' object.
 }
 
 \usage{
@@ -42,7 +42,7 @@
 }
 
 \details{
-  Produces the linear recurrence relation from the series. The default
+  Produces the min-norm linear recurrence relation from the series. The default
   implementation works as follows.
 
   Denote by \eqn{U_i} the columns of matrix \eqn{x}. Denote by
@@ -62,6 +62,9 @@
 
   For \code{reverse = 'TRUE'} everything is the same, besides the
   last coordinate substituted for the first coordinate.
+
+  Details of the used algorithm see in Golyandina et al (2018), 
+  Algorithms 3.1 and 3.2.
 }
 
 \value{
@@ -74,6 +77,12 @@
   Vector with the roots of the of the characteristic
   polynomial of the LRR for \code{roots} function call. Roots are
   ordered by moduli decreasing.
+}
+
+\references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
 }
 
 \seealso{

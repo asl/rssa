@@ -62,9 +62,10 @@
   \item{dimensions}{a vector of dimension indices to perform ESPRIT along. 'NULL' means all dimensions.}
   \item{method}{For 1D-SSA, Toeplitz SSA, and MSSA:
       parameter estimation method,
-      'esprit' for 1D-ESPRIT,
-      'pairs' for rough estimation based on pair of eigenvectors.
-      For nD-SSA: parameter estimation method. For now only 'esprit' is supported.}
+      'esprit' for 1D-ESPRIT (Algorithm 3.3 in Golyandina et al (2018)),
+      'pairs' for rough estimation based on pair of eigenvectors (Algorithm 3.4 in Golyandina et al (2018)).
+      For nD-SSA: parameter estimation method. 
+      For now only 'esprit' is supported (Algorithm 5.6 in Golyandina et al (2018)).}
   \item{solve.method}{approximate matrix equation solving method, 'ls' for least-squares, 'tls' for total-least-squares.}
   \item{pairing.method}{method for esprit roots pairing, 'diag' for `2D-ESPRIT diagonalization', 'memp' for ``MEMP with an
     improved pairing step'}
@@ -101,7 +102,9 @@
 }
 
 \details{
-  The time series is assumed to satisfy the model
+  See Sections 3.1 and 5.3 in Golyandina et al (2018) for full details.
+
+  Briefly, the time series is assumed to satisfy the model
   \deqn{
     x_n = \sum_k{C_k\mu_k^n}
   }
@@ -123,9 +126,11 @@
   `fdimpars.1d' and `fdimpars.nd'.
 }
 
+
 \references{
-  Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
-    Analysis for time series}. Springer Briefs in Statistics. Springer.
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
 
   Roy, R., Kailath, T., (1989): \emph{ESPRIT: estimation of signal parameters via
   rotational invariance techniques}. IEEE Trans. Acoust. 37, 984--995.
@@ -136,6 +141,10 @@
   Wang, Y., Chan, J-W., Liu, Zh. (2005): \emph{Comments on ``estimation of frequencies and
     damping factors by two-dimensional esprit type methods''}.
     IEEE Transactions on Signal Processing 53(8), 3348--3349.
+
+  Shlemov A, Golyandina N (2014) Shaped extensions of Singular Spectrum Analysis. In: 21st
+  international symposium on mathematical theory of networks and systems, July 7–11, 2014.
+  Groningen, The Netherlands, pp 1813–1820.
 }
 
 \seealso{

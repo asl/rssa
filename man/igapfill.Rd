@@ -57,6 +57,9 @@
   reconstructions. This process continues until convergence up to a
   stationary point (e.g. filling / reconstruction does not change missed
   values at all).
+
+  Details of the used algorithm see in Golyandina et al (2018), 
+  Algorithms 3.7.
 }
 
 \note{
@@ -76,6 +79,10 @@
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Kondrashov, D. & Ghil, M. (2006) \emph{Spatio-temporal filling of
     missing points in geophysical data sets}. Nonlinear Processes In
   Geophysics, Vol. 13(2), pp. 151-159.

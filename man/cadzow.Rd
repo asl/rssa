@@ -19,7 +19,7 @@
   \item{x}{input SSA object}
   \item{rank}{desired rank of approximation}
   \item{correct}{logical, if 'TRUE' then additional correction as in
-  (Gillard et al, 2013) is performed}
+  Gillard et al (2013) is performed}
   \item{tol}{tolerance value used for convergence criteria}
   \item{maxiter}{number of iterations to perform, if zero then
     iterations are performed until the convergence}
@@ -35,7 +35,7 @@
   input series by a series of finite rank. The idea of the algorithm is
   quite simple: alternating projections of the trajectory matrix to
   Hankel and low-rank matrices are performed which hopefully converge to
-  a Hankel low-rank matrix.
+  a Hankel low-rank matrix. See Algorithm 3.10 in Golyandina et al (2018).
 
   Note that the results of one Cadzow iteration with no correction
   coincides with the result of reconstruction by the leading \code{rank}
@@ -46,6 +46,10 @@
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Cadzow J. A. (1988) Signal enhancement a composite property mapping algorithm,
   IEEE Transactions on Acoustics, Speech, and Signal Processing, 36,
   49-62.

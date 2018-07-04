@@ -51,7 +51,7 @@
     owcor(F_1, F_2) = owcov(F_1, F_2) / sqrt(owcov(F_1, F_1) owcov(F_2, F_2))
   }
 
-  Oblique W-correlation is OSSA analogue of W-correlation, that is, a
+  Oblique W-correlation is an OSSA analogue of W-correlation, that is, a
   measure of series separability. If I-OSSA procedure separates series
   exactly, their oblique W-correlation will be equal to zero.
 }

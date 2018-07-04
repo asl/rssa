@@ -43,7 +43,7 @@ ssa(x,
   \item{circular}{logical vector of one or two elements, describes series topology for
     1d SSA and Toeplitz SSA or field topology for 2d SSA. 'TRUE' means
     series circularity for 1d case or circularity by a corresponding
-    coordinate for 2d case. See (Shlemov, 2014) for more info}
+    coordinate for 2d case. See Shlemov and Golyandina (2014) for more information}
   \item{svd.method}{singular value decomposition method. See 'Details'
     for more info}
   \item{column.projector, row.projector}{column and row signal subspaces projectors for
@@ -65,24 +65,26 @@ ssa(x,
   This is the main entry point to the package. This routine
   constructs the SSA object filling all necessary internal structures
   and performing the decomposition if necessary.
+  For the comprehensive description of SSA modifications and their algorithms
+  see Golyandina et al (2018). 
 
   \subsection{Variants of SSA}{
     The following implementations of the SSA method are supported
     (corresponds to different values of \code{kind} argument):
     \describe{
-      \item{1d-ssa}{Basic 1d SSA as described in Chapter 1 of (Golyandina et al,
-        2001). This is also known as Broomhead-King variant of SSA or
-        BK-SSA, see (Broomhead and King, 1986).}
+      \item{1d-ssa}{Basic 1d SSA as described in Chapter 1 of Golyandina et al (2001).
+        This is also known as Broomhead-King variant of SSA or
+        BK-SSA, see Broomhead and King (1986).}
       \item{toeplitz-ssa}{Toeplitz variant of 1d SSA. See Section 1.7.2
-        in (Golyandina et al, 2001). This is also known as Vautard-Ghil
+        in Golyandina et al (2001). This is also known as Vautard-Ghil
         variant of SSA or VG-SSA for analysis of stationary time series,
-        see (Vautard and Ghil, 1989).}
+        see Vautard and Ghil (1989).}
       \item{mssa}{Multichannel SSA for simultaneous decomposition of
         several time series (possible of unequal length). See
-        (Golyandina and Stepanov, 2005).}
+        Golyandina and Stepanov (2005).}
       \item{cssa}{Complex variant of 1d SSA.}
       \item{2d-ssa}{2d SSA for decomposition of images and arrays. See
-        (Golyandina and Usevich, 2009, and Golyandina et.al, 2015) for more information.}
+        Golyandina and Usevich (2009) and Golyandina et.al (2015) for more information.}
       \item{nd-ssa}{Multidimensional SSA decomposition for arrays (tensors).}
     }
   }
@@ -105,7 +107,7 @@ ssa(x,
 
   \subsection{Projectors specification for SSA with projection}{
     Projectors are specified by means of \code{column.projector} and
-    \code{row.projector} arguments (see Golyandina and Shlemov, 2017). 
+    \code{row.projector} arguments (see Golyandina and Shlemov (2017)). 
     Each may be a matrix of orthonormal
     (otherwise QR orthonormalization process will be perfomed) basis of
     projection subspace, or single integer, which will be interpreted as
@@ -126,7 +128,7 @@ ssa(x,
     }
 
     SSA with centering and double centering may improve the separation
-    of linear trend (see (Golyandina et.al, 2001) for more information).
+    of linear trend (see Golyandina et.al (2001) for more information).
   }
 
   \subsection{Weighted Oblique SSA}{
@@ -138,7 +140,7 @@ ssa(x,
 
     Weighted Oblique SSA inside \code{\link[Rssa:cadzow]{Cadzow}} iterations 
     may improve finite-rank estimation of signal 
-    (see e.g. Cadzow(alpha) iterations in (Zvonarev and Golyandina, 2017) 
+    (see e.g. Cadzow(alpha) iterations in Zvonarev and Golyandina (2017) 
     for more information).
   }
 
@@ -156,7 +158,7 @@ ssa(x,
         the trajectory matrix efficiently and is really fast. The method
         allows the truncated SVD (only specifid amount of eigentriples to be
         computed) and the continuation of the decomposition. See
-        (Korobeynikov, 2010) for more information.}
+        Korobeynikov (2010) for more information.}
       \item{propack}{SVD via implicitly restarted Lanczos
         bidiagonalization with partial reothogonalization. This methods
         exploits the Hankel structure of the trajectory matrix efficiently
@@ -165,7 +167,7 @@ ssa(x,
         requirements of the methods are higher than for nu-TRLAN. Usually
         the method is slightly faster that nu-TRLAN and more numerically
         stable. The method allows the truncated SVD (only specifid amount
-        of eigentriples to be computed). See (Korobeynikov, 2010) for more
+        of eigentriples to be computed). See Korobeynikov (2010) for more
         information.}
       \item{svd}{Full SVD as provided by LAPACK DGESDD
         routine. Neither continuation of the decomposition nor the
@@ -185,6 +187,10 @@ ssa(x,
 }
 
 \references{
+  Golyandina N., Korobeynikov A., Zhigljavsky A. (2018):
+  \emph{Singular Spectrum Analysis with R.}  Use R!.
+    Springer, Berlin, Heidelberg.
+
   Broomhead, D.S., and King, G.P. (1986a): \emph{Extracting qualitative
   dynamics from experimental data}, Physica D, 20, 217--236.
 
@@ -218,28 +224,32 @@ ssa(x,
   Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
     Analysis for time series}. Springer Briefs in Statistics. Springer.
 
-  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
-  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
-    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
-    \url{https://www.jstatsoft.org/article/view/v067i02}
-
-  Golyandina, N. and Shlemov, A. (2017): \emph{Semi-nonparametric singular 
-  spectrum analysis with projection}. Statistics and its Interface. 
-  \url{http://arxiv.org/abs/1401.4980}
-
   Shlemov, A. and Golyandina, N. (2014): \emph{Shaped extensions of singular
   spectrum analysis}. 21st International Symposium on Mathematical 
   Theory of Networks and Systems, July 7-11, 2014. Groningen, 
   The Netherlands. p.1813-1820. \url{http://arxiv.org/abs/1507.05286}
   
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
+  \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
+  with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2,
+  p.1-78.
+  \url{https://www.jstatsoft.org/article/view/v067i02}
+
+  Golyandina, N. and Shlemov, A. (2017): \emph{Semi-nonparametric singular 
+  spectrum analysis with projection}. Statistics and its Interface, Vol. 10, 
+  Issue 1, p. 47-57.
+  \url{http://arxiv.org/abs/1401.4980}
+
   Zvonarev, N. and Golyandina, N. (2017): \emph{Iterative algorithms for weighted and 
-  unweighted finite-rank time-series approximations}. Statistics and its Interface.
+  unweighted finite-rank time-series approximations}. Statistics and its Interface,
+  Vol. 10, Issue 1, p. 5-18.
   \url{http://arxiv.org/abs/1507.02751}
 }
 \seealso{
   \code{\link[svd:svd]{svd}},
   \code{\link[Rssa:ssa-object]{ssa-object}},
   \code{\link[Rssa:ssa-input]{ssa-input}},
+  \code{\link[Rssa:ssa.capabilities]{ssa.capabilities}},
   \code{\link[Rssa:decompose.ssa]{decompose}},
   \code{\link[Rssa:reconstruct]{reconstruct}},
   \code{\link[Rssa:plot]{plot}},
