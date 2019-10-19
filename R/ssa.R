@@ -65,7 +65,7 @@ ssa <- function(x,
                 ...,
                 kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
                 circular = FALSE,
-                svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
+                svd.method = c("auto", "nutrlan", "propack", "svd", "eigen", "rspectra", "primme"),
                 force.decompose = TRUE) {
   svd.method <- match.arg(svd.method)
 

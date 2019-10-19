@@ -4,7 +4,7 @@ Title: A Collection of Methods for Singular Spectrum Analysis
 Version: 1.0.1
 Depends: R (>= 3.1), svd (>= 0.4), forecast
 Imports: lattice, methods
-Suggests: testthat (>= 0.7)
+Suggests: testthat (>= 0.7), RSpectra, PRIMME
 SystemRequirements: fftw (>=3.2)
 Author: Anton Korobeynikov, Alex Shlemov, Konstantin Usevich, Nina Golyandina
 Maintainer: Anton Korobeynikov <anton@korobeynikov.info>

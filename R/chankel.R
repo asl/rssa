@@ -57,7 +57,6 @@ decompose.cssa <- function(x,
   if (is.null(neig))
     neig <- .default.neig(x, ...)
 
-
   if (identical(x$svd.method, "svd")) {
     S <- svd(hankel(.F(x), L = x$window), nu = neig, nv = neig)
     .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
@@ -72,8 +71,40 @@ decompose.cssa <- function(x,
 
     ## Save results
     .set.decomposition(x,
-                       sigma = S$values[seq_len(neig)],
+                       sigma = sqrt(S$values[seq_len(neig)]),
                        U = S$vectors[, seq_len(neig), drop = FALSE])
+  } else if (identical(x$svd.method, "primme")) {
+    if (!require("PRIMME", quietly = TRUE))
+        stop("PRIMME package is required for SVD method `primme'")
+    R <- new.hmat(Re(.F(x)), L = x$window, fft.plan = .get.or.create.cfft.plan(x))
+    I <- new.hmat(Im(.F(x)), L = x$window, fft.plan = .get.or.create.cfft.plan(x))
+
+    matmul <- function(x, y) {
+        if (is.matrix(y))
+            apply(y, 2, ematmul, emat = x, transposed = FALSE)
+        else
+            ematmul(x, y, transposed = FALSE)
+    }
+
+    tmatmul <- function(x, y) {
+        if (is.matrix(y))
+            apply(y, 2, ematmul, emat = x, transposed = TRUE)
+        else
+            ematmul(x, y, transposed = TRUE)
+    }
+
+    A <- function(x, trans) {
+        rX <- Re(x); iX <- Im(x)
+        if (identical(trans, "c")) {
+               (tmatmul(R, rX) + tmatmul(I, iX)) +
+            1i*(tmatmul(R, iX) - tmatmul(I, rX))
+        } else {
+              (matmul(R, rX) - matmul(I, iX)) +
+           1i*(matmul(R, iX) + matmul(I, rX))
+        }
+    }
+    S <- PRIMME::svds(A, NSvals = neig, m = nrow(R), n = ncol(R), isreal = FALSE, ...)
+    .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
   } else
     stop("unsupported SVD method")
 
