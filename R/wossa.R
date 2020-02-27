@@ -143,19 +143,20 @@ decompose.wossa <- function(x,
                    lambda = .decomposition(x)$osigma, U = .decomposition(x)$oU)
     oU <- S$u; oV <- S$v; osigma <- S$d
   } else if (identical(x$svd.method, "rspectra")) {
-    if (!require("RSpectra", quietly = TRUE))
-        stop("RSpectra package is required for SVD method `rspectra'")
+    if (!requireNamespace("RSpectra", quietly = TRUE))
+        stop("RSpectra package is requireNamespaced for SVD method `rspectra'")
     h <- .get.or.create.whmat(x)
     A <- function(x, args) ematmul(args, x)
     Atrans <- function(x, args) ematmul(args, x, transposed = TRUE)
-    S <- RSpectra::svds(A, k = neig, Atrans = Atrans, dim = dim(h), args = h, ...)
+    S <- RSpectra::svds(A,
+                        k = neig, Atrans = Atrans, dim = dim(h), args = h, ...)
     oU <- S$u; oV <- S$v; osigma <- S$d
   } else if (identical(x$svd.method, "primme")) {
-    if (!require("PRIMME", quietly = TRUE))
-        stop("PRIMME package is required for SVD method `primme'")
+    if (!requireNamespace("PRIMME", quietly = TRUE))
+        stop("PRIMME package is requireNamespaced for SVD method `primme'")
     h <- .get.or.create.whmat(x)
-    A <-function(x, trans) if (identical(trans, "c")) crossprod(h, x) else h %*% x
-    S <- PRIMME::svds(A, NSvals = neig, m = nrow(h), n = ncol(h), isreal = TRUE, ...)
+    pA <-function(x, trans) if (identical(trans, "c")) crossprod(h, x) else h %*% x
+    S <- PRIMME::svds(pA, NSvals = neig, m = nrow(h), n = ncol(h), isreal = TRUE, ...)
     oU <- S$u; oV <- S$v; osigma <- S$d
   } else
     stop("unsupported SVD method")

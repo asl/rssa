@@ -93,8 +93,8 @@ decompose.toeplitz.ssa <- function(x,
     U <- S$u
     lambda <- NULL
   } else if (identical(x$svd.method, "rspectra")) {
-    if (!require("RSpectra", quietly = TRUE))
-        stop("RSpectra package is required for SVD method `rspectra'")
+    if (!requireNamespace("RSpectra", quietly = TRUE))
+        stop("RSpectra package is requireNamespaced for SVD method `rspectra'")
     h <- .get.or.create.tmat(x)
     A <- function(x, args) ematmul(args, x)
     Atrans <- function(x, args) ematmul(args, x, transposed = TRUE)
@@ -102,11 +102,11 @@ decompose.toeplitz.ssa <- function(x,
     U <- S$u
     lambda <- NULL
   } else if (identical(x$svd.method, "primme")) {
-    if (!require("PRIMME", quietly = TRUE))
-        stop("PRIMME package is required for SVD method `rspectra'")
+    if (!requireNamespace("PRIMME", quietly = TRUE))
+        stop("PRIMME package is requireNamespaced for SVD method `rspectra'")
     h <- .get.or.create.tmat(x)
-    A <-function(x, trans) if (identical(trans, "c")) crossprod(h, x) else h %*% x
-    S <- PRIMME::svds(A, NSvals = neig, m = nrow(h), n = ncol(h), isreal = TRUE, ...)
+    pA <-function(x, trans) if (identical(trans, "c")) crossprod(h, x) else h %*% x
+    S <- PRIMME::svds(pA, NSvals = neig, m = nrow(h), n = ncol(h), isreal = TRUE, ...)
     U <- S$u
     lambda <- NULL
   } else

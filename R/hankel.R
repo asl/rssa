@@ -237,7 +237,7 @@ decompose.ssa <- function(x,
     S <- propack.svd(.get.or.create.trajmat(x), neig = neig, ...)
     .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
   } else if (identical(x$svd.method, "rspectra")) {
-    if (!require("RSpectra", quietly = TRUE))
+    if (!requireNamespace("RSpectra", quietly = TRUE))
         stop("RSpectra package is required for SVD method `rspectra'")
     h <- .get.or.create.trajmat(x)
     A <- function(x, args) ematmul(args, x)
@@ -245,11 +245,11 @@ decompose.ssa <- function(x,
     S <- RSpectra::svds(A, k = neig, Atrans = Atrans, dim = dim(h), args = h, ...)
     .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
   } else if (identical(x$svd.method, "primme")) {
-    if (!require("PRIMME", quietly = TRUE))
+    if (!requireNamespace("PRIMME", quietly = TRUE))
         stop("PRIMME package is required for SVD method `primme'")
     h <- .get.or.create.trajmat(x)
-    A <-function(x, trans) if (identical(trans, "c")) crossprod(h, x) else h %*% x
-    S <- PRIMME::svds(A, NSvals = neig, m = nrow(h), n = ncol(h), isreal = TRUE, ...)
+    pA <-function(x, trans) if (identical(trans, "c")) crossprod(h, x) else h %*% x
+    S <- PRIMME::svds(pA, NSvals = neig, m = nrow(h), n = ncol(h), isreal = TRUE, ...)
     .set.decomposition(x, sigma = S$d, U = S$u, V = S$v)
   } else
     stop("unsupported SVD method")

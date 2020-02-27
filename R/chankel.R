@@ -74,7 +74,7 @@ decompose.cssa <- function(x,
                        sigma = sqrt(S$values[seq_len(neig)]),
                        U = S$vectors[, seq_len(neig), drop = FALSE])
   } else if (identical(x$svd.method, "primme")) {
-    if (!require("PRIMME", quietly = TRUE))
+    if (!requireNamespace("PRIMME", quietly = TRUE))
         stop("PRIMME package is required for SVD method `primme'")
     R <- new.hmat(Re(.F(x)), L = x$window, fft.plan = .get.or.create.cfft.plan(x))
     I <- new.hmat(Im(.F(x)), L = x$window, fft.plan = .get.or.create.cfft.plan(x))
