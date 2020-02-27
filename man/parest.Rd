@@ -143,8 +143,8 @@
     IEEE Transactions on Signal Processing 53(8), 3348--3349.
 
   Shlemov A, Golyandina N (2014) Shaped extensions of Singular Spectrum Analysis. In: 21st
-  international symposium on mathematical theory of networks and systems, July 7–11, 2014.
-  Groningen, The Netherlands, pp 1813–1820.
+  international symposium on mathematical theory of networks and systems, July 7--11, 2014.
+  Groningen, The Netherlands, pp 1813--1820.
 }
 
 \seealso{

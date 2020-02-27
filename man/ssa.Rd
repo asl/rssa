@@ -20,7 +20,7 @@ ssa(x,
     \dots,
     kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
     circular = FALSE,
-    svd.method = c("auto", "nutrlan", "propack", "svd", "eigen"),
+    svd.method = c("auto", "nutrlan", "propack", "svd", "eigen", "rspectra", "primme"),
     force.decompose = TRUE)
 }
 
@@ -176,6 +176,10 @@ ssa(x,
       \item{eigen}{Full SVD via eigendecompsition of the cross-product
         matrix. In many cases faster than previous method, but still
         really slow for more or less non-trivial matrix sizes.}
+      \item{rspectra}{SVD via \code{svds} function from Rspectra package
+        (if installed)}
+      \item{primme}{SVD via \code{svds} function from PRIMME package
+        (if installed)}
     }
 
     Usually the \code{ssa} function tries to provide the best SVD
