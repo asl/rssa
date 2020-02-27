@@ -1,4 +1,4 @@
-AC_INIT([Rssa], 0.9.0)
+AC_INIT([Rssa], 1.0.2)
 
 dnl Select an optional include path, from a configure option
 dnl or from an environment variable.
@@ -37,7 +37,6 @@ if test -z "${R_HOME}"; then
    exit 1
 fi
 CC=`"${R_HOME}/bin/R" CMD config CC`
-CPP=`"${R_HOME}/bin/R" CMD config CPP`
 CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
 CPPFLAGS=`"${R_HOME}/bin/R" CMD config CPPFLAGS`
 LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
