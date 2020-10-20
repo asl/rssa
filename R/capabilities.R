@@ -55,12 +55,17 @@ ssa.capabilities <- function(x) {
 .register.capability("Reconstruction", "reconstruct")
 .register.capability("Plotting", "plot")
 
-.caps.forecast <- function(x) {
+.caps.vforecast <- function(x) {
   ## No forecast in shaped and circular case
   !is.shaped(x) && !x$circular
 }
-.register.capability("Recurrent forecast", "rforecast", .caps.forecast)
-.register.capability("Vector forecast", "vforecast", .caps.forecast)
+
+.caps.rforecast <- function(x) {
+  ## No forecast in shaped case
+  !is.shaped(x) || x$circular
+}
+.register.capability("Recurrent forecast", "rforecast", .caps.rforecast)
+.register.capability("Vector forecast", "vforecast", .caps.vforecast)
 
 .caps.gapfill <- function(x) {
   ## Gapfilling should always start from shaped object
@@ -74,7 +79,7 @@ ssa.capabilities <- function(x) {
 
 .caps.lrr <- function(x) {
   ## We don't support LRR in shaped case
-  !is.shaped(x)
+  !is.shaped(x) || x$circular
 }
 .register.capability("LRR", "lrr", .caps.lrr)
 
