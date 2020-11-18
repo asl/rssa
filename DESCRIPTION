@@ -1,7 +1,7 @@
 Package: Rssa
 Type: Package
 Title: A Collection of Methods for Singular Spectrum Analysis
-Version: 1.0.2
+Version: 1.0.3
 Depends: R (>= 3.1), svd (>= 0.4), forecast
 Imports: lattice, methods
 Suggests: testthat (>= 0.7), RSpectra, PRIMME
