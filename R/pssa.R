@@ -412,7 +412,7 @@ vforecast.pssa.1d.ssa <- function(x, groups, len = 1,
     ## First, initialize the main object
     ## We cannot use NextMethod here due to non-standard evaluation
     class.wo.pssa <- class(this)[!grepl("^pssa", class(this))]
-    eval(getS3method(".init.fragment", class.wo.pssa)(this))
+    eval(getS3method(".init.fragment", class.wo.pssa[1])(this))
     ## eval(.init.fragment.1d.ssa(this))
 
     # unwind all dimentions except last

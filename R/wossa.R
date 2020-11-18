@@ -188,7 +188,7 @@ decompose.wossa <- function(x,
     ## First, initialize the main object
     ## We cannot use NextMethod here due to non-standard evaluation
     class.wo.wossa <- class(this)[!grepl("^wossa", class(this))]
-    eval(getS3method(".init.fragment", class.wo.wossa)(this))
+    eval(getS3method(".init.fragment", class.wo.wossa[1])(this))
 
     .vector.pseudo.inverse <- function(v, eps = 1e-6) {
       iv <- 1 / v
