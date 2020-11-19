@@ -13,7 +13,7 @@
 \format{An integer array of dimension 3.}
 
 \source{
-  \url{http://www.hlevkin.com/TestImages/classic.htm}
+  \url{http://www.hlevkin.com/hlevkin/06testimages.htm}
 }
 
 \keyword{datasets}

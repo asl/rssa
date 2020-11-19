@@ -86,7 +86,7 @@
     within the framework of SSA.}
     In Proceedings of the 5th St.Petersburg Workshop on Simulation,
     June 26 -- July 2, 2005, St.Petersburg State University, St.Petersburg, Pp. 45--50
-    \url{http://www.gistatgroup.com/gus/autossa2.pdf}
+    \url{https://www.gistatgroup.com/gus/autossa2.pdf}
 }
 
 \seealso{

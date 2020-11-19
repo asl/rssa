@@ -87,7 +87,7 @@
   N. Golyandina, E. Osipov (2007): \emph{The "Caterpillar"-SSA method
   for analysis of time series with missing values}. Journal of
   Statistical Planning and Inference, Vol. 137, No. 8, Pp 2642--2653
-  \url{http://www.gistatgroup.com/cat/mvssa1en.pdf}
+  \url{https://www.gistatgroup.com/cat/mvssa1en.pdf}
 }
 
 \seealso{

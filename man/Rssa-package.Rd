@@ -50,7 +50,7 @@
     analysis and forecast of multidimensional time series}. In
   Proceedings of the 5th St.Petersburg Workshop on Simulation, June
   26-July 2, 2005, St. Petersburg State University, St. Petersburg,
-  293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
+  293--298. \url{https://www.gistatgroup.com/gus/mssa2.pdf}
 
   Golyandina, N. and Usevich, K. (2009): \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
@@ -63,7 +63,7 @@
 
   Golyandina, N., Korobeynikov, A. (2012, 2014): \emph{Basic Singular Spectrum
     Analysis and Forecasting with R.} Computational Statistics and Data
-    Analysis, Vol. 71, Pp. 934-954. \url{http://arxiv.org/abs/1206.6910}
+    Analysis, Vol. 71, Pp. 934-954. \url{https://arxiv.org/abs/1206.6910}
 
   Golyandina, N., Zhigljavsky, A. (2013): \emph{Singular Spectrum
     Analysis for time series}. Springer Briefs in Statistics. Springer.
@@ -71,7 +71,7 @@
   Shlemov, A. and Golyandina, N. (2014): \emph{Shaped extensions of singular
   spectrum analysis}. 21st International Symposium on Mathematical 
   Theory of Networks and Systems, July 7-11, 2014. Groningen, 
-  The Netherlands. p.1813-1820. \url{http://arxiv.org/abs/1507.05286}
+  The Netherlands. p.1813-1820. \url{https://arxiv.org/abs/1507.05286}
 
   Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis

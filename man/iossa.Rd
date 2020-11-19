@@ -88,7 +88,7 @@
   Golyandina N. and Shlemov A. (2015): \emph{Variations of Singular Spectrum Analysis
   for separability improvement: non-orthogonal decompositions of time series}, 
   Statistics and Its Interface. Vol.8, No 3, P.277-294.
-  \url{http://arxiv.org/abs/1308.4022}
+  \url{https://arxiv.org/abs/1308.4022}
 }
 
 \seealso{

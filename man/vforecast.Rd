@@ -87,7 +87,7 @@
     analysis and forecast of multidimensional time series}. In
     Proceedings of the 5th St.Petersburg Workshop on Simulation, June
     26-July 2, 2005, St. Petersburg State University, St. Petersburg,
-    293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
+    293--298. \url{https://www.gistatgroup.com/gus/mssa2.pdf}
 
   Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
     \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis

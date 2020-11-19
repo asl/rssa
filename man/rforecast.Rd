@@ -111,7 +111,7 @@
     analysis and forecast of multidimensional time series}. In
     Proceedings of the 5th St.Petersburg Workshop on Simulation, June
     26-July 2, 2005, St. Petersburg State University, St. Petersburg,
-    293--298. \url{http://www.gistatgroup.com/gus/mssa2.pdf}
+    293--298. \url{https://www.gistatgroup.com/gus/mssa2.pdf}
 }
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
