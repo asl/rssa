@@ -14,5 +14,5 @@ Description: Methods and tools for Singular Spectrum Analysis including decompos
              Golyandina et al. (2018, <doi:10.1007/978-3-662-57380-8>).
              See 'citation("Rssa")' for details.
 License: GPL (>= 2)
-URL: http://github.com/asl/rssa
-BugReports: http://github.com/asl/rssa/issues
+URL: https://github.com/asl/rssa
+BugReports: https://github.com/asl/rssa/issues
