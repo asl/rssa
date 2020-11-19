@@ -11,7 +11,7 @@ Maintainer: Anton Korobeynikov <anton@korobeynikov.info>
 Description: Methods and tools for Singular Spectrum Analysis including decomposition,
              forecasting and gap-filling for univariate and multivariate time series.
              General description of the methods with many examples can be found in the book
-             Golyandina et al. (2018, <doi:10.1007/978-3-662-57380-8>).
+             Golyandina (2018, <doi:10.1007/978-3-662-57380-8>).
              See 'citation("Rssa")' for details.
 License: GPL (>= 2)
 URL: https://github.com/asl/rssa
