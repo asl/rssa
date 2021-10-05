@@ -1,10 +1,9 @@
-AC_INIT([Rssa], 1.0.2)
+AC_INIT([Rssa],[1.0.2])
 
 dnl Select an optional include path, from a configure option
 dnl or from an environment variable.
 AC_ARG_WITH([fftw-include],
-            AC_HELP_STRING([--with-fftw-include=INCLUDE_PATH],
-                           [the location of FFTWv3 header files]),
+            AS_HELP_STRING([--with-fftw-include=INCLUDE_PATH],[the location of FFTWv3 header files]),
             [fftw_include_path=$withval])
 
 RSSA_CPPFLAGS="-I."
@@ -18,8 +17,7 @@ fi
      
 dnl Ditto for a library path
 AC_ARG_WITH([fftw-lib],
-            AC_HELP_STRING([--with-fftw-lib=LIB_PATH],
-                           [the location of FFTWv3 libraries]),
+            AS_HELP_STRING([--with-fftw-lib=LIB_PATH],[the location of FFTWv3 libraries]),
             [fftw_lib_path=$withval])
      
 if test [ -n "$fftw_lib_path" ] ; then
