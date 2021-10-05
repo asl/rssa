@@ -1,4 +1,4 @@
-AC_INIT([Rssa],[1.0.2])
+AC_INIT([Rssa],[1.0.4])
 
 dnl Select an optional include path, from a configure option
 dnl or from an environment variable.
