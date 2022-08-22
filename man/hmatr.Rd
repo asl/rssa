@@ -55,7 +55,7 @@
   L-lagged vectors of the series \eqn{F^{(2)}}. Now define
   \deqn{
     g(F^{(1)},F^{(2)})
-    = \frac{\sum_{j=1}^{K_{2}}{\mathrm{dist}\,^{2}\left(X^{(2)}_{j},
+    = \frac{\sum_{j=1}^{K_{2}}{\mathrm{dist}^{2}\left(X^{(2)}_{j},
         \mathcal{L}^{(1)}\right)}}
     {\sum_{j=1}^{K_{2}}{\left\|X^{(2)}_{j}\right\|^{2}}}, } where
   \eqn{\mathrm{dist}\,(X,\mathcal{L})} denotes the Euclidean distance between the
