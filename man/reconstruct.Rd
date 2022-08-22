@@ -62,7 +62,7 @@
   Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
     with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
-    \url{https://www.jstatsoft.org/article/view/v067i02}
+  \doi{10.18637/jss.v067.i02}
 }
 
 \seealso{

@@ -235,9 +235,8 @@ ssa(x,
   
   Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
-  with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2,
-  p.1-78.
-  \url{https://www.jstatsoft.org/article/view/v067i02}
+    with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
+  \doi{10.18637/jss.v067.i02}
 
   Golyandina, N. and Shlemov, A. (2017): \emph{Semi-nonparametric singular 
   spectrum analysis with projection}. Statistics and its Interface, Vol. 10, 

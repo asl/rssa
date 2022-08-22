@@ -102,10 +102,10 @@
     Time Series Structure: SSA and related techniques.} Chapman and
   Hall/CRC. ISBN 1584881941
   
-    Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
+  Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
     with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
-    \url{https://www.jstatsoft.org/article/view/v067i02}
+  \doi{10.18637/jss.v067.i02}
 
   Golyandina, N. and Stepanov, D. (2005): \emph{SSA-based approaches to
     analysis and forecast of multidimensional time series}. In
