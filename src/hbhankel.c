@@ -40,6 +40,12 @@ typedef struct {
   fftw_complex * circ_freq;
   fftw_plan r2c_plan;
   fftw_plan c2r_plan;
+  R_len_t unit_dimensions;
+  fftw_complex * circ_freq_multiple;
+  fftw_plan multiple_r2c_plan;
+  fftw_plan multiple_c2r_plan;
+  fftw_plan single_r2c_plan;
+  fftw_plan single_c2r_plan;
 #else
   Rcomplex *circ_freq;
 #endif
@@ -118,9 +124,18 @@ static void free_circulant(hbhankel_matrix *h) {
   Free(h->factor);
   Free(h->length);
 
-  fftw_free(h->circ_freq);
-  fftw_destroy_plan(h->r2c_plan);
-  fftw_destroy_plan(h->c2r_plan);
+  if (!h->unit_dimensions) {
+    fftw_free(h->circ_freq);
+    fftw_destroy_plan(h->r2c_plan);
+    fftw_destroy_plan(h->c2r_plan);
+  } else {
+    fftw_free(h->circ_freq_multiple);
+    fftw_destroy_plan(h->multiple_r2c_plan);
+    fftw_destroy_plan(h->multiple_c2r_plan);
+    fftw_destroy_plan(h->single_r2c_plan);
+    fftw_destroy_plan(h->single_c2r_plan);
+  }
+
 }
 
 static void initialize_circulant(hbhankel_matrix *h,
@@ -129,36 +144,81 @@ static void initialize_circulant(hbhankel_matrix *h,
                                  const R_len_t *N,
                                  const R_len_t *L,
                                  const int *circular) {
-  fftw_complex *ocirc;
-  fftw_plan p1, p2;
+  fftw_complex *ocirc, *ocirc_multiple;
+  fftw_plan p1, p2, m_r2c, m_c2r, s_r2c, s_c2r;
   double *circ;
-  R_len_t *revN, r;
+  R_len_t *revN, r, unit = 0, howmany, dist_r, dist_c, *revN_nonunit, nonunit;
+
+  /* Counting trailing unit window dimensionslengths;
+     the first dimension is not taken into account */
+  for (r = 0; r + 1 < rank; ++r) {
+    if (L[rank - r - 1] == 1)
+      unit = r + 1;
+    else
+      break;
+  }
 
   /* Allocate needed memory */
   circ = (double*) fftw_malloc(prod(rank, N) * sizeof(double));
-  ocirc = (fftw_complex*) fftw_malloc(hprod(rank, N) * sizeof(fftw_complex));
+
+  if (!unit) {
+    ocirc = (fftw_complex*) fftw_malloc(hprod(rank, N) * sizeof(fftw_complex));
+  } else {
+    nonunit = rank - unit;
+    howmany = prod(unit, N + nonunit);
+    dist_r = prod(nonunit, N);
+    dist_c = hprod(nonunit, N);
+    ocirc_multiple = (fftw_complex*) fftw_malloc(dist_c * howmany * sizeof(fftw_complex));
+  }
 
   /* Estimate the best plans for given input length, note, that input data is
      stored in column-major mode, that's why we're passing dimensions in
      *reverse* order */
   revN = Calloc(rank, R_len_t);
   for (r = 0; r < rank; ++r) revN[r] = N[rank - 1 - r];
-  p1 = fftw_plan_dft_r2c(rank, revN, circ, ocirc, FFTW_ESTIMATE);
-  p2 = fftw_plan_dft_c2r(rank, revN, ocirc, circ, FFTW_ESTIMATE);
+  if (!unit) {
+    p1 = fftw_plan_dft_r2c(rank, revN, circ, ocirc, FFTW_ESTIMATE);
+    p2 = fftw_plan_dft_c2r(rank, revN, ocirc, circ, FFTW_ESTIMATE);
+  } else {
+    /* Estimate the best plans for partial convolutions */
+    revN_nonunit = revN + unit;
+    m_r2c = fftw_plan_many_dft_r2c(nonunit, revN_nonunit, howmany, circ,
+                                   NULL, 1, dist_r, ocirc_multiple,
+                                   NULL, 1, dist_c, FFTW_ESTIMATE);
+    m_c2r = fftw_plan_many_dft_c2r(nonunit, revN_nonunit, howmany, ocirc_multiple,
+                                   NULL, 1, dist_c, circ,
+                                   NULL, 1, dist_r, FFTW_ESTIMATE);
+    s_r2c = fftw_plan_dft_r2c(nonunit, revN_nonunit, circ, ocirc_multiple, FFTW_ESTIMATE);
+    s_c2r = fftw_plan_dft_c2r(nonunit, revN_nonunit, ocirc_multiple, circ, FFTW_ESTIMATE);
+  }
   Free(revN);
+
 
   /* Fill input buffer */
   memcpy(circ, F, prod(rank, N) * sizeof(double));
-
-  /* Run the plan on input data */
-  fftw_execute(p1);
+  if (!unit) {
+    /* Run the plan on input data */
+    fftw_execute(p1);
+  } else {
+    fftw_execute(m_r2c);
+  }
 
   /* Cleanup and return */
   fftw_free(circ);
 
-  h->circ_freq = ocirc;
-  h->r2c_plan = p1;
-  h->c2r_plan = p2;
+
+  h->unit_dimensions = unit;
+  if (!unit) {
+    h->circ_freq = ocirc;
+    h->r2c_plan = p1;
+    h->c2r_plan = p2;
+  } else {
+    h->circ_freq_multiple = ocirc_multiple;
+    h->multiple_r2c_plan = m_r2c;
+    h->multiple_c2r_plan = m_c2r;
+    h->single_r2c_plan = s_r2c;
+    h->single_c2r_plan = s_c2r;
+  }
 
   h->rank = rank;
 
@@ -227,6 +287,90 @@ static void convolveNd(double *x,
   fftw_free(ox);
 }
 
+static void convolveNd_half_partial(const fftw_complex *ox,
+                                    double *y,
+                                    R_len_t rank,
+                                    R_len_t unit,
+                                    const R_len_t *N,
+                                    int conjugate,
+                                    int output_reduction,
+                                    fftw_plan r2c_plan,
+                                    fftw_plan c2r_plan)
+{
+  R_len_t i, j;
+  fftw_complex *oy, *oy_m;
+  R_len_t pN = prod(rank, N), phN = hprod(rank, N), pNU = prod(rank - unit, N),
+          phNU = hprod(rank - unit, N), oyN, oyhN,
+          howmany = prod(unit, N + rank - unit);
+
+  /* If we perform reduction on output, then oy
+     contains howmany parts, otherwise,
+     it contains only a single one */
+  if (output_reduction) {
+    oyN = pN;
+    oyhN = phN;
+  } else {
+    oyN = pNU;
+    oyhN = phNU;
+  }
+
+  /* Allocate needed memory */
+  oy = (fftw_complex*) fftw_malloc(oyhN * sizeof(fftw_complex));
+  oy_m = (fftw_complex*) fftw_malloc(phN * sizeof(fftw_complex));
+
+  /* Compute the Nd-FFT of the matrix y */
+  fftw_execute_dft_r2c(r2c_plan, y, oy);
+
+  /* Compute conjugation if needed */
+  if (conjugate) {
+    for (i = 0; i < oyhN; ++i)
+      oy[i] = conj(oy[i]);
+  }
+
+  /* Dot-multiply ox and oy, and divide by Nx*...*Nz*/
+  for (i = 0; i < phNU; ++i)
+    oy_m[i] = oy[i] * ox[i] / pNU;
+  for (i = 1; i < howmany; ++i) {
+    if (output_reduction) {
+      for (j = 0; j < phNU; ++j)
+        oy_m[j] += oy[i * phNU + j] * ox[i * phNU + j] / pNU;
+    } else {
+      for (j = 0; j < phNU; ++j)
+        oy_m[i * phNU + j] = oy[j] * ox[i * phNU + j] / pNU;
+    }
+  }
+
+  /* Compute the reverse transform to obtain result */
+  fftw_execute_dft_c2r(c2r_plan, oy_m, y);
+
+  /* Cleanup */
+  fftw_free(oy);
+  fftw_free(oy_m);
+}
+
+static void convolveNd_partial(double *x,
+                               double *y,
+                               R_len_t rank,
+                               R_len_t unit,
+                               const R_len_t *N,
+                               int conjugate,
+                               fftw_plan r2c_single,
+                               fftw_plan r2c_multiple,
+                               fftw_plan c2r_multiple)
+{
+  fftw_complex *ox;
+  R_len_t phN = hprod(rank, N);
+
+  ox = (fftw_complex*) fftw_malloc(phN * sizeof(fftw_complex));
+
+  fftw_execute_dft_r2c(r2c_multiple, x, ox);
+
+  convolveNd_half_partial(ox, y, rank, unit, N, conjugate, 0,
+                           r2c_single, c2r_multiple);
+
+  fftw_free(ox);
+}
+
 static void matmul(double* out,
                    const double* v,
                    const void* matrix,
@@ -266,10 +410,22 @@ static void matmul(double* out,
     }
   }
 
-  convolveNd_half(h->circ_freq, circ,
-                  rank, h->length,
-                  1,
-                  h->r2c_plan, h->c2r_plan);
+  if (!h->unit_dimensions) {
+    convolveNd_half(h->circ_freq, circ,
+                    rank, h->length,
+                    1,
+                    h->r2c_plan, h->c2r_plan);
+  } else {
+    if (!transposed) {
+      convolveNd_half_partial(h->circ_freq_multiple, circ, rank,
+                              h->unit_dimensions, h->length, 1, 1,
+                              h->multiple_r2c_plan, h->single_c2r_plan);
+    } else {
+      convolveNd_half_partial(h->circ_freq_multiple, circ, rank,
+                              h->unit_dimensions, h->length, 1, 0,
+                              h->single_r2c_plan, h->multiple_c2r_plan);
+    }
+  }
 
   /* Cleanup and return */
   if (col_ind == NULL) {
@@ -319,7 +475,13 @@ static R_INLINE void hbhankelize_fft(double *F,
   }
 
   /* Compute convolution */
-  convolveNd(iV, iU, rank, N, 0, h->r2c_plan, h->c2r_plan);
+  if (!h->unit_dimensions) {
+    convolveNd(iV, iU, rank, N, 0, h->r2c_plan, h->c2r_plan);
+  } else {
+    convolveNd_partial(iV, iU, rank, h->unit_dimensions, N, 0,
+                       h->single_r2c_plan, h->multiple_r2c_plan,
+                       h->multiple_c2r_plan);
+  }
 
   /* Form the result */
   for (i = 0; i < pN; ++i) {
