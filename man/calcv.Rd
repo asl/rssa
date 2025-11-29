@@ -2,6 +2,7 @@
 \alias{calc.v}
 \alias{calc.v.ssa}
 \alias{calc.v.cssa}
+\alias{calc.v.cmssa}
 
 \title{Calculate Factor Vector(s)}
 
@@ -13,6 +14,7 @@
 \usage{
 \method{calc.v}{ssa}(x, idx, \dots)
 \method{calc.v}{cssa}(x, idx, \dots)
+\method{calc.v}{cmssa}(x, idx, \dots)
 }
 
 \arguments{

@@ -4,6 +4,7 @@
 \alias{hcols}
 \alias{hrows}
 \alias{hankel}
+\alias{mhankel}
 \alias{hmatmul}
 
 \title{Hankel matrices operations.}

@@ -5,6 +5,7 @@
 \alias{predict.ssa}
 \alias{predict.1d.ssa}
 \alias{predict.mssa}
+\alias{predict.cmssa}
 \alias{predict.toeplitz.ssa}
 \title{Perform SSA forecasting of series}
 
@@ -47,7 +48,14 @@
         direction = c("column", "row"),
         \dots,
         drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{predict}{cmssa}(object,
+        groups, len = 1,
+        method = c("recurrent", "vector"),
+        direction = c("column", "row"),
+        \dots,
+        drop = TRUE, drop.attributes = FALSE, cache = TRUE)
 }
+
 
 \arguments{
   \item{object}{SSA object holding the decomposition}

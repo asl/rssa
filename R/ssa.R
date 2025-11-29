@@ -28,7 +28,7 @@
 
 .determine.svd.method <- function(x, kind, neig = NULL,
                                   ...,
-                                  svd.method = (if (identical(kind, "cssa")) "eigen" else "nutrlan")) {
+                                  svd.method = (if ("cssa" %in% kind) "eigen" else "nutrlan")) {
   tjdim <- .traj.dim(x)
   L <- tjdim[1]; K <- tjdim[2]
 
@@ -42,7 +42,7 @@
     if (L < 500) {
       truncated <- FALSE
       svd.method <- "eigen"
-    } else if (neig > L /2) {
+    } else if (neig > L / 2) {
       # Check, whether desired eigentriples amount is too huge
       if (L < 500) {
         svd.method <- "eigen"
@@ -63,7 +63,7 @@ ssa <- function(x,
                 column.projector = "none", row.projector = "none",
                 column.oblique = "identity", row.oblique = "identity",
                 ...,
-                kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
+                kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa", "cmssa"),
                 circular = FALSE,
                 svd.method = c("auto", "nutrlan", "propack", "svd", "eigen", "rspectra", "primme", "irlba", "rsvd"),
                 force.decompose = TRUE) {
@@ -82,9 +82,13 @@ ssa <- function(x,
 
   ## Provide some sane defaults, e.g. complex inputs should default to cssa
   if (missing(kind)) {
-    if (is.complex(x))
+    ismssa <- (inherits(x, "mts") || inherits(x, "data.frame") || inherits(x, "list") || inherits(x, "series.list"))
+    iscssa <- is.complex(x) || ismssa && any(sapply(x, is.complex))
+    if (iscssa && ismssa)
+      kind <- "cmssa"
+    else if (iscssa)
       kind <- "cssa"
-    else if (inherits(x, "mts") || inherits(x, "data.frame") || inherits(x, "list") || inherits(x, "series.list"))
+    else if (ismssa)
       kind <- "mssa"
     else if (is.matrix(x))
       kind <- "2d-ssa"
@@ -105,6 +109,8 @@ ssa <- function(x,
       kind <- c("2d-ssa", "nd-ssa")
     else
       kind <- "nd-ssa"
+  } else if (identical(kind, "cmssa")) {
+    kind <- c("cmssa", "mssa", "cssa")
   } else if (identical(kind, "mssa")) {
     ## Nothing special here (yet!)
   } else if (identical(kind, "cssa")) {
