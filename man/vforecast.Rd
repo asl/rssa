@@ -55,13 +55,13 @@
   formula as described in \code{\link{lrr}} is used for constructing of
   the last components of the new vectors) and then derives the series out
   of this extended set of vectors.
-  
-  For multichannel SSA, forecast can be constructed in two versions, 
+
+  For multichannel SSA, forecast can be constructed in two versions,
   row and column ones; it uses the formulae from Golyandina et al (2015).
 
-  For details of 1D-SSA recurrent forecasting, see Section 3.2.1.3 and 
+  For details of 1D-SSA recurrent forecasting, see Section 3.2.1.3 and
   Algorithm 3.6 in Golyandina et al (2018).
-  For details of MSSA recurrent forecasting, see Section 4.3.1.3  and 
+  For details of MSSA recurrent forecasting, see Section 4.3.1.3  and
   Algorithm 4.5 (column forecasting).
 }
 

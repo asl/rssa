@@ -271,6 +271,25 @@ rforecast.mssa <- function(x, groups, len = 1,
   invisible(out)
 }
 
+rforecast.cmssa <- function(x,
+                            groups,
+                            len = 1,
+                            base = c("reconstructed", "original"),
+                            direction = c("row", "column"),
+                            only.new = TRUE,
+                            ...,
+                            drop = TRUE,
+                            drop.attributes = FALSE,
+                            cache = TRUE) {
+  direction <- match.arg(direction)
+  if (identical(direction, "row"))
+    stop("Recurrent Forecast for CMSSA with direction row is not implemented yet.")
+
+  rforecast.mssa(x = x, groups = groups, len = len, base = base, direction = direction,
+                 only.new = only.new, ..., drop = drop, drop.attributes = drop.attributes,
+                 cache = cache)
+}
+
 .shift.matrix.1d <- function(U, ...) {
   wmask <- rep(TRUE, nrow(U))
   .shift.matrix(U, wmask, ndim = 1, ...)
@@ -431,6 +450,19 @@ vforecast.mssa <- function(x, groups, len = 1,
 
   # Forecasted series can be pretty huge...
   invisible(out)
+}
+
+vforecast.cmssa <- function(x,
+                            groups,
+                            len = 1,
+                            base = c("reconstructed", "original"),
+                            direction = c("row", "column"),
+                            only.new = TRUE,
+                            ...,
+                            drop = TRUE,
+                            drop.attributes = FALSE,
+                            cache = TRUE) {
+  stop("Vector Forecast for CMSSA is not implemented yet.")
 }
 
 bforecast.1d.ssa <- function(x, groups,
@@ -610,6 +642,7 @@ forecast.1d.ssa <- function(object,
 "bforecast.toeplitz.ssa" <- `bforecast.1d.ssa`;
 "forecast.toeplitz.ssa" <- `forecast.1d.ssa`;
 "predict.toeplitz.ssa" <- `predict.1d.ssa`;
+"predict.cmssa" <- `predict.mssa`;
 
 "lrr.mssa" <- `lrr.1d.ssa`
 

@@ -4,6 +4,7 @@
 \alias{plot.1d.ssa.reconstruction}
 \alias{plot.toeplitz.ssa.reconstruction}
 \alias{plot.mssa.reconstruction}
+\alias{plot.cmssa.reconstruction}
 \alias{plot.2d.ssa.reconstruction}
 \alias{plot.nd.ssa.reconstruction}
 
@@ -33,6 +34,7 @@
      base.series = NULL,
      add.original = TRUE,
      add.residuals = TRUE)
+\method{plot}{cmssa.reconstruction}(x, \dots)
 \method{plot}{2d.ssa.reconstruction}(x, \dots,
      type = c("raw", "cumsum"),
      base.series = NULL,
@@ -55,7 +57,8 @@
     multidimentional array to draw.}
   \item{type}{Type of the plot (see 'Details' for more information)}
   \item{\dots}{Arguments to be passed to methods, such as graphical
-    parameters}
+    parameters. In `cmssa` case all arguments will be propagated to the
+    reconstruction plot method of the `mssa` class}
   \item{plot.method}{Plotting method to use: either ordinary all-in-one
     via matplot or xyplot, or native plotting method of the input time
     series}

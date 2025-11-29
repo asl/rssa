@@ -278,10 +278,8 @@ plot.cmssa.reconstruction <- function(x, ...) {
     title <- dots$main
   dots$main <- NULL
 
-  oldpar <- par(mfrow = c(1, 2))
   do.call(plot.mssa.reconstruction, c(list(x = rx, main = paste(title, "(Real part)")), dots))
   do.call(plot.mssa.reconstruction, c(list(x = ix, main = paste(title, "(Imaginary part)")), dots))
-  par(oldpar)
 }
 
 .init.fragment.cmssa <- function(this)

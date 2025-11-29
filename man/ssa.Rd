@@ -18,9 +18,9 @@ ssa(x,
     column.oblique = "identity",
     row.oblique = "identity",
     \dots,
-    kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa"),
+    kind = c("1d-ssa", "2d-ssa", "nd-ssa", "toeplitz-ssa", "mssa", "cssa", "cmssa"),
     circular = FALSE,
-    svd.method = c("auto", "nutrlan", "propack", "svd", "eigen", 
+    svd.method = c("auto", "nutrlan", "propack", "svd", "eigen",
                    "rspectra", "primme", "irlba", "rsvd"),
     force.decompose = TRUE)
 }
@@ -40,7 +40,7 @@ ssa(x,
   \item{\dots}{further arguments passed to \code{\link[Rssa:decompose.ssa]{decompose}} }
   \item{kind}{SSA method. This includes ordinary 1d SSA, 2d SSA,
     Toeplitz variant of 1d SSA, multichannel variant of SSA and complex
-    SSA}
+    SSA (1d and multichannel variants)}
   \item{circular}{logical vector of one or two elements, describes series topology for
     1d SSA and Toeplitz SSA or field topology for 2d SSA. 'TRUE' means
     series circularity for 1d case or circularity by a corresponding
@@ -50,7 +50,7 @@ ssa(x,
   \item{column.projector, row.projector}{column and row signal subspaces projectors for
     SSA with projection. See `Details' for information about methods of
     projectors specification}
-  \item{column.oblique, row.oblique}{column and row matrix weights for 
+  \item{column.oblique, row.oblique}{column and row matrix weights for
   Weighted Oblique SSA. See `Details' for information about how to use this feature}
   \item{force.decompose}{logical, if 'TRUE' then the decomposition is
     performed before return.}
@@ -67,7 +67,7 @@ ssa(x,
   constructs the SSA object filling all necessary internal structures
   and performing the decomposition if necessary.
   For the comprehensive description of SSA modifications and their algorithms
-  see Golyandina et al (2018). 
+  see Golyandina et al (2018).
 
   \subsection{Variants of SSA}{
     The following implementations of the SSA method are supported
@@ -84,6 +84,7 @@ ssa(x,
         several time series (possible of unequal length). See
         Golyandina and Stepanov (2005).}
       \item{cssa}{Complex variant of 1d SSA.}
+      \item{cmssa}{Complex variant of multichannel SSA.}
       \item{2d-ssa}{2d SSA for decomposition of images and arrays. See
         Golyandina and Usevich (2009) and Golyandina et.al (2015) for more information.}
       \item{nd-ssa}{Multidimensional SSA decomposition for arrays (tensors).}
@@ -103,12 +104,12 @@ ssa(x,
     }
     These functions are not exported, they defined only for \code{wmask} expression.
     If one has objects with the same names and wants to use them rather than these functions,
-    one should use special wrapper function \code{I()} (see 'Examples'). 
+    one should use special wrapper function \code{I()} (see 'Examples').
   }
 
   \subsection{Projectors specification for SSA with projection}{
     Projectors are specified by means of \code{column.projector} and
-    \code{row.projector} arguments (see Golyandina and Shlemov (2017)). 
+    \code{row.projector} arguments (see Golyandina and Shlemov (2017)).
     Each may be a matrix of orthonormal
     (otherwise QR orthonormalization process will be perfomed) basis of
     projection subspace, or single integer, which will be interpreted as
@@ -133,15 +134,15 @@ ssa(x,
   }
 
   \subsection{Weighted Oblique SSA}{
-    Corresponding matrix norm weights may be specified for ordinary 1D SSA case 
-    by means of \code{column.oblique} and \code{row.oblique} arguments. These 
-    arguments should be either 'identical' or positive numeric vectors of length 
-    \code{L} and \code{N - L + 1} for \code{column.oblique} and 
+    Corresponding matrix norm weights may be specified for ordinary 1D SSA case
+    by means of \code{column.oblique} and \code{row.oblique} arguments. These
+    arguments should be either 'identical' or positive numeric vectors of length
+    \code{L} and \code{N - L + 1} for \code{column.oblique} and
     \code{row.oblique} respectively.
 
-    Weighted Oblique SSA inside \code{\link[Rssa:cadzow]{Cadzow}} iterations 
-    may improve finite-rank estimation of signal 
-    (see e.g. Cadzow(alpha) iterations in Zvonarev and Golyandina (2017) 
+    Weighted Oblique SSA inside \code{\link[Rssa:cadzow]{Cadzow}} iterations
+    may improve finite-rank estimation of signal
+    (see e.g. Cadzow(alpha) iterations in Zvonarev and Golyandina (2017)
     for more information).
   }
 
@@ -216,7 +217,7 @@ ssa(x,
     Proceedings of the 5th St.Petersburg Workshop on Simulation, June
     26-July 2, 2005, St. Petersburg State University, St. Petersburg,
     293--298. \url{https://www.gistatgroup.com/gus/mssa2.pdf}
-  
+
   Golyandina, N. and Usevich, K. (2009): \emph{2D-extensions of singular
   spectrum analysis: algorithm and elements of theory.} In Matrix
   Methods: Theory, Algorithms, Applications. World Scientific
@@ -234,21 +235,21 @@ ssa(x,
     Analysis for time series}. Springer Briefs in Statistics. Springer.
 
   Shlemov, A. and Golyandina, N. (2014): \emph{Shaped extensions of singular
-  spectrum analysis}. 21st International Symposium on Mathematical 
-  Theory of Networks and Systems, July 7-11, 2014. Groningen, 
+  spectrum analysis}. 21st International Symposium on Mathematical
+  Theory of Networks and Systems, July 7-11, 2014. Groningen,
   The Netherlands. p.1813-1820. \url{https://arxiv.org/abs/1507.05286}
-  
+
   Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
     with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.
   \doi{10.18637/jss.v067.i02}
 
-  Golyandina, N. and Shlemov, A. (2017): \emph{Semi-nonparametric singular 
-  spectrum analysis with projection}. Statistics and its Interface, Vol. 10, 
+  Golyandina, N. and Shlemov, A. (2017): \emph{Semi-nonparametric singular
+  spectrum analysis with projection}. Statistics and its Interface, Vol. 10,
   Issue 1, p. 47-57.
   \url{https://arxiv.org/abs/1401.4980}
 
-  Zvonarev, N. and Golyandina, N. (2017): \emph{Iterative algorithms for weighted and 
+  Zvonarev, N. and Golyandina, N. (2017): \emph{Iterative algorithms for weighted and
   unweighted finite-rank time-series approximations}. Statistics and its Interface,
   Vol. 10, Issue 1, p. 5-18.
   \url{https://arxiv.org/abs/1507.02751}
@@ -319,6 +320,11 @@ s <- ssa(Mars, wmask = circle(R = I(circle)))
 
 # CSSA-based trend extraction
 s <- ssa(EuStockMarkets[, 1] + 1.0i*EuStockMarkets[, 2], kind = "cssa")
+r <- reconstruct(s, groups = list(Trend = 1:2))
+plot(r)
+
+# CMSSA-based trend extraction
+s <- ssa(EuStockMarkets[, 1:2] + 1.0i*EuStockMarkets[, 3:4], kind = "cmssa")
 r <- reconstruct(s, groups = list(Trend = 1:2))
 plot(r)
 

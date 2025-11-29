@@ -6,6 +6,7 @@
 \alias{rforecast.toeplitz.ssa}
 \alias{rforecast.mssa}
 \alias{rforecast.cssa}
+\alias{rforecast.cmssa}
 \alias{rforecast.pssa.1d.ssa}
 \title{Perform recurrent SSA forecasting of the series}
 
@@ -26,6 +27,9 @@
 \method{rforecast}{cssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           only.new = TRUE, reverse = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
+\method{rforecast}{cmssa}(x, groups, len = 1, base = c("reconstructed", "original"),
+          direction = c("row", "column"), only.new = TRUE, \dots, drop = TRUE,
+          drop.attributes = FALSE, cache = TRUE)
 \method{rforecast}{pssa.1d.ssa}(x, groups, len = 1, base = c("reconstructed", "original"),
           only.new = TRUE, reverse = FALSE, \dots,
           drop = TRUE, drop.attributes = FALSE, cache = TRUE)
@@ -38,7 +42,8 @@
   \item{base}{series used as a 'seed' of forecast: original or
     reconstructed according to the value of \code{groups} argument}
   \item{direction}{direction of forecast in multichannel SSA case, "column"
-    stands for so-called L-forecast and "row" stands for K-forecast}
+    stands for so-called L-forecast and "row" stands for K-forecast
+    (for complex case only "column" variant is impemented)}
   \item{only.new}{logical, if 'TRUE' then only forecasted values are returned,
     whole series otherwise}
   \item{reverse}{logical, direction of forecast in 1D SSA case, 'FALSE'
@@ -61,12 +66,12 @@
   sequentialy projects the incomplete embedding vectors (from either the original
   or the reconstructed series) onto the subspace spanned by the
   selected eigentriples of the decomposition to derive the missed
-  (last) values of the such vectors. Then the filled value 
+  (last) values of the such vectors. Then the filled value
   In such a way the forecasting elements are produced on
   one-by-one basis.
 
   It is shown in Golyandina et al (2001) that this approach corresponds
-  to application of a linear recurrence formula (the same formula as 
+  to application of a linear recurrence formula (the same formula as
   described in \code{\link{lrr}}) to initial data taken from either the original
   or the reconstructed series.
 
@@ -82,9 +87,9 @@
   and is based on a multivariate LRR. Forecast uses the formulae from
   Golyandina and Stepanov (2005) and Golyandina et.al (2015).
 
-  For details of 1D-SSA recurrent forecasting, see Section 3.2.1.2 and 
+  For details of 1D-SSA recurrent forecasting, see Section 3.2.1.2 and
   Algorithm 3.5 in Golyandina et al (2018).
-  For details of MSSA recurrent forecasting, see Section 4.3.1.2  and 
+  For details of MSSA recurrent forecasting, see Section 4.3.1.2  and
   Algorithm 4.4 (column forecasting).
 }
 
@@ -101,7 +106,7 @@
   Golyandina, N., Nekrutkin, V. and Zhigljavsky, A. (2001): \emph{Analysis of
     Time Series Structure: SSA and related techniques.} Chapman and
   Hall/CRC. ISBN 1584881941
-  
+
   Golyandina, N., Korobeynikov, A., Shlemov, A. and Usevich, K. (2015):
   \emph{Multivariate and 2D Extensions of Singular Spectrum Analysis
     with the Rssa Package}. Journal of Statistical Software, Vol. 67, Issue 2.

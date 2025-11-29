@@ -3,6 +3,7 @@
 \alias{decompose.default}
 \alias{decompose.ssa}
 \alias{decompose.cssa}
+\alias{decompose.cmssa}
 \alias{decompose.toeplitz.ssa}
 \title{Perform SSA Decomposition}
 
@@ -14,6 +15,7 @@
 \method{decompose}{ssa}(x, neig = NULL, \dots, force.continue = FALSE)
 \method{decompose}{toeplitz.ssa}(x, neig = NULL, \dots, force.continue = FALSE)
 \method{decompose}{cssa}(x, neig = NULL, \dots, force.continue = FALSE)
+\method{decompose}{cmssa}(x, neig = NULL, \dots, force.continue = FALSE)
 }
 
 \arguments{

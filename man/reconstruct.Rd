@@ -32,7 +32,7 @@
   Algorithm 5.2 for 2D-SSA and Algorithm 5.6 for Shaped 2D-SSA.
 
   Fast implementation of reconstruction with the help of FFT is described in Korobeynikov (2010)
-  for the 1D case and in Section 6.2 (Rank-one quasi-hankelization) of Golyandina et al (2015) 
+  for the 1D case and in Section 6.2 (Rank-one quasi-hankelization) of Golyandina et al (2015)
   for the general case.
 }
 
@@ -67,7 +67,7 @@
 
 \seealso{
   \code{\link{Rssa}} for an overview of the package, as well as,
-  \code{\link[Rssa:ssa-input]{ssa-input}},  
+  \code{\link[Rssa:ssa-input]{ssa-input}},
   \code{\link[Rssa:ssa]{ssa}},
   \code{\link[Rssa:plot.reconstruction]{plot.reconstruction}},
 }
